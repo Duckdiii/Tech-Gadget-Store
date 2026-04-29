@@ -1,0 +1,30 @@
+﻿server:
+  port: 8080 # Port để chạy API cục bộ (http://localhost:8080)
+
+spring:
+  application:
+    name: tech-gadget-store
+
+  # 1. Cấu hình Kết nối CSDL Bất đồng bộ (R2DBC)
+  r2dbc:
+    # Cấu trúc URL: r2dbc:postgresql://[host]:[port]/[database_name]
+    url: r2dbc:postgresql://db.yzwoppimxupwltpmmdao.supabase.co:5432/postgres
+    username: postgres.yzwoppimxupwltpmmdao
+    password: LumotoKHTN@2
+    pool:
+      initial-size: 5
+      max-size: 20
+
+  # 2. Cấu hình Redis (Phần này tạm thời đóng lại (comment), khi nào code tới Giỏ hàng mình sẽ mở ra)
+  # data:
+  #   redis:
+  #     host: localhost
+  #     port: 6379
+
+# 3. Cấu hình Chìa khóa bảo mật JWT (Cho phần Đăng nhập)
+app:
+  jwt:
+    # Secret key phải dài và khó đoán. Bạn có thể đổi lại tùy ý.
+    secret: TechGadgetStoreSuperSecretKeyForJwtAuthentication2026!@#$
+    # Thời gian sống của token: 86400000 ms = 24 giờ
+    expiration-ms: 86400000
