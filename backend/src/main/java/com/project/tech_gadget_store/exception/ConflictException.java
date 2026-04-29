@@ -2,7 +2,7 @@
 
 import org.springframework.http.HttpStatus;
 
-// DÃ¹ng khi táº¡o tÃ i khoáº£n trÃ¹ng Email, trÃ¹ng SKU...
+// Dùng khi tạo tài khoản trùng Email, trùng SKU...
 public class ConflictException extends BaseBusinessException {
     public ConflictException(String message) {
         super(message, HttpStatus.CONFLICT);

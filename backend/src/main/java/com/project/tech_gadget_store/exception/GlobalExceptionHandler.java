@@ -20,6 +20,8 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // 1. Bắt các lỗi Business do mình tự ném ra (NotFound, Conflict, Unauthorized)
+    // Khi mình ném ra một lỗi nào đó trong service, ví dụ: throw new
+    // ResourceNotFoundException("Sản phẩm không tồn tại");
     @ExceptionHandler(BaseBusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BaseBusinessException ex, ServerHttpRequest request) {
         ErrorResponse errorResponse = ErrorResponse.builder()
@@ -32,7 +34,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ex.getHttpStatus()).body(errorResponse);
     }
 
-    // 2. Bắt lỗi Validation (Khi dùng @Valid cho DTO trong WebFlux)
+    // 2. Bắt lỗi Validation (Khi dùng @Valid cho DTO trong WebFlux) => chưa dùng
     @ExceptionHandler(WebExchangeBindException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(WebExchangeBindException ex,
             ServerHttpRequest request) {
@@ -52,7 +54,7 @@ public class GlobalExceptionHandler {
     }
 
     // 3. Fallback: Bắt toàn bộ các lỗi Unhandled còn lại (Lỗi 500)
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler(Exception.class) // Bắt tất cả các Exception chưa được handle ở trên
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, ServerHttpRequest request) {
         log.error("Unhandled exception at path: {}", request.getPath().value(), ex);
 
