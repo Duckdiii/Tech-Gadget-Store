@@ -16,4 +16,8 @@ public interface CategoryRepository extends ReactiveCrudRepository<Category, UUI
     Flux<Category> findAllByParentId(UUID parentId);
 
     Mono<Boolean> existsBySlug(String slug);
+
+    Mono<Boolean> existsByNameIgnoreCase(String name);
+
+    Mono<Boolean> existsByParentId(UUID parentId);
 }
