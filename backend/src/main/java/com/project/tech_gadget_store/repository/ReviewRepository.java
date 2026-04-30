@@ -13,4 +13,5 @@ public interface ReviewRepository extends ReactiveCrudRepository<Review, UUID> {
     Flux<Review> findAllByProductId(UUID productId);
 
     Flux<Review> findAllByCustomerId(UUID customerId);
+
 }

@@ -26,6 +26,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
 
+    @Override
     public Mono<ProductResponse> getProductResponseById(UUID productId) {
         // Kiểm tra nếu sản phẩm tồn tại và đang hoạt động, nếu không thì trả về lỗi
         // NotFoundException
@@ -41,24 +42,28 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    @Override
     public Flux<ProductResponse> getAllProductResponses() {
         return productRepository.findAll()
                 .filter(product -> Boolean.TRUE.equals(product.getIsActive()))
                 .map(ProductResponse::fromEntity);
     }
 
+    @Override
     public Flux<ProductResponse> getProductResponsesByCategoryId(UUID categoryId) {
         return productRepository.findAllByCategoryId(categoryId)
                 .filter(product -> Boolean.TRUE.equals(product.getIsActive()))
                 .map(ProductResponse::fromEntity);
     }
 
+    @Override
     public Flux<ProductResponse> getProductResponsesByBrandId(UUID brandId) {
         return productRepository.findAllByBrandId(brandId)
                 .filter(product -> Boolean.TRUE.equals(product.getIsActive()))
                 .map(ProductResponse::fromEntity);
     }
 
+    @Override
     public Mono<ProductResponse> createProduct(Product product) {
         // Kiểm tra nếu đã tồn tại sản phẩm với tên giống nhau (không phân biệt chữ hoa
         // chữ thường)
@@ -80,6 +85,7 @@ public class ProductServiceImpl implements ProductService {
                 });
     }
 
+    @Override
     public Mono<ProductResponse> updateProduct(UUID productId, Product product) {
         return productRepository.findById(productId)
                 .flatMap(existingProduct -> {
@@ -96,6 +102,7 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    @Override
     public Mono<Void> deleteProduct(UUID productId) {
         return productRepository.findById(productId)
                 .flatMap(product -> productRepository.delete(product))
@@ -103,6 +110,7 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    @Override
     public Flux<ProductResponse> searchProductsByName(String keyword) {
         if (StringUtils.hasText(keyword)) {
             return productRepository.findAllByNameContainingIgnoreCase(keyword)
@@ -113,6 +121,7 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    @Override
     public Flux<ProductResponse> getFilteredProducts(UUID categoryId, String attributesFilterJson) {
         // Lấy tất cả variant thỏa mãn categoryId và filter, sau đó map về productId và
         // lấy distinct productId
@@ -125,6 +134,7 @@ public class ProductServiceImpl implements ProductService {
                         .map(ProductResponse::fromEntity));
     }
 
+    @Override
     public Mono<ProductVariantResponse> createProductVariant(ProductVariantRequest productVariantRequest) {
         if (productVariantRequest == null) {
             return Mono.error(new IllegalArgumentException("Product variant request cannot be null"));
@@ -172,6 +182,12 @@ public class ProductServiceImpl implements ProductService {
                             return productVariantRepository.save(productVariant)
                                     .map(ProductVariantResponse::fromEntity);
                         }));
+    }
+
+    @Override
+    public Flux<ProductResponse> search(String keyword) {
+        return productRepository.searchProducts(keyword)
+                .map(ProductResponse::fromEntity); // Dùng lại hàm map xịn xò của bạn
     }
 
 }

@@ -20,8 +20,6 @@ public interface ProductService {
 
     Flux<ProductResponse> getProductResponsesByBrandId(UUID brandId);
 
-    Flux<ProductResponse> searchProductsByName(String keyword);
-
     Mono<ProductResponse> createProduct(Product product);
 
     Mono<ProductResponse> updateProduct(UUID productId, Product product);
@@ -34,4 +32,10 @@ public interface ProductService {
     Flux<ProductResponse> getProductResponsesByCategoryId(UUID categoryId);
 
     Flux<ProductResponse> getFilteredProducts(UUID categoryId, String attributesFilterJson);
+
+    // Search
+    Flux<ProductResponse> search(String keyword);
+
+    Flux<ProductResponse> searchProductsByName(String keyword);
+
 }
