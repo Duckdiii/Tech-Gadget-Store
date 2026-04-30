@@ -20,4 +20,5 @@ public interface AccountRepository extends ReactiveCrudRepository<Account, UUID>
     Mono<Boolean> existsByEmail(String email);
 
     Mono<Boolean> existsByPhoneNumber(String phoneNumber);
+
 }

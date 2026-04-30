@@ -32,4 +32,5 @@ public class Account {
     private OffsetDateTime createdAt;
     @Column("updated_at")
     private OffsetDateTime updatedAt;
+
 }
