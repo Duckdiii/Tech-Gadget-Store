@@ -23,8 +23,10 @@ public class Order {
     private UUID accountId;
     @Column("voucher_id")
     private UUID voucherId;
+    @Column("orderCode")
+    private String orderCode;
     @Column("shipping_address_snapshot")
-    private Json shippingAddressSnapshot;
+    private String shippingAddressSnapshot;
     @Column("payment_method")
     private String paymentMethod;
     @Column("payment_status")
