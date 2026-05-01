@@ -24,7 +24,7 @@ public class CheckoutRequest { // DTO cho việc thanh toán đơn hàng
     private String receiverName;
 
     @NotBlank(message = "Phuong thuc thanh toan khong duoc de trong")
-    @Pattern(regexp = "COD|VNPAY", message = "Phuong thuc thanh toan phai la COD hoac VNPAY")
+    @Pattern(regexp = "COD|VNPAY|MOMO", message = "Phuong thuc thanh toan phai la COD, VNPAY hoac MOMO")
     private String paymentMethod;
 
     @Size(max = 1000, message = "Ghi chu toi da 1000 ky tu")
