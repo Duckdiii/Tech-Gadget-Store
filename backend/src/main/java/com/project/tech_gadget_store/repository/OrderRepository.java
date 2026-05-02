@@ -17,5 +17,7 @@ public interface OrderRepository extends ReactiveCrudRepository<Order, UUID> {
 
     Flux<Order> findAllByPaymentStatus(String paymentStatus);
 
-    Mono<Order> findByIdAndAccountIdAndStatus(UUID orderId, UUID accountId, String orderStatus);
+    Mono<Order> findByIdAndAccountId(UUID orderId, UUID accountId);
+
+    Mono<Order> findByIdAndAccountIdAndOrderStatus(UUID orderId, UUID accountId, String orderStatus);
 }

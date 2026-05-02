@@ -1,6 +1,8 @@
 package com.project.tech_gadget_store.repository;
 
 import com.project.tech_gadget_store.entity.ProductVariant;
+
+import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
@@ -20,6 +22,11 @@ public interface ProductVariantRepository extends ReactiveCrudRepository<Product
     Flux<ProductVariant> findAllByIsActive(Boolean isActive);
 
     Mono<ProductVariant> findBySkuCode(String skuCode);
+
+    @Modifying
+    @Query("UPDATE product_variants SET quantity = :quantity WHERE id = :variantId")
+    Mono<Integer> setStockQuantity(@Param("variantId") UUID variantId,
+            @Param("quantity") Integer quantity);
 
     @Query("""
             SELECT pv.*

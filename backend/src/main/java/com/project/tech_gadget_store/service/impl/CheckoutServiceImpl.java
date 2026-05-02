@@ -14,6 +14,7 @@ import com.project.tech_gadget_store.repository.OrderItemRepository;
 import com.project.tech_gadget_store.repository.OrderRepository;
 import com.project.tech_gadget_store.repository.ProductVariantRepository;
 import com.project.tech_gadget_store.service.CheckoutService;
+import com.project.tech_gadget_store.service.event.OrderEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -32,6 +33,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final VnPayConfig vnPayConfig;
     private final MoMoConfig moMoConfig;
     private final PaymentGatewayConfig paymentGatewayConfig;
+    private final OrderEventPublisher orderEventPublisher;
 
     @Override
     public Mono<CheckoutResponse> processCheckout(UUID accountId, CheckoutRequest request) {
@@ -46,8 +48,9 @@ public class CheckoutServiceImpl implements CheckoutService {
                                                                                                             // hợp lệ,
                                                                                                             // trả về
                                                                                                             // lỗi
-                .flatMap(this::validateAndLockInventory)// Kiểm tra tồn kho và khóa hàng
-                .flatMap(order -> finalizeCheckout(order, request)) // Cập nhật trạng thái đơn hàng, thông tin thanh toán, địa chỉ giao hàng
+                .flatMap(this::validateAndLockInventory)// Kiem tra ton kho va khoa hang
+                .flatMap(order -> finalizeCheckout(order, request)) // Cap nhat trang thai don hang, thong tin thanh toan, dia chi giao hang
+                .doOnNext(orderEventPublisher::publishOrderCreated)
                 .map(savedOrder -> {
                     String paymentUrl = buildPaymentUrl(savedOrder.getTotalAmount(), request.getPaymentMethod());
                     return new CheckoutResponse(
@@ -132,3 +135,5 @@ public class CheckoutServiceImpl implements CheckoutService {
         return null;
     }
 }
+
+
