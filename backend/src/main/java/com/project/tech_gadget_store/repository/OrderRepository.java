@@ -20,4 +20,6 @@ public interface OrderRepository extends ReactiveCrudRepository<Order, UUID> {
     Mono<Order> findByIdAndAccountId(UUID orderId, UUID accountId);
 
     Mono<Order> findByIdAndAccountIdAndOrderStatus(UUID orderId, UUID accountId, String orderStatus);
+
+    Mono<Order> findByIdAndAccountIdAndPaymentStatus(UUID orderId, UUID accountId, String paymentStatus);
 }

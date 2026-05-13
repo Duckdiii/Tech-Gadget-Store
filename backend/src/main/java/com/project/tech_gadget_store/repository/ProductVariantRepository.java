@@ -17,6 +17,8 @@ public interface ProductVariantRepository extends ReactiveCrudRepository<Product
 
     Mono<ProductVariant> save(ProductVariant productVariant);
 
+    Mono<ProductVariant> findById(UUID id);
+
     Flux<ProductVariant> findAllByProductId(UUID productId);
 
     Flux<ProductVariant> findAllByIsActive(Boolean isActive);
