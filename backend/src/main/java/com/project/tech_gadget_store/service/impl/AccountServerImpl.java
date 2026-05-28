@@ -29,11 +29,11 @@ public class AccountServerImpl implements AccountService {
         String normalizedEmail = Account.normalizeEmail(request.getEmail());
 
         return accountRepository.findByEmail(normalizedEmail)
-                .filter(Account::isActiveAccount)
-                .filter(account -> passwordEncoder.matches(request.getPassword(), account.getPasswordHash()))
+                .filter(account -> account.canLogin(request.getPassword(), passwordEncoder))
                 .map(account -> {
-                    String token = jwtUtil.generateToken(account.getEmail(), account.getRole().name());
-                    return new LoginResponse(token, "Bearer", account.getEmail(), account.getRole().name());
+                    String roleName = account.roleName();
+                    String token = jwtUtil.generateToken(account.getEmail(), roleName);
+                    return new LoginResponse(token, "Bearer", account.getEmail(), roleName);
                 })
                 .switchIfEmpty(Mono.error(new UnauthorizedException("Email hoac mat khau khong chinh xac!")));
     }

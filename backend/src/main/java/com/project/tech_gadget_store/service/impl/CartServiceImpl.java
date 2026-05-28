@@ -130,9 +130,7 @@ public class CartServiceImpl implements CartService {
         BigDecimal subtotal = Cart.subtotal(items);
         BigDecimal discountAmount = Cart.safeAmount(order.getDiscountAmount());
         BigDecimal shippingFee = Cart.safeAmount(order.getShippingFee());
-        BigDecimal totalAmount = order.getTotalAmount() == null
-                ? subtotal.subtract(discountAmount).add(shippingFee)
-                : order.getTotalAmount();
+        BigDecimal totalAmount = Cart.resolveTotalAmount(order, items);
 
         return new CartResponse(
                 order.getId(),

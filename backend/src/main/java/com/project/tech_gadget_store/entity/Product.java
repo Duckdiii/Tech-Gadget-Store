@@ -37,6 +37,30 @@ public class Product {
         }
     }
 
+    public static String normalizeName(String name) {
+        if (!StringUtils.hasText(name)) {
+            throw new IllegalArgumentException("Product name cannot be blank");
+        }
+        return name.trim();
+    }
+
+    public static String normalizeDescription(String description) {
+        return StringUtils.hasText(description) ? description.trim() : null;
+    }
+
+    public static void validateForCreate(Product source) {
+        if (source == null) {
+            throw new IllegalArgumentException("Product cannot be null");
+        }
+        if (source.getCategoryId() == null) {
+            throw new IllegalArgumentException("Category ID cannot be null");
+        }
+        if (source.getBrandId() == null) {
+            throw new IllegalArgumentException("Brand ID cannot be null");
+        }
+        normalizeName(source.getName());
+    }
+
     public boolean isActiveProduct() {
         return Boolean.TRUE.equals(isActive);
     }
@@ -44,29 +68,31 @@ public class Product {
     public boolean hasNameIgnoreCase(String candidateName) {
         return StringUtils.hasText(name)
                 && StringUtils.hasText(candidateName)
-                && name.equalsIgnoreCase(candidateName);
+                && normalizeName(name).equalsIgnoreCase(normalizeName(candidateName));
     }
 
     public static Product createNew(Product source) {
+        validateForCreate(source);
         OffsetDateTime now = OffsetDateTime.now();
         return Product.builder()
                 .id(UUID.randomUUID())
                 .categoryId(source.getCategoryId())
                 .brandId(source.getBrandId())
-                .name(source.getName())
-                .description(source.getDescription())
-                .isActive(source.getIsActive())
+                .name(normalizeName(source.getName()))
+                .description(normalizeDescription(source.getDescription()))
+                .isActive(source.getIsActive() != null ? source.getIsActive() : Boolean.TRUE)
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
     }
 
     public void applyUpdate(Product source) {
-        this.name = source.getName();
+        validateForCreate(source);
+        this.name = normalizeName(source.getName());
         this.categoryId = source.getCategoryId();
         this.brandId = source.getBrandId();
-        this.description = source.getDescription();
-        this.isActive = source.getIsActive();
+        this.description = normalizeDescription(source.getDescription());
+        this.isActive = source.getIsActive() != null ? source.getIsActive() : this.isActive;
         this.updatedAt = OffsetDateTime.now();
     }
 }

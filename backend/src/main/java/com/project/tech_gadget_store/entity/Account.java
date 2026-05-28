@@ -5,10 +5,12 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 
 import java.time.OffsetDateTime;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -43,6 +45,13 @@ public class Account {
         return StringUtils.hasText(phoneNumber) ? phoneNumber.trim() : null;
     }
 
+    public static String normalizeFullName(String fullName) {
+        if (!StringUtils.hasText(fullName)) {
+            throw new IllegalArgumentException("Ho ten khong hop le");
+        }
+        return fullName.trim();
+    }
+
     public static Account createUserAccount(
             String email,
             String encodedPassword,
@@ -53,7 +62,7 @@ public class Account {
                 .id(UUID.randomUUID())
                 .email(normalizeEmail(email))
                 .passwordHash(encodedPassword)
-                .fullName(fullName.trim())
+                .fullName(normalizeFullName(fullName))
                 .phoneNumber(normalizePhone(phoneNumber))
                 .role(AccountRole.USER)
                 .isActive(true)
@@ -64,6 +73,17 @@ public class Account {
 
     public boolean isActiveAccount() {
         return Boolean.TRUE.equals(isActive);
+    }
+
+    public boolean canLogin(String rawPassword, PasswordEncoder passwordEncoder) {
+        Objects.requireNonNull(passwordEncoder, "passwordEncoder must not be null");
+        return isActiveAccount()
+                && StringUtils.hasText(passwordHash)
+                && passwordEncoder.matches(rawPassword, passwordHash);
+    }
+
+    public String roleName() {
+        return role == null ? AccountRole.USER.name() : role.name();
     }
 
 }

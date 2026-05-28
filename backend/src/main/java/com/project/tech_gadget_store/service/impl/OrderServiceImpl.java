@@ -49,11 +49,9 @@ public class OrderServiceImpl implements OrderService {
                 .flatMap(order -> {
                     order.cancelPendingOrder();
                     return orderItemRepository.findAllByOrderId(order.getId())
-                            .flatMap(orderItem -> {
-                                variantRepository.setStockQuantity(orderItem.getVariantId(), orderItem.getQuantity())
-                                        .subscribe();
-                                return Mono.empty();
-                            })
+                            .flatMap(orderItem -> variantRepository
+                                    .setStockQuantity(orderItem.getVariantId(), orderItem.getQuantity())
+                                    .then())
                             .then(orderRepository.save(order));
                 })
                 .doOnNext(orderEventPublisher::publishOrderStatusChanged)

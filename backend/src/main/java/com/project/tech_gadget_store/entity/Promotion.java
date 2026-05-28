@@ -65,6 +65,25 @@ public class Promotion {
         }
     }
 
+    public static void validateForWrite(
+            String name,
+            String discountType,
+            BigDecimal discountValue,
+            OffsetDateTime startDate,
+            OffsetDateTime endDate) {
+        if (!StringUtils.hasText(name)) {
+            throw new IllegalArgumentException("Promotion name cannot be blank");
+        }
+        normalizeDiscountType(discountType);
+        if (discountValue == null || discountValue.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Discount value must be greater than 0");
+        }
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Start date and end date cannot be null");
+        }
+        validateDateRange(startDate, endDate);
+    }
+
     public static String normalizeName(String name) {
         return StringUtils.hasText(name) ? name.trim() : name;
     }
@@ -91,6 +110,7 @@ public class Promotion {
             OffsetDateTime startDate,
             OffsetDateTime endDate,
             Boolean isActive) {
+        validateForWrite(name, discountType, discountValue, startDate, endDate);
         OffsetDateTime now = OffsetDateTime.now();
         return Promotion.builder()
                 .id(UUID.randomUUID())
@@ -114,6 +134,7 @@ public class Promotion {
             OffsetDateTime startDate,
             OffsetDateTime endDate,
             Boolean isActive) {
+        validateForWrite(name, discountType, discountValue, startDate, endDate);
         this.name = normalizeName(name);
         this.description = description;
         this.discountType = normalizeDiscountType(discountType);

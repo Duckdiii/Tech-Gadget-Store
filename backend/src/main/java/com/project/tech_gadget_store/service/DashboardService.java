@@ -1,8 +1,8 @@
 package com.project.tech_gadget_store.service;
 
+import com.project.tech_gadget_store.entity.enums.OrderStatus;
+
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -10,11 +10,11 @@ import reactor.core.publisher.Mono;
 public interface DashboardService {
     Mono<BigDecimal> getTotalRevenue();
 
-    Mono<Long> getTotalOrdersByStatus(String orderStatus);
+    Mono<Long> getTotalOrdersByStatus(OrderStatus orderStatus);
 
     Flux<TimeSeriesPoint> getRevenueSeries(TimeFrame timeFrame);
 
-    Flux<TimeSeriesPoint> getOrderSeries(String orderStatus, TimeFrame timeFrame);
+    Flux<TimeSeriesPoint> getOrderSeries(OrderStatus orderStatus, TimeFrame timeFrame);
 
     Flux<BreakdownItem> getOrderStatusBreakdown();
 

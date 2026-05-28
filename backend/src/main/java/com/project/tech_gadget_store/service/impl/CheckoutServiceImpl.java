@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -102,11 +101,9 @@ public class CheckoutServiceImpl implements CheckoutService {
 
     private Mono<Order> finalizeCheckout(Order order, CheckoutRequest request) { // Cập nhật trạng thái đơn hàng, thông
                                                                                  // tin thanh toán, địa chỉ giao hàng
-        order.setShippingAddressSnapshot(request.getShippingAddress());
-        order.setPaymentMethod(normalizePaymentMethod(request.getPaymentMethod()));
-        order.setPaymentStatus(PaymentStatus.PENDING.name());
-        order.setOrderStatus(OrderStatus.PENDING.name());
-        order.setUpdatedAt(OffsetDateTime.now());
+        order.updateCheckoutInfo(request.getShippingAddress(), normalizePaymentMethod(request.getPaymentMethod()));
+        order.changePaymentStatus(PaymentStatus.PENDING.name());
+        order.changeStatus(OrderStatus.PENDING.name());
 
         return orderRepository.save(order);
     }

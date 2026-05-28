@@ -17,7 +17,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Service
@@ -59,12 +58,16 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Mono<ProductResponse> createProduct(Product product) {
+        Product.validateForCreate(product);
+        String normalizedName = Product.normalizeName(product.getName());
+
         return productRepository.findAll()
-                .filter(existingProduct -> existingProduct.hasNameIgnoreCase(product.getName()))
+                .filter(existingProduct -> existingProduct.hasNameIgnoreCase(normalizedName))
                 .hasElements()
                 .flatMap(exists -> {
                     if (exists) {
-                        return Mono.error(new ConflictException("Product with name '" + product.getName() + "' already exists"));
+                        return Mono.error(
+                                new ConflictException("Product with name '" + normalizedName + "' already exists"));
                     }
 
                     return productRepository.save(Product.createNew(product))
@@ -117,15 +120,14 @@ public class ProductServiceImpl implements ProductService {
             return Mono.error(new IllegalArgumentException("Product variant request cannot be null"));
         }
 
-        if (productVariantRequest.getProductId() == null) {
-            return Mono.error(new IllegalArgumentException("Product ID cannot be null"));
-        }
-
-        if (!StringUtils.hasText(productVariantRequest.getSkuCode())) {
-            return Mono.error(new IllegalArgumentException("SKU code cannot be blank"));
-        }
-
-        String normalizedSkuCode = productVariantRequest.getSkuCode().trim();
+        BigDecimal price = BigDecimal.valueOf(productVariantRequest.getPrice());
+        ProductVariant.validateForCreate(
+                productVariantRequest.getProductId(),
+                productVariantRequest.getSkuCode(),
+                price,
+                productVariantRequest.getStockQuantity(),
+                productVariantRequest.getLockedQuantity());
+        String normalizedSkuCode = ProductVariant.normalizeSkuCode(productVariantRequest.getSkuCode());
 
         return productRepository.findById(productVariantRequest.getProductId())
                 .filter(Product::isActiveProduct)
@@ -139,21 +141,16 @@ public class ProductServiceImpl implements ProductService {
                                         + "' already exists"));
                             }
 
-                            ProductVariant productVariant = new ProductVariant();
-                            productVariant.setId(UUID.randomUUID());
-                            productVariant.setProductId(productVariantRequest.getProductId());
-                            productVariant.setSkuCode(normalizedSkuCode);
-                            productVariant.setVariantName(productVariantRequest.getName());
-                            productVariant.setPrice(BigDecimal.valueOf(productVariantRequest.getPrice()));
-                            productVariant.setImageUrl(productVariantRequest.getImage_url());
-                            productVariant.setStockQuantity(productVariantRequest.getStockQuantity());
-                            productVariant.setLockedQuantity(productVariantRequest.getLockedQuantity());
-                            productVariant.setAttributes(productVariantRequest.getAttributes());
-                            productVariant.setIsActive(productVariantRequest.getIsActive() != null
-                                    ? productVariantRequest.getIsActive()
-                                    : Boolean.TRUE);
-                            productVariant.setCreatedAt(OffsetDateTime.now());
-                            productVariant.setUpdatedAt(OffsetDateTime.now());
+                            ProductVariant productVariant = ProductVariant.createNew(
+                                    productVariantRequest.getProductId(),
+                                    normalizedSkuCode,
+                                    productVariantRequest.getName(),
+                                    price,
+                                    productVariantRequest.getImage_url(),
+                                    productVariantRequest.getAttributes(),
+                                    productVariantRequest.getStockQuantity(),
+                                    productVariantRequest.getLockedQuantity(),
+                                    productVariantRequest.getIsActive());
 
                             return productVariantRepository.save(productVariant)
                                     .map(ProductVariantResponse::fromEntity);

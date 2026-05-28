@@ -18,13 +18,10 @@ public final class Cart {
 
     public static Order createPendingOrder(UUID accountId) {
         Order order = new Order();
-        order.setAccountId(accountId);
-        order.setOrderStatus(OrderStatus.PENDING.name());
-        order.setPaymentStatus(PaymentStatus.PENDING.name());
-        order.setSubtotal(BigDecimal.ZERO);
-        order.setDiscountAmount(BigDecimal.ZERO);
-        order.setShippingFee(BigDecimal.ZERO);
-        order.setTotalAmount(BigDecimal.ZERO);
+        order.assignAccount(accountId);
+        order.changeStatus(OrderStatus.PENDING.name());
+        order.changePaymentStatus(PaymentStatus.PENDING.name());
+        order.applyPriceSummary(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
         return order;
     }
 
@@ -74,5 +71,14 @@ public final class Cart {
 
     public static BigDecimal safeAmount(BigDecimal amount) {
         return amount == null ? BigDecimal.ZERO : amount;
+    }
+
+    public static BigDecimal resolveTotalAmount(Order order, List<OrderItem> items) {
+        BigDecimal subtotal = subtotal(items);
+        BigDecimal discountAmount = safeAmount(order.getDiscountAmount());
+        BigDecimal shippingFee = safeAmount(order.getShippingFee());
+        return order.getTotalAmount() == null
+                ? subtotal.subtract(discountAmount).add(shippingFee)
+                : order.getTotalAmount();
     }
 }

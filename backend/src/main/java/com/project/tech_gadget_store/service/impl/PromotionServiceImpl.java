@@ -56,7 +56,6 @@ public class PromotionServiceImpl implements PromotionService {
             return Mono.error(new IllegalArgumentException("Promotion request cannot be null"));
         }
 
-        Promotion.validateDateRange(request.getStartDate(), request.getEndDate());
         String normalizedName = Promotion.normalizeName(request.getName());
 
         return promotionRepository.existsByNameIgnoreCase(normalizedName)
@@ -88,7 +87,6 @@ public class PromotionServiceImpl implements PromotionService {
             return Mono.error(new IllegalArgumentException("Promotion request cannot be null"));
         }
 
-        Promotion.validateDateRange(request.getStartDate(), request.getEndDate());
         String normalizedName = Promotion.normalizeName(request.getName());
 
         return promotionRepository.findById(promotionId)

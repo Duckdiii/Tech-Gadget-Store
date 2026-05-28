@@ -7,7 +7,6 @@ import com.project.tech_gadget_store.repository.InventoryLedgerRepository;
 import com.project.tech_gadget_store.service.InventoryService;
 import com.project.tech_gadget_store.repository.ProductVariantRepository;
 
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
@@ -27,15 +26,12 @@ public class InventoryServiceImpl implements InventoryService {
                 .switchIfEmpty(Mono.error(new RuntimeException("Product variant not found")))
                 .flatMap(variant -> {
                     int currentStock = variant.getStockQuantity() == null ? 0 : variant.getStockQuantity();
-                    int incoming = request.getQuantity() == null ? 0 : request.getQuantity();
-
-                    InventoryLedger ledger = new InventoryLedger();
-                    ledger.setVariantId(variant.getId());
-                    ledger.setTransactionType("IMPORT");
-                    ledger.setQuantityChanged(incoming);
-                    ledger.setNote(request.getNote());
-                    ledger.setCreatedBy(adminId);
-                    ledger.setCreatedAt(OffsetDateTime.now());
+                    InventoryLedger ledger = InventoryLedger.createImportLedger(
+                            variant.getId(),
+                            request.getQuantity(),
+                            request.getNote(),
+                            adminId);
+                    int incoming = ledger.getQuantityChanged();
 
                     return inventoryLedgerRepository.save(ledger)
                             .then(variantProductRepository.setStockQuantity(variant.getId(), currentStock + incoming))
