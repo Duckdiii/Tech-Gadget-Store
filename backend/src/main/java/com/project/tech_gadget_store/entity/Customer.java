@@ -1,32 +1,25 @@
-﻿package com.project.tech_gadget_store.entity;
+package com.project.tech_gadget_store.entity;
 
-import com.project.tech_gadget_store.entity.enums.MembershipTier;
-import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
+import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@Table(name = "customers")
+@DiscriminatorValue("CUSTOMER")
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Table("customers")
-public class Customer {
-    @Id
-    private UUID id;
-    @Column("account_id")
-    private UUID accountId;
-    @Column("full_name")
-    private String fullName;
-    @Column("phone_number")
-    private String phoneNumber;
-    @Column("default_shipping_address")
-    private String defaultShippingAddress;
-    @Column("membership_tier")
-    private MembershipTier membershipTier;
-    @Column("reward_points")
-    private Integer rewardPoints;
+public class Customer extends User {
+
+    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Cart cart;
+
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    private List<ProductSubscription> productSubscriptions = new ArrayList<>();
 }

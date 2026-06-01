@@ -20,18 +20,18 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable) // Tắt CSRF vì mình dùng JWT
+                .csrf(ServerHttpSecurity.CsrfSpec::disable) // Táº¯t CSRF vÃ¬ mÃ¬nh dÃ¹ng JWT
                 .authorizeExchange(auth -> auth
-                        // Cho phép truy cập tự do vào các API đăng ký/đăng nhập và xem sản phẩm
+                        // Cho phÃ©p truy cáº­p tá»± do vÃ o cÃ¡c API Ä‘Äƒng kÃ½/Ä‘Äƒng nháº­p vÃ  xem sáº£n pháº©m
                         .pathMatchers("/api/auth/**").permitAll()
                         .pathMatchers("/api/brands/**", "/api/products/**").permitAll()
 
-                        // Các API quản trị bắt buộc phải có quyền ADMIN
+                        // CÃ¡c API quáº£n trá»‹ báº¯t buá»™c pháº£i cÃ³ quyá»n ADMIN
                         .pathMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // Các API còn lại bắt buộc phải đăng nhập (có token)
+                        // CÃ¡c API cÃ²n láº¡i báº¯t buá»™c pháº£i Ä‘Äƒng nháº­p (cÃ³ token)
                         .anyExchange().authenticated())
-                // Chèn bộ lọc JWT của mình vào TRƯỚC bộ lọc xác thực mặc định của Spring
+                // ChÃ¨n bá»™ lá»c JWT cá»§a mÃ¬nh vÃ o TRÆ¯á»šC bá»™ lá»c xÃ¡c thá»±c máº·c Ä‘á»‹nh cá»§a Spring
                 .addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }

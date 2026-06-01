@@ -1,30 +1,49 @@
-﻿package com.project.tech_gadget_store.entity;
+package com.project.tech_gadget_store.entity;
 
-import io.r2dbc.postgresql.codec.Json;
-import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+
+import lombok.Getter;
+import lombok.Setter;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@Table(name = "order_items")
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Table("order_items")
-public class OrderItem {
-    @Id
-    private UUID id;
-    @Column("order_id")
-    private UUID orderId;
-    @Column("variant_id")
-    private UUID variantId;
+public class OrderItem extends BaseEntity {
+
+    private static final int MAX_BUNDLE_SERVICES = 2;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false, unique = true)
+    private Product product;
+
+    @Column(name = "quantity", nullable = false)
     private Integer quantity;
-    @Column("unit_price")
-    private BigDecimal unitPrice;
-    @Column("variant_snapshot")
-    private Json variantSnapshot;
+
+    @ManyToMany
+    @JoinTable(
+            name = "order_item_bundle_services",
+            joinColumns = @JoinColumn(name = "order_item_id"),
+            inverseJoinColumns = @JoinColumn(name = "bundle_service_id")
+    )
+    private List<BundleService> bundleServices = new ArrayList<>();
+
+    @PrePersist
+    @PreUpdate
+    protected void validateBundleServicesLimit() {
+        if (bundleServices != null && bundleServices.size() > MAX_BUNDLE_SERVICES) {
+            throw new IllegalStateException("OrderItem chi duoc toi da 2 bundle services");
+        }
+    }
+
+    @Column(name = "unit_price_at_order", nullable = false, precision = 15, scale = 2)
+    private BigDecimal unitPriceAtOrder;
 }

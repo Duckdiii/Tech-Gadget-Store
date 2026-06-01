@@ -22,30 +22,30 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        // 1. Lấy header Authorization từ request
+        // 1. Láº¥y header Authorization tá»« request
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        // 2. Kiểm tra xem có Token dạng "Bearer <token>" hay không
+        // 2. Kiá»ƒm tra xem cÃ³ Token dáº¡ng "Bearer <token>" hay khÃ´ng
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            // 3. Nếu token hợp lệ, trích xuất thông tin và thiết lập Security Context
+            // 3. Náº¿u token há»£p lá»‡, trÃ­ch xuáº¥t thÃ´ng tin vÃ  thiáº¿t láº­p Security Context
             if (jwtUtil.isTokenValid(token)) {
                 String email = jwtUtil.getEmailFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
 
-                // Tạo đối tượng xác thực (Thêm tiền tố ROLE_ để Spring Security nhận diện đúng)
+                // Táº¡o Ä‘á»‘i tÆ°á»£ng xÃ¡c thá»±c (ThÃªm tiá»n tá»‘ ROLE_ Ä‘á»ƒ Spring Security nháº­n diá»‡n Ä‘Ãºng)
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         email, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
 
-                // Lưu đối tượng xác thực vào Context của WebFlux
+                // LÆ°u Ä‘á»‘i tÆ°á»£ng xÃ¡c thá»±c vÃ o Context cá»§a WebFlux
                 return chain.filter(exchange)
                         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
             }
         }
 
-        // 4. Nếu không có token hoặc token sai, cứ cho đi tiếp (Hàng rào SecurityConfig
-        // ở bước sau sẽ chặn lại)
+        // 4. Náº¿u khÃ´ng cÃ³ token hoáº·c token sai, cá»© cho Ä‘i tiáº¿p (HÃ ng rÃ o SecurityConfig
+        // á»Ÿ bÆ°á»›c sau sáº½ cháº·n láº¡i)
         return chain.filter(exchange);
     }
 }

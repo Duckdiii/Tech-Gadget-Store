@@ -1,89 +1,43 @@
-﻿package com.project.tech_gadget_store.entity;
+package com.project.tech_gadget_store.entity;
 
-import com.project.tech_gadget_store.entity.enums.AccountRole;
-import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.util.StringUtils;
 
-import java.time.OffsetDateTime;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
+import com.project.tech_gadget_store.entity.enums.AccountStatus;
+import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(
+        name = "accounts",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_accounts_email", columnNames = "email")
+        }
+)
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Table("accounts")
-public class Account {
-    @Id
-    private UUID id;
+public class Account extends BaseEntity {
+
+    @Column(name = "email", nullable = false, length = 150)
     private String email;
-    @Column("password_hash")
-    private String passwordHash;
-    @Column("full_name")
-    private String fullName;
-    @Column("phone_number")
-    private String phoneNumber;
-    private AccountRole role;
-    @Column("is_active")
-    private Boolean isActive;
-    @Column("created_at")
-    private OffsetDateTime createdAt;
-    @Column("updated_at")
-    private OffsetDateTime updatedAt;
 
-    public static String normalizeEmail(String email) {
-        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
-    }
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
 
-    public static String normalizePhone(String phoneNumber) {
-        return StringUtils.hasText(phoneNumber) ? phoneNumber.trim() : null;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 30)
+    private AccountStatus status = AccountStatus.ACTIVE;
 
-    public static String normalizeFullName(String fullName) {
-        if (!StringUtils.hasText(fullName)) {
-            throw new IllegalArgumentException("Ho ten khong hop le");
-        }
-        return fullName.trim();
-    }
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
 
-    public static Account createUserAccount(
-            String email,
-            String encodedPassword,
-            String fullName,
-            String phoneNumber) {
-        OffsetDateTime now = OffsetDateTime.now();
-        return Account.builder()
-                .id(UUID.randomUUID())
-                .email(normalizeEmail(email))
-                .passwordHash(encodedPassword)
-                .fullName(normalizeFullName(fullName))
-                .phoneNumber(normalizePhone(phoneNumber))
-                .role(AccountRole.USER)
-                .isActive(true)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-    }
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    public boolean isActiveAccount() {
-        return Boolean.TRUE.equals(isActive);
-    }
-
-    public boolean canLogin(String rawPassword, PasswordEncoder passwordEncoder) {
-        Objects.requireNonNull(passwordEncoder, "passwordEncoder must not be null");
-        return isActiveAccount()
-                && StringUtils.hasText(passwordHash)
-                && passwordEncoder.matches(rawPassword, passwordHash);
-    }
-
-    public String roleName() {
-        return role == null ? AccountRole.USER.name() : role.name();
-    }
-
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private List<LoginLog> loginLogs = new ArrayList<>();
 }

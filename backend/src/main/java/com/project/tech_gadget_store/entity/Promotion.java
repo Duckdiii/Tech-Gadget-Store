@@ -1,147 +1,38 @@
 package com.project.tech_gadget_store.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
-import org.springframework.util.StringUtils;
+import jakarta.persistence.*;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@Table(name = "promotions", uniqueConstraints = @UniqueConstraint(name = "uk_promotions_code", columnNames = "code"))
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Table("promotions")
-public class Promotion {
-    private static final Set<String> SUPPORTED_DISCOUNT_TYPES = Set.of("PERCENT", "FIXED_AMOUNT");
+public class Promotion extends BaseEntity {
 
-    @Id
-    private UUID id;
+        @Column(name = "code", nullable = false, length = 80)
+        private String code;
 
-    private String name;
+        @Column(name = "name", nullable = false, length = 150)
+        private String name;
 
-    private String description;
+        @Column(name = "discount_percent", nullable = false)
+        private Double discountPercent;
 
-    @Column("discount_type")
-    private String discountType;
+        @Column(name = "start_at", nullable = false)
+        private LocalDateTime startAt;
 
-    @Column("discount_value")
-    private BigDecimal discountValue;
+        @Column(name = "end_at", nullable = false)
+        private LocalDateTime endAt;
 
-    @Column("start_date")
-    private OffsetDateTime startDate;
+        @Column(name = "active", nullable = false)
+        private Boolean active = true;
 
-    @Column("end_date")
-    private OffsetDateTime endDate;
-
-    @Column("is_active")
-    private Boolean isActive;
-
-    @Column("created_at")
-    private OffsetDateTime createdAt;
-
-    @Column("updated_at")
-    private OffsetDateTime updatedAt;
-
-    public static void validatePromotionId(UUID promotionId) {
-        if (promotionId == null) {
-            throw new IllegalArgumentException("Promotion ID cannot be null");
-        }
-    }
-
-    public static void validateDateRange(OffsetDateTime startDate, OffsetDateTime endDate) {
-        if (startDate != null && endDate != null && !endDate.isAfter(startDate)) {
-            throw new IllegalArgumentException("End date must be after start date");
-        }
-    }
-
-    public static void validateForWrite(
-            String name,
-            String discountType,
-            BigDecimal discountValue,
-            OffsetDateTime startDate,
-            OffsetDateTime endDate) {
-        if (!StringUtils.hasText(name)) {
-            throw new IllegalArgumentException("Promotion name cannot be blank");
-        }
-        normalizeDiscountType(discountType);
-        if (discountValue == null || discountValue.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Discount value must be greater than 0");
-        }
-        if (startDate == null || endDate == null) {
-            throw new IllegalArgumentException("Start date and end date cannot be null");
-        }
-        validateDateRange(startDate, endDate);
-    }
-
-    public static String normalizeName(String name) {
-        return StringUtils.hasText(name) ? name.trim() : name;
-    }
-
-    public static String normalizeDiscountType(String discountType) {
-        String normalized = StringUtils.hasText(discountType) ? discountType.trim().toUpperCase(Locale.ROOT) : discountType;
-        if (!SUPPORTED_DISCOUNT_TYPES.contains(normalized)) {
-            throw new IllegalArgumentException("Unsupported discount type: " + discountType);
-        }
-        return normalized;
-    }
-
-    public boolean hasSameNameIgnoreCase(String candidateName) {
-        return StringUtils.hasText(name)
-                && StringUtils.hasText(candidateName)
-                && name.equalsIgnoreCase(candidateName);
-    }
-
-    public static Promotion createNew(
-            String name,
-            String description,
-            String discountType,
-            BigDecimal discountValue,
-            OffsetDateTime startDate,
-            OffsetDateTime endDate,
-            Boolean isActive) {
-        validateForWrite(name, discountType, discountValue, startDate, endDate);
-        OffsetDateTime now = OffsetDateTime.now();
-        return Promotion.builder()
-                .id(UUID.randomUUID())
-                .name(normalizeName(name))
-                .description(description)
-                .discountType(normalizeDiscountType(discountType))
-                .discountValue(discountValue)
-                .startDate(startDate)
-                .endDate(endDate)
-                .isActive(isActive != null ? isActive : Boolean.TRUE)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-    }
-
-    public void applyUpdate(
-            String name,
-            String description,
-            String discountType,
-            BigDecimal discountValue,
-            OffsetDateTime startDate,
-            OffsetDateTime endDate,
-            Boolean isActive) {
-        validateForWrite(name, discountType, discountValue, startDate, endDate);
-        this.name = normalizeName(name);
-        this.description = description;
-        this.discountType = normalizeDiscountType(discountType);
-        this.discountValue = discountValue;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.isActive = isActive != null ? isActive : this.isActive;
-        this.updatedAt = OffsetDateTime.now();
-    }
+        @ManyToMany
+        @JoinTable(name = "promotion_products", joinColumns = @JoinColumn(name = "promotion_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
+        private List<Product> products = new ArrayList<>();
 }

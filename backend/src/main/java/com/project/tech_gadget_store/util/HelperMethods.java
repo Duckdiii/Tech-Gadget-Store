@@ -1,4 +1,4 @@
-﻿package com.project.tech_gadget_store.util;
+package com.project.tech_gadget_store.util;
 
 public final class HelperMethods {
 

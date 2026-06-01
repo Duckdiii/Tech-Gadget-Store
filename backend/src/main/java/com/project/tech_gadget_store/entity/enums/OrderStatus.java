@@ -1,9 +1,10 @@
-﻿package com.project.tech_gadget_store.entity.enums;
+package com.project.tech_gadget_store.entity.enums;
 
 public enum OrderStatus {
-    PENDING,
-    CONFIRMED,
+    AWAITING_CONFIRMATION,
+    PROCESSING,
     SHIPPING,
     COMPLETED,
-    CANCELLED
+    CANCELLED,
+    REFUNDED
 }

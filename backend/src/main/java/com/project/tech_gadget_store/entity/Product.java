@@ -1,98 +1,58 @@
 package com.project.tech_gadget_store.entity;
 
-import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
-import org.springframework.util.StringUtils;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
+import com.project.tech_gadget_store.entity.enums.ProductStatus;
+import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "products")
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Table("products")
-public class Product {
-    @Id
-    private UUID id;
-    @Column("category_id")
-    private UUID categoryId;
-    @Column("brand_id")
-    private UUID brandId;
+public class Product extends BaseEntity {
+
+    @Column(name = "name", nullable = false, length = 150)
     private String name;
+
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
-    @Column("is_active")
-    private Boolean isActive;
-    @Column("created_at")
-    private OffsetDateTime createdAt;
-    @Column("updated_at")
-    private OffsetDateTime updatedAt;
 
-    public static void validateProductId(UUID productId) {
-        if (productId == null) {
-            throw new IllegalArgumentException("Product ID cannot be null");
-        }
-    }
+    @Column(name = "price", nullable = false, precision = 15, scale = 2)
+    private BigDecimal price;
 
-    public static String normalizeName(String name) {
-        if (!StringUtils.hasText(name)) {
-            throw new IllegalArgumentException("Product name cannot be blank");
-        }
-        return name.trim();
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 30)
+    private ProductStatus status = ProductStatus.AVAILABLE;
 
-    public static String normalizeDescription(String description) {
-        return StringUtils.hasText(description) ? description.trim() : null;
-    }
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "brand_id", nullable = false)
+    private Brand brand;
 
-    public static void validateForCreate(Product source) {
-        if (source == null) {
-            throw new IllegalArgumentException("Product cannot be null");
-        }
-        if (source.getCategoryId() == null) {
-            throw new IllegalArgumentException("Category ID cannot be null");
-        }
-        if (source.getBrandId() == null) {
-            throw new IllegalArgumentException("Brand ID cannot be null");
-        }
-        normalizeName(source.getName());
-    }
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
-    public boolean isActiveProduct() {
-        return Boolean.TRUE.equals(isActive);
-    }
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImage> images = new ArrayList<>();
 
-    public boolean hasNameIgnoreCase(String candidateName) {
-        return StringUtils.hasText(name)
-                && StringUtils.hasText(candidateName)
-                && normalizeName(name).equalsIgnoreCase(normalizeName(candidateName));
-    }
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private PhoneSpecification spec;
 
-    public static Product createNew(Product source) {
-        validateForCreate(source);
-        OffsetDateTime now = OffsetDateTime.now();
-        return Product.builder()
-                .id(UUID.randomUUID())
-                .categoryId(source.getCategoryId())
-                .brandId(source.getBrandId())
-                .name(normalizeName(source.getName()))
-                .description(normalizeDescription(source.getDescription()))
-                .isActive(source.getIsActive() != null ? source.getIsActive() : Boolean.TRUE)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-    }
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductVariant> variants = new ArrayList<>();
 
-    public void applyUpdate(Product source) {
-        validateForCreate(source);
-        this.name = normalizeName(source.getName());
-        this.categoryId = source.getCategoryId();
-        this.brandId = source.getBrandId();
-        this.description = normalizeDescription(source.getDescription());
-        this.isActive = source.getIsActive() != null ? source.getIsActive() : this.isActive;
-        this.updatedAt = OffsetDateTime.now();
-    }
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "inventory_id", nullable = false)
+    private Inventory inventory;
+
+    @ManyToMany(mappedBy = "products")
+    private List<Promotion> promotions = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
+    private List<ImportLog> importLogs = new ArrayList<>();
 }

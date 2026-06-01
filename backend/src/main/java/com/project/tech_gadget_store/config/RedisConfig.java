@@ -1,4 +1,4 @@
-﻿package com.project.tech_gadget_store.config;
+package com.project.tech_gadget_store.config;
 
 public class RedisConfig {
 }
