@@ -1,11 +1,15 @@
 package com.project.tech_gadget_store.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import jakarta.persistence.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -24,7 +28,6 @@ public abstract class User extends BaseEntity {
     @Column(name = "address", length = 255)
     private String address;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    // Quan hệ được map thông qua field user trong class Account
-    private List<Account> accounts = new ArrayList<>();
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
+    private Account account;
 }
