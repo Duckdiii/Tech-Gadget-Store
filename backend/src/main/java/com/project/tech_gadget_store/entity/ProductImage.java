@@ -25,9 +25,8 @@ public class ProductImage extends BaseEntity {
     private Product product;
 
     public ProductImage(Product product, String name, String imageUrl) {
-        this.product = product;
         this.name = name;
         this.imageUrl = imageUrl;
-        product.getImages().add(this);
+        product.addImage(this);
     }
 }

@@ -58,7 +58,6 @@ public class PhoneSpecification extends BaseEntity {
     private String cpuDescription;
 
     public PhoneSpecification(Product product) {
-        this.product = product;
-        product.setSpec(this);
+        product.assignSpec(this);
     }
 }

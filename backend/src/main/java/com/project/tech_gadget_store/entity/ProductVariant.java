@@ -55,13 +55,12 @@ public class ProductVariant extends BaseEntity {
     private List<ExportLogItem> exportLogItems = new ArrayList<>();
 
     public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price, String sku) {
-        this.product = product;
         this.ramGb = ramGb;
         this.storageGb = storageGb;
         this.color = color;
         this.price = price;
         this.sku = sku;
-        product.getVariants().add(this);
+        product.addVariant(this);
     }
 
     public void assignInventory(Inventory inventory) {
