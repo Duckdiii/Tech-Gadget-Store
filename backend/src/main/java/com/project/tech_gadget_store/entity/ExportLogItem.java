@@ -23,21 +23,21 @@ public class ExportLogItem extends BaseEntity {
     private ExportLog exportLog;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "product_variant_id", nullable = false)
+    private ProductVariant productVariant;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    public ExportLogItem(ExportLog exportLog, Product product, Integer quantity) {
+    public ExportLogItem(ExportLog exportLog, ProductVariant productVariant, Integer quantity) {
         this.exportLog = exportLog;
-        this.product = product;
+        this.productVariant = productVariant;
         this.quantity = quantity;
         if (!exportLog.getItems().contains(this)) {
             exportLog.getItems().add(this);
         }
-        if (!product.getExportLogItems().contains(this)) {
-            product.getExportLogItems().add(this);
+        if (!productVariant.getExportLogItems().contains(this)) {
+            productVariant.getExportLogItems().add(this);
         }
     }
 }

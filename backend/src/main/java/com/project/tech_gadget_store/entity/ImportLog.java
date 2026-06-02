@@ -53,8 +53,8 @@ public class ImportLog extends BaseEntity {
             items.add(item);
         }
         item.setImportLog(this);
-        if (!item.getProduct().getImportLogItems().contains(item)) {
-            item.getProduct().getImportLogItems().add(item);
+        if (!item.getProductVariant().getImportLogItems().contains(item)) {
+            item.getProductVariant().getImportLogItems().add(item);
         }
     }
 }

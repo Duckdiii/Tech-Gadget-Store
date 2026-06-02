@@ -16,6 +16,6 @@ public class ExportLogItemResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String exportLogId;
-    private String productId;
+    private String productVariantId;
     private Integer quantity;
 }

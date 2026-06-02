@@ -9,6 +9,8 @@ import com.project.tech_gadget_store.entity.enums.ProductStatus;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -45,6 +47,12 @@ public class ProductVariant extends BaseEntity {
 
     @OneToOne(mappedBy = "productVariant", fetch = FetchType.LAZY)
     private Inventory inventory;
+
+    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
+    private List<ImportLogItem> importLogItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
+    private List<ExportLogItem> exportLogItems = new ArrayList<>();
 
     public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price, String sku) {
         this.product = product;

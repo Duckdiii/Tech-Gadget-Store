@@ -18,7 +18,7 @@ public class OrderItemResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String orderId;
-    private String productId;
+    private String productVariantId;
     private Integer quantity;
     private List<String> bundleServicesIds;
     private BigDecimal unitPriceAtOrder;

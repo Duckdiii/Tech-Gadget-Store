@@ -3,6 +3,7 @@ package com.project.tech_gadget_store.dto.response;
 import com.project.tech_gadget_store.entity.enums.ProductStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,4 +26,6 @@ public class ProductVariantResponseDto {
     private String sku;
     private ProductStatus status;
     private String inventoryId;
+    private List<String> importLogItemIds;
+    private List<String> exportLogItemIds;
 }

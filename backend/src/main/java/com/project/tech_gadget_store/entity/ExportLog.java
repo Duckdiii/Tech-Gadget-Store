@@ -57,8 +57,8 @@ public class ExportLog extends BaseEntity {
             items.add(item);
         }
         item.setExportLog(this);
-        if (!item.getProduct().getExportLogItems().contains(item)) {
-            item.getProduct().getExportLogItems().add(item);
+        if (!item.getProductVariant().getExportLogItems().contains(item)) {
+            item.getProductVariant().getExportLogItems().add(item);
         }
     }
 }

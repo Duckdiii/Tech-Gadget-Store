@@ -13,6 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ExportLogItemRequestDto {
 
-    private String productId;
+    private String productVariantId;
     private Integer quantity;
 }

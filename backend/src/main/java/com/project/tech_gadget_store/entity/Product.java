@@ -52,12 +52,6 @@ public class Product extends BaseEntity {
     @ManyToMany(mappedBy = "products")
     private List<Promotion> promotions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    private List<ImportLogItem> importLogItems = new ArrayList<>();
-
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    private List<ExportLogItem> exportLogItems = new ArrayList<>();
-
     public Product(String name, String description, BigDecimal price, Brand brand, Category category) {
         this.name = name;
         this.description = description;

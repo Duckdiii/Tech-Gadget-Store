@@ -16,7 +16,7 @@ import lombok.Setter;
 public class OrderItemRequestDto {
 
     private String orderId;
-    private String productId;
+    private String productVariantId;
     private Integer quantity;
     private List<String> bundleServicesIds;
     private BigDecimal unitPriceAtOrder;

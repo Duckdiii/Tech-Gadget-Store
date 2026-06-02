@@ -25,8 +25,8 @@ public class OrderItem extends BaseEntity {
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "product_variant_id", nullable = false)
+    private ProductVariant productVariant;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
@@ -50,9 +50,9 @@ public class OrderItem extends BaseEntity {
     @Column(name = "unit_price_at_order", nullable = false, precision = 15, scale = 2)
     private BigDecimal unitPriceAtOrder;
 
-    public OrderItem(Order order, Product product, Integer quantity, BigDecimal unitPriceAtOrder) {
+    public OrderItem(Order order, ProductVariant productVariant, Integer quantity, BigDecimal unitPriceAtOrder) {
         this.order = order;
-        this.product = product;
+        this.productVariant = productVariant;
         this.quantity = quantity;
         this.unitPriceAtOrder = unitPriceAtOrder;
         order.getItems().add(this);

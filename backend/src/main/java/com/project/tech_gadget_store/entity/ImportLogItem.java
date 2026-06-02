@@ -23,8 +23,8 @@ public class ImportLogItem extends BaseEntity {
     private ImportLog importLog;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "product_variant_id", nullable = false)
+    private ProductVariant productVariant;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
@@ -32,16 +32,16 @@ public class ImportLogItem extends BaseEntity {
     @Column(name = "import_price", nullable = false)
     private Double importPrice;
 
-    public ImportLogItem(ImportLog importLog, Product product, Integer quantity, Double importPrice) {
+    public ImportLogItem(ImportLog importLog, ProductVariant productVariant, Integer quantity, Double importPrice) {
         this.importLog = importLog;
-        this.product = product;
+        this.productVariant = productVariant;
         this.quantity = quantity;
         this.importPrice = importPrice;
         if (!importLog.getItems().contains(this)) {
             importLog.getItems().add(this);
         }
-        if (!product.getImportLogItems().contains(this)) {
-            product.getImportLogItems().add(this);
+        if (!productVariant.getImportLogItems().contains(this)) {
+            productVariant.getImportLogItems().add(this);
         }
     }
 }

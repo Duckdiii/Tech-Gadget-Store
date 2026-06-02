@@ -16,7 +16,7 @@ public class ImportLogItemResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String importLogId;
-    private String productId;
+    private String productVariantId;
     private Integer quantity;
     private Double importPrice;
 }
