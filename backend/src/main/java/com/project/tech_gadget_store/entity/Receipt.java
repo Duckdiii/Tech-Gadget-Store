@@ -1,7 +1,9 @@
 package com.project.tech_gadget_store.entity;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "receipts", uniqueConstraints = @UniqueConstraint(name = "uk_receipts_receipt_code", columnNames = "receipt_code"))
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Receipt extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
@@ -27,5 +30,11 @@ public class Receipt extends BaseEntity {
         if (issuedAt == null) {
             issuedAt = LocalDateTime.now();
         }
+    }
+
+    public Receipt(ExportLog exportLog, String fileUrl) {
+        this.exportLog = exportLog;
+        this.fileUrl = fileUrl;
+        exportLog.setReceipt(this);
     }
 }

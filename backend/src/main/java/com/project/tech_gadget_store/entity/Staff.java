@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -10,7 +12,8 @@ import java.time.LocalDate;
 @Table(name = "staffs")
 @DiscriminatorValue("STAFF")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Staff extends User {
 
     @Column(name = "staff_code", nullable = false, unique = true, length = 40)
@@ -24,4 +27,10 @@ public class Staff extends User {
 
     @OneToOne(mappedBy = "performedBy", fetch = FetchType.LAZY)
     private ExportLog exportLog;
+
+    public Staff(String fullName, String phone, String address, String staffCode, LocalDate hireDate) {
+        super(fullName, phone, address);
+        this.staffCode = staffCode;
+        this.hireDate = hireDate;
+    }
 }

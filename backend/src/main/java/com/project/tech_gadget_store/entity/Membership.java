@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.MembershipTier;
 import jakarta.persistence.*;
 
@@ -17,7 +19,8 @@ import java.util.List;
         uniqueConstraints = @UniqueConstraint(name = "uk_memberships_tier", columnNames = "tier")
 )
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Membership extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
@@ -44,5 +47,12 @@ public class Membership extends BaseEntity {
     @PreUpdate
     protected void updateTimestamp() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public Membership(MembershipTier tier, MembershipBenefit benefit, BigDecimal minSpending, BigDecimal maxSpending) {
+        this.tier = tier;
+        this.benefit = benefit;
+        this.minSpending = minSpending;
+        this.maxSpending = maxSpending;
     }
 }

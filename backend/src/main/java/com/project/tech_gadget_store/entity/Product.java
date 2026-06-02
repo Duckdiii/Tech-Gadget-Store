@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.ProductStatus;
 import jakarta.persistence.*;
 
@@ -13,7 +15,8 @@ import java.util.List;
 @Entity
 @Table(name = "products")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 150)
@@ -55,4 +58,31 @@ public class Product extends BaseEntity {
 
     @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
     private List<ImportLog> importLogs = new ArrayList<>();
+
+    public Product(String name, String description, BigDecimal price, Brand brand, Category category, Inventory inventory) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.brand = brand;
+        this.category = category;
+        this.inventory = inventory;
+        brand.getProducts().add(this);
+        category.getProducts().add(this);
+        inventory.getProducts().add(this);
+    }
+
+    public void addImage(ProductImage image) {
+        images.add(image);
+        image.setProduct(this);
+    }
+
+    public void addVariant(ProductVariant variant) {
+        variants.add(variant);
+        variant.setProduct(this);
+    }
+
+    public void assignSpec(PhoneSpecification spec) {
+        this.spec = spec;
+        spec.setProduct(this);
+    }
 }

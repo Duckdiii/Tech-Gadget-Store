@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import jakarta.persistence.*;
 
@@ -17,7 +19,8 @@ import java.time.LocalDateTime;
         )
 )
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductSubscription extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -47,5 +50,13 @@ public class ProductSubscription extends BaseEntity {
         if (subscribedAt == null) {
             subscribedAt = LocalDateTime.now();
         }
+    }
+
+    public ProductSubscription(Product product, Customer customer, Notification notification) {
+        this.product = product;
+        this.customer = customer;
+        this.notification = notification;
+        customer.getProductSubscriptions().add(this);
+        notification.getProductSubscriptions().add(this);
     }
 }

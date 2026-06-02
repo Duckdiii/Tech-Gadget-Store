@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.OrderStatus;
 import jakarta.persistence.*;
 
@@ -13,7 +15,8 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseEntity {
 
     @Column(name = "transaction_id", unique = true, length = 100)
@@ -51,5 +54,26 @@ public class Order extends BaseEntity {
         if (orderDate == null) {
             orderDate = LocalDateTime.now();
         }
+    }
+
+    public Order(Customer customer, PaymentMethod selectedPaymentMethod) {
+        this.customer = customer;
+        this.selectedPaymentMethod = selectedPaymentMethod;
+        customer.getOrders().add(this);
+    }
+
+    public void addItem(OrderItem item) {
+        items.add(item);
+        item.setOrder(this);
+    }
+
+    public void addPaymentLog(PaymentLog paymentLog) {
+        paymentLogs.add(paymentLog);
+        paymentLog.setOrder(this);
+    }
+
+    public void assignInvoice(Invoice invoice) {
+        this.invoice = invoice;
+        invoice.setOrder(this);
     }
 }

@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.ProductStatus;
 import jakarta.persistence.*;
 
@@ -14,7 +16,8 @@ import java.math.BigDecimal;
         uniqueConstraints = @UniqueConstraint(name = "uk_product_variants_sku", columnNames = "sku")
 )
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductVariant extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -39,4 +42,14 @@ public class ProductVariant extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private ProductStatus status = ProductStatus.AVAILABLE;
+
+    public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price, String sku) {
+        this.product = product;
+        this.ramGb = ramGb;
+        this.storageGb = storageGb;
+        this.color = color;
+        this.price = price;
+        this.sku = sku;
+        product.getVariants().add(this);
+    }
 }

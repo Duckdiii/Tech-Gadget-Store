@@ -1,14 +1,17 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "phone_specifications")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PhoneSpecification extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
@@ -53,4 +56,9 @@ public class PhoneSpecification extends BaseEntity {
 
     @Column(name = "cpu_description", columnDefinition = "TEXT")
     private String cpuDescription;
+
+    public PhoneSpecification(Product product) {
+        this.product = product;
+        product.setSpec(this);
+    }
 }

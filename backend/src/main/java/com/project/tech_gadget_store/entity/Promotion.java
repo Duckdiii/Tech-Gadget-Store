@@ -1,7 +1,9 @@
 package com.project.tech_gadget_store.entity;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -12,6 +14,7 @@ import java.util.List;
 @Table(name = "promotions", uniqueConstraints = @UniqueConstraint(name = "uk_promotions_code", columnNames = "code"))
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Promotion extends BaseEntity {
 
         @Column(name = "code", nullable = false, length = 80)
@@ -35,4 +38,17 @@ public class Promotion extends BaseEntity {
         @ManyToMany
         @JoinTable(name = "promotion_products", joinColumns = @JoinColumn(name = "promotion_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
         private List<Product> products = new ArrayList<>();
+
+        public Promotion(String code, String name, Double discountPercent, LocalDateTime startAt, LocalDateTime endAt) {
+                this.code = code;
+                this.name = name;
+                this.discountPercent = discountPercent;
+                this.startAt = startAt;
+                this.endAt = endAt;
+        }
+
+        public void addProduct(Product product) {
+                products.add(product);
+                product.getPromotions().add(this);
+        }
 }

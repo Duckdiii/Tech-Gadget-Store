@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.AuditAction;
 import jakarta.persistence.*;
 
@@ -11,7 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "audit_logs")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AuditLog extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,5 +42,13 @@ public class AuditLog extends BaseEntity {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
+    }
+
+    public AuditLog(User actor, AuditAction action, String targetType, String targetId, String description) {
+        this.actor = actor;
+        this.action = action;
+        this.targetType = targetType;
+        this.targetId = targetId;
+        this.description = description;
     }
 }

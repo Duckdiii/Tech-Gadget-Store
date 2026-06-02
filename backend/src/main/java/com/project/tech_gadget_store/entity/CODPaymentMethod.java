@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -14,7 +16,8 @@ import java.math.BigDecimal;
 @Table(name = "cod_payment_methods")
 @DiscriminatorValue("COD")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CODPaymentMethod extends PaymentMethod {
 
     @Column(name = "max_amount", precision = 15, scale = 2)
@@ -22,4 +25,10 @@ public class CODPaymentMethod extends PaymentMethod {
 
     @Column(name = "service_fee", precision = 15, scale = 2)
     private BigDecimal serviceFee;
+
+    public CODPaymentMethod(String name, String description, BigDecimal maxAmount, BigDecimal serviceFee) {
+        super(name, description);
+        this.maxAmount = maxAmount;
+        this.serviceFee = serviceFee;
+    }
 }

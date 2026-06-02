@@ -1,7 +1,9 @@
 package com.project.tech_gadget_store.entity;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.AccountStatus;
 import jakarta.persistence.*;
 
@@ -16,6 +18,7 @@ import java.util.List;
 })
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Account extends BaseEntity {
 
         @Column(name = "email", nullable = false, length = 150)
@@ -37,4 +40,11 @@ public class Account extends BaseEntity {
 
         @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
         private List<LoginLog> loginLogs = new ArrayList<>();
+
+        public Account(String email, String password, User user) {
+                this.email = email;
+                this.password = password;
+                this.user = user;
+                user.setAccount(this);
+        }
 }

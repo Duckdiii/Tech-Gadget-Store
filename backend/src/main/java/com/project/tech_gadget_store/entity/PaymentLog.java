@@ -1,15 +1,18 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.PaymentLogStatus;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "payment_logs")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentLog extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -22,4 +25,11 @@ public class PaymentLog extends BaseEntity {
 
     @Column(name = "failure_reason", columnDefinition = "TEXT")
     private String failureReason;
+
+    public PaymentLog(Order order, PaymentLogStatus status, String failureReason) {
+        this.order = order;
+        this.status = status;
+        this.failureReason = failureReason;
+        order.getPaymentLogs().add(this);
+    }
 }

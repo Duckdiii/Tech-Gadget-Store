@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -11,7 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "invoices")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Invoice extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
@@ -35,5 +38,13 @@ public class Invoice extends BaseEntity {
         if (issuedAt == null) {
             issuedAt = LocalDateTime.now();
         }
+    }
+
+    public Invoice(Order order, BigDecimal vatAmount, BigDecimal discountAmount, BigDecimal finalAmount) {
+        this.order = order;
+        this.vatAmount = vatAmount;
+        this.discountAmount = discountAmount;
+        this.finalAmount = finalAmount;
+        order.setInvoice(this);
     }
 }

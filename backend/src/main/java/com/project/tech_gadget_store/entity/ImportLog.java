@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.ImportAndExportStatus;
 import jakarta.persistence.*;
 
@@ -14,7 +16,8 @@ import java.util.List;
 @Entity
 @Table(name = "import_logs")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ImportLog extends BaseEntity {
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -50,5 +53,17 @@ public class ImportLog extends BaseEntity {
         if (importedAt == null) {
             importedAt = LocalDateTime.now();
         }
+    }
+
+    public ImportLog(Staff performedBy, Integer quantity, BigDecimal importPrice) {
+        this.performedBy = performedBy;
+        this.quantity = quantity;
+        this.importPrice = importPrice;
+        performedBy.setImportLog(this);
+    }
+
+    public void addProduct(Product product) {
+        products.add(product);
+        product.getImportLogs().add(this);
     }
 }

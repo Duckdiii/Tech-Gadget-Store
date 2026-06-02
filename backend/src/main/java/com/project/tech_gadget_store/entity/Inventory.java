@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -12,7 +14,8 @@ import java.util.List;
 @Entity
 @Table(name = "inventories")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Inventory extends BaseEntity {
 
     @OneToMany(mappedBy = "inventory", fetch = FetchType.LAZY)
@@ -31,5 +34,15 @@ public class Inventory extends BaseEntity {
     @PreUpdate
     protected void updateLastUpdatedAt() {
         lastUpdatedAt = LocalDateTime.now();
+    }
+
+    public Inventory(Integer quantity, Integer reservedQuantity) {
+        this.quantity = quantity;
+        this.reservedQuantity = reservedQuantity;
+    }
+
+    public void addProduct(Product product) {
+        products.add(product);
+        product.setInventory(this);
     }
 }

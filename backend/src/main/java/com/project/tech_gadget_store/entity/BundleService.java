@@ -1,7 +1,9 @@
 package com.project.tech_gadget_store.entity;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.BundleServiceType;
 import jakarta.persistence.*;
 
@@ -13,6 +15,7 @@ import java.math.BigDecimal;
 @Table(name = "bundle_services")
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BundleService extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 120)
@@ -35,8 +38,15 @@ public class BundleService extends BaseEntity {
     private Boolean active = true;
 
     @ManyToMany(mappedBy = "bundleServices")
-    private List<CartItem> cartItems;
+    private List<CartItem> cartItems = new ArrayList<>();
 
     @ManyToMany(mappedBy = "bundleServices")
-    private List<OrderItem> orderItems;
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    public BundleService(String name, BundleServiceType type, BigDecimal price, Integer durationMonths) {
+        this.name = name;
+        this.type = type;
+        this.price = price;
+        this.durationMonths = durationMonths;
+    }
 }

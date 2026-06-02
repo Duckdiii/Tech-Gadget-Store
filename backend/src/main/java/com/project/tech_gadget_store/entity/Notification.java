@@ -1,7 +1,9 @@
 package com.project.tech_gadget_store.entity;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.NotificationChannel;
 import com.project.tech_gadget_store.entity.enums.NotificationStatus;
 import com.project.tech_gadget_store.entity.enums.NotificationType;
@@ -15,6 +17,7 @@ import java.util.List;
 @Table(name = "notifications")
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseEntity {
 
     @Column(name = "title", nullable = false, length = 150)
@@ -58,5 +61,17 @@ public class Notification extends BaseEntity {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
+    }
+
+    public Notification(String title, NotificationType type, List<NotificationChannel> channels, String message) {
+        this.title = title;
+        this.type = type;
+        this.channels = new ArrayList<>(channels);
+        this.message = message;
+    }
+
+    public void addProductSubscription(ProductSubscription productSubscription) {
+        productSubscriptions.add(productSubscription);
+        productSubscription.setNotification(this);
     }
 }

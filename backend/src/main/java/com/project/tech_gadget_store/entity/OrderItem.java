@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -13,6 +15,7 @@ import java.util.List;
 @Table(name = "order_items")
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItem extends BaseEntity {
 
     private static final int MAX_BUNDLE_SERVICES = 2;
@@ -46,4 +49,20 @@ public class OrderItem extends BaseEntity {
 
     @Column(name = "unit_price_at_order", nullable = false, precision = 15, scale = 2)
     private BigDecimal unitPriceAtOrder;
+
+    public OrderItem(Order order, Product product, Integer quantity, BigDecimal unitPriceAtOrder) {
+        this.order = order;
+        this.product = product;
+        this.quantity = quantity;
+        this.unitPriceAtOrder = unitPriceAtOrder;
+        order.getItems().add(this);
+    }
+
+    public void addBundleService(BundleService bundleService) {
+        if (bundleServices.size() >= MAX_BUNDLE_SERVICES) {
+            throw new IllegalStateException("OrderItem chi duoc toi da 2 bundle services");
+        }
+        bundleServices.add(bundleService);
+        bundleService.getOrderItems().add(this);
+    }
 }

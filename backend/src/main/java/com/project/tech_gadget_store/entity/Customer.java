@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +13,8 @@ import java.util.List;
 @Table(name = "customers")
 @DiscriminatorValue("CUSTOMER")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Customer extends User {
 
     @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -22,4 +25,8 @@ public class Customer extends User {
 
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     private List<ProductSubscription> productSubscriptions = new ArrayList<>();
+
+    public Customer(String fullName, String phone, String address) {
+        super(fullName, phone, address);
+    }
 }

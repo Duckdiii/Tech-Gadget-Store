@@ -1,8 +1,9 @@
 package com.project.tech_gadget_store.entity;
 
-
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,14 +12,20 @@ import jakarta.persistence.*;
 @DiscriminatorColumn(name = "payment_type")
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class PaymentMethod extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 100)
-    private String name;
+    protected String name;
 
     @Column(name = "enabled", nullable = false)
-    private Boolean enabled = true;
+    protected Boolean enabled = true;
 
     @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    protected String description;
+
+    protected PaymentMethod(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 }

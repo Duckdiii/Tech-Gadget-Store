@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -11,6 +13,11 @@ import jakarta.persistence.Table;
 @Table(name = "managers")
 @DiscriminatorValue("MANAGER")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Manager extends User {
+
+    public Manager(String fullName, String phone, String address) {
+        super(fullName, phone, address);
+    }
 }

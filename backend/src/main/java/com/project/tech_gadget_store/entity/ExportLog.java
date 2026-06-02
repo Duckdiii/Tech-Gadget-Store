@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.ImportAndExportStatus;
 import jakarta.persistence.*;
 
@@ -11,7 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "export_logs")
 @Getter
-@Setter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExportLog extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -43,5 +46,13 @@ public class ExportLog extends BaseEntity {
         if (exportedAt == null) {
             exportedAt = LocalDateTime.now();
         }
+    }
+
+    public ExportLog(Product product, Integer quantity, Staff performedBy, String reason) {
+        this.product = product;
+        this.quantity = quantity;
+        this.performedBy = performedBy;
+        this.reason = reason;
+        performedBy.setExportLog(this);
     }
 }
