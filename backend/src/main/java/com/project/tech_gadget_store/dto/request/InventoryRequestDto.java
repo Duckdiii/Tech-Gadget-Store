@@ -13,7 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class InventoryRequestDto {
 
-    private String productId;
+    private String productVariantId;
     private Integer quantity;
     private Integer reservedQuantity;
 }

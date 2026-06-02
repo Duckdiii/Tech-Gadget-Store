@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 public class Inventory extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false, unique = true)
-    private Product product;
+    @JoinColumn(name = "product_variant_id", nullable = false, unique = true)
+    private ProductVariant productVariant;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity = 0;
@@ -35,10 +35,10 @@ public class Inventory extends BaseEntity {
         lastUpdatedAt = LocalDateTime.now();
     }
 
-    public Inventory(Product product, Integer quantity, Integer reservedQuantity) {
-        this.product = product;
+    public Inventory(ProductVariant productVariant, Integer quantity, Integer reservedQuantity) {
+        this.productVariant = productVariant;
         this.quantity = quantity;
         this.reservedQuantity = reservedQuantity;
-        product.setInventory(this);
+        productVariant.setInventory(this);
     }
 }

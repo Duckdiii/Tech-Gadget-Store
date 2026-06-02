@@ -24,4 +24,5 @@ public class ProductVariantResponseDto {
     private BigDecimal price;
     private String sku;
     private ProductStatus status;
+    private String inventoryId;
 }

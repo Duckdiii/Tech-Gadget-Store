@@ -49,9 +49,6 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariant> variants = new ArrayList<>();
 
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Inventory inventory;
-
     @ManyToMany(mappedBy = "products")
     private List<Promotion> promotions = new ArrayList<>();
 
@@ -86,8 +83,4 @@ public class Product extends BaseEntity {
         spec.setProduct(this);
     }
 
-    public void assignInventory(Inventory inventory) {
-        this.inventory = inventory;
-        inventory.setProduct(this);
-    }
 }

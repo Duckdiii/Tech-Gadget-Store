@@ -15,7 +15,7 @@ public class InventoryResponseDto {
     private String id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String productId;
+    private String productVariantId;
     private Integer quantity;
     private Integer reservedQuantity;
     private LocalDateTime lastUpdatedAt;

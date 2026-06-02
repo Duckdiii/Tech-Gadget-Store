@@ -43,6 +43,9 @@ public class ProductVariant extends BaseEntity {
     @Column(name = "status", nullable = false, length = 30)
     private ProductStatus status = ProductStatus.AVAILABLE;
 
+    @OneToOne(mappedBy = "productVariant", fetch = FetchType.LAZY)
+    private Inventory inventory;
+
     public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price, String sku) {
         this.product = product;
         this.ramGb = ramGb;
@@ -51,5 +54,10 @@ public class ProductVariant extends BaseEntity {
         this.price = price;
         this.sku = sku;
         product.getVariants().add(this);
+    }
+
+    public void assignInventory(Inventory inventory) {
+        this.inventory = inventory;
+        inventory.setProductVariant(this);
     }
 }
