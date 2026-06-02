@@ -17,7 +17,7 @@ public class CartItemResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String cartId;
-    private String productId;
+    private String productVariantId;
     private Integer quantity;
     private Boolean selectedForCheckout;
     private List<String> bundleServicesIds;

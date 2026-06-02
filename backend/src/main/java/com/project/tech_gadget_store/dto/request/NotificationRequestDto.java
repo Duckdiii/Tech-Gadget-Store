@@ -21,6 +21,7 @@ public class NotificationRequestDto {
     private String title;
     private NotificationType type;
     private List<NotificationChannel> channels;
+    private String customerId;
     private String message;
     private NotificationStatus status;
     private LocalDateTime sentAt;

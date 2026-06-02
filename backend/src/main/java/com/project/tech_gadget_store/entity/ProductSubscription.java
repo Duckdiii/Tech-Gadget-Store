@@ -41,10 +41,6 @@ public class ProductSubscription extends BaseEntity {
     @Column(name = "unsubscribed_at")
     private LocalDateTime unsubscribedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "notification_id", nullable = false)
-    private Notification notification;
-
     @PrePersist
     protected void prePersistProductSubscription() {
         if (subscribedAt == null) {
@@ -52,11 +48,9 @@ public class ProductSubscription extends BaseEntity {
         }
     }
 
-    public ProductSubscription(Product product, Customer customer, Notification notification) {
+    public ProductSubscription(Product product, Customer customer) {
         this.product = product;
         this.customer = customer;
-        this.notification = notification;
         customer.getProductSubscriptions().add(this);
-        notification.getProductSubscriptions().add(this);
     }
 }

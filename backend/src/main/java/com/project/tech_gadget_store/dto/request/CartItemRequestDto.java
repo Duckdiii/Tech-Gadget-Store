@@ -15,7 +15,7 @@ import lombok.Setter;
 public class CartItemRequestDto {
 
     private String cartId;
-    private String productId;
+    private String productVariantId;
     private Integer quantity;
     private Boolean selectedForCheckout;
     private List<String> bundleServicesIds;

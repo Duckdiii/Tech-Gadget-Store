@@ -20,5 +20,4 @@ public class ProductSubscriptionRequestDto {
     private SubscriptionStatus status;
     private LocalDateTime subscribedAt;
     private LocalDateTime unsubscribedAt;
-    private String notificationId;
 }

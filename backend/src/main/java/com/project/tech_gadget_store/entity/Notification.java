@@ -37,8 +37,9 @@ public class Notification extends BaseEntity {
     @Column(name = "channel", nullable = false, length = 30)
     private List<NotificationChannel> channels = new ArrayList<>();
 
-    @OneToMany(mappedBy = "notification", fetch = FetchType.LAZY)
-    private List<ProductSubscription> productSubscriptions = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
@@ -53,15 +54,15 @@ public class Notification extends BaseEntity {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
-    public Notification(String title, NotificationType type, List<NotificationChannel> channels, String message) {
+    public Notification(Customer customer, String title, NotificationType type, List<NotificationChannel> channels, String message) {
+        this.customer = customer;
         this.title = title;
         this.type = type;
         this.channels = new ArrayList<>(channels);
         this.message = message;
+        if (customer != null) {
+            customer.getNotifications().add(this);
+        }
     }
 
-    public void addProductSubscription(ProductSubscription productSubscription) {
-        productSubscriptions.add(productSubscription);
-        productSubscription.setNotification(this);
-    }
 }

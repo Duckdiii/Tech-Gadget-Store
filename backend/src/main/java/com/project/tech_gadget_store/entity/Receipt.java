@@ -9,7 +9,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "receipts", uniqueConstraints = @UniqueConstraint(name = "uk_receipts_receipt_code", columnNames = "receipt_code"))
+@Table(name = "receipts")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

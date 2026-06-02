@@ -30,6 +30,9 @@ public class Customer extends User {
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     private List<ProductSubscription> productSubscriptions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    private List<Notification> notifications = new ArrayList<>();
+
     public Customer(String fullName, String phone, String address) {
         super(fullName, phone, address);
     }
@@ -38,5 +41,10 @@ public class Customer extends User {
         super(fullName, phone, address);
         this.membership = membership;
         membership.getCustomers().add(this);
+    }
+
+    public void addNotification(Notification notification) {
+        notifications.add(notification);
+        notification.setCustomer(this);
     }
 }

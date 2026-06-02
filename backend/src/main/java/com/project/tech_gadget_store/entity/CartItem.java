@@ -10,8 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "cart_items", uniqueConstraints = @UniqueConstraint(name = "uk_cart_items_cart_product", columnNames = {
-                "cart_id", "product_id" }))
+@Table(name = "cart_items")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,8 +23,8 @@ public class CartItem extends BaseEntity {
         private Cart cart;
 
         @ManyToOne(fetch = FetchType.LAZY, optional = false)
-        @JoinColumn(name = "product_id", nullable = false)
-        private Product product;
+        @JoinColumn(name = "product_variant_id", nullable = false)
+        private ProductVariant productVariant;
 
         @Column(name = "quantity", nullable = false)
         private Integer quantity = 1;
@@ -37,9 +36,9 @@ public class CartItem extends BaseEntity {
         @JoinTable(name = "cart_item_bundle_services", joinColumns = @JoinColumn(name = "cart_item_id"), inverseJoinColumns = @JoinColumn(name = "bundle_service_id"))
         private List<BundleService> bundleServices = new ArrayList<>();
 
-        public CartItem(Cart cart, Product product, Integer quantity) {
+        public CartItem(Cart cart, ProductVariant productVariant, Integer quantity) {
                 this.cart = cart;
-                this.product = product;
+                this.productVariant = productVariant;
                 this.quantity = quantity;
                 cart.getItems().add(this);
         }
