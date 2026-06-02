@@ -47,21 +47,11 @@ public class Notification extends BaseEntity {
     @Column(name = "status", nullable = false, length = 30)
     private NotificationStatus status = NotificationStatus.PENDING;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
     @Column(name = "sent_at")
     private LocalDateTime sentAt;
 
     @Column(name = "read_at")
     private LocalDateTime readAt;
-
-    @PrePersist
-    protected void prePersistNotification() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-    }
 
     public Notification(String title, NotificationType type, List<NotificationChannel> channels, String message) {
         this.title = title;

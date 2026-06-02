@@ -9,7 +9,6 @@ import com.project.tech_gadget_store.entity.enums.MembershipTier;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,22 +36,18 @@ public class Membership extends BaseEntity {
     @Column(name = "max_spending", precision = 15, scale = 2)
     private BigDecimal maxSpending;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @OneToMany(mappedBy = "membership", fetch = FetchType.LAZY)
     private List<Customer> customers = new ArrayList<>();
-
-    @PrePersist
-    @PreUpdate
-    protected void updateTimestamp() {
-        updatedAt = LocalDateTime.now();
-    }
 
     public Membership(MembershipTier tier, MembershipBenefit benefit, BigDecimal minSpending, BigDecimal maxSpending) {
         this.tier = tier;
         this.benefit = benefit;
         this.minSpending = minSpending;
         this.maxSpending = maxSpending;
+    }
+
+    public void addCustomer(Customer customer) {
+        customers.add(customer);
+        customer.setMembership(this);
     }
 }

@@ -21,5 +21,4 @@ public class ProductRequestDto {
     private ProductStatus status;
     private String brandId;
     private String categoryId;
-    private String inventoryId;
 }

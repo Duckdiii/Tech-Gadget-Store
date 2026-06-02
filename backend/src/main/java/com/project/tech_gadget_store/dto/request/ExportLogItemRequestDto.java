@@ -11,9 +11,8 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryRequestDto {
+public class ExportLogItemRequestDto {
 
     private String productId;
     private Integer quantity;
-    private Integer reservedQuantity;
 }

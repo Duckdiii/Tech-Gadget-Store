@@ -49,26 +49,26 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariant> variants = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "inventory_id", nullable = false)
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Inventory inventory;
 
     @ManyToMany(mappedBy = "products")
     private List<Promotion> promotions = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
-    private List<ImportLog> importLogs = new ArrayList<>();
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ImportLogItem> importLogItems = new ArrayList<>();
 
-    public Product(String name, String description, BigDecimal price, Brand brand, Category category, Inventory inventory) {
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ExportLogItem> exportLogItems = new ArrayList<>();
+
+    public Product(String name, String description, BigDecimal price, Brand brand, Category category) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.brand = brand;
         this.category = category;
-        this.inventory = inventory;
         brand.getProducts().add(this);
         category.getProducts().add(this);
-        inventory.getProducts().add(this);
     }
 
     public void addImage(ProductImage image) {
@@ -84,5 +84,10 @@ public class Product extends BaseEntity {
     public void assignSpec(PhoneSpecification spec) {
         this.spec = spec;
         spec.setProduct(this);
+    }
+
+    public void assignInventory(Inventory inventory) {
+        this.inventory = inventory;
+        inventory.setProduct(this);
     }
 }

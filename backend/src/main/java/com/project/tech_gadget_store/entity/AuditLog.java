@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.AuditAction;
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "audit_logs")
 @Getter
@@ -33,16 +31,6 @@ public class AuditLog extends BaseEntity {
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void prePersistAuditLog() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-    }
 
     public AuditLog(User actor, AuditAction action, String targetType, String targetId, String description) {
         this.actor = actor;

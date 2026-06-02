@@ -1,7 +1,6 @@
 package com.project.tech_gadget_store.dto.response;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,16 +10,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerResponseDto {
+public class ImportLogItemResponseDto {
 
     private String id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String fullName;
-    private String phone;
-    private String address;
-    private String membershipId;
-    private String cartId;
-    private List<String> ordersIds;
-    private List<String> productSubscriptionsIds;
+    private String importLogId;
+    private String productId;
+    private Integer quantity;
+    private Double importPrice;
 }

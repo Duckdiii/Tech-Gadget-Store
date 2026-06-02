@@ -29,5 +29,6 @@ public class ProductResponseDto {
     private List<String> variantsIds;
     private String inventoryId;
     private List<String> promotionsIds;
-    private List<String> importLogsIds;
+    private List<String> importLogItemIds;
+    private List<String> exportLogItemIds;
 }

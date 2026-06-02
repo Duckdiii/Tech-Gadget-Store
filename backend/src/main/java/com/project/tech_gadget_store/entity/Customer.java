@@ -17,6 +17,10 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Customer extends User {
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "membership_id")
+    private Membership membership;
+
     @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Cart cart;
 
@@ -28,5 +32,11 @@ public class Customer extends User {
 
     public Customer(String fullName, String phone, String address) {
         super(fullName, phone, address);
+    }
+
+    public Customer(String fullName, String phone, String address, Membership membership) {
+        super(fullName, phone, address);
+        this.membership = membership;
+        membership.getCustomers().add(this);
     }
 }

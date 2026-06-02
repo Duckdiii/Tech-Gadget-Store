@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "inventories")
@@ -18,8 +16,9 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Inventory extends BaseEntity {
 
-    @OneToMany(mappedBy = "inventory", fetch = FetchType.LAZY)
-    private List<Product> products = new ArrayList<>();
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false, unique = true)
+    private Product product;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity = 0;
@@ -36,13 +35,10 @@ public class Inventory extends BaseEntity {
         lastUpdatedAt = LocalDateTime.now();
     }
 
-    public Inventory(Integer quantity, Integer reservedQuantity) {
+    public Inventory(Product product, Integer quantity, Integer reservedQuantity) {
+        this.product = product;
         this.quantity = quantity;
         this.reservedQuantity = reservedQuantity;
-    }
-
-    public void addProduct(Product product) {
-        products.add(product);
         product.setInventory(this);
     }
 }

@@ -9,6 +9,8 @@ import com.project.tech_gadget_store.entity.enums.ImportAndExportStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "export_logs")
@@ -17,12 +19,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExportLog extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
-
-    @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    @OneToMany(mappedBy = "exportLog", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ExportLogItem> items = new ArrayList<>();
 
     @Column(name = "exported_at", nullable = false)
     private LocalDateTime exportedAt;
@@ -34,8 +32,8 @@ public class ExportLog extends BaseEntity {
     @Column(name = "status", nullable = false, length = 30)
     private ImportAndExportStatus status = ImportAndExportStatus.PENDING;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "performed_by", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "performed_by", nullable = false)
     private Staff performedBy;
 
     @OneToOne(mappedBy = "exportLog", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -48,11 +46,19 @@ public class ExportLog extends BaseEntity {
         }
     }
 
-    public ExportLog(Product product, Integer quantity, Staff performedBy, String reason) {
-        this.product = product;
-        this.quantity = quantity;
+    public ExportLog(Staff performedBy, String reason) {
         this.performedBy = performedBy;
         this.reason = reason;
-        performedBy.setExportLog(this);
+        performedBy.getExportLogs().add(this);
+    }
+
+    public void addItem(ExportLogItem item) {
+        if (!items.contains(item)) {
+            items.add(item);
+        }
+        item.setExportLog(this);
+        if (!item.getProduct().getExportLogItems().contains(item)) {
+            item.getProduct().getExportLogItems().add(item);
+        }
     }
 }
