@@ -25,5 +25,4 @@ public class BundleServiceResponseDto {
     private Integer durationMonths;
     private Boolean active;
     private List<String> cartItemsIds;
-    private List<String> orderItemsIds;
 }

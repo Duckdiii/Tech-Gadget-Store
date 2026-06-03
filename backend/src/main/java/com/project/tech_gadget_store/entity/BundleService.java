@@ -40,9 +40,6 @@ public class BundleService extends BaseEntity {
     @ManyToMany(mappedBy = "bundleServices")
     private List<CartItem> cartItems = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "bundleServices")
-    private List<OrderItem> orderItems = new ArrayList<>();
-
     public BundleService(String name, BundleServiceType type, BigDecimal price, Integer durationMonths) {
         this.name = name;
         this.type = type;

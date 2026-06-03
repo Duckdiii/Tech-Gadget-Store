@@ -10,7 +10,6 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,12 +30,17 @@ public class Cart extends BaseEntity {
     private List<CartItem> items = new ArrayList<>();
 
     public Cart(Customer customer) {
-        this.customer = Objects.requireNonNull(customer, "customer must not be null");
+        if (customer == null) {
+            throw new IllegalArgumentException("customer must not be null");
+        }
+        this.customer = customer;
         customer.setCart(this);
     }
 
     public void addItem(CartItem item) {
-        Objects.requireNonNull(item, "item must not be null");
+        if (item == null) {
+            throw new IllegalArgumentException("item must not be null");
+        }
         if (item.getCart() != null && item.getCart() != this) {
             item.getCart().getItems().remove(item);
         }
@@ -47,7 +51,9 @@ public class Cart extends BaseEntity {
     }
 
     public void addItem(ProductVariant variant, int quantity) {
-        Objects.requireNonNull(variant, "variant must not be null");
+        if (variant == null) {
+            throw new IllegalArgumentException("variant must not be null");
+        }
         validatePositiveQuantity(quantity);
 
         CartItem existingItem = findSimpleItemByVariant(variant);

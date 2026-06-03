@@ -27,9 +27,8 @@ public class PaymentLog extends BaseEntity {
     private String failureReason;
 
     public PaymentLog(Order order, PaymentLogStatus status, String failureReason) {
-        this.order = order;
         this.status = status;
         this.failureReason = failureReason;
-        order.getPaymentLogs().add(this);
+        order.addPaymentLog(this);
     }
 }

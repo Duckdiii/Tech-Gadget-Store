@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,11 +31,7 @@ public class OrderItem extends BaseEntity {
     private Integer quantity;
 
     @ManyToMany
-    @JoinTable(
-            name = "order_item_bundle_services",
-            joinColumns = @JoinColumn(name = "order_item_id"),
-            inverseJoinColumns = @JoinColumn(name = "bundle_service_id")
-    )
+    @JoinTable(name = "order_item_bundle_services", joinColumns = @JoinColumn(name = "order_item_id"), inverseJoinColumns = @JoinColumn(name = "bundle_service_id"))
     private List<BundleService> bundleServices = new ArrayList<>();
 
     @PrePersist
@@ -51,18 +46,63 @@ public class OrderItem extends BaseEntity {
     private BigDecimal unitPriceAtOrder;
 
     public OrderItem(Order order, ProductVariant productVariant, Integer quantity, BigDecimal unitPriceAtOrder) {
-        this.order = order;
         this.productVariant = productVariant;
         this.quantity = quantity;
         this.unitPriceAtOrder = unitPriceAtOrder;
-        order.getItems().add(this);
+        order.addItem(this);
     }
 
-    public void addBundleService(BundleService bundleService) {
+    // --------------------------------------------------------------------------------------------------------------------------------
+    public BigDecimal calculateSubtotal() {
+        if (unitPriceAtOrder == null) {
+            throw new IllegalStateException("unitPriceAtOrder must not be null");
+        }
+        if (quantity == null) {
+            throw new IllegalStateException("quantity must not be null");
+        }
+        return unitPriceAtOrder.multiply(BigDecimal.valueOf(quantity));
+    }
+
+    public BigDecimal calculateBundleServiceTotal() {
+        BigDecimal total = BigDecimal.ZERO;
+        for (BundleService service : bundleServices) {
+            if (service == null) {
+                throw new IllegalStateException("bundle service must not be null");
+            }
+            if (service.getPrice() == null) {
+                throw new IllegalStateException("bundle service price must not be null");
+            }
+            total = total.add(service.getPrice());
+        }
+        return total.multiply(BigDecimal.valueOf(quantity == null ? 0 : quantity));
+    }
+
+    public BigDecimal calculateTotal() {
+        return calculateSubtotal().add(calculateBundleServiceTotal());
+    }
+    // --------------------------------------------------------------------------------------------------------------------------------
+
+    public void addBundleService(BundleService service) {
+        if (service == null) {
+            throw new IllegalArgumentException("service must not be null");
+        }
+        if (bundleServices.contains(service)) {
+            return;
+        }
         if (bundleServices.size() >= MAX_BUNDLE_SERVICES) {
             throw new IllegalStateException("OrderItem chi duoc toi da 2 bundle services");
         }
-        bundleServices.add(bundleService);
-        bundleService.getOrderItems().add(this);
+        bundleServices.add(service);
+    }
+
+    public void removeBundleService(BundleService service) {
+        if (service == null) {
+            return;
+        }
+        bundleServices.remove(service);
+    }
+
+    public boolean hasBundleService(BundleService service) {
+        return service != null && bundleServices.contains(service);
     }
 }

@@ -10,7 +10,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,18 +40,30 @@ public class InventoryItem extends BaseEntity {
     private LocalDateTime lastUpdatedAt;
 
     public InventoryItem(Inventory inventory, ProductVariant productVariant, Integer quantity, Integer reservedQuantity) {
-        this.quantity = Objects.requireNonNull(quantity, "quantity must not be null");
-        this.reservedQuantity = Objects.requireNonNull(reservedQuantity, "reservedQuantity must not be null");
+        if (quantity == null) {
+            throw new IllegalArgumentException("quantity must not be null");
+        }
+        if (reservedQuantity == null) {
+            throw new IllegalArgumentException("reservedQuantity must not be null");
+        }
+        this.quantity = quantity;
+        this.reservedQuantity = reservedQuantity;
         inventory.addItem(this);
         productVariant.assignInventoryItem(this);
     }
 
     public void changeQuantity(Integer quantity) {
-        adjustQuantity(Objects.requireNonNull(quantity, "quantity must not be null"));
+        if (quantity == null) {
+            throw new IllegalArgumentException("quantity must not be null");
+        }
+        adjustQuantity(quantity);
     }
 
     public void changeReservedQuantity(Integer reservedQuantity) {
-        int newReservedQuantity = Objects.requireNonNull(reservedQuantity, "reservedQuantity must not be null");
+        if (reservedQuantity == null) {
+            throw new IllegalArgumentException("reservedQuantity must not be null");
+        }
+        int newReservedQuantity = reservedQuantity;
         if (newReservedQuantity < 0) {
             throw new IllegalArgumentException("reservedQuantity must not be negative");
         }

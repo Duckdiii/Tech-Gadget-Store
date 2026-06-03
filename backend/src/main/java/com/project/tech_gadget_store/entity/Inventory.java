@@ -7,7 +7,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,17 +29,25 @@ public class Inventory extends BaseEntity {
     private List<InventoryItem> items = new ArrayList<>();
 
     public Inventory(String name, String location) {
-        this.name = Objects.requireNonNull(name, "name must not be null");
+        if (name == null) {
+            throw new IllegalArgumentException("name must not be null");
+        }
+        this.name = name;
         this.location = location;
     }
 
     public void changeInfo(String name, String location) {
-        this.name = Objects.requireNonNull(name, "name must not be null");
+        if (name == null) {
+            throw new IllegalArgumentException("name must not be null");
+        }
+        this.name = name;
         this.location = location;
     }
 
     public void addItem(InventoryItem item) {
-        Objects.requireNonNull(item, "item must not be null");
+        if (item == null) {
+            throw new IllegalArgumentException("item must not be null");
+        }
         if (item.getInventory() != null && item.getInventory() != this) {
             item.getInventory().getItems().remove(item);
         }
@@ -80,17 +87,31 @@ public class Inventory extends BaseEntity {
     }
 
     public int getQuantity() {
-        return items.stream()
-                .map(InventoryItem::getQuantity)
-                .filter(Objects::nonNull)
-                .reduce(0, Integer::sum);
+        int totalQuantity = 0;
+        for (InventoryItem item : items) {
+            if (item == null) {
+                throw new IllegalStateException("inventory item must not be null");
+            }
+            if (item.getQuantity() == null) {
+                throw new IllegalStateException("inventory item quantity must not be null");
+            }
+            totalQuantity += item.getQuantity();
+        }
+        return totalQuantity;
     }
 
     public int getReservedQuantity() {
-        return items.stream()
-                .map(InventoryItem::getReservedQuantity)
-                .filter(Objects::nonNull)
-                .reduce(0, Integer::sum);
+        int totalReservedQuantity = 0;
+        for (InventoryItem item : items) {
+            if (item == null) {
+                throw new IllegalStateException("inventory item must not be null");
+            }
+            if (item.getReservedQuantity() == null) {
+                throw new IllegalStateException("inventory item reservedQuantity must not be null");
+            }
+            totalReservedQuantity += item.getReservedQuantity();
+        }
+        return totalReservedQuantity;
     }
 
     public int getAvailableQuantity() {

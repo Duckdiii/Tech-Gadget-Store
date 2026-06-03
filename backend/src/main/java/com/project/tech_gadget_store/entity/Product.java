@@ -15,9 +15,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -64,17 +62,31 @@ public class Product extends BaseEntity {
     private List<Promotion> promotions = new ArrayList<>();
 
     public Product(String name, String description, BigDecimal price, Brand brand, Category category) {
-        this.name = Objects.requireNonNull(name, "name must not be null");
+        if (name == null) {
+            throw new IllegalArgumentException("name must not be null");
+        }
+        if (price == null) {
+            throw new IllegalArgumentException("price must not be null");
+        }
+        if (brand == null) {
+            throw new IllegalArgumentException("brand must not be null");
+        }
+        if (category == null) {
+            throw new IllegalArgumentException("category must not be null");
+        }
+        this.name = name;
         this.description = description;
-        this.price = Objects.requireNonNull(price, "price must not be null");
-        this.brand = Objects.requireNonNull(brand, "brand must not be null");
-        this.category = Objects.requireNonNull(category, "category must not be null");
+        this.price = price;
+        this.brand = brand;
+        this.category = category;
         brand.getProducts().add(this);
         category.getProducts().add(this);
     }
 
     public void addVariant(ProductVariant variant) {
-        Objects.requireNonNull(variant, "variant must not be null");
+        if (variant == null) {
+            throw new IllegalArgumentException("variant must not be null");
+        }
         if (variant.getProduct() != null && variant.getProduct() != this) {
             variant.getProduct().getVariants().remove(variant);
         }
@@ -94,7 +106,9 @@ public class Product extends BaseEntity {
     }
 
     public void addImage(ProductImage image) {
-        Objects.requireNonNull(image, "image must not be null");
+        if (image == null) {
+            throw new IllegalArgumentException("image must not be null");
+        }
         if (image.getProduct() != null && image.getProduct() != this) {
             image.getProduct().getImages().remove(image);
         }
@@ -140,13 +154,22 @@ public class Product extends BaseEntity {
     }
 
     public void changeBasicInfo(String name, String description, BigDecimal price) {
-        this.name = Objects.requireNonNull(name, "name must not be null");
+        if (name == null) {
+            throw new IllegalArgumentException("name must not be null");
+        }
+        if (price == null) {
+            throw new IllegalArgumentException("price must not be null");
+        }
+        this.name = name;
         this.description = description;
-        this.price = Objects.requireNonNull(price, "price must not be null");
+        this.price = price;
     }
 
     public void changeStatus(ProductStatus status) {
-        this.status = Objects.requireNonNull(status, "status must not be null");
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
+        this.status = status;
     }
 
     public boolean isAvailable() {
@@ -154,19 +177,35 @@ public class Product extends BaseEntity {
     }
 
     public BigDecimal getMinVariantPrice() {
-        return variants.stream()
-                .map(ProductVariant::getPrice)
-                .filter(Objects::nonNull)
-                .min(Comparator.naturalOrder())
-                .orElse(null);
+        BigDecimal minPrice = null;
+        for (ProductVariant variant : variants) {
+            if (variant == null) {
+                throw new IllegalStateException("product variant must not be null");
+            }
+            if (variant.getPrice() == null) {
+                throw new IllegalStateException("product variant price must not be null");
+            }
+            if (minPrice == null || variant.getPrice().compareTo(minPrice) < 0) {
+                minPrice = variant.getPrice();
+            }
+        }
+        return minPrice;
     }
 
     public BigDecimal getMaxVariantPrice() {
-        return variants.stream()
-                .map(ProductVariant::getPrice)
-                .filter(Objects::nonNull)
-                .max(Comparator.naturalOrder())
-                .orElse(null);
+        BigDecimal maxPrice = null;
+        for (ProductVariant variant : variants) {
+            if (variant == null) {
+                throw new IllegalStateException("product variant must not be null");
+            }
+            if (variant.getPrice() == null) {
+                throw new IllegalStateException("product variant price must not be null");
+            }
+            if (maxPrice == null || variant.getPrice().compareTo(maxPrice) > 0) {
+                maxPrice = variant.getPrice();
+            }
+        }
+        return maxPrice;
     }
 
     public boolean hasAvailableVariant() {

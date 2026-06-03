@@ -41,10 +41,9 @@ public class Invoice extends BaseEntity {
     }
 
     public Invoice(Order order, BigDecimal vatAmount, BigDecimal discountAmount, BigDecimal finalAmount) {
-        this.order = order;
         this.vatAmount = vatAmount;
         this.discountAmount = discountAmount;
         this.finalAmount = finalAmount;
-        order.setInvoice(this);
+        order.assignInvoice(this);
     }
 }

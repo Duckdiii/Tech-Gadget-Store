@@ -15,7 +15,6 @@ import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -66,12 +65,17 @@ public class ProductVariant extends BaseEntity {
         this.storageGb = storageGb;
         this.color = color;
         this.price = price;
-        this.sku = Objects.requireNonNull(sku, "sku must not be null");
+        if (sku == null) {
+            throw new IllegalArgumentException("sku must not be null");
+        }
+        this.sku = sku;
         product.addVariant(this);
     }
 
     public void assignInventoryItem(InventoryItem inventoryItem) {
-        Objects.requireNonNull(inventoryItem, "inventoryItem must not be null");
+        if (inventoryItem == null) {
+            throw new IllegalArgumentException("inventoryItem must not be null");
+        }
         if (this.inventoryItem == inventoryItem) {
             inventoryItem.setProductVariant(this);
             return;
@@ -102,11 +106,17 @@ public class ProductVariant extends BaseEntity {
     }
 
     public void changePrice(BigDecimal newPrice) {
-        this.price = Objects.requireNonNull(newPrice, "newPrice must not be null");
+        if (newPrice == null) {
+            throw new IllegalArgumentException("newPrice must not be null");
+        }
+        this.price = newPrice;
     }
 
     public void changeStatus(ProductStatus status) {
-        this.status = Objects.requireNonNull(status, "status must not be null");
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
+        this.status = status;
     }
 
     public void markAvailable() {

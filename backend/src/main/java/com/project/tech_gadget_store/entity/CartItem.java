@@ -13,7 +13,6 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -51,8 +50,14 @@ public class CartItem extends BaseEntity {
         private List<BundleService> bundleServices = new ArrayList<>();
 
         public CartItem(Cart cart, ProductVariant productVariant, Integer quantity) {
-                this.productVariant = Objects.requireNonNull(productVariant, "productVariant must not be null");
-                changeQuantity(Objects.requireNonNull(quantity, "quantity must not be null"));
+                if (productVariant == null) {
+                        throw new IllegalArgumentException("productVariant must not be null");
+                }
+                if (quantity == null) {
+                        throw new IllegalArgumentException("quantity must not be null");
+                }
+                this.productVariant = productVariant;
+                changeQuantity(quantity);
                 cart.addItem(this);
         }
 
@@ -93,17 +98,25 @@ public class CartItem extends BaseEntity {
         }
 
         public BigDecimal calculateSubtotal() {
-                BigDecimal bundlePrice = bundleServices.stream()
-                                .map(BundleService::getPrice)
-                                .filter(Objects::nonNull)
-                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal bundlePrice = BigDecimal.ZERO;
+                for (BundleService service : bundleServices) {
+                        if (service == null) {
+                                throw new IllegalStateException("bundle service must not be null");
+                        }
+                        if (service.getPrice() == null) {
+                                throw new IllegalStateException("bundle service price must not be null");
+                        }
+                        bundlePrice = bundlePrice.add(service.getPrice());
+                }
                 return getUnitPrice()
                                 .add(bundlePrice)
                                 .multiply(BigDecimal.valueOf(quantity));
         }
 
         public void addBundleService(BundleService service) {
-                Objects.requireNonNull(service, "service must not be null");
+                if (service == null) {
+                        throw new IllegalArgumentException("service must not be null");
+                }
                 if (bundleServices.contains(service)) {
                         return;
                 }
