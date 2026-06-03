@@ -30,14 +30,37 @@ public class ExportLogItem extends BaseEntity {
     private Integer quantity;
 
     public ExportLogItem(ExportLog exportLog, ProductVariant productVariant, Integer quantity) {
-        this.exportLog = exportLog;
+        if (exportLog == null) {
+            throw new IllegalArgumentException("exportLog must not be null");
+        }
+        if (productVariant == null) {
+            throw new IllegalArgumentException("productVariant must not be null");
+        }
+        if (quantity == null) {
+            throw new IllegalArgumentException("quantity must not be null");
+        }
         this.productVariant = productVariant;
         this.quantity = quantity;
-        if (!exportLog.getItems().contains(this)) {
-            exportLog.getItems().add(this);
-        }
+        exportLog.addItem(this);
         if (!productVariant.getExportLogItems().contains(this)) {
             productVariant.getExportLogItems().add(this);
         }
+    }
+
+    public void changeQuantity(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("quantity must be positive");
+        }
+        this.quantity = quantity;
+    }
+
+    public String getProductName() {
+        if (productVariant == null) {
+            throw new IllegalStateException("productVariant must not be null");
+        }
+        if (productVariant.getProduct() == null) {
+            throw new IllegalStateException("product must not be null");
+        }
+        return productVariant.getProduct().getName();
     }
 }

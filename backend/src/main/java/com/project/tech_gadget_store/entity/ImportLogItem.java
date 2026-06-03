@@ -6,6 +6,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,18 +31,51 @@ public class ImportLogItem extends BaseEntity {
     private Integer quantity;
 
     @Column(name = "import_price", nullable = false)
-    private Double importPrice;
+    private BigDecimal importPrice;
 
-    public ImportLogItem(ImportLog importLog, ProductVariant productVariant, Integer quantity, Double importPrice) {
-        this.importLog = importLog;
+    public ImportLogItem(ImportLog importLog, ProductVariant productVariant, Integer quantity, BigDecimal importPrice) {
+        if (importLog == null) {
+            throw new IllegalArgumentException("importLog must not be null");
+        }
+        if (productVariant == null) {
+            throw new IllegalArgumentException("productVariant must not be null");
+        }
+        if (quantity == null) {
+            throw new IllegalArgumentException("quantity must not be null");
+        }
+        if (importPrice == null) {
+            throw new IllegalArgumentException("importPrice must not be null");
+        }
         this.productVariant = productVariant;
         this.quantity = quantity;
         this.importPrice = importPrice;
-        if (!importLog.getItems().contains(this)) {
-            importLog.getItems().add(this);
-        }
+        importLog.addItem(this);
         if (!productVariant.getImportLogItems().contains(this)) {
             productVariant.getImportLogItems().add(this);
         }
+    }
+
+    public BigDecimal calculateLineTotal() {
+        if (quantity == null) {
+            throw new IllegalStateException("quantity must not be null");
+        }
+        if (importPrice == null) {
+            throw new IllegalStateException("importPrice must not be null");
+        }
+        return importPrice.multiply(BigDecimal.valueOf(quantity));
+    }
+
+    public void changeQuantity(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("quantity must be positive");
+        }
+        this.quantity = quantity;
+    }
+
+    public void changeImportPrice(BigDecimal importPrice) {
+        if (importPrice == null) {
+            throw new IllegalArgumentException("importPrice must not be null");
+        }
+        this.importPrice = importPrice;
     }
 }

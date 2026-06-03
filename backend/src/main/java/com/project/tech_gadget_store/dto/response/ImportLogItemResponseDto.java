@@ -1,5 +1,6 @@
 package com.project.tech_gadget_store.dto.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,5 +19,5 @@ public class ImportLogItemResponseDto {
     private String importLogId;
     private String productVariantId;
     private Integer quantity;
-    private Double importPrice;
+    private BigDecimal importPrice;
 }

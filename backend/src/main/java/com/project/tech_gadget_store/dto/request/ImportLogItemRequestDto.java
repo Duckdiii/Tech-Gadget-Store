@@ -1,5 +1,6 @@
 package com.project.tech_gadget_store.dto.request;
 
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,5 +16,5 @@ public class ImportLogItemRequestDto {
 
     private String productVariantId;
     private Integer quantity;
-    private Double importPrice;
+    private BigDecimal importPrice;
 }

@@ -33,8 +33,10 @@ public class Receipt extends BaseEntity {
     }
 
     public Receipt(ExportLog exportLog, String fileUrl) {
-        this.exportLog = exportLog;
+        if (exportLog == null) {
+            throw new IllegalArgumentException("exportLog must not be null");
+        }
         this.fileUrl = fileUrl;
-        exportLog.setReceipt(this);
+        exportLog.assignReceipt(this);
     }
 }
