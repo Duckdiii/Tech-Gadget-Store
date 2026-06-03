@@ -1,23 +1,32 @@
 package com.project.tech_gadget_store.entity;
 
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.ProductStatus;
-import jakarta.persistence.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "products")
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
@@ -55,11 +64,11 @@ public class Product extends BaseEntity {
     private List<Promotion> promotions = new ArrayList<>();
 
     public Product(String name, String description, BigDecimal price, Brand brand, Category category) {
-        this.name = name;
+        this.name = Objects.requireNonNull(name, "name must not be null");
         this.description = description;
-        this.price = price;
-        this.brand = brand;
-        this.category = category;
+        this.price = Objects.requireNonNull(price, "price must not be null");
+        this.brand = Objects.requireNonNull(brand, "brand must not be null");
+        this.category = Objects.requireNonNull(category, "category must not be null");
         brand.getProducts().add(this);
         category.getProducts().add(this);
     }
@@ -162,6 +171,6 @@ public class Product extends BaseEntity {
 
     public boolean hasAvailableVariant() {
         return variants.stream()
-                .anyMatch(variant -> ProductStatus.AVAILABLE.equals(variant.getStatus()));
+                .anyMatch(variant -> variant.isAvailable() && variant.hasEnoughStock(1));
     }
 }

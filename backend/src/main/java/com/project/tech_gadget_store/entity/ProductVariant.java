@@ -1,24 +1,30 @@
 package com.project.tech_gadget_store.entity;
 
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.ProductStatus;
-import jakarta.persistence.*;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(
-        name = "product_variants",
-        uniqueConstraints = @UniqueConstraint(name = "uk_product_variants_sku", columnNames = "sku")
-)
+@Table(name = "product_variants", uniqueConstraints = @UniqueConstraint(name = "uk_product_variants_sku", columnNames = "sku"))
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductVariant extends BaseEntity {
 
@@ -46,7 +52,7 @@ public class ProductVariant extends BaseEntity {
     private ProductStatus status = ProductStatus.AVAILABLE;
 
     @OneToOne(mappedBy = "productVariant", fetch = FetchType.LAZY)
-    private Inventory inventory;
+    private InventoryItem inventoryItem;
 
     @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
     private List<ImportLogItem> importLogItems = new ArrayList<>();
@@ -54,17 +60,124 @@ public class ProductVariant extends BaseEntity {
     @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
     private List<ExportLogItem> exportLogItems = new ArrayList<>();
 
-    public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price, String sku) {
+    public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price,
+            String sku) {
         this.ramGb = ramGb;
         this.storageGb = storageGb;
         this.color = color;
         this.price = price;
-        this.sku = sku;
+        this.sku = Objects.requireNonNull(sku, "sku must not be null");
         product.addVariant(this);
     }
 
-    public void assignInventory(Inventory inventory) {
-        this.inventory = inventory;
-        inventory.setProductVariant(this);
+    public void assignInventoryItem(InventoryItem inventoryItem) {
+        Objects.requireNonNull(inventoryItem, "inventoryItem must not be null");
+        if (this.inventoryItem == inventoryItem) {
+            inventoryItem.setProductVariant(this);
+            return;
+        }
+        removeInventoryItem();
+        if (inventoryItem.getProductVariant() != null && inventoryItem.getProductVariant() != this) {
+            inventoryItem.getProductVariant().removeInventoryItem();
+        }
+        this.inventoryItem = inventoryItem;
+        inventoryItem.setProductVariant(this);
+        if (inventoryItem.getInventory() != null
+                && !inventoryItem.getInventory().getItems().contains(inventoryItem)) {
+            inventoryItem.getInventory().getItems().add(inventoryItem);
+        }
+    }
+
+    public void removeInventoryItem() {
+        if (inventoryItem == null) {
+            return;
+        }
+        InventoryItem currentItem = inventoryItem;
+        inventoryItem = null;
+        currentItem.setProductVariant(null);
+        if (currentItem.getInventory() != null) {
+            currentItem.getInventory().getItems().remove(currentItem);
+            currentItem.setInventory(null);
+        }
+    }
+
+    public void changePrice(BigDecimal newPrice) {
+        this.price = Objects.requireNonNull(newPrice, "newPrice must not be null");
+    }
+
+    public void changeStatus(ProductStatus status) {
+        this.status = Objects.requireNonNull(status, "status must not be null");
+    }
+
+    public void markAvailable() {
+        status = ProductStatus.AVAILABLE;
+    }
+
+    public void markUnavailable() {
+        status = ProductStatus.OUT_OF_STOCK;
+    }
+
+    public boolean isAvailable() {
+        return ProductStatus.AVAILABLE.equals(status);
+    }
+
+    public Integer getQuantity() {
+        return inventoryItem == null ? 0 : inventoryItem.getQuantity();
+    }
+
+    public Integer getReservedQuantity() {
+        return inventoryItem == null ? 0 : inventoryItem.getReservedQuantity();
+    }
+
+    public Integer getAvailableQuantity() {
+        return inventoryItem == null ? 0 : inventoryItem.getAvailableQuantity();
+    }
+
+    public boolean hasEnoughStock(int requestedQuantity) {
+        return inventoryItem != null && inventoryItem.hasEnoughStock(requestedQuantity);
+    }
+
+    public Integer getQuantityIn(Inventory inventory) {
+        return isStoredIn(inventory) ? getQuantity() : 0;
+    }
+
+    public Integer getReservedQuantityIn(Inventory inventory) {
+        return isStoredIn(inventory) ? getReservedQuantity() : 0;
+    }
+
+    public Integer getAvailableQuantityIn(Inventory inventory) {
+        return isStoredIn(inventory) ? getAvailableQuantity() : 0;
+    }
+
+    public boolean hasEnoughStockIn(Inventory inventory, int requestedQuantity) {
+        return isStoredIn(inventory) && hasEnoughStock(requestedQuantity);
+    }
+
+    public boolean isStoredIn(Inventory inventory) {
+        return inventory != null && inventoryItem != null && inventoryItem.getInventory() == inventory;
+    }
+
+    public String getDisplayName() {
+        StringBuilder displayName = new StringBuilder();
+        if (product != null && product.getName() != null && !product.getName().isBlank()) {
+            displayName.append(product.getName());
+        } else {
+            displayName.append(sku);
+        }
+
+        List<String> attributes = new ArrayList<>();
+        if (ramGb != null) {
+            attributes.add(ramGb + "GB RAM");
+        }
+        if (storageGb != null) {
+            attributes.add(storageGb + "GB Storage");
+        }
+        if (color != null && !color.isBlank()) {
+            attributes.add(color);
+        }
+        if (!attributes.isEmpty()) {
+            displayName.append(" - ").append(String.join(" / ", attributes));
+        }
+        return displayName.toString();
     }
 }

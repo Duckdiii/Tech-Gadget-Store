@@ -1,7 +1,6 @@
 package com.project.tech_gadget_store.dto.response;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,12 +10,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryResponseDto {
+public class InventoryItemResponseDto {
 
     private String id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String name;
-    private String location;
-    private List<String> itemsIds;
+    private String inventoryId;
+    private String productVariantId;
+    private Integer quantity;
+    private Integer reservedQuantity;
+    private LocalDateTime lastUpdatedAt;
 }

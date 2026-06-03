@@ -25,7 +25,7 @@ public class ProductVariantResponseDto {
     private BigDecimal price;
     private String sku;
     private ProductStatus status;
-    private String inventoryId;
+    private String inventoryItemId;
     private List<String> importLogItemIds;
     private List<String> exportLogItemIds;
 }

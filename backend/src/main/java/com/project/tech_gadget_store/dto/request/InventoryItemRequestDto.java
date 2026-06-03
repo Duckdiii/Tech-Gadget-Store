@@ -11,8 +11,10 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryRequestDto {
+public class InventoryItemRequestDto {
 
-    private String name;
-    private String location;
+    private String inventoryId;
+    private String productVariantId;
+    private Integer quantity;
+    private Integer reservedQuantity;
 }
