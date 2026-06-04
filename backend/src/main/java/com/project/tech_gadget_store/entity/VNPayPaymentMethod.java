@@ -38,4 +38,34 @@ public class VNPayPaymentMethod extends PaymentMethod {
         this.returnUrl = returnUrl;
         this.hashSecret = hashSecret;
     }
+
+    public boolean isConfigured() {
+        return !isBlank(terminalCode)
+                && !isBlank(endpointUrl)
+                && !isBlank(returnUrl)
+                && !isBlank(hashSecret);
+    }
+
+    public void updateConfig(String terminalCode, String endpointUrl, String returnUrl, String hashSecret) {
+        if (isBlank(terminalCode)) {
+            throw new IllegalArgumentException("terminalCode must not be blank");
+        }
+        if (isBlank(endpointUrl)) {
+            throw new IllegalArgumentException("endpointUrl must not be blank");
+        }
+        if (isBlank(returnUrl)) {
+            throw new IllegalArgumentException("returnUrl must not be blank");
+        }
+        if (isBlank(hashSecret)) {
+            throw new IllegalArgumentException("hashSecret must not be blank");
+        }
+        this.terminalCode = terminalCode;
+        this.endpointUrl = endpointUrl;
+        this.returnUrl = returnUrl;
+        this.hashSecret = hashSecret;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
 }

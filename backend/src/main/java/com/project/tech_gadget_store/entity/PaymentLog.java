@@ -31,4 +31,22 @@ public class PaymentLog extends BaseEntity {
         this.failureReason = failureReason;
         order.addPaymentLog(this);
     }
+
+    public void markSuccess() {
+        status = PaymentLogStatus.SUCCESS;
+        failureReason = null;
+    }
+
+    public void markFailed(String reason) {
+        status = PaymentLogStatus.FAILED;
+        failureReason = reason;
+    }
+
+    public boolean isSuccess() {
+        return PaymentLogStatus.SUCCESS.equals(status);
+    }
+
+    public boolean isFailed() {
+        return PaymentLogStatus.FAILED.equals(status);
+    }
 }

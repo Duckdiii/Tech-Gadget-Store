@@ -28,4 +28,20 @@ public abstract class PaymentMethod extends BaseEntity {
         this.name = name;
         this.description = description;
     }
+
+    public void enable() {
+        enabled = true;
+    }
+
+    public void disable() {
+        enabled = false;
+    }
+
+    public boolean isEnabled() {
+        return Boolean.TRUE.equals(enabled);
+    }
+
+    public void changeDescription(String description) {
+        this.description = description;
+    }
 }

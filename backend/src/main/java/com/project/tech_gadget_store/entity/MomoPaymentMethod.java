@@ -42,4 +42,40 @@ public class MomoPaymentMethod extends PaymentMethod {
         this.returnUrl = returnUrl;
         this.notifyUrl = notifyUrl;
     }
+
+    public boolean isConfigured() {
+        return !isBlank(partnerCode)
+                && !isBlank(merchantId)
+                && !isBlank(endpointUrl)
+                && !isBlank(returnUrl)
+                && !isBlank(notifyUrl);
+    }
+
+    public void updateConfig(String partnerCode, String merchantId, String endpointUrl, String returnUrl,
+            String notifyUrl) {
+        if (isBlank(partnerCode)) {
+            throw new IllegalArgumentException("partnerCode must not be blank");
+        }
+        if (isBlank(merchantId)) {
+            throw new IllegalArgumentException("merchantId must not be blank");
+        }
+        if (isBlank(endpointUrl)) {
+            throw new IllegalArgumentException("endpointUrl must not be blank");
+        }
+        if (isBlank(returnUrl)) {
+            throw new IllegalArgumentException("returnUrl must not be blank");
+        }
+        if (isBlank(notifyUrl)) {
+            throw new IllegalArgumentException("notifyUrl must not be blank");
+        }
+        this.partnerCode = partnerCode;
+        this.merchantId = merchantId;
+        this.endpointUrl = endpointUrl;
+        this.returnUrl = returnUrl;
+        this.notifyUrl = notifyUrl;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
 }
