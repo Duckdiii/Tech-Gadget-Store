@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +12,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "login_logs")
 @Getter
-@Setter
+@Setter
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LoginLog extends BaseEntity {
 
@@ -43,5 +43,34 @@ public class LoginLog extends BaseEntity {
         if (account != null) {
             account.getLoginLogs().add(this);
         }
+    }
+
+    public static LoginLog success(Account account) {
+        if (account == null) {
+            throw new IllegalArgumentException("account must not be null");
+        }
+        return new LoginLog(account, account.getEmail(), resolveRoleName(account), LoginStatus.SUCCESS);
+    }
+
+    private static String resolveRoleName(Account account) {
+        User user = account.getUser();
+        if (user instanceof Manager) {
+            return "MANAGER";
+        }
+        if (user instanceof Staff) {
+            return "STAFF";
+        }
+        if (user instanceof Customer) {
+            return "CUSTOMER";
+        }
+        return null;
+    }
+
+    public static LoginLog failure(String email, String reason) {
+        return new LoginLog(null, email, null, LoginStatus.FAILED);
+    }
+
+    public boolean isSuccess() {
+        return LoginStatus.SUCCESS.equals(loginStatus);
     }
 }

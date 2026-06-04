@@ -87,7 +87,7 @@ public class Account extends BaseEntity {
 
         public void recordLoginSuccess() {
                 lastLoginAt = LocalDateTime.now();
-                new LoginLog(this, email, null, LoginStatus.SUCCESS);
+                LoginLog.success(this);
         }
 
         public void recordLoginFailure() {
