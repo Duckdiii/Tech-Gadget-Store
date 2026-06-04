@@ -35,4 +35,34 @@ public class Staff extends User {
         this.staffCode = staffCode;
         this.hireDate = hireDate;
     }
+
+    public void addImportLog(ImportLog log) {
+        if (log == null) {
+            throw new IllegalArgumentException("log must not be null");
+        }
+        if (log.getPerformedBy() != null && log.getPerformedBy() != this) {
+            log.getPerformedBy().getImportLogs().remove(log);
+        }
+        if (!importLogs.contains(log)) {
+            importLogs.add(log);
+        }
+        log.setPerformedBy(this);
+    }
+
+    public void addExportLog(ExportLog log) {
+        if (log == null) {
+            throw new IllegalArgumentException("log must not be null");
+        }
+        if (log.getPerformedBy() != null && log.getPerformedBy() != this) {
+            log.getPerformedBy().getExportLogs().remove(log);
+        }
+        if (!exportLogs.contains(log)) {
+            exportLogs.add(log);
+        }
+        log.setPerformedBy(this);
+    }
+
+    public boolean canManageInventory() {
+        return true;
+    }
 }

@@ -49,6 +49,44 @@ public abstract class User extends BaseEntity {
         this.phone = phone;
     }
 
+    public void updateProfile(String fullName, String phone, String address) {
+        if (fullName == null || fullName.isBlank()) {
+            throw new IllegalArgumentException("fullName must not be blank");
+        }
+        this.fullName = fullName;
+        changePhone(phone);
+        changeAddress(address);
+    }
+
+    public void changePhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void changeAddress(String address) {
+        if (address == null || address.isBlank()) {
+            throw new IllegalArgumentException("address must not be blank");
+        }
+        if (defaultAddress == null) {
+            Address newDefaultAddress = new Address(this, address, null, null, null);
+            defaultAddress = newDefaultAddress;
+            return;
+        }
+        if (!addresses.contains(defaultAddress)) {
+            throw new IllegalStateException("defaultAddress does not belong to this user");
+        }
+        defaultAddress.setStreet(address);
+    }
+
+    public String getDisplayName() {
+        if (fullName != null && !fullName.isBlank()) {
+            return fullName;
+        }
+        if (account != null && account.getEmail() != null && !account.getEmail().isBlank()) {
+            return account.getEmail();
+        }
+        return getId();
+    }
+
     public void addAddress(Address address) {
         if (address == null) {
             throw new IllegalArgumentException("address must not be null");

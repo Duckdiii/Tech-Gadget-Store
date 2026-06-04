@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.AccountStatus;
+import com.project.tech_gadget_store.entity.enums.LoginStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -42,8 +43,71 @@ public class Account extends BaseEntity {
         private List<LoginLog> loginLogs = new ArrayList<>();
 
         public Account(String email, String password, User user) {
+                if (email == null || email.isBlank()) {
+                        throw new IllegalArgumentException("email must not be blank");
+                }
+                if (password == null || password.isBlank()) {
+                        throw new IllegalArgumentException("password must not be blank");
+                }
                 this.email = email;
                 this.password = password;
+                attachUser(user);
+        }
+
+        public void activate() {
+                status = AccountStatus.ACTIVE;
+        }
+
+        public void block() {
+                status = AccountStatus.BLOCKED;
+        }
+
+        public void lock() {
+                status = AccountStatus.LOCKED;
+        }
+
+        public void unlock() {
+                status = AccountStatus.ACTIVE;
+        }
+
+        public boolean isActive() {
+                return AccountStatus.ACTIVE.equals(status);
+        }
+
+        public boolean isBlocked() {
+                return AccountStatus.BLOCKED.equals(status);
+        }
+
+        public void changePassword(String encodedPassword) {
+                if (encodedPassword == null || encodedPassword.isBlank()) {
+                        throw new IllegalArgumentException("encodedPassword must not be blank");
+                }
+                password = encodedPassword;
+        }
+
+        public void recordLoginSuccess() {
+                lastLoginAt = LocalDateTime.now();
+                new LoginLog(this, email, null, LoginStatus.SUCCESS);
+        }
+
+        public void recordLoginFailure() {
+                new LoginLog(this, email, null, LoginStatus.FAILED);
+        }
+
+        public void attachUser(User user) {
+                if (user == null) {
+                        throw new IllegalArgumentException("user must not be null");
+                }
+                if (this.user == user) {
+                        user.setAccount(this);
+                        return;
+                }
+                if (this.user != null) {
+                        this.user.setAccount(null);
+                }
+                if (user.getAccount() != null && user.getAccount() != this) {
+                        user.getAccount().setUser(null);
+                }
                 this.user = user;
                 user.setAccount(this);
         }
