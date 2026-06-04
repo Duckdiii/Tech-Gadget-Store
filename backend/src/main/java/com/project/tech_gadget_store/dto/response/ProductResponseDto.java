@@ -28,4 +28,5 @@ public class ProductResponseDto {
     private String specId;
     private List<String> variantsIds;
     private List<String> promotionsIds;
+    private List<String> productSubscriptionsIds;
 }

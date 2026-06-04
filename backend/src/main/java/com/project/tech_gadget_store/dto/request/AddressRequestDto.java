@@ -11,8 +11,11 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRequestDto {
+public class AddressRequestDto {
 
-    private String fullName;
-    private String phone;
+    private String street;
+    private String ward;
+    private String district;
+    private String province;
+    private String userId;
 }

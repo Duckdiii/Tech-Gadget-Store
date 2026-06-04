@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +8,8 @@ import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
         )
 )
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductSubscription extends BaseEntity {
 
@@ -41,6 +42,9 @@ public class ProductSubscription extends BaseEntity {
     @Column(name = "unsubscribed_at")
     private LocalDateTime unsubscribedAt;
 
+    @OneToMany(mappedBy = "productSubscription", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
+
     @PrePersist
     protected void prePersistProductSubscription() {
         if (subscribedAt == null) {
@@ -49,8 +53,37 @@ public class ProductSubscription extends BaseEntity {
     }
 
     public ProductSubscription(Product product, Customer customer) {
+        if (product == null) {
+            throw new IllegalArgumentException("product must not be null");
+        }
+        if (customer == null) {
+            throw new IllegalArgumentException("customer must not be null");
+        }
         this.product = product;
         this.customer = customer;
         customer.getProductSubscriptions().add(this);
+        product.getProductSubscriptions().add(this);
+    }
+
+    public void addNotification(Notification notification) {
+        if (notification == null) {
+            throw new IllegalArgumentException("notification must not be null");
+        }
+        if (notification.getProductSubscription() != null && notification.getProductSubscription() != this) {
+            notification.getProductSubscription().getNotifications().remove(notification);
+        }
+        if (!notifications.contains(notification)) {
+            notifications.add(notification);
+        }
+        notification.setProductSubscription(this);
+    }
+
+    public void removeNotification(Notification notification) {
+        if (notification == null) {
+            return;
+        }
+        if (notifications.remove(notification)) {
+            notification.setProductSubscription(null);
+        }
     }
 }

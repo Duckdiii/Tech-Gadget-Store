@@ -27,19 +27,15 @@ public class Notification extends BaseEntity {
     @Column(name = "type", nullable = false, length = 40)
     private NotificationType type;
 
-    @ElementCollection(targetClass = NotificationChannel.class) // báo cho JPA đây là collection kiểu giá trị (enum),
-                                                                // không phải entity riêng
-    @CollectionTable(name = "notification_channels", joinColumns = @JoinColumn(name = "notification_id")) // tạo/đọc
-                                                                                                          // bảng phụ
-                                                                                                          // notification_channels
-
-    @Enumerated(EnumType.STRING) // lưu enum dạng chữ
+    @ElementCollection(targetClass = NotificationChannel.class)
+    @CollectionTable(name = "notification_channels", joinColumns = @JoinColumn(name = "notification_id"))
+    @Enumerated(EnumType.STRING)
     @Column(name = "channel", nullable = false, length = 30)
     private List<NotificationChannel> channels = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_subscription_id", nullable = false)
+    private ProductSubscription productSubscription;
 
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
@@ -54,15 +50,15 @@ public class Notification extends BaseEntity {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
-    public Notification(Customer customer, String title, NotificationType type, List<NotificationChannel> channels, String message) {
-        this.customer = customer;
+    public Notification(ProductSubscription productSubscription, String title, NotificationType type, List<NotificationChannel> channels, String message) {
+        if (productSubscription == null) {
+            throw new IllegalArgumentException("productSubscription must not be null");
+        }
+        this.productSubscription = productSubscription;
         this.title = title;
         this.type = type;
         this.channels = new ArrayList<>(channels);
         this.message = message;
-        if (customer != null) {
-            customer.getNotifications().add(this);
-        }
+        productSubscription.getNotifications().add(this);
     }
-
 }

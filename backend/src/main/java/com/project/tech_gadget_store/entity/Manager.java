@@ -13,11 +13,11 @@ import jakarta.persistence.Table;
 @Table(name = "managers")
 @DiscriminatorValue("MANAGER")
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Manager extends User {
 
-    public Manager(String fullName, String phone, String address) {
-        super(fullName, phone, address);
+    public Manager(String fullName, String phone) {
+        super(fullName, phone);
     }
 }

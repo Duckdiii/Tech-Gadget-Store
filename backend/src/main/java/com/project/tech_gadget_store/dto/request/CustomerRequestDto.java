@@ -15,6 +15,5 @@ public class CustomerRequestDto {
 
     private String fullName;
     private String phone;
-    private String address;
     private String membershipId;
 }

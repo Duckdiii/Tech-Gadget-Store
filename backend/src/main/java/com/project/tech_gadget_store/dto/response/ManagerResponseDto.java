@@ -1,6 +1,7 @@
 package com.project.tech_gadget_store.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,5 +18,6 @@ public class ManagerResponseDto {
     private LocalDateTime updatedAt;
     private String fullName;
     private String phone;
-    private String address;
+    private List<String> addressesIds;
+    private String defaultAddressId;
 }

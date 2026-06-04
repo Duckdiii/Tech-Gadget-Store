@@ -61,6 +61,9 @@ public class Product extends BaseEntity {
     @ManyToMany(mappedBy = "products")
     private List<Promotion> promotions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ProductSubscription> productSubscriptions = new ArrayList<>();
+
     public Product(String name, String description, BigDecimal price, Brand brand, Category category) {
         if (name == null) {
             throw new IllegalArgumentException("name must not be null");

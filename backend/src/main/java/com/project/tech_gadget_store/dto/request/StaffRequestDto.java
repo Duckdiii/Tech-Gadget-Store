@@ -16,7 +16,6 @@ public class StaffRequestDto {
 
     private String fullName;
     private String phone;
-    private String address;
     private String staffCode;
     private LocalDate hireDate;
 }

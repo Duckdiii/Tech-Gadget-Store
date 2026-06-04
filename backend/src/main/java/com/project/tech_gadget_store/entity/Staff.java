@@ -14,7 +14,7 @@ import java.util.List;
 @Table(name = "staffs")
 @DiscriminatorValue("STAFF")
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Staff extends User {
 
@@ -30,8 +30,8 @@ public class Staff extends User {
     @OneToMany(mappedBy = "performedBy", fetch = FetchType.LAZY)
     private List<ExportLog> exportLogs = new ArrayList<>();
 
-    public Staff(String fullName, String phone, String address, String staffCode, LocalDate hireDate) {
-        super(fullName, phone, address);
+    public Staff(String fullName, String phone, String staffCode, LocalDate hireDate) {
+        super(fullName, phone);
         this.staffCode = staffCode;
         this.hireDate = hireDate;
     }

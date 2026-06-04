@@ -13,7 +13,7 @@ import java.util.List;
 @Table(name = "customers")
 @DiscriminatorValue("CUSTOMER")
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Customer extends User {
 
@@ -30,21 +30,13 @@ public class Customer extends User {
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     private List<ProductSubscription> productSubscriptions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
-    private List<Notification> notifications = new ArrayList<>();
-
-    public Customer(String fullName, String phone, String address) {
-        super(fullName, phone, address);
+    public Customer(String fullName, String phone) {
+        super(fullName, phone);
     }
 
-    public Customer(String fullName, String phone, String address, Membership membership) {
-        super(fullName, phone, address);
+    public Customer(String fullName, String phone, Membership membership) {
+        super(fullName, phone);
         this.membership = membership;
         membership.getCustomers().add(this);
-    }
-
-    public void addNotification(Notification notification) {
-        notifications.add(notification);
-        notification.setCustomer(this);
     }
 }

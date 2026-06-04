@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.dto.response;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,9 +19,10 @@ public class StaffResponseDto {
     private LocalDateTime updatedAt;
     private String fullName;
     private String phone;
-    private String address;
     private String staffCode;
     private LocalDate hireDate;
     private String importLogId;
     private String exportLogId;
+    private List<String> addressesIds;
+    private String defaultAddressId;
 }

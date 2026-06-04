@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.dto.response;
 
 import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,4 +22,5 @@ public class ProductSubscriptionResponseDto {
     private SubscriptionStatus status;
     private LocalDateTime subscribedAt;
     private LocalDateTime unsubscribedAt;
+    private List<String> notificationsIds;
 }
