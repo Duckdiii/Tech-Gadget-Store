@@ -41,13 +41,60 @@ public class Membership extends BaseEntity {
 
     public Membership(MembershipTier tier, MembershipBenefit benefit, BigDecimal minSpending, BigDecimal maxSpending) {
         this.tier = tier;
+        assignBenefit(benefit);
+        changeSpendingRange(minSpending, maxSpending);
+    }
+
+    public void assignBenefit(MembershipBenefit benefit) {
+        if (benefit == null) {
+            throw new IllegalArgumentException("benefit must not be null");
+        }
         this.benefit = benefit;
-        this.minSpending = minSpending;
-        this.maxSpending = maxSpending;
+    }
+
+    public boolean isSpendingInRange(BigDecimal spending) {
+        if (spending == null) {
+            throw new IllegalArgumentException("spending must not be null");
+        }
+        if (minSpending != null && spending.compareTo(minSpending) < 0) {
+            return false;
+        }
+        return maxSpending == null || spending.compareTo(maxSpending) <= 0;
     }
 
     public void addCustomer(Customer customer) {
-        customers.add(customer);
+        if (customer == null) {
+            throw new IllegalArgumentException("customer must not be null");
+        }
+        if (customer.getMembership() != null && customer.getMembership() != this) {
+            customer.getMembership().getCustomers().remove(customer);
+        }
+        if (!customers.contains(customer)) {
+            customers.add(customer);
+        }
         customer.setMembership(this);
+    }
+
+    public void removeCustomer(Customer customer) {
+        if (customer == null) {
+            return;
+        }
+        if (customers.remove(customer)) {
+            customer.setMembership(null);
+        }
+    }
+
+    public void changeSpendingRange(BigDecimal min, BigDecimal max) {
+        if (min != null && min.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("min must not be negative");
+        }
+        if (max != null && max.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("max must not be negative");
+        }
+        if (min != null && max != null && min.compareTo(max) > 0) {
+            throw new IllegalArgumentException("min must not be greater than max");
+        }
+        minSpending = min;
+        maxSpending = max;
     }
 }
