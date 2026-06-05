@@ -6,9 +6,8 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "promotions", uniqueConstraints = @UniqueConstraint(name = "uk_promotions_code", columnNames = "code"))
@@ -35,20 +34,79 @@ public class Promotion extends BaseEntity {
         @Column(name = "active", nullable = false)
         private Boolean active = true;
 
-        @ManyToMany
-        @JoinTable(name = "promotion_products", joinColumns = @JoinColumn(name = "promotion_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
-        private List<Product> products = new ArrayList<>();
-
-        public Promotion(String code, String name, Double discountPercent, LocalDateTime startAt, LocalDateTime endAt) {
+        public Promotion(String code, String name, Double discountPercent, LocalDateTime startAt, LocalDateTime endAt,
+                        Product product) {
+                if (code == null || code.isBlank()) {
+                        throw new IllegalArgumentException("code must not be blank");
+                }
+                if (name == null || name.isBlank()) {
+                        throw new IllegalArgumentException("name must not be blank");
+                }
+                if (discountPercent == null) {
+                        throw new IllegalArgumentException("discountPercent must not be null");
+                }
+                if (discountPercent < 0 || discountPercent > 100) {
+                        throw new IllegalArgumentException("discountPercent must be between 0 and 100");
+                }
+                if (startAt == null) {
+                        throw new IllegalArgumentException("startAt must not be null");
+                }
+                if (endAt == null) {
+                        throw new IllegalArgumentException("endAt must not be null");
+                }
+                if (endAt.isBefore(startAt)) {
+                        throw new IllegalArgumentException("endAt must not be before startAt");
+                }
+                if (product == null) {
+                        throw new IllegalArgumentException("product must not be null");
+                }
                 this.code = code;
                 this.name = name;
                 this.discountPercent = discountPercent;
                 this.startAt = startAt;
                 this.endAt = endAt;
+                assignProduct(product);
         }
 
-        public void addProduct(Product product) {
-                products.add(product);
-                product.getPromotions().add(this);
+        public void assignProduct(Product product) {
+                if (product == null) {
+                        throw new IllegalArgumentException("product must not be null");
+                }
+                if (!product.getPromotions().contains(this)) {
+                        product.getPromotions().add(this);
+                }
+        }
+
+        public boolean isActiveNow() {
+                LocalDateTime now = LocalDateTime.now();
+                return Boolean.TRUE.equals(active)
+                                && (now.isEqual(startAt) || now.isAfter(startAt))
+                                && (now.isEqual(endAt) || now.isBefore(endAt));
+        }
+
+        public boolean canApplyTo(Product product) {
+                return product != null && isActiveNow() && product.getPromotions().contains(this);
+        }
+
+        public BigDecimal calculateDiscount(BigDecimal amount) {
+                if (amount == null) {
+                        throw new IllegalArgumentException("amount must not be null");
+                }
+                if (amount.compareTo(BigDecimal.ZERO) < 0) {
+                        throw new IllegalArgumentException("amount must not be negative");
+                }
+                if (discountPercent == null) {
+                        throw new IllegalStateException("discountPercent must not be null");
+                }
+                return amount.multiply(BigDecimal.valueOf(discountPercent))
+                                .divide(BigDecimal.valueOf(100));
+        }
+
+        public void activate() {
+                active = true;
+        }
+
+        public void deactivate() {
+                active = false;
         }
 }

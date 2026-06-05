@@ -8,7 +8,6 @@ import com.project.tech_gadget_store.entity.enums.AccountStatus;
 import com.project.tech_gadget_store.entity.enums.LoginStatus;
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,23 +31,15 @@ public class Account extends BaseEntity {
         @Column(name = "status", nullable = false, length = 30)
         private AccountStatus status = AccountStatus.ACTIVE;
 
-        @Column(name = "last_login_at")
-        private LocalDateTime lastLoginAt;
-
         @OneToOne(fetch = FetchType.LAZY, optional = false)
         @JoinColumn(name = "user_id", nullable = false, unique = true)
         private User user;
 
-        @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+        @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+        @JoinColumn(name = "account_id", nullable = false)
         private List<LoginLog> loginLogs = new ArrayList<>();
 
         public Account(String email, String password, User user) {
-                if (email == null || email.isBlank()) {
-                        throw new IllegalArgumentException("email must not be blank");
-                }
-                if (password == null || password.isBlank()) {
-                        throw new IllegalArgumentException("password must not be blank");
-                }
                 this.email = email;
                 this.password = password;
                 attachUser(user);
@@ -60,10 +51,6 @@ public class Account extends BaseEntity {
 
         public void block() {
                 status = AccountStatus.BLOCKED;
-        }
-
-        public void lock() {
-                status = AccountStatus.LOCKED;
         }
 
         public void unlock() {
@@ -86,12 +73,11 @@ public class Account extends BaseEntity {
         }
 
         public void recordLoginSuccess() {
-                lastLoginAt = LocalDateTime.now();
                 LoginLog.success(this);
         }
 
         public void recordLoginFailure() {
-                new LoginLog(this, email, null, LoginStatus.FAILED);
+                new LoginLog(this, email, null, LoginStatus.FAILED, null);
         }
 
         public void attachUser(User user) {

@@ -2,33 +2,18 @@ package com.project.tech_gadget_store.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "inventory_items")
+@Table(name = "item_inventories")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class InventoryItem extends BaseEntity {
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "inventory_id", nullable = false)
-    private Inventory inventory;
-
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_variant_id", nullable = false, unique = true)
-    private ProductVariant productVariant;
+public class ItemInventory extends BaseEntity {
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity = 0;
@@ -36,10 +21,7 @@ public class InventoryItem extends BaseEntity {
     @Column(name = "reserved_quantity", nullable = false)
     private Integer reservedQuantity = 0;
 
-    @Column(name = "last_updated_at")
-    private LocalDateTime lastUpdatedAt;
-
-    public InventoryItem(Inventory inventory, ProductVariant productVariant, Integer quantity, Integer reservedQuantity) {
+    public ItemInventory(Inventory inventory, ProductVariant productVariant, Integer quantity, Integer reservedQuantity) {
         if (quantity == null) {
             throw new IllegalArgumentException("quantity must not be null");
         }
@@ -49,7 +31,7 @@ public class InventoryItem extends BaseEntity {
         this.quantity = quantity;
         this.reservedQuantity = reservedQuantity;
         inventory.addItem(this);
-        productVariant.assignInventoryItem(this);
+        productVariant.addInventoryItem(this);
     }
 
     public void changeQuantity(Integer quantity) {
@@ -133,11 +115,5 @@ public class InventoryItem extends BaseEntity {
         if (amount <= 0) {
             throw new IllegalArgumentException("amount must be positive");
         }
-    }
-
-    @PrePersist
-    @PreUpdate
-    protected void updateLastUpdatedAt() {
-        lastUpdatedAt = LocalDateTime.now();
     }
 }

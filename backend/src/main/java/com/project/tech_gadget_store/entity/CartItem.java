@@ -5,8 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -28,10 +28,6 @@ public class CartItem extends BaseEntity {
         private static final int MAX_BUNDLE_SERVICES = 2;
 
         @ManyToOne(fetch = FetchType.LAZY, optional = false)
-        @JoinColumn(name = "cart_id", nullable = false)
-        private Cart cart;
-
-        @ManyToOne(fetch = FetchType.LAZY, optional = false)
         @JoinColumn(name = "product_variant_id", nullable = false)
         private ProductVariant productVariant;
 
@@ -39,23 +35,13 @@ public class CartItem extends BaseEntity {
         private Integer quantity = 1;
 
         @Column(name = "selected_for_checkout", nullable = false)
-        private Boolean selectedForCheckout = true;
+        private Boolean isSelectedForCheckout = true;
 
-        @ManyToMany
-        @JoinTable(
-                        name = "cart_item_bundle_services",
-                        joinColumns = @JoinColumn(name = "cart_item_id"),
-                        inverseJoinColumns = @JoinColumn(name = "bundle_service_id")
-        )
+        @OneToMany(fetch = FetchType.LAZY)
+        @JoinTable(name = "cart_item_bundle_services", joinColumns = @JoinColumn(name = "cart_item_id"), inverseJoinColumns = @JoinColumn(name = "bundle_service_id", unique = true))
         private List<BundleService> bundleServices = new ArrayList<>();
 
         public CartItem(Cart cart, ProductVariant productVariant, Integer quantity) {
-                if (productVariant == null) {
-                        throw new IllegalArgumentException("productVariant must not be null");
-                }
-                if (quantity == null) {
-                        throw new IllegalArgumentException("quantity must not be null");
-                }
                 this.productVariant = productVariant;
                 changeQuantity(quantity);
                 cart.addItem(this);
@@ -79,15 +65,15 @@ public class CartItem extends BaseEntity {
         }
 
         public void selectForCheckout() {
-                selectedForCheckout = true;
+                isSelectedForCheckout = true;
         }
 
         public void unselectForCheckout() {
-                selectedForCheckout = false;
+                isSelectedForCheckout = false;
         }
 
         public boolean isSelected() {
-                return Boolean.TRUE.equals(selectedForCheckout);
+                return Boolean.TRUE.equals(isSelectedForCheckout);
         }
 
         public BigDecimal getUnitPrice() {
@@ -124,18 +110,13 @@ public class CartItem extends BaseEntity {
                         throw new IllegalStateException("CartItem chi duoc toi da 2 bundle services");
                 }
                 bundleServices.add(service);
-                if (!service.getCartItems().contains(this)) {
-                        service.getCartItems().add(this);
-                }
         }
 
         public void removeBundleService(BundleService service) {
                 if (service == null) {
                         return;
                 }
-                if (bundleServices.remove(service)) {
-                        service.getCartItems().remove(this);
-                }
+                bundleServices.remove(service);
         }
 
         @PrePersist

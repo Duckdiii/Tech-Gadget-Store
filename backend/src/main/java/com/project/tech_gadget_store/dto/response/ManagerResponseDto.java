@@ -19,5 +19,4 @@ public class ManagerResponseDto {
     private String fullName;
     private String phone;
     private List<String> addressesIds;
-    private String defaultAddressId;
 }

@@ -20,7 +20,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ImportLog extends BaseEntity {
 
-    @OneToMany(mappedBy = "importLog", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "import_log_id", nullable = false)
     private List<ImportLogItem> items = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -56,45 +57,30 @@ public class ImportLog extends BaseEntity {
         if (item == null) {
             throw new IllegalArgumentException("item must not be null");
         }
-        if (item.getImportLog() != null && item.getImportLog() != this) {
-            item.getImportLog().getItems().remove(item);
-        }
         if (!items.contains(item)) {
             items.add(item);
-        }
-        item.setImportLog(this);
-        if (item.getProductVariant() != null && !item.getProductVariant().getImportLogItems().contains(item)) {
-            item.getProductVariant().getImportLogItems().add(item);
         }
     }
 
     public void removeItem(ImportLogItem item) {
-        if (item == null) {
-            return;
-        }
-        if (items.remove(item)) {
-            item.setImportLog(null);
-            if (item.getProductVariant() != null) {
-                item.getProductVariant().getImportLogItems().remove(item);
-            }
-        }
+        items.remove(item);
     }
 
     public void approve() {
-        status = ImportAndExportStatus.APPROVED;
+        status = ImportAndExportStatus.SUCCESS;
     }
 
     public void reject(String reason) {
-        status = ImportAndExportStatus.REJECTED;
+        status = ImportAndExportStatus.FAILURE;
         note = reason;
     }
 
     public void complete() {
-        status = ImportAndExportStatus.COMPLETED;
+        status = ImportAndExportStatus.SUCCESS;
     }
 
     public boolean isCompleted() {
-        return ImportAndExportStatus.COMPLETED.equals(status);
+        return ImportAndExportStatus.SUCCESS.equals(status);
     }
 
     public int calculateTotalQuantity() {

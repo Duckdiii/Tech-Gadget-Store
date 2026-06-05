@@ -20,5 +20,4 @@ public class UserResponseDto {
     private String phone;
     private String accountId;
     private List<String> addressesIds;
-    private String defaultAddressId;
 }

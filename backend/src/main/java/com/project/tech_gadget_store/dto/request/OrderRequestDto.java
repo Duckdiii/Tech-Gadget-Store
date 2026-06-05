@@ -15,8 +15,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class OrderRequestDto {
 
-    private String transactionId;
     private String customerId;
+    private String addressId;
     private String selectedPaymentMethodId;
     private LocalDateTime orderDate;
     private LocalDateTime paidAt;

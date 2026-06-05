@@ -17,10 +17,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LoginLog extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id")
-    private Account account;
-
     @Column(name = "email", nullable = false, length = 150)
     private String email;
 
@@ -34,22 +30,26 @@ public class LoginLog extends BaseEntity {
     @Column(name = "login_time", nullable = false)
     private LocalDateTime loginTime;
 
-    public LoginLog(Account account, String email, String roleName, LoginStatus loginStatus) {
-        this.account = account;
+    @Column(name = "ip_address", length = 45)
+    private String ipAddress;
+
+    public LoginLog(Account account, String email, String roleName, LoginStatus loginStatus, String ipAddress) {
+        if (account == null) {
+            throw new IllegalArgumentException("account must not be null");
+        }
         this.email = email;
         this.roleName = roleName;
         this.loginStatus = loginStatus;
+        this.ipAddress = ipAddress;
         this.loginTime = LocalDateTime.now();
-        if (account != null) {
-            account.getLoginLogs().add(this);
-        }
+        account.getLoginLogs().add(this);
     }
 
     public static LoginLog success(Account account) {
         if (account == null) {
             throw new IllegalArgumentException("account must not be null");
         }
-        return new LoginLog(account, account.getEmail(), resolveRoleName(account), LoginStatus.SUCCESS);
+        return new LoginLog(account, account.getEmail(), resolveRoleName(account), LoginStatus.SUCCESS, null);
     }
 
     private static String resolveRoleName(Account account) {
@@ -66,8 +66,11 @@ public class LoginLog extends BaseEntity {
         return null;
     }
 
-    public static LoginLog failure(String email, String reason) {
-        return new LoginLog(null, email, null, LoginStatus.FAILED);
+    public static LoginLog failure(Account account, String ipAddress) {
+        if (account == null) {
+            throw new IllegalArgumentException("account must not be null");
+        }
+        return new LoginLog(account, account.getEmail(), resolveRoleName(account), LoginStatus.FAILED, ipAddress);
     }
 
     public boolean isSuccess() {

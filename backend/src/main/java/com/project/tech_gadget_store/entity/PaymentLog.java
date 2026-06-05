@@ -7,17 +7,20 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.PaymentLogStatus;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "payment_logs")
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentLog extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    @Column(name = "transaction_code", nullable = false, unique = true, length = 100)
+    private String transactionCode;
+
+    @Column(name = "amount", nullable = false, precision = 15, scale = 2)
+    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 40)
@@ -26,7 +29,22 @@ public class PaymentLog extends BaseEntity {
     @Column(name = "failure_reason", columnDefinition = "TEXT")
     private String failureReason;
 
-    public PaymentLog(Order order, PaymentLogStatus status, String failureReason) {
+    public PaymentLog(Order order, String transactionCode, BigDecimal amount, PaymentLogStatus status,
+            String failureReason) {
+        if (order == null) {
+            throw new IllegalArgumentException("order must not be null");
+        }
+        if (transactionCode == null || transactionCode.isBlank()) {
+            throw new IllegalArgumentException("transactionCode must not be blank");
+        }
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("amount must not be negative");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
+        this.transactionCode = transactionCode;
+        this.amount = amount;
         this.status = status;
         this.failureReason = failureReason;
         order.addPaymentLog(this);

@@ -3,7 +3,6 @@ package com.project.tech_gadget_store.dto.response;
 import com.project.tech_gadget_store.entity.enums.BundleServiceType;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,5 +23,4 @@ public class BundleServiceResponseDto {
     private BigDecimal price;
     private Integer durationMonths;
     private Boolean active;
-    private List<String> cartItemsIds;
 }

@@ -1,10 +1,7 @@
 package com.project.tech_gadget_store.dto.response;
 
-import com.project.tech_gadget_store.entity.enums.NotificationChannel;
 import com.project.tech_gadget_store.entity.enums.NotificationStatus;
-import com.project.tech_gadget_store.entity.enums.NotificationType;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,8 +17,6 @@ public class NotificationResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String title;
-    private NotificationType type;
-    private List<NotificationChannel> channels;
     private String productSubscriptionId;
     private String message;
     private NotificationStatus status;

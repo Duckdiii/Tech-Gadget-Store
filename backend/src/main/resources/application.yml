@@ -1,6 +1,21 @@
 ﻿server:
   port: 8080 # Port để chạy API cục bộ (http://localhost:8080)
 
+momo:
+  endpoint: ${MOMO_ENDPOINT}
+  partner-code: ${MOMO_PARTNER_CODE}
+  access-key: ${MOMO_ACCESS_KEY}
+  secret-key: ${MOMO_SECRET_KEY}
+  redirect-url: ${MOMO_REDIRECT_URL}
+  ipn-url: ${MOMO_IPN_URL}
+
+vnpay:
+  pay-url: ${VNPAY_URL}
+  tmn-code: ${VNPAY_TMN_CODE}
+  hash-secret: ${VNPAY_HASH_SECRET}
+  return-url: ${VNPAY_RETURN_URL}
+  ipn-url: ${VNPAY_IPN_URL}
+
 spring:
   config:
     import: optional:file:.env[.properties]
@@ -9,9 +24,9 @@ spring:
 
   # 1. Cấu hình Kết nối CSDL (JPA/Hibernate)
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/postgres}
+    url: ${DB_URL}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -36,8 +51,8 @@ spring:
   mail:
     host: ${EMAIL_SMTP_HOST:smtp.gmail.com}
     port: ${EMAIL_SMTP_PORT:465}
-    username: ${EMAIL_SMTP_USER:nguyenducduy25605@gmail.com}
-    password: ${EMAIL_SMTP_PASS:oleb btqe aqer phiv}
+    username: ${EMAIL_SMTP_USER}
+    password: ${EMAIL_SMTP_PASS}
     protocol: smtp
     properties:
       mail:
@@ -54,12 +69,12 @@ spring:
 app:
   jwt:
     # Secret key phải dài và khó đoán. Bạn có thể đổi lại tùy ý.
-    secret: TechGadgetStoreSuperSecretKeyForJwtAuthentication2026!@#$
+    secret: ${JWT_SECRET}
     # Thời gian sống của token: 86400000 ms = 24 giờ
     expiration-ms: 86400000
   email:
     from-name: ${EMAIL_FROM_NAME:TechStore System}
-    from-address: ${EMAIL_FROM_ADDRESS:nguyenducduy25605@gmail.com}
+    from-address: ${EMAIL_FROM_ADDRESS}
     reply-to-mode: ${EMAIL_REPLY_TO_MODE:customer}
     reply-to-address: ${EMAIL_REPLY_TO_ADDRESS:}
   payment:
@@ -70,13 +85,13 @@ app:
     momo:
       sandbox:
         enabled: true
-        partner-code: ${MOMO_PARTNER_CODE:MOMOBKUN20180529}
-        access-key: ${MOMO_ACCESS_KEY:klm05TvNBzhg7h7j}
-        secret-key: ${MOMO_SECRET_KEY:at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa}
+        partner-code: ${MOMO_PARTNER_CODE}
+        access-key: ${MOMO_ACCESS_KEY}
+        secret-key: ${MOMO_SECRET_KEY}
         public-key: ${MOMO_PUBLIC_KEY:}
-        endpoint: ${MOMO_ENDPOINT:https://test-payment.momo.vn/v2/gateway/api/create}
-        redirect-url: ${MOMO_REDIRECT_URL:http://localhost:5173/payment-return}
-        ipn-url: ${MOMO_IPN_URL:http://localhost:5000/api/payment/momo-ipn}
+        endpoint: ${MOMO_ENDPOINT}
+        redirect-url: ${MOMO_REDIRECT_URL}
+        ipn-url: ${MOMO_IPN_URL}
         request-type: ${MOMO_REQUEST_TYPE:captureWallet}
         partner-name: ${MOMO_PARTNER_NAME:TechStore}
         store-id: ${MOMO_STORE_ID:TechStore001}
@@ -100,16 +115,16 @@ app:
       sandbox:
         enabled: true
         version: ${VNPAY_VERSION:2.1.0}
-        payment-url: ${VNPAY_PAYMENT_URL:https://sandbox.vnpayment.vn}
-        tmn-code: ${VNPAY_TMN_CODE:MM5JX4NO}
-        hash-secret: ${VNPAY_HASH_SECRET:SERIFWGJ5J3JRJ0Z7BQQ3JJPFOCLT5DW}
-        secure-secret: ${VNPAY_SECURE_SECRET:${VNPAY_HASH_SECRET:SERIFWGJ5J3JRJ0Z7BQQ3JJPFOCLT5DW}}
-        url: ${VNPAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
-        endpoint: ${VNPAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+        payment-url: ${VNPAY_PAYMENT_URL}
+        tmn-code: ${VNPAY_TMN_CODE}
+        hash-secret: ${VNPAY_HASH_SECRET}
+        secure-secret: ${VNPAY_SECURE_SECRET:${VNPAY_HASH_SECRET}}
+        url: ${VNPAY_URL}
+        endpoint: ${VNPAY_URL}
         api-endpoint: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
         fee-rate: 0.01
-        return-url: ${VNPAY_RETURN_URL:http://localhost:5173/payment-return}
-        ipn-url: ${VNPAY_IPN_URL:http://localhost:5000/api/payment/vnpay-ipn}
+        return-url: ${VNPAY_RETURN_URL}
+        ipn-url: ${VNPAY_IPN_URL}
         locale: ${VNPAY_LOCALE:vn}
         order-type: ${VNPAY_ORDER_TYPE:200000}
       production:

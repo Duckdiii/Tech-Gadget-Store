@@ -8,7 +8,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -37,12 +36,9 @@ public abstract class User extends BaseEntity {
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
     protected Account account;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private List<Address> addresses = new ArrayList<>();
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "default_address_id")
-    private Address defaultAddress;
 
     protected User(String fullName, String phone) {
         this.fullName = fullName;
@@ -66,15 +62,11 @@ public abstract class User extends BaseEntity {
         if (address == null || address.isBlank()) {
             throw new IllegalArgumentException("address must not be blank");
         }
-        if (defaultAddress == null) {
-            Address newDefaultAddress = new Address(this, address, null, null, null);
-            defaultAddress = newDefaultAddress;
+        if (addresses.isEmpty()) {
+            new Address(this, address, null, null, null);
             return;
         }
-        if (!addresses.contains(defaultAddress)) {
-            throw new IllegalStateException("defaultAddress does not belong to this user");
-        }
-        defaultAddress.setStreet(address);
+        addresses.get(0).setStreet(address);
     }
 
     public String getDisplayName() {
@@ -91,31 +83,12 @@ public abstract class User extends BaseEntity {
         if (address == null) {
             throw new IllegalArgumentException("address must not be null");
         }
-        if (address.getUser() != null && address.getUser() != this) {
-            address.getUser().getAddresses().remove(address);
-        }
         if (!addresses.contains(address)) {
             addresses.add(address);
         }
-        address.setUser(this);
     }
 
     public void removeAddress(Address address) {
-        if (address == null) {
-            return;
-        }
-        if (addresses.remove(address)) {
-            address.setUser(null);
-            if (defaultAddress == address) {
-                defaultAddress = null;
-            }
-        }
-    }
-
-    public void changeDefaultAddress(Address address) {
-        if (address != null && !addresses.contains(address)) {
-            throw new IllegalArgumentException("address does not belong to this user");
-        }
-        this.defaultAddress = address;
+        addresses.remove(address);
     }
 }

@@ -13,6 +13,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class InventoryRequestDto {
 
-    private String name;
     private String location;
 }

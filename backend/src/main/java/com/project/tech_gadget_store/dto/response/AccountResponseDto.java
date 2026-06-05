@@ -20,7 +20,6 @@ public class AccountResponseDto {
     private String email;
     private String password;
     private AccountStatus status;
-    private LocalDateTime lastLoginAt;
     private String userId;
     private List<String> loginLogsIds;
 }

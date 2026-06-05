@@ -16,7 +16,6 @@ public class InventoryResponseDto {
     private String id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String name;
     private String location;
     private List<String> itemsIds;
 }

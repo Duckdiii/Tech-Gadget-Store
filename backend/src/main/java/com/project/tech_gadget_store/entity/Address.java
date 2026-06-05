@@ -3,9 +3,10 @@ package com.project.tech_gadget_store.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,15 +31,10 @@ public class Address extends BaseEntity {
     @Column(name = "province", length = 100)
     private String province;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @OneToMany(mappedBy = "address", fetch = FetchType.LAZY)
+    private List<Order> orders = new ArrayList<>();
 
     public Address(User user, String street, String ward, String district, String province) {
-        if (user == null) {
-            throw new IllegalArgumentException("user must not be null");
-        }
-        this.user = user;
         this.street = street;
         this.ward = ward;
         this.district = district;

@@ -20,10 +20,6 @@ import lombok.Setter;
 public class ImportLogItem extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "import_log_id", nullable = false)
-    private ImportLog importLog;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_variant_id", nullable = false)
     private ProductVariant productVariant;
 
@@ -50,9 +46,6 @@ public class ImportLogItem extends BaseEntity {
         this.quantity = quantity;
         this.importPrice = importPrice;
         importLog.addItem(this);
-        if (!productVariant.getImportLogItems().contains(this)) {
-            productVariant.getImportLogItems().add(this);
-        }
     }
 
     public BigDecimal calculateLineTotal() {

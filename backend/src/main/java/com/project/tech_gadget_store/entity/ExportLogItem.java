@@ -19,10 +19,6 @@ import lombok.Setter;
 public class ExportLogItem extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "export_log_id", nullable = false)
-    private ExportLog exportLog;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_variant_id", nullable = false)
     private ProductVariant productVariant;
 
@@ -42,9 +38,6 @@ public class ExportLogItem extends BaseEntity {
         this.productVariant = productVariant;
         this.quantity = quantity;
         exportLog.addItem(this);
-        if (!productVariant.getExportLogItems().contains(this)) {
-            productVariant.getExportLogItems().add(this);
-        }
     }
 
     public void changeQuantity(int quantity) {
@@ -54,13 +47,4 @@ public class ExportLogItem extends BaseEntity {
         this.quantity = quantity;
     }
 
-    public String getProductName() {
-        if (productVariant == null) {
-            throw new IllegalStateException("productVariant must not be null");
-        }
-        if (productVariant.getProduct() == null) {
-            throw new IllegalStateException("product must not be null");
-        }
-        return productVariant.getProduct().getName();
-    }
 }

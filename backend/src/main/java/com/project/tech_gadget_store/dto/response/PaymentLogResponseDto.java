@@ -1,6 +1,7 @@
 package com.project.tech_gadget_store.dto.response;
 
 import com.project.tech_gadget_store.entity.enums.PaymentLogStatus;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +18,8 @@ public class PaymentLogResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String orderId;
+    private String transactionCode;
+    private BigDecimal amount;
     private PaymentLogStatus status;
     private String failureReason;
 }

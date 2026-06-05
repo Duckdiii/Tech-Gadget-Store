@@ -26,8 +26,8 @@ public class Membership extends BaseEntity {
     @Column(name = "tier", nullable = false, length = 30)
     private MembershipTier tier;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "benefit_id", unique = true)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "benefit_id", nullable = false, unique = true)
     private MembershipBenefit benefit;
 
     @Column(name = "min_spending", precision = 15, scale = 2)

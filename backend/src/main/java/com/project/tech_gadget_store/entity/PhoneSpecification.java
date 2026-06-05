@@ -21,9 +21,6 @@ public class PhoneSpecification extends BaseEntity {
     @Column(name = "screen_size")
     private Double screenSize;
 
-    @Column(name = "screen_technology", length = 120)
-    private String screenTechnology;
-
     @Column(name = "rear_camera", length = 255)
     private String rearCamera;
 
@@ -36,11 +33,8 @@ public class PhoneSpecification extends BaseEntity {
     @Column(name = "nfc_supported")
     private Boolean nfcSupported;
 
-    @Column(name = "battery_type", length = 80)
-    private String batteryType;
-
-    @Column(name = "battery_capacity_mah")
-    private Integer batteryCapacityMah;
+    @Column(name = "battery_capacity")
+    private Integer batteryCapacity;
 
     @Column(name = "sim_type", length = 100)
     private String simType;
@@ -50,12 +44,6 @@ public class PhoneSpecification extends BaseEntity {
 
     @Column(name = "screen_resolution", length = 120)
     private String screenResolution;
-
-    @Column(name = "display_features", columnDefinition = "TEXT")
-    private String displayFeatures;
-
-    @Column(name = "cpu_description", columnDefinition = "TEXT")
-    private String cpuDescription;
 
     public PhoneSpecification(Product product) {
         product.assignSpec(this);

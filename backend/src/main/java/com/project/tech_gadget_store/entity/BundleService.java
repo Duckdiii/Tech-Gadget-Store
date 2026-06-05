@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.BundleServiceType;
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.math.BigDecimal;
 
 @Entity
@@ -37,13 +35,49 @@ public class BundleService extends BaseEntity {
     @Column(name = "active", nullable = false)
     private Boolean active = true;
 
-    @ManyToMany(mappedBy = "bundleServices")
-    private List<CartItem> cartItems = new ArrayList<>();
-
     public BundleService(String name, BundleServiceType type, BigDecimal price, Integer durationMonths) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("type must not be null");
+        }
+        if (price == null) {
+            throw new IllegalArgumentException("price must not be null");
+        }
+        if (price.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("price must not be negative");
+        }
         this.name = name;
         this.type = type;
         this.price = price;
         this.durationMonths = durationMonths;
     }
+
+    public void activate() {
+        active = true;
+    }
+
+    public void deactivate() {
+        active = false;
+    }
+
+    public boolean isActive() {
+        return Boolean.TRUE.equals(active);
+    }
+
+    public void changePrice(BigDecimal price) {
+        if (price == null) {
+            throw new IllegalArgumentException("price must not be null");
+        }
+        if (price.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("price must not be negative");
+        }
+        this.price = price;
+    }
+
+    public boolean isWarranty() {
+        return BundleServiceType.WARRANTY.equals(type);
+    }
+
 }

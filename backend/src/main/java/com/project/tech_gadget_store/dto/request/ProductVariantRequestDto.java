@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.dto.request;
 
-import com.project.tech_gadget_store.entity.enums.ProductStatus;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +19,4 @@ public class ProductVariantRequestDto {
     private Integer storageGb;
     private String color;
     private BigDecimal price;
-    private String sku;
-    private ProductStatus status;
 }

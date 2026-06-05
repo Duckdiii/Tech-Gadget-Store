@@ -30,13 +30,37 @@ public class Brand extends BaseEntity {
     private List<Product> products = new ArrayList<>();
 
     public Brand(String name, String logoUrl, String description) {
-        this.name = name;
-        this.logoUrl = logoUrl;
-        this.description = description;
+        updateInfo(name, logoUrl, description);
     }
 
     public void addProduct(Product product) {
-        products.add(product);
+        if (product == null) {
+            throw new IllegalArgumentException("product must not be null");
+        }
+        if (product.getBrand() != null && product.getBrand() != this) {
+            product.getBrand().getProducts().remove(product);
+        }
+        if (!products.contains(product)) {
+            products.add(product);
+        }
         product.setBrand(this);
+    }
+
+    public void removeProduct(Product product) {
+        if (product == null) {
+            return;
+        }
+        if (products.remove(product)) {
+            product.setBrand(null);
+        }
+    }
+
+    public void updateInfo(String name, String logoUrl, String description) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
+        this.name = name;
+        this.logoUrl = logoUrl;
+        this.description = description;
     }
 }

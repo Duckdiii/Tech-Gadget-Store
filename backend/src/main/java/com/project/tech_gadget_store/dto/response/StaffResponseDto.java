@@ -21,8 +21,7 @@ public class StaffResponseDto {
     private String phone;
     private String staffCode;
     private LocalDate hireDate;
-    private String importLogId;
-    private String exportLogId;
+    private List<String> importLogIds;
+    private List<String> exportLogIds;
     private List<String> addressesIds;
-    private String defaultAddressId;
 }

@@ -27,12 +27,36 @@ public class Category extends BaseEntity {
     private List<Product> products = new ArrayList<>();
 
     public Category(String name, String imageUrl) {
-        this.name = name;
-        this.imageUrl = imageUrl;
+        updateInfo(name, imageUrl);
     }
 
     public void addProduct(Product product) {
-        products.add(product);
+        if (product == null) {
+            throw new IllegalArgumentException("product must not be null");
+        }
+        if (product.getCategory() != null && product.getCategory() != this) {
+            product.getCategory().getProducts().remove(product);
+        }
+        if (!products.contains(product)) {
+            products.add(product);
+        }
         product.setCategory(this);
+    }
+
+    public void removeProduct(Product product) {
+        if (product == null) {
+            return;
+        }
+        if (products.remove(product)) {
+            product.setCategory(null);
+        }
+    }
+
+    public void updateInfo(String name, String imageUrl) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
+        this.name = name;
+        this.imageUrl = imageUrl;
     }
 }

@@ -1,7 +1,5 @@
 package com.project.tech_gadget_store.dto.response;
 
-import com.project.tech_gadget_store.entity.enums.ProductStatus;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -20,8 +18,6 @@ public class ProductResponseDto {
     private LocalDateTime updatedAt;
     private String name;
     private String description;
-    private BigDecimal price;
-    private ProductStatus status;
     private String brandId;
     private String categoryId;
     private List<String> imagesIds;

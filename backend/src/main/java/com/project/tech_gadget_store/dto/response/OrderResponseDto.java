@@ -17,8 +17,8 @@ public class OrderResponseDto {
     private String id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String transactionId;
     private String customerId;
+    private String addressId;
     private List<String> itemsIds;
     private String selectedPaymentMethodId;
     private LocalDateTime orderDate;

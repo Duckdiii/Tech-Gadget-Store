@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "product_images")
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductImage extends BaseEntity {
 
@@ -19,10 +19,6 @@ public class ProductImage extends BaseEntity {
 
     @Column(name = "image_url", nullable = false, length = 500)
     private String imageUrl;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
 
     public ProductImage(Product product, String name, String imageUrl) {
         this.name = name;

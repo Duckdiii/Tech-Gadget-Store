@@ -26,7 +26,8 @@ public class Cart extends BaseEntity {
     @JoinColumn(name = "customer_id", nullable = false, unique = true)
     private Customer customer;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "cart_id", nullable = false)
     private List<CartItem> items = new ArrayList<>();
 
     public Cart(Customer customer) {
@@ -41,13 +42,9 @@ public class Cart extends BaseEntity {
         if (item == null) {
             throw new IllegalArgumentException("item must not be null");
         }
-        if (item.getCart() != null && item.getCart() != this) {
-            item.getCart().getItems().remove(item);
-        }
         if (!items.contains(item)) {
             items.add(item);
         }
-        item.setCart(this);
     }
 
     public void addItem(ProductVariant variant, int quantity) {
@@ -73,7 +70,6 @@ public class Cart extends BaseEntity {
             for (BundleService bundleService : new ArrayList<>(item.getBundleServices())) {
                 item.removeBundleService(bundleService);
             }
-            item.setCart(null);
         }
     }
 

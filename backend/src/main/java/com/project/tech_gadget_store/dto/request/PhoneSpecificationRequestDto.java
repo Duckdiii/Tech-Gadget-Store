@@ -15,16 +15,12 @@ public class PhoneSpecificationRequestDto {
 
     private String productId;
     private Double screenSize;
-    private String screenTechnology;
     private String rearCamera;
     private String frontCamera;
     private String chipset;
     private Boolean nfcSupported;
-    private String batteryType;
-    private Integer batteryCapacityMah;
+    private Integer batteryCapacity;
     private String simType;
     private String operatingSystem;
     private String screenResolution;
-    private String displayFeatures;
-    private String cpuDescription;
 }

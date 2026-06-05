@@ -8,8 +8,6 @@ import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(
@@ -42,15 +40,16 @@ public class ProductSubscription extends BaseEntity {
     @Column(name = "unsubscribed_at")
     private LocalDateTime unsubscribedAt;
 
-    @OneToMany(mappedBy = "productSubscription", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Notification> notifications = new ArrayList<>();
-
     @PrePersist
     protected void prePersistProductSubscription() {
         if (subscribedAt == null) {
             subscribedAt = LocalDateTime.now();
         }
     }
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_subscription_id", nullable = false)
+    private java.util.List<Notification> notifications = new java.util.ArrayList<>();
 
     public ProductSubscription(Product product, Customer customer) {
         if (product == null) {
@@ -61,29 +60,7 @@ public class ProductSubscription extends BaseEntity {
         }
         this.product = product;
         this.customer = customer;
-        customer.getProductSubscriptions().add(this);
         product.getProductSubscriptions().add(this);
-    }
-
-    public void addNotification(Notification notification) {
-        if (notification == null) {
-            throw new IllegalArgumentException("notification must not be null");
-        }
-        if (notification.getProductSubscription() != null && notification.getProductSubscription() != this) {
-            notification.getProductSubscription().getNotifications().remove(notification);
-        }
-        if (!notifications.contains(notification)) {
-            notifications.add(notification);
-        }
-        notification.setProductSubscription(this);
-    }
-
-    public void removeNotification(Notification notification) {
-        if (notification == null) {
-            return;
-        }
-        if (notifications.remove(notification)) {
-            notification.setProductSubscription(null);
-        }
+        customer.getProductSubscriptions().add(this);
     }
 }

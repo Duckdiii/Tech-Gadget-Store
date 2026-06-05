@@ -15,11 +15,12 @@ import java.util.List;
 @Entity
 @Table(name = "export_logs")
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExportLog extends BaseEntity {
 
-    @OneToMany(mappedBy = "exportLog", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "export_log_id", nullable = false)
     private List<ExportLogItem> items = new ArrayList<>();
 
     @Column(name = "exported_at", nullable = false)
@@ -36,7 +37,7 @@ public class ExportLog extends BaseEntity {
     @JoinColumn(name = "performed_by", nullable = false)
     private Staff performedBy;
 
-    @OneToOne(mappedBy = "exportLog", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "exportLog", fetch = FetchType.LAZY)
     private Receipt receipt;
 
     @PrePersist
@@ -59,45 +60,30 @@ public class ExportLog extends BaseEntity {
         if (item == null) {
             throw new IllegalArgumentException("item must not be null");
         }
-        if (item.getExportLog() != null && item.getExportLog() != this) {
-            item.getExportLog().getItems().remove(item);
-        }
         if (!items.contains(item)) {
             items.add(item);
-        }
-        item.setExportLog(this);
-        if (item.getProductVariant() != null && !item.getProductVariant().getExportLogItems().contains(item)) {
-            item.getProductVariant().getExportLogItems().add(item);
         }
     }
 
     public void removeItem(ExportLogItem item) {
-        if (item == null) {
-            return;
-        }
-        if (items.remove(item)) {
-            item.setExportLog(null);
-            if (item.getProductVariant() != null) {
-                item.getProductVariant().getExportLogItems().remove(item);
-            }
-        }
+        items.remove(item);
     }
 
     public void approve() {
-        status = ImportAndExportStatus.APPROVED;
+        status = ImportAndExportStatus.SUCCESS;
     }
 
     public void reject(String reason) {
-        status = ImportAndExportStatus.REJECTED;
+        status = ImportAndExportStatus.FAILURE;
         this.reason = reason;
     }
 
     public void complete() {
-        status = ImportAndExportStatus.COMPLETED;
+        status = ImportAndExportStatus.SUCCESS;
     }
 
     public boolean isCompleted() {
-        return ImportAndExportStatus.COMPLETED.equals(status);
+        return ImportAndExportStatus.SUCCESS.equals(status);
     }
 
     public int calculateTotalQuantity() {

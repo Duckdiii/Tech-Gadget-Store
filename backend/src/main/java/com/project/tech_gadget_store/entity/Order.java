@@ -29,18 +29,20 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseEntity {
 
-    @Column(name = "transaction_id", unique = true, length = 100)
-    private String transactionId;
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "address_id", nullable = false)
+    private Address address;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "order_id", nullable = false)
     private List<OrderItem> items = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "selected_payment_method_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "selected_payment_method_id", nullable = false)
     private PaymentMethod selectedPaymentMethod;
 
     @Column(name = "order_date", nullable = false)
@@ -53,32 +55,37 @@ public class Order extends BaseEntity {
     @Column(name = "order_status", nullable = false, length = 40)
     private OrderStatus orderStatus = OrderStatus.AWAITING_CONFIRMATION;
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
     private Invoice invoice;
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
     private List<PaymentLog> paymentLogs = new ArrayList<>();
 
-    public Order(Customer customer, PaymentMethod selectedPaymentMethod) {
+    public Order(Customer customer, Address address, PaymentMethod selectedPaymentMethod) {
         if (customer == null) {
             throw new IllegalArgumentException("customer must not be null");
         }
+        if (address == null) {
+            throw new IllegalArgumentException("address must not be null");
+        }
+        if (selectedPaymentMethod == null) {
+            throw new IllegalArgumentException("selectedPaymentMethod must not be null");
+        }
         this.customer = customer;
+        this.address = address;
         this.selectedPaymentMethod = selectedPaymentMethod;
         customer.getOrders().add(this);
+        address.getOrders().add(this);
     }
 
     public void addItem(OrderItem item) {
         if (item == null) {
             throw new IllegalArgumentException("item must not be null");
         }
-        if (item.getOrder() != null && item.getOrder() != this) {
-            item.getOrder().getItems().remove(item);
-        }
         if (!items.contains(item)) {
             items.add(item);
         }
-        item.setOrder(this);
     }
 
     public void removeItem(OrderItem item) {
@@ -87,7 +94,6 @@ public class Order extends BaseEntity {
         }
         if (items.remove(item)) {
             item.getBundleServices().clear();
-            item.setOrder(null);
         }
     }
 
@@ -171,13 +177,9 @@ public class Order extends BaseEntity {
         if (paymentLog == null) {
             throw new IllegalArgumentException("paymentLog must not be null");
         }
-        if (paymentLog.getOrder() != null && paymentLog.getOrder() != this) {
-            paymentLog.getOrder().getPaymentLogs().remove(paymentLog);
-        }
         if (!paymentLogs.contains(paymentLog)) {
             paymentLogs.add(paymentLog);
         }
-        paymentLog.setOrder(this);
     }
 
     @PrePersist

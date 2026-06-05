@@ -1,14 +1,10 @@
 package com.project.tech_gadget_store.entity;
 
-import com.project.tech_gadget_store.entity.enums.ProductStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -34,13 +30,6 @@ public class Product extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "price", nullable = false, precision = 15, scale = 2)
-    private BigDecimal price;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 30)
-    private ProductStatus status = ProductStatus.AVAILABLE;
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
@@ -49,27 +38,27 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
     private List<ProductImage> images = new ArrayList<>();
 
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "product", fetch = FetchType.LAZY)
     private PhoneSpecification spec;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
     private List<ProductVariant> variants = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "products")
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
     private List<Promotion> promotions = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<ProductSubscription> productSubscriptions = new ArrayList<>();
 
-    public Product(String name, String description, BigDecimal price, Brand brand, Category category) {
+    public Product(String name, String description, Brand brand, Category category) {
         if (name == null) {
             throw new IllegalArgumentException("name must not be null");
-        }
-        if (price == null) {
-            throw new IllegalArgumentException("price must not be null");
         }
         if (brand == null) {
             throw new IllegalArgumentException("brand must not be null");
@@ -79,55 +68,34 @@ public class Product extends BaseEntity {
         }
         this.name = name;
         this.description = description;
-        this.price = price;
-        this.brand = brand;
-        this.category = category;
-        brand.getProducts().add(this);
-        category.getProducts().add(this);
+        brand.addProduct(this);
+        category.addProduct(this);
     }
 
     public void addVariant(ProductVariant variant) {
         if (variant == null) {
             throw new IllegalArgumentException("variant must not be null");
         }
-        if (variant.getProduct() != null && variant.getProduct() != this) {
-            variant.getProduct().getVariants().remove(variant);
-        }
         if (!variants.contains(variant)) {
             variants.add(variant);
         }
-        variant.setProduct(this);
     }
 
     public void removeVariant(ProductVariant variant) {
-        if (variant == null) {
-            return;
-        }
-        if (variants.remove(variant)) {
-            variant.setProduct(null);
-        }
+        variants.remove(variant);
     }
 
     public void addImage(ProductImage image) {
         if (image == null) {
             throw new IllegalArgumentException("image must not be null");
         }
-        if (image.getProduct() != null && image.getProduct() != this) {
-            image.getProduct().getImages().remove(image);
-        }
         if (!images.contains(image)) {
             images.add(image);
         }
-        image.setProduct(this);
     }
 
     public void removeImage(ProductImage image) {
-        if (image == null) {
-            return;
-        }
-        if (images.remove(image)) {
-            image.setProduct(null);
-        }
+        images.remove(image);
     }
 
     public void assignSpec(PhoneSpecification spec) {
@@ -156,27 +124,12 @@ public class Product extends BaseEntity {
         currentSpec.setProduct(null);
     }
 
-    public void changeBasicInfo(String name, String description, BigDecimal price) {
+    public void changeBasicInfo(String name, String description) {
         if (name == null) {
             throw new IllegalArgumentException("name must not be null");
         }
-        if (price == null) {
-            throw new IllegalArgumentException("price must not be null");
-        }
         this.name = name;
         this.description = description;
-        this.price = price;
-    }
-
-    public void changeStatus(ProductStatus status) {
-        if (status == null) {
-            throw new IllegalArgumentException("status must not be null");
-        }
-        this.status = status;
-    }
-
-    public boolean isAvailable() {
-        return ProductStatus.AVAILABLE.equals(status);
     }
 
     public BigDecimal getMinVariantPrice() {
@@ -213,6 +166,6 @@ public class Product extends BaseEntity {
 
     public boolean hasAvailableVariant() {
         return variants.stream()
-                .anyMatch(variant -> variant.isAvailable() && variant.hasEnoughStock(1));
+                .anyMatch(variant -> variant.hasEnoughStock(1));
     }
 }

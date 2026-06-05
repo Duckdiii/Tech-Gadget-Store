@@ -1,7 +1,6 @@
 package com.project.tech_gadget_store.dto.request;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,5 +20,5 @@ public class PromotionRequestDto {
     private LocalDateTime startAt;
     private LocalDateTime endAt;
     private Boolean active;
-    private List<String> productsIds;
+    private String productId;
 }

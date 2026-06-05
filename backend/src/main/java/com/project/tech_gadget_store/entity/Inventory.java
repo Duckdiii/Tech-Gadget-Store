@@ -3,6 +3,7 @@ package com.project.tech_gadget_store.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
@@ -19,65 +20,40 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Inventory extends BaseEntity {
 
-    @Column(name = "name", nullable = false, length = 150)
-    private String name;
-
     @Column(name = "location", length = 255)
     private String location;
 
-    @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<InventoryItem> items = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "inventory_id", nullable = false)
+    private List<ItemInventory> items = new ArrayList<>();
 
-    public Inventory(String name, String location) {
-        if (name == null) {
-            throw new IllegalArgumentException("name must not be null");
-        }
-        this.name = name;
+    public Inventory(String location) {
         this.location = location;
     }
 
-    public void changeInfo(String name, String location) {
-        if (name == null) {
-            throw new IllegalArgumentException("name must not be null");
-        }
-        this.name = name;
+    public void changeLocation(String location) {
         this.location = location;
     }
 
-    public void addItem(InventoryItem item) {
+    public void addItem(ItemInventory item) {
         if (item == null) {
             throw new IllegalArgumentException("item must not be null");
-        }
-        if (item.getInventory() != null && item.getInventory() != this) {
-            item.getInventory().getItems().remove(item);
         }
         if (!items.contains(item)) {
             items.add(item);
         }
-        item.setInventory(this);
-        if (item.getProductVariant() != null && item.getProductVariant().getInventoryItem() != item) {
-            item.getProductVariant().assignInventoryItem(item);
-        }
     }
 
-    public void removeItem(InventoryItem item) {
-        if (item == null) {
-            return;
-        }
-        if (items.remove(item)) {
-            item.setInventory(null);
-            if (item.getProductVariant() != null) {
-                item.getProductVariant().removeInventoryItem();
-            }
-        }
+    public void removeItem(ItemInventory item) {
+        items.remove(item);
     }
 
-    public InventoryItem findItem(ProductVariant productVariant) {
+    public ItemInventory findItem(ProductVariant productVariant) {
         if (productVariant == null) {
             return null;
         }
-        return items.stream()
-                .filter(item -> item.getProductVariant() == productVariant)
+        return productVariant.getInventoryItems().stream()
+                .filter(items::contains)
                 .findFirst()
                 .orElse(null);
     }
@@ -88,7 +64,7 @@ public class Inventory extends BaseEntity {
 
     public int getQuantity() {
         int totalQuantity = 0;
-        for (InventoryItem item : items) {
+        for (ItemInventory item : items) {
             if (item == null) {
                 throw new IllegalStateException("inventory item must not be null");
             }
@@ -102,7 +78,7 @@ public class Inventory extends BaseEntity {
 
     public int getReservedQuantity() {
         int totalReservedQuantity = 0;
-        for (InventoryItem item : items) {
+        for (ItemInventory item : items) {
             if (item == null) {
                 throw new IllegalStateException("inventory item must not be null");
             }
@@ -123,7 +99,7 @@ public class Inventory extends BaseEntity {
     }
 
     public boolean hasEnoughStock(ProductVariant productVariant, int requestedQuantity) {
-        InventoryItem item = findItem(productVariant);
+        ItemInventory item = findItem(productVariant);
         return item != null && item.hasEnoughStock(requestedQuantity);
     }
 
@@ -151,8 +127,8 @@ public class Inventory extends BaseEntity {
         getRequiredItem(productVariant).adjustQuantity(newQuantity);
     }
 
-    private InventoryItem getRequiredItem(ProductVariant productVariant) {
-        InventoryItem item = findItem(productVariant);
+    private ItemInventory getRequiredItem(ProductVariant productVariant) {
+        ItemInventory item = findItem(productVariant);
         if (item == null) {
             throw new IllegalArgumentException("Inventory item not found for product variant");
         }

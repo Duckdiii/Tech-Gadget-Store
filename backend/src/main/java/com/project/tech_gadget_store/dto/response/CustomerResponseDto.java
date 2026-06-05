@@ -23,5 +23,4 @@ public class CustomerResponseDto {
     private List<String> ordersIds;
     private List<String> productSubscriptionsIds;
     private List<String> addressesIds;
-    private String defaultAddressId;
 }
