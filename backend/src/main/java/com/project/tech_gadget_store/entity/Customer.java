@@ -1,15 +1,12 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import com.project.tech_gadget_store.entity.enums.OrderStatus;
 
 @Entity
 @Table(name = "customers")
@@ -25,9 +22,6 @@ public class Customer extends User {
 
     @OneToOne(mappedBy = "customer", fetch = FetchType.LAZY)
     private Cart cart;
-
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
-    private List<Order> orders = new ArrayList<>();
 
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     private List<ProductSubscription> productSubscriptions = new ArrayList<>();
@@ -56,14 +50,5 @@ public class Customer extends User {
         }
     }
 
-    public BigDecimal calculateTotalSpending() {
-        BigDecimal total = BigDecimal.ZERO;
-        for (Order order : orders) {
-            if (OrderStatus.COMPLETED.equals(order.getOrderStatus())) {
-                total = total.add(order.calculateTotal());
-            }
-        }
-        return total;
-    }
-
 }
+

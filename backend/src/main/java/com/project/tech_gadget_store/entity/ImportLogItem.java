@@ -30,18 +30,7 @@ public class ImportLogItem extends BaseEntity {
     private BigDecimal importPrice;
 
     public ImportLogItem(ImportLog importLog, ProductVariant productVariant, Integer quantity, BigDecimal importPrice) {
-        if (importLog == null) {
-            throw new IllegalArgumentException("importLog must not be null");
-        }
-        if (productVariant == null) {
-            throw new IllegalArgumentException("productVariant must not be null");
-        }
-        if (quantity == null) {
-            throw new IllegalArgumentException("quantity must not be null");
-        }
-        if (importPrice == null) {
-            throw new IllegalArgumentException("importPrice must not be null");
-        }
+
         this.productVariant = productVariant;
         this.quantity = quantity;
         this.importPrice = importPrice;

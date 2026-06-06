@@ -36,18 +36,6 @@ public class BundleService extends BaseEntity {
     private Boolean active = true;
 
     public BundleService(String name, BundleServiceType type, BigDecimal price, Integer durationMonths) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("name must not be blank");
-        }
-        if (type == null) {
-            throw new IllegalArgumentException("type must not be null");
-        }
-        if (price == null) {
-            throw new IllegalArgumentException("price must not be null");
-        }
-        if (price.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("price must not be negative");
-        }
         this.name = name;
         this.type = type;
         this.price = price;

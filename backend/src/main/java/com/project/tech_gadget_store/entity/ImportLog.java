@@ -26,7 +26,7 @@ public class ImportLog extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "performed_by", nullable = false)
-    private Staff performedBy;
+    private User performedBy;
 
     @Column(name = "imported_at", nullable = false)
     private LocalDateTime importedAt;
@@ -45,10 +45,8 @@ public class ImportLog extends BaseEntity {
         }
     }
 
-    public ImportLog(Staff performedBy) {
-        if (performedBy == null) {
-            throw new IllegalArgumentException("performedBy must not be null");
-        }
+    public ImportLog(User performedBy) {
+
         this.performedBy = performedBy;
         performedBy.getImportLogs().add(this);
     }

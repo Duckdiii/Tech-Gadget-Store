@@ -1,7 +1,11 @@
 package com.project.tech_gadget_store.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,21 +19,18 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ItemInventory extends BaseEntity {
 
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_variant_id", nullable = false)
+    private ProductVariant productVariant;
+
     @Column(name = "quantity", nullable = false)
     private Integer quantity = 0;
 
-    @Column(name = "reserved_quantity", nullable = false)
-    private Integer reservedQuantity = 0;
+    public ItemInventory(Inventory inventory, ProductVariant productVariant, Integer quantity) {
 
-    public ItemInventory(Inventory inventory, ProductVariant productVariant, Integer quantity, Integer reservedQuantity) {
-        if (quantity == null) {
-            throw new IllegalArgumentException("quantity must not be null");
-        }
-        if (reservedQuantity == null) {
-            throw new IllegalArgumentException("reservedQuantity must not be null");
-        }
         this.quantity = quantity;
-        this.reservedQuantity = reservedQuantity;
+        this.productVariant = productVariant;
         inventory.addItem(this);
         productVariant.addInventoryItem(this);
     }
@@ -41,26 +42,8 @@ public class ItemInventory extends BaseEntity {
         adjustQuantity(quantity);
     }
 
-    public void changeReservedQuantity(Integer reservedQuantity) {
-        if (reservedQuantity == null) {
-            throw new IllegalArgumentException("reservedQuantity must not be null");
-        }
-        int newReservedQuantity = reservedQuantity;
-        if (newReservedQuantity < 0) {
-            throw new IllegalArgumentException("reservedQuantity must not be negative");
-        }
-        if (newReservedQuantity > quantity) {
-            throw new IllegalArgumentException("reservedQuantity must not be greater than quantity");
-        }
-        this.reservedQuantity = newReservedQuantity;
-    }
-
-    public int getAvailableQuantity() {
-        return Math.max(0, quantity - reservedQuantity);
-    }
-
     public boolean hasEnoughStock(int requestedQuantity) {
-        return requestedQuantity > 0 && getAvailableQuantity() >= requestedQuantity;
+        return requestedQuantity > 0 && quantity >= requestedQuantity;
     }
 
     public void increaseQuantity(int amount) {
@@ -70,43 +53,15 @@ public class ItemInventory extends BaseEntity {
 
     public void decreaseQuantity(int amount) {
         validatePositiveAmount(amount);
-        if (quantity - amount < reservedQuantity) {
-            throw new IllegalArgumentException("quantity cannot be less than reservedQuantity");
+        if (quantity - amount < 0) {
+            throw new IllegalArgumentException("quantity cannot be negative");
         }
-        quantity -= amount;
-    }
-
-    public void reserve(int amount) {
-        validatePositiveAmount(amount);
-        if (!hasEnoughStock(amount)) {
-            throw new IllegalArgumentException("not enough available stock");
-        }
-        reservedQuantity += amount;
-    }
-
-    public void releaseReserved(int amount) {
-        validatePositiveAmount(amount);
-        if (amount > reservedQuantity) {
-            throw new IllegalArgumentException("amount cannot be greater than reservedQuantity");
-        }
-        reservedQuantity -= amount;
-    }
-
-    public void confirmReserved(int amount) {
-        validatePositiveAmount(amount);
-        if (amount > reservedQuantity) {
-            throw new IllegalArgumentException("amount cannot be greater than reservedQuantity");
-        }
-        reservedQuantity -= amount;
         quantity -= amount;
     }
 
     public void adjustQuantity(int newQuantity) {
         if (newQuantity < 0) {
             throw new IllegalArgumentException("newQuantity must not be negative");
-        }
-        if (newQuantity < reservedQuantity) {
-            throw new IllegalArgumentException("newQuantity cannot be less than reservedQuantity");
         }
         quantity = newQuantity;
     }

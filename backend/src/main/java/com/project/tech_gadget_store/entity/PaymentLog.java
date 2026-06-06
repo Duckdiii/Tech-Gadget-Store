@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,9 +15,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentLog extends BaseEntity {
 
-    @Column(name = "transaction_code", nullable = false, unique = true, length = 100)
-    private String transactionCode;
-
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
@@ -29,21 +25,7 @@ public class PaymentLog extends BaseEntity {
     @Column(name = "failure_reason", columnDefinition = "TEXT")
     private String failureReason;
 
-    public PaymentLog(Order order, String transactionCode, BigDecimal amount, PaymentLogStatus status,
-            String failureReason) {
-        if (order == null) {
-            throw new IllegalArgumentException("order must not be null");
-        }
-        if (transactionCode == null || transactionCode.isBlank()) {
-            throw new IllegalArgumentException("transactionCode must not be blank");
-        }
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("amount must not be negative");
-        }
-        if (status == null) {
-            throw new IllegalArgumentException("status must not be null");
-        }
-        this.transactionCode = transactionCode;
+    public PaymentLog(Order order, BigDecimal amount, PaymentLogStatus status, String failureReason) {
         this.amount = amount;
         this.status = status;
         this.failureReason = failureReason;

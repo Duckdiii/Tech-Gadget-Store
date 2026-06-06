@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -42,30 +44,26 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private List<ProductImage> images = new ArrayList<>();
 
-    @OneToOne(mappedBy = "product", fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "phone_specification_id", unique = true)
     private PhoneSpecification spec;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private List<ProductVariant> variants = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "product_promotions",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_id")
+    )
     private List<Promotion> promotions = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<ProductSubscription> productSubscriptions = new ArrayList<>();
 
     public Product(String name, String description, Brand brand, Category category) {
-        if (name == null) {
-            throw new IllegalArgumentException("name must not be null");
-        }
-        if (brand == null) {
-            throw new IllegalArgumentException("brand must not be null");
-        }
-        if (category == null) {
-            throw new IllegalArgumentException("category must not be null");
-        }
         this.name = name;
         this.description = description;
         brand.addProduct(this);
@@ -99,29 +97,11 @@ public class Product extends BaseEntity {
     }
 
     public void assignSpec(PhoneSpecification spec) {
-        if (spec == null) {
-            removeSpec();
-            return;
-        }
-        if (this.spec == spec) {
-            spec.setProduct(this);
-            return;
-        }
-        removeSpec();
-        if (spec.getProduct() != null && spec.getProduct() != this) {
-            spec.getProduct().setSpec(null);
-        }
         this.spec = spec;
-        spec.setProduct(this);
     }
 
     public void removeSpec() {
-        if (spec == null) {
-            return;
-        }
-        PhoneSpecification currentSpec = spec;
-        spec = null;
-        currentSpec.setProduct(null);
+        this.spec = null;
     }
 
     public void changeBasicInfo(String name, String description) {

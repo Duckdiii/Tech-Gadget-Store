@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,13 +9,9 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "phone_specifications")
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PhoneSpecification extends BaseEntity {
-
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false, unique = true)
-    private Product product;
 
     @Column(name = "screen_size")
     private Double screenSize;

@@ -3,7 +3,6 @@ package com.project.tech_gadget_store.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
@@ -33,8 +32,7 @@ public class ProductVariant extends BaseEntity {
     @Column(name = "price", precision = 15, scale = 2)
     private BigDecimal price;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_variant_id")
+    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
     private List<ItemInventory> inventoryItems = new ArrayList<>();
 
     public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price) {
@@ -51,6 +49,9 @@ public class ProductVariant extends BaseEntity {
         }
         if (!inventoryItems.contains(inventoryItem)) {
             inventoryItems.add(inventoryItem);
+            if (inventoryItem.getProductVariant() != this) {
+                inventoryItem.setProductVariant(this);
+            }
         }
     }
 
@@ -69,31 +70,13 @@ public class ProductVariant extends BaseEntity {
         return inventoryItems.stream().mapToInt(ItemInventory::getQuantity).sum();
     }
 
-    public Integer getReservedQuantity() {
-        return inventoryItems.stream().mapToInt(ItemInventory::getReservedQuantity).sum();
-    }
-
-    public Integer getAvailableQuantity() {
-        return inventoryItems.stream().mapToInt(ItemInventory::getAvailableQuantity).sum();
-    }
-
     public boolean hasEnoughStock(int requestedQuantity) {
-        return requestedQuantity > 0 && getAvailableQuantity() >= requestedQuantity;
+        return requestedQuantity > 0 && getQuantity() >= requestedQuantity;
     }
 
     public Integer getQuantityIn(Inventory inventory) {
         ItemInventory item = findInventoryItem(inventory);
         return item == null ? 0 : item.getQuantity();
-    }
-
-    public Integer getReservedQuantityIn(Inventory inventory) {
-        ItemInventory item = findInventoryItem(inventory);
-        return item == null ? 0 : item.getReservedQuantity();
-    }
-
-    public Integer getAvailableQuantityIn(Inventory inventory) {
-        ItemInventory item = findInventoryItem(inventory);
-        return item == null ? 0 : item.getAvailableQuantity();
     }
 
     public boolean hasEnoughStockIn(Inventory inventory, int requestedQuantity) {
@@ -123,6 +106,6 @@ public class ProductVariant extends BaseEntity {
         if (color != null && !color.isBlank()) {
             attributes.add(color);
         }
-        return attributes.isEmpty() ? "Product Variant" : String.join(" / ", attributes);
+        return attributes.isEmpty() ? "Default" : String.join(" / ", attributes);
     }
 }

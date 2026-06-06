@@ -10,13 +10,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "product_subscriptions",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_product_subscriptions_customer_product",
-                columnNames = {"customer_id", "product_id"}
-        )
-)
+@Table(name = "product_subscriptions", uniqueConstraints = @UniqueConstraint(name = "uk_product_subscriptions_customer_product", columnNames = {
+        "customer_id", "product_id" }))
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -47,17 +42,10 @@ public class ProductSubscription extends BaseEntity {
         }
     }
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_subscription_id", nullable = false)
+    @OneToMany(mappedBy = "productSubscription", fetch = FetchType.LAZY)
     private java.util.List<Notification> notifications = new java.util.ArrayList<>();
 
     public ProductSubscription(Product product, Customer customer) {
-        if (product == null) {
-            throw new IllegalArgumentException("product must not be null");
-        }
-        if (customer == null) {
-            throw new IllegalArgumentException("customer must not be null");
-        }
         this.product = product;
         this.customer = customer;
         product.getProductSubscriptions().add(this);

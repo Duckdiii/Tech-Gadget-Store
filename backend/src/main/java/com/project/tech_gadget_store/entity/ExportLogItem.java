@@ -26,15 +26,6 @@ public class ExportLogItem extends BaseEntity {
     private Integer quantity;
 
     public ExportLogItem(ExportLog exportLog, ProductVariant productVariant, Integer quantity) {
-        if (exportLog == null) {
-            throw new IllegalArgumentException("exportLog must not be null");
-        }
-        if (productVariant == null) {
-            throw new IllegalArgumentException("productVariant must not be null");
-        }
-        if (quantity == null) {
-            throw new IllegalArgumentException("quantity must not be null");
-        }
         this.productVariant = productVariant;
         this.quantity = quantity;
         exportLog.addItem(this);

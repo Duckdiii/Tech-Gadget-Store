@@ -63,19 +63,9 @@ public class Order extends BaseEntity {
     private List<PaymentLog> paymentLogs = new ArrayList<>();
 
     public Order(Customer customer, Address address, PaymentMethod selectedPaymentMethod) {
-        if (customer == null) {
-            throw new IllegalArgumentException("customer must not be null");
-        }
-        if (address == null) {
-            throw new IllegalArgumentException("address must not be null");
-        }
-        if (selectedPaymentMethod == null) {
-            throw new IllegalArgumentException("selectedPaymentMethod must not be null");
-        }
         this.customer = customer;
         this.address = address;
         this.selectedPaymentMethod = selectedPaymentMethod;
-        customer.getOrders().add(this);
         address.getOrders().add(this);
     }
 

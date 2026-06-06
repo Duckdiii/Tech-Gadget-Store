@@ -36,7 +36,7 @@ public class Receipt extends BaseEntity {
         if (exportLog == null) {
             throw new IllegalArgumentException("exportLog must not be null");
         }
+        this.exportLog = exportLog;
         this.fileUrl = fileUrl;
-        exportLog.assignReceipt(this);
     }
 }

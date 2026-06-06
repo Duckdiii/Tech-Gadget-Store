@@ -52,8 +52,8 @@ public class Inventory extends BaseEntity {
         if (productVariant == null) {
             return null;
         }
-        return productVariant.getInventoryItems().stream()
-                .filter(items::contains)
+        return items.stream()
+                .filter(i -> i.getProductVariant() == productVariant)
                 .findFirst()
                 .orElse(null);
     }
@@ -76,26 +76,8 @@ public class Inventory extends BaseEntity {
         return totalQuantity;
     }
 
-    public int getReservedQuantity() {
-        int totalReservedQuantity = 0;
-        for (ItemInventory item : items) {
-            if (item == null) {
-                throw new IllegalStateException("inventory item must not be null");
-            }
-            if (item.getReservedQuantity() == null) {
-                throw new IllegalStateException("inventory item reservedQuantity must not be null");
-            }
-            totalReservedQuantity += item.getReservedQuantity();
-        }
-        return totalReservedQuantity;
-    }
-
-    public int getAvailableQuantity() {
-        return Math.max(0, getQuantity() - getReservedQuantity());
-    }
-
     public boolean hasEnoughStock(int amount) {
-        return amount > 0 && getAvailableQuantity() >= amount;
+        return amount > 0 && getQuantity() >= amount;
     }
 
     public boolean hasEnoughStock(ProductVariant productVariant, int requestedQuantity) {
@@ -109,18 +91,6 @@ public class Inventory extends BaseEntity {
 
     public void decreaseQuantity(ProductVariant productVariant, int amount) {
         getRequiredItem(productVariant).decreaseQuantity(amount);
-    }
-
-    public void reserve(ProductVariant productVariant, int amount) {
-        getRequiredItem(productVariant).reserve(amount);
-    }
-
-    public void releaseReserved(ProductVariant productVariant, int amount) {
-        getRequiredItem(productVariant).releaseReserved(amount);
-    }
-
-    public void confirmReserved(ProductVariant productVariant, int amount) {
-        getRequiredItem(productVariant).confirmReserved(amount);
     }
 
     public void adjustQuantity(ProductVariant productVariant, int newQuantity) {

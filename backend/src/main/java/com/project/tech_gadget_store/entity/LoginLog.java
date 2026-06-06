@@ -13,9 +13,12 @@ import java.time.LocalDateTime;
 @Table(name = "login_logs")
 @Getter
 @Setter
-
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LoginLog extends BaseEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 
     @Column(name = "email", nullable = false, length = 150)
     private String email;
@@ -34,9 +37,8 @@ public class LoginLog extends BaseEntity {
     private String ipAddress;
 
     public LoginLog(Account account, String email, String roleName, LoginStatus loginStatus, String ipAddress) {
-        if (account == null) {
-            throw new IllegalArgumentException("account must not be null");
-        }
+
+        this.account = account;
         this.email = email;
         this.roleName = roleName;
         this.loginStatus = loginStatus;

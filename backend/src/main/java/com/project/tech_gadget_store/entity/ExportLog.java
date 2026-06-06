@@ -35,10 +35,7 @@ public class ExportLog extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "performed_by", nullable = false)
-    private Staff performedBy;
-
-    @OneToOne(mappedBy = "exportLog", fetch = FetchType.LAZY)
-    private Receipt receipt;
+    private User performedBy;
 
     @PrePersist
     protected void prePersistExportLog() {
@@ -47,7 +44,7 @@ public class ExportLog extends BaseEntity {
         }
     }
 
-    public ExportLog(Staff performedBy, String reason) {
+    public ExportLog(User performedBy, String reason) {
         if (performedBy == null) {
             throw new IllegalArgumentException("performedBy must not be null");
         }
@@ -100,29 +97,4 @@ public class ExportLog extends BaseEntity {
         return totalQuantity;
     }
 
-    public void assignReceipt(Receipt receipt) {
-        if (receipt == null) {
-            removeReceipt();
-            return;
-        }
-        if (this.receipt == receipt) {
-            receipt.setExportLog(this);
-            return;
-        }
-        removeReceipt();
-        if (receipt.getExportLog() != null && receipt.getExportLog() != this) {
-            receipt.getExportLog().setReceipt(null);
-        }
-        this.receipt = receipt;
-        receipt.setExportLog(this);
-    }
-
-    private void removeReceipt() {
-        if (receipt == null) {
-            return;
-        }
-        Receipt currentReceipt = receipt;
-        receipt = null;
-        currentReceipt.setExportLog(null);
-    }
 }

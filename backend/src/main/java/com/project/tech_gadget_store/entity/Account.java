@@ -35,8 +35,7 @@ public class Account extends BaseEntity {
         @JoinColumn(name = "user_id", nullable = false, unique = true)
         private User user;
 
-        @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-        @JoinColumn(name = "account_id", nullable = false)
+        @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
         private List<LoginLog> loginLogs = new ArrayList<>();
 
         public Account(String email, String password, User user) {

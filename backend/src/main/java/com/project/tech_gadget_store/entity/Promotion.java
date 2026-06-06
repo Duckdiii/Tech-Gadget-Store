@@ -1,5 +1,6 @@
 package com.project.tech_gadget_store.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,6 +9,8 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "promotions", uniqueConstraints = @UniqueConstraint(name = "uk_promotions_code", columnNames = "code"))
@@ -15,6 +18,10 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Promotion extends BaseEntity {
+
+        @JsonIgnore
+        @ManyToMany(mappedBy = "promotions", fetch = FetchType.LAZY)
+        private List<Product> products = new ArrayList<>();
 
         @Column(name = "code", nullable = false, length = 80)
         private String code;
@@ -36,45 +43,34 @@ public class Promotion extends BaseEntity {
 
         public Promotion(String code, String name, Double discountPercent, LocalDateTime startAt, LocalDateTime endAt,
                         Product product) {
-                if (code == null || code.isBlank()) {
-                        throw new IllegalArgumentException("code must not be blank");
-                }
-                if (name == null || name.isBlank()) {
-                        throw new IllegalArgumentException("name must not be blank");
-                }
-                if (discountPercent == null) {
-                        throw new IllegalArgumentException("discountPercent must not be null");
-                }
-                if (discountPercent < 0 || discountPercent > 100) {
-                        throw new IllegalArgumentException("discountPercent must be between 0 and 100");
-                }
-                if (startAt == null) {
-                        throw new IllegalArgumentException("startAt must not be null");
-                }
-                if (endAt == null) {
-                        throw new IllegalArgumentException("endAt must not be null");
-                }
-                if (endAt.isBefore(startAt)) {
-                        throw new IllegalArgumentException("endAt must not be before startAt");
-                }
-                if (product == null) {
-                        throw new IllegalArgumentException("product must not be null");
-                }
                 this.code = code;
                 this.name = name;
                 this.discountPercent = discountPercent;
                 this.startAt = startAt;
                 this.endAt = endAt;
-                assignProduct(product);
+                if (product != null) {
+                        addProduct(product);
+                }
         }
 
-        public void assignProduct(Product product) {
+        public void addProduct(Product product) {
                 if (product == null) {
                         throw new IllegalArgumentException("product must not be null");
+                }
+                if (!products.contains(product)) {
+                        products.add(product);
                 }
                 if (!product.getPromotions().contains(this)) {
                         product.getPromotions().add(this);
                 }
+        }
+
+        public void removeProduct(Product product) {
+                if (product == null) {
+                        return;
+                }
+                products.remove(product);
+                product.getPromotions().remove(this);
         }
 
         public boolean isActiveNow() {
@@ -85,7 +81,7 @@ public class Promotion extends BaseEntity {
         }
 
         public boolean canApplyTo(Product product) {
-                return product != null && isActiveNow() && product.getPromotions().contains(this);
+                return isActiveNow() && products.contains(product);
         }
 
         public BigDecimal calculateDiscount(BigDecimal amount) {
