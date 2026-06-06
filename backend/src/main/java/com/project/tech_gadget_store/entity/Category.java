@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +12,8 @@ import java.util.List;
 @Entity
 @Table(name = "categories")
 @Getter
-@Setter
+@Setter
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Category extends BaseEntity {
 
@@ -27,7 +27,8 @@ public class Category extends BaseEntity {
     private List<Product> products = new ArrayList<>();
 
     public Category(String name, String imageUrl) {
-        updateInfo(name, imageUrl);
+        this.name = name;
+        this.imageUrl = imageUrl;
     }
 
     public void addProduct(Product product) {
@@ -52,11 +53,4 @@ public class Category extends BaseEntity {
         }
     }
 
-    public void updateInfo(String name, String imageUrl) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("name must not be blank");
-        }
-        this.name = name;
-        this.imageUrl = imageUrl;
-    }
 }

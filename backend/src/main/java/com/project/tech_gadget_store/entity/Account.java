@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import com.project.tech_gadget_store.entity.enums.AccountStatus;
-import com.project.tech_gadget_store.entity.enums.LoginStatus;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ public class Account extends BaseEntity {
         }
 
         public void unlock() {
-                status = AccountStatus.ACTIVE;
+                activate();
         }
 
         public boolean isActive() {
@@ -76,7 +75,7 @@ public class Account extends BaseEntity {
         }
 
         public void recordLoginFailure() {
-                new LoginLog(this, email, null, LoginStatus.FAILED, null);
+                LoginLog.failure(this, null);
         }
 
         public void attachUser(User user) {

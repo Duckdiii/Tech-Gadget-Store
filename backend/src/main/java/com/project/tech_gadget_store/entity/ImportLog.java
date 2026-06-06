@@ -45,9 +45,9 @@ public class ImportLog extends BaseEntity {
         }
     }
 
-    public ImportLog(User performedBy) {
-
+    public ImportLog(User performedBy, ImportAndExportStatus status) {
         this.performedBy = performedBy;
+        this.status = status;
         performedBy.getImportLogs().add(this);
     }
 

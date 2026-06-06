@@ -35,15 +35,18 @@ public class CartItem extends BaseEntity {
         private Integer quantity = 1;
 
         @Column(name = "selected_for_checkout", nullable = false)
-        private Boolean isSelectedForCheckout = true;
+        private Boolean isSelectedForCheckout = false;
 
         @OneToMany(fetch = FetchType.LAZY)
         @JoinTable(name = "cart_item_bundle_services", joinColumns = @JoinColumn(name = "cart_item_id"), inverseJoinColumns = @JoinColumn(name = "bundle_service_id", unique = true))
         private List<BundleService> bundleServices = new ArrayList<>();
 
-        public CartItem(Cart cart, ProductVariant productVariant, Integer quantity) {
+        public CartItem(Cart cart, ProductVariant productVariant, Integer quantity, Boolean isSelectedForCheckout) {
                 this.productVariant = productVariant;
                 changeQuantity(quantity);
+
+                this.isSelectedForCheckout = isSelectedForCheckout;
+
                 cart.addItem(this);
         }
 

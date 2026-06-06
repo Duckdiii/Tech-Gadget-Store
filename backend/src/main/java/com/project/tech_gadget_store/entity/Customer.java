@@ -32,6 +32,9 @@ public class Customer extends User {
     }
 
     public void assignMembership(Membership membership) {
+        if (membership == null) {
+            throw new IllegalArgumentException("membership must not be null");
+        }
         if (this.membership == membership) {
             return;
         }
@@ -39,7 +42,7 @@ public class Customer extends User {
             this.membership.getCustomers().remove(this);
         }
         this.membership = membership;
-        if (membership != null && !membership.getCustomers().contains(this)) {
+        if (!membership.getCustomers().contains(this)) {
             membership.getCustomers().add(this);
         }
     }

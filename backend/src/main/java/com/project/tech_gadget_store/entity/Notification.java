@@ -67,9 +67,9 @@ public class Notification extends BaseEntity {
         this.title = title;
         this.type = type;
         this.message = message;
-        if (channels != null) {
-            this.channels.addAll(channels);
-        }
+
+        this.channels.addAll(channels);
+
         productSubscription.getNotifications().add(this);
     }
 
@@ -83,7 +83,7 @@ public class Notification extends BaseEntity {
     }
 
     public void markRead() {
-        readAt = LocalDateTime.now();
+        if (readAt == null) readAt = LocalDateTime.now();
     }
 
     public boolean isRead() {

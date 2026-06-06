@@ -42,12 +42,13 @@ public class Promotion extends BaseEntity {
         private Boolean active = true;
 
         public Promotion(String code, String name, Double discountPercent, LocalDateTime startAt, LocalDateTime endAt,
-                        Product product) {
+                        Boolean active, Product product) {
                 this.code = code;
                 this.name = name;
                 this.discountPercent = discountPercent;
                 this.startAt = startAt;
                 this.endAt = endAt;
+                if (active != null) this.active = active;
                 if (product != null) {
                         addProduct(product);
                 }

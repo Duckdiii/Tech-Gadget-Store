@@ -40,7 +40,18 @@ public class PhoneSpecification extends BaseEntity {
     @Column(name = "screen_resolution", length = 120)
     private String screenResolution;
 
-    public PhoneSpecification(Product product) {
+    public PhoneSpecification(Product product, Double screenSize, String rearCamera, String frontCamera,
+            String chipset, Boolean nfcSupported, Integer batteryCapacity, String simType,
+            String operatingSystem, String screenResolution) {
+        this.screenSize = screenSize;
+        this.rearCamera = rearCamera;
+        this.frontCamera = frontCamera;
+        this.chipset = chipset;
+        this.nfcSupported = nfcSupported;
+        this.batteryCapacity = batteryCapacity;
+        this.simType = simType;
+        this.operatingSystem = operatingSystem;
+        this.screenResolution = screenResolution;
         product.assignSpec(this);
     }
 }

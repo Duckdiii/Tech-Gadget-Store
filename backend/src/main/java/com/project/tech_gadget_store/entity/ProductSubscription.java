@@ -45,9 +45,10 @@ public class ProductSubscription extends BaseEntity {
     @OneToMany(mappedBy = "productSubscription", fetch = FetchType.LAZY)
     private java.util.List<Notification> notifications = new java.util.ArrayList<>();
 
-    public ProductSubscription(Product product, Customer customer) {
+    public ProductSubscription(Product product, Customer customer, SubscriptionStatus status) {
         this.product = product;
         this.customer = customer;
+        if (status != null) this.status = status;
         product.getProductSubscriptions().add(this);
         customer.getProductSubscriptions().add(this);
     }

@@ -31,9 +31,7 @@ public class Cart extends BaseEntity {
     private List<CartItem> items = new ArrayList<>();
 
     public Cart(Customer customer) {
-        if (customer == null) {
-            throw new IllegalArgumentException("customer must not be null");
-        }
+
         this.customer = customer;
         customer.setCart(this);
     }
@@ -59,7 +57,7 @@ public class Cart extends BaseEntity {
             return;
         }
 
-        new CartItem(this, variant, quantity);
+        new CartItem(this, variant, quantity, true);
     }
 
     public void removeItem(CartItem item) {

@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,12 +43,10 @@ public class ExportLog extends BaseEntity {
         }
     }
 
-    public ExportLog(User performedBy, String reason) {
-        if (performedBy == null) {
-            throw new IllegalArgumentException("performedBy must not be null");
-        }
+    public ExportLog(User performedBy, String reason, ImportAndExportStatus status) {
         this.performedBy = performedBy;
         this.reason = reason;
+        this.status = status;
         performedBy.getExportLogs().add(this);
     }
 

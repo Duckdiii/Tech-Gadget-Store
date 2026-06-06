@@ -28,7 +28,9 @@ public class ItemInventory extends BaseEntity {
     private Integer quantity = 0;
 
     public ItemInventory(Inventory inventory, ProductVariant productVariant, Integer quantity) {
-
+        if (quantity == null || quantity < 0) {
+            throw new IllegalArgumentException("quantity must not be null or negative");
+        }
         this.quantity = quantity;
         this.productVariant = productVariant;
         inventory.addItem(this);

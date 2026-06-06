@@ -35,11 +35,15 @@ public class BundleService extends BaseEntity {
     @Column(name = "active", nullable = false)
     private Boolean active = true;
 
-    public BundleService(String name, BundleServiceType type, BigDecimal price, Integer durationMonths) {
+    public BundleService(String name, BundleServiceType type, String description, BigDecimal price, Integer durationMonths, Boolean active) {
         this.name = name;
         this.type = type;
+        this.description = description;
         this.price = price;
         this.durationMonths = durationMonths;
+        if (active != null) {
+            this.active = active;
+        }
     }
 
     public void activate() {
