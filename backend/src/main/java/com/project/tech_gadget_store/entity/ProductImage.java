@@ -21,6 +21,12 @@ public class ProductImage extends BaseEntity {
     private String imageUrl;
 
     public ProductImage(Product product, String name, String imageUrl) {
+        if (product == null) {
+            throw new IllegalArgumentException("product must not be null");
+        }
+        if (imageUrl == null || imageUrl.isBlank()) {
+            throw new IllegalArgumentException("imageUrl must not be blank");
+        }
         this.name = name;
         this.imageUrl = imageUrl;
         product.addImage(this);

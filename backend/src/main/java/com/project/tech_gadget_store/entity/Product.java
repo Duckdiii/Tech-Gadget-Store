@@ -52,6 +52,15 @@ public class Product extends BaseEntity {
     private List<Promotion> promotions = new ArrayList<>();
 
     public Product(String name, String description, Brand brand, Category category) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
+        if (brand == null) {
+            throw new IllegalArgumentException("brand must not be null");
+        }
+        if (category == null) {
+            throw new IllegalArgumentException("category must not be null");
+        }
         this.name = name;
         this.description = description;
         brand.addProduct(this);

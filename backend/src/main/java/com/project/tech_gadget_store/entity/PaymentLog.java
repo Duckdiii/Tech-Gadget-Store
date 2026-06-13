@@ -29,6 +29,12 @@ public class PaymentLog extends BaseEntity {
     private String failureReason;
 
     public PaymentLog(String orderId, PaymentLogStatus status, String failureReason) {
+        if (orderId == null || orderId.isBlank()) {
+            throw new IllegalArgumentException("orderId must not be blank");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
         this.orderId = orderId;
         this.status = status;
         this.failureReason = failureReason;

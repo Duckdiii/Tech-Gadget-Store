@@ -39,6 +39,12 @@ public class CartItem extends BaseEntity {
         private List<BundleService> bundleServices = new ArrayList<>();
 
         public CartItem(Cart cart, ProductVariant productVariant, Integer quantity) {
+                if (cart == null) {
+                        throw new IllegalArgumentException("cart must not be null");
+                }
+                if (productVariant == null) {
+                        throw new IllegalArgumentException("productVariant must not be null");
+                }
                 this.productVariant = productVariant;
                 changeQuantity(quantity);
                 cart.addItem(this);

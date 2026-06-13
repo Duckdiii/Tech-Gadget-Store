@@ -30,6 +30,15 @@ public class Brand extends BaseEntity {
     private List<Product> products = new ArrayList<>();
 
     public Brand(String name, String logoUrl, String description) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
+        if (logoUrl == null || logoUrl.isBlank()) {
+            throw new IllegalArgumentException("logoUrl must not be blank");
+        }
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("description must not be blank");
+        }
         this.name = name;
         this.logoUrl = logoUrl;
         this.description = description;

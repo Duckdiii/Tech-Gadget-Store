@@ -25,6 +25,9 @@ public abstract class PaymentMethod extends BaseEntity {
     protected String description;
 
     protected PaymentMethod(String name, String description) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
         this.name = name;
         this.description = description;
     }

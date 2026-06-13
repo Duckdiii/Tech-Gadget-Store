@@ -45,6 +45,9 @@ public abstract class User extends BaseEntity {
     private List<ExportLog> exportLogs = new ArrayList<>();
 
     protected User(String fullName, String phone) {
+        if (fullName == null || fullName.isBlank()) {
+            throw new IllegalArgumentException("fullName must not be blank");
+        }
         this.fullName = fullName;
         this.phone = phone;
     }

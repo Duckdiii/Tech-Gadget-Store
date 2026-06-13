@@ -34,6 +34,15 @@ public class LoginLog extends BaseEntity {
     private LocalDateTime loginTime;
 
     public LoginLog(Account account, String email, String roleName, LoginStatus loginStatus) {
+        if (account == null) {
+            throw new IllegalArgumentException("account must not be null");
+        }
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("email must not be blank");
+        }
+        if (loginStatus == null) {
+            throw new IllegalArgumentException("loginStatus must not be null");
+        }
         this.account = account;
         this.email = email;
         this.roleName = roleName;

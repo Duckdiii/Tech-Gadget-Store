@@ -46,6 +46,9 @@ public class ProductVariant extends BaseEntity {
     private BigDecimal price;
 
     public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price) {
+        if (product == null) {
+            throw new IllegalArgumentException("product must not be null");
+        }
         this.product = product;
         this.ramGb = ramGb;
         this.storageGb = storageGb;

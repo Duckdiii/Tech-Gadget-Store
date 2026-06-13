@@ -40,6 +40,18 @@ public class Invoice extends BaseEntity {
     }
 
     public Invoice(String orderId, BigDecimal vatAmount, BigDecimal discountAmount, BigDecimal finalAmount) {
+        if (orderId == null || orderId.isBlank()) {
+            throw new IllegalArgumentException("orderId must not be blank");
+        }
+        if (vatAmount == null) {
+            throw new IllegalArgumentException("vatAmount must not be null");
+        }
+        if (discountAmount == null) {
+            throw new IllegalArgumentException("discountAmount must not be null");
+        }
+        if (finalAmount == null) {
+            throw new IllegalArgumentException("finalAmount must not be null");
+        }
         this.orderId = orderId;
         this.vatAmount = vatAmount;
         this.discountAmount = discountAmount;

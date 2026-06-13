@@ -50,6 +50,18 @@ public class OrderItem extends BaseEntity {
     }
 
     public OrderItem(Order order, ProductVariant productVariant, Integer quantity, BigDecimal unitPriceAtOrder) {
+        if (order == null) {
+            throw new IllegalArgumentException("order must not be null");
+        }
+        if (productVariant == null) {
+            throw new IllegalArgumentException("productVariant must not be null");
+        }
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("quantity must be positive");
+        }
+        if (unitPriceAtOrder == null) {
+            throw new IllegalArgumentException("unitPriceAtOrder must not be null");
+        }
         this.productVariant = productVariant;
         this.quantity = quantity;
         this.unitPriceAtOrder = unitPriceAtOrder;

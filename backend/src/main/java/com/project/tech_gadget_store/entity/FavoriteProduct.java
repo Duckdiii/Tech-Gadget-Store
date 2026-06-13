@@ -5,10 +5,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,6 +42,9 @@ public class FavoriteProduct extends BaseEntity {
     @Column(name = "unsubscribed_at")
     private LocalDateTime unsubscribedAt;
 
+    @OneToMany(mappedBy = "favoriteProduct", fetch = FetchType.LAZY)
+    private List<Notification> notifications = new ArrayList<>();
+
     @PrePersist
     protected void prePersistFavoriteProduct() {
         if (subscribedAt == null) {
@@ -46,8 +53,17 @@ public class FavoriteProduct extends BaseEntity {
     }
 
     public FavoriteProduct(String productId, String customerId, SubscriptionStatus status) {
+        if (productId == null || productId.isBlank()) {
+            throw new IllegalArgumentException("productId must not be blank");
+        }
+        if (customerId == null || customerId.isBlank()) {
+            throw new IllegalArgumentException("customerId must not be blank");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
         this.productId = productId;
         this.customerId = customerId;
-        if (status != null) this.status = status;
+        this.status = status;
     }
 }

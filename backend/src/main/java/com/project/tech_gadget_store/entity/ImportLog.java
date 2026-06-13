@@ -46,6 +46,12 @@ public class ImportLog extends BaseEntity {
     }
 
     public ImportLog(User performedBy, ImportAndExportStatus status) {
+        if (performedBy == null) {
+            throw new IllegalArgumentException("performedBy must not be null");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
         this.performedBy = performedBy;
         this.status = status;
         performedBy.getImportLogs().add(this);

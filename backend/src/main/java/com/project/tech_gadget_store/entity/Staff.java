@@ -23,6 +23,9 @@ public class Staff extends User {
 
     public Staff(String fullName, String phone, String staffCode, LocalDate hireDate) {
         super(fullName, phone);
+        if (staffCode == null || staffCode.isBlank()) {
+            throw new IllegalArgumentException("staffCode must not be blank");
+        }
         this.staffCode = staffCode;
         this.hireDate = hireDate;
     }

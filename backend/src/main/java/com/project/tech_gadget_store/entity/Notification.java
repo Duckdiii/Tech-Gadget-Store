@@ -49,6 +49,14 @@ public class Notification extends BaseEntity {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "favorite_product_id")
+    private FavoriteProduct favoriteProduct;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
+
     @PrePersist
     protected void prePersist() {
         if (createdAt == null) {
@@ -57,6 +65,15 @@ public class Notification extends BaseEntity {
     }
 
     public Notification(String title, NotificationType type, String message, List<NotificationChannel> channels) {
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("title must not be blank");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("type must not be null");
+        }
+        if (channels == null) {
+            throw new IllegalArgumentException("channels must not be null");
+        }
         this.title = title;
         this.type = type;
         this.message = message;

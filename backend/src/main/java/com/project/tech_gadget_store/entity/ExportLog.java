@@ -44,6 +44,12 @@ public class ExportLog extends BaseEntity {
     }
 
     public ExportLog(User performedBy, String reason, ImportAndExportStatus status) {
+        if (performedBy == null) {
+            throw new IllegalArgumentException("performedBy must not be null");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
         this.performedBy = performedBy;
         this.reason = reason;
         this.status = status;

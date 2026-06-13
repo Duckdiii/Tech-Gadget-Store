@@ -37,6 +37,12 @@ public class Membership extends BaseEntity {
     private List<Customer> customers = new ArrayList<>();
 
     public Membership(MembershipTier tier, MembershipBenefit benefit, BigDecimal minSpending, BigDecimal maxSpending) {
+        if (tier == null) {
+            throw new IllegalArgumentException("tier must not be null");
+        }
+        if (benefit == null) {
+            throw new IllegalArgumentException("benefit must not be null");
+        }
         this.tier = tier;
         this.benefit = benefit;
         changeSpendingRange(minSpending, maxSpending);
