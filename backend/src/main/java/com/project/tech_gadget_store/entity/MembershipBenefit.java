@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +11,8 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "membership_benefits")
 @Getter
-@Setter
+@Setter
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MembershipBenefit extends BaseEntity {
 
@@ -26,6 +26,15 @@ public class MembershipBenefit extends BaseEntity {
     private String description;
 
     public MembershipBenefit(Double discountPercentage, Boolean freeShipping, String description) {
+        if (discountPercentage == null) {
+            throw new IllegalArgumentException("discountPercentage must not be null");
+        }
+        if (discountPercentage < 0 || discountPercentage > 100) {
+            throw new IllegalArgumentException("discountPercentage must be between 0 and 100");
+        }
+        if (freeShipping == null) {
+            throw new IllegalArgumentException("freeShipping must not be null");
+        }
         this.discountPercentage = discountPercentage;
         this.freeShipping = freeShipping;
         this.description = description;

@@ -1,7 +1,7 @@
 package com.project.tech_gadget_store.dto.response;
 
+import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,11 +11,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryResponseDto {
+public class FavoriteProductResponseDto {
 
     private String id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String location;
-    private List<String> itemsIds;
+    private String productId;
+    private String customerId;
+    private SubscriptionStatus status;
+    private LocalDateTime subscribedAt;
+    private LocalDateTime unsubscribedAt;
 }

@@ -11,7 +11,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -48,39 +47,15 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "phone_specification_id", unique = true)
     private PhoneSpecification spec;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private List<ProductVariant> variants = new ArrayList<>();
-
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "product_promotions",
-            joinColumns = @JoinColumn(name = "product_id"),
-            inverseJoinColumns = @JoinColumn(name = "promotion_id")
-    )
+    @JoinTable(name = "product_promotions", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "promotion_id"))
     private List<Promotion> promotions = new ArrayList<>();
-
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    private List<ProductSubscription> productSubscriptions = new ArrayList<>();
 
     public Product(String name, String description, Brand brand, Category category) {
         this.name = name;
         this.description = description;
         brand.addProduct(this);
         category.addProduct(this);
-    }
-
-    public void addVariant(ProductVariant variant) {
-        if (variant == null) {
-            throw new IllegalArgumentException("variant must not be null");
-        }
-        if (!variants.contains(variant)) {
-            variants.add(variant);
-        }
-    }
-
-    public void removeVariant(ProductVariant variant) {
-        variants.remove(variant);
     }
 
     public void addImage(ProductImage image) {
@@ -110,42 +85,5 @@ public class Product extends BaseEntity {
         }
         this.name = name;
         this.description = description;
-    }
-
-    public BigDecimal getMinVariantPrice() {
-        BigDecimal minPrice = null;
-        for (ProductVariant variant : variants) {
-            if (variant == null) {
-                throw new IllegalStateException("product variant must not be null");
-            }
-            if (variant.getPrice() == null) {
-                throw new IllegalStateException("product variant price must not be null");
-            }
-            if (minPrice == null || variant.getPrice().compareTo(minPrice) < 0) {
-                minPrice = variant.getPrice();
-            }
-        }
-        return minPrice;
-    }
-
-    public BigDecimal getMaxVariantPrice() {
-        BigDecimal maxPrice = null;
-        for (ProductVariant variant : variants) {
-            if (variant == null) {
-                throw new IllegalStateException("product variant must not be null");
-            }
-            if (variant.getPrice() == null) {
-                throw new IllegalStateException("product variant price must not be null");
-            }
-            if (maxPrice == null || variant.getPrice().compareTo(maxPrice) > 0) {
-                maxPrice = variant.getPrice();
-            }
-        }
-        return maxPrice;
-    }
-
-    public boolean hasAvailableVariant() {
-        return variants.stream()
-                .anyMatch(variant -> variant.hasEnoughStock(1));
     }
 }

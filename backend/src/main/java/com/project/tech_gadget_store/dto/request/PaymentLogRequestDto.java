@@ -1,5 +1,8 @@
 package com.project.tech_gadget_store.dto.request;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
 import com.project.tech_gadget_store.entity.enums.PaymentLogStatus;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
@@ -15,9 +18,13 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PaymentLogRequestDto {
 
+    @NotBlank(message = "orderId must not be blank")
     private String orderId;
     private String transactionCode;
+    @NotNull(message = "amount must not be null")
+    @DecimalMin(value = "0.00", message = "amount must not be negative")
     private BigDecimal amount;
+    @NotNull(message = "status must not be null")
     private PaymentLogStatus status;
     private String failureReason;
 }

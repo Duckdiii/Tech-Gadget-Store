@@ -10,7 +10,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
@@ -55,21 +54,20 @@ public class Order extends BaseEntity {
     @Column(name = "order_status", nullable = false, length = 40)
     private OrderStatus orderStatus = OrderStatus.AWAITING_CONFIRMATION;
 
-    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
-    private Invoice invoice;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
-    private List<PaymentLog> paymentLogs = new ArrayList<>();
-
     public Order(Customer customer, Address address, PaymentMethod selectedPaymentMethod) {
-        if (address.getUser() != customer) {
-            throw new IllegalArgumentException("address does not belong to customer");
+        if (customer == null) {
+            throw new IllegalArgumentException("customer must not be null");
+        }
+        if (address == null) {
+            throw new IllegalArgumentException("address must not be null");
+        }
+        if (selectedPaymentMethod == null) {
+            throw new IllegalArgumentException("selectedPaymentMethod must not be null");
         }
         this.customer = customer;
         this.address = address;
         this.selectedPaymentMethod = selectedPaymentMethod;
-        address.getOrders().add(this);
+        this.orderDate = LocalDateTime.now();
     }
 
     public void addItem(OrderItem item) {
@@ -139,36 +137,7 @@ public class Order extends BaseEntity {
     }
 
     public BigDecimal calculateTotal() {
-        if (invoice != null && invoice.getFinalAmount() != null) {
-            return invoice.getFinalAmount();
-        }
         return calculateSubtotal();
-    }
-
-    public void assignInvoice(Invoice invoice) {
-        if (invoice == null) {
-            removeInvoice();
-            return;
-        }
-        if (this.invoice == invoice) {
-            invoice.setOrder(this);
-            return;
-        }
-        removeInvoice();
-        if (invoice.getOrder() != null && invoice.getOrder() != this) {
-            invoice.getOrder().setInvoice(null);
-        }
-        this.invoice = invoice;
-        invoice.setOrder(this);
-    }
-
-    public void addPaymentLog(PaymentLog paymentLog) {
-        if (paymentLog == null) {
-            throw new IllegalArgumentException("paymentLog must not be null");
-        }
-        if (!paymentLogs.contains(paymentLog)) {
-            paymentLogs.add(paymentLog);
-        }
     }
 
     @PrePersist
@@ -178,12 +147,4 @@ public class Order extends BaseEntity {
         }
     }
 
-    private void removeInvoice() {
-        if (invoice == null) {
-            return;
-        }
-        Invoice currentInvoice = invoice;
-        invoice = null;
-        currentInvoice.setOrder(null);
-    }
 }

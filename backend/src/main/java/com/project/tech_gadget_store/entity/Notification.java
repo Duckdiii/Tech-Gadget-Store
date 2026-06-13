@@ -20,10 +20,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_subscription_id", nullable = false)
-    private ProductSubscription productSubscription;
-
     @Column(name = "title", nullable = false, length = 150)
     private String title;
 
@@ -60,17 +56,11 @@ public class Notification extends BaseEntity {
         }
     }
 
-    public Notification(ProductSubscription productSubscription, String title, NotificationType type,
-            String message, List<NotificationChannel> channels) {
-
-        this.productSubscription = productSubscription;
+    public Notification(String title, NotificationType type, String message, List<NotificationChannel> channels) {
         this.title = title;
         this.type = type;
         this.message = message;
-
         this.channels.addAll(channels);
-
-        productSubscription.getNotifications().add(this);
     }
 
     public void markSent() {

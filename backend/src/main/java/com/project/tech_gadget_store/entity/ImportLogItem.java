@@ -2,9 +2,6 @@ package com.project.tech_gadget_store.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
@@ -19,9 +16,8 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ImportLogItem extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_variant_id", nullable = false)
-    private ProductVariant productVariant;
+    @Column(name = "product_variant_id", nullable = false, length = 36)
+    private String productVariantId;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
@@ -29,9 +25,8 @@ public class ImportLogItem extends BaseEntity {
     @Column(name = "import_price", nullable = false)
     private BigDecimal importPrice;
 
-    public ImportLogItem(ImportLog importLog, ProductVariant productVariant, Integer quantity, BigDecimal importPrice) {
-
-        this.productVariant = productVariant;
+    public ImportLogItem(ImportLog importLog, String productVariantId, Integer quantity, BigDecimal importPrice) {
+        this.productVariantId = productVariantId;
         this.quantity = quantity;
         this.importPrice = importPrice;
         importLog.addItem(this);

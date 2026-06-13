@@ -31,7 +31,6 @@ public class Cart extends BaseEntity {
     private List<CartItem> items = new ArrayList<>();
 
     public Cart(Customer customer) {
-
         this.customer = customer;
         customer.setCart(this);
     }
@@ -45,19 +44,19 @@ public class Cart extends BaseEntity {
         }
     }
 
-    public void addItem(ProductVariant variant, int quantity) {
-        if (variant == null) {
-            throw new IllegalArgumentException("variant must not be null");
+    public void addItem(ProductVariant productVariant, int quantity) {
+        if (productVariant == null) {
+            throw new IllegalArgumentException("productVariant must not be null");
         }
         validatePositiveQuantity(quantity);
 
-        CartItem existingItem = findSimpleItemByVariant(variant);
+        CartItem existingItem = findSimpleItemByProductVariant(productVariant);
         if (existingItem != null) {
             existingItem.increaseQuantity(quantity);
             return;
         }
 
-        new CartItem(this, variant, quantity, true);
+        new CartItem(this, productVariant, quantity);
     }
 
     public void removeItem(CartItem item) {
@@ -71,12 +70,12 @@ public class Cart extends BaseEntity {
         }
     }
 
-    public void removeItemByVariant(ProductVariant variant) {
-        if (variant == null) {
+    public void removeItemByProductVariant(ProductVariant productVariant) {
+        if (productVariant == null) {
             return;
         }
         new ArrayList<>(items).stream()
-                .filter(item -> item.getProductVariant() == variant)
+                .filter(item -> item.getProductVariant() == productVariant)
                 .forEach(this::removeItem);
     }
 
@@ -84,33 +83,19 @@ public class Cart extends BaseEntity {
         new ArrayList<>(items).forEach(this::removeItem);
     }
 
-    public List<CartItem> getSelectedItems() {
-        return items.stream()
-                .filter(CartItem::isSelected)
-                .toList();
-    }
-
     public boolean isEmpty() {
         return items.isEmpty();
     }
 
-    public BigDecimal calculateSelectedTotal() {
-        return getSelectedItems().stream()
+    public BigDecimal calculateTotal() {
+        return items.stream()
                 .map(CartItem::calculateSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void selectAllItems() {
-        items.forEach(CartItem::selectForCheckout);
-    }
-
-    public void unselectAllItems() {
-        items.forEach(CartItem::unselectForCheckout);
-    }
-
-    private CartItem findSimpleItemByVariant(ProductVariant variant) {
+    private CartItem findSimpleItemByProductVariant(ProductVariant productVariant) {
         return items.stream()
-                .filter(item -> item.getProductVariant() == variant)
+                .filter(item -> item.getProductVariant() == productVariant)
                 .filter(item -> item.getBundleServices() == null || item.getBundleServices().isEmpty())
                 .findFirst()
                 .orElse(null);

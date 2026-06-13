@@ -1,5 +1,8 @@
 package com.project.tech_gadget_store.dto.request;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +16,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BrandRequestDto {
 
+    @NotBlank(message = "name must not be blank")
     private String name;
     private String logoUrl;
     private String description;

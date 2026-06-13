@@ -3,7 +3,14 @@ package com.project.tech_gadget_store.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -12,6 +19,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import jakarta.persistence.CascadeType;
 
 @Entity
 @Table(name = "product_variants")
@@ -19,6 +28,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductVariant extends BaseEntity {
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(name = "ram_gb")
     private Integer ramGb;
@@ -32,31 +45,12 @@ public class ProductVariant extends BaseEntity {
     @Column(name = "price", precision = 15, scale = 2)
     private BigDecimal price;
 
-    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
-    private List<ItemInventory> inventoryItems = new ArrayList<>();
-
     public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price) {
+        this.product = product;
         this.ramGb = ramGb;
         this.storageGb = storageGb;
         this.color = color;
         this.price = price;
-        product.addVariant(this);
-    }
-
-    public void addInventoryItem(ItemInventory inventoryItem) {
-        if (inventoryItem == null) {
-            throw new IllegalArgumentException("inventoryItem must not be null");
-        }
-        if (!inventoryItems.contains(inventoryItem)) {
-            inventoryItems.add(inventoryItem);
-            if (inventoryItem.getProductVariant() != this) {
-                inventoryItem.setProductVariant(this);
-            }
-        }
-    }
-
-    public void removeInventoryItem(ItemInventory inventoryItem) {
-        inventoryItems.remove(inventoryItem);
     }
 
     public void changePrice(BigDecimal newPrice) {
@@ -64,35 +58,6 @@ public class ProductVariant extends BaseEntity {
             throw new IllegalArgumentException("newPrice must not be null");
         }
         this.price = newPrice;
-    }
-
-    public Integer getQuantity() {
-        return inventoryItems.stream().mapToInt(ItemInventory::getQuantity).sum();
-    }
-
-    public boolean hasEnoughStock(int requestedQuantity) {
-        return requestedQuantity > 0 && getQuantity() >= requestedQuantity;
-    }
-
-    public Integer getQuantityIn(Inventory inventory) {
-        ItemInventory item = findInventoryItem(inventory);
-        return item == null ? 0 : item.getQuantity();
-    }
-
-    public boolean hasEnoughStockIn(Inventory inventory, int requestedQuantity) {
-        ItemInventory item = findInventoryItem(inventory);
-        return item != null && item.hasEnoughStock(requestedQuantity);
-    }
-
-    public boolean isStoredIn(Inventory inventory) {
-        return findInventoryItem(inventory) != null;
-    }
-
-    private ItemInventory findInventoryItem(Inventory inventory) {
-        if (inventory == null) {
-            return null;
-        }
-        return inventory.findItem(this);
     }
 
     public String getDisplayName() {

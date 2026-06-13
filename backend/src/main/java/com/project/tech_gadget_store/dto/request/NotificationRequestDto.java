@@ -1,5 +1,7 @@
 package com.project.tech_gadget_store.dto.request;
 
+import jakarta.validation.constraints.*;
+
 import com.project.tech_gadget_store.entity.enums.NotificationStatus;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -15,9 +17,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class NotificationRequestDto {
 
+    @NotBlank(message = "title must not be blank")
     private String title;
-    private String productSubscriptionId;
+    @NotBlank(message = "message must not be blank")
     private String message;
+    @NotNull(message = "status must not be null")
     private NotificationStatus status;
     private LocalDateTime sentAt;
     private LocalDateTime readAt;

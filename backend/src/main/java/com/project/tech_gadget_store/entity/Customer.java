@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "customers")
@@ -23,12 +21,15 @@ public class Customer extends User {
     @OneToOne(mappedBy = "customer", fetch = FetchType.LAZY)
     private Cart cart;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
-    private List<ProductSubscription> productSubscriptions = new ArrayList<>();
-
     public Customer(String fullName, String phone, Membership membership) {
         super(fullName, phone);
         assignMembership(membership);
+    }
+
+    public void createCartIfAbsent() {
+        if (cart == null) {
+            cart = new Cart(this);
+        }
     }
 
     public void assignMembership(Membership membership) {
@@ -44,12 +45,6 @@ public class Customer extends User {
         this.membership = membership;
         if (!membership.getCustomers().contains(this)) {
             membership.getCustomers().add(this);
-        }
-    }
-
-    public void createCartIfAbsent() {
-        if (cart == null) {
-            cart = new Cart(this);
         }
     }
 

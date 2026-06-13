@@ -19,6 +19,5 @@ public class CartItemResponseDto {
     private String cartId;
     private String productVariantId;
     private Integer quantity;
-    private Boolean isSelectedForCheckout;
     private List<String> bundleServicesIds;
 }

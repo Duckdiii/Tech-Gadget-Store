@@ -13,13 +13,12 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "invoices")
 @Getter
-@Setter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Invoice extends BaseEntity {
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_id", nullable = false, unique = true)
-    private Order order;
+    @Column(name = "order_id", nullable = false, length = 36)
+    private String orderId;
 
     @Column(name = "vat_amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal vatAmount;
@@ -40,10 +39,10 @@ public class Invoice extends BaseEntity {
         }
     }
 
-    public Invoice(Order order, BigDecimal vatAmount, BigDecimal discountAmount, BigDecimal finalAmount) {
+    public Invoice(String orderId, BigDecimal vatAmount, BigDecimal discountAmount, BigDecimal finalAmount) {
+        this.orderId = orderId;
         this.vatAmount = vatAmount;
         this.discountAmount = discountAmount;
         this.finalAmount = finalAmount;
-        order.assignInvoice(this);
     }
 }

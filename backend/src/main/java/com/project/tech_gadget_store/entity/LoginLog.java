@@ -33,16 +33,11 @@ public class LoginLog extends BaseEntity {
     @Column(name = "login_time", nullable = false)
     private LocalDateTime loginTime;
 
-    @Column(name = "ip_address", length = 45)
-    private String ipAddress;
-
-    public LoginLog(Account account, String email, String roleName, LoginStatus loginStatus, String ipAddress) {
-
+    public LoginLog(Account account, String email, String roleName, LoginStatus loginStatus) {
         this.account = account;
         this.email = email;
         this.roleName = roleName;
         this.loginStatus = loginStatus;
-        this.ipAddress = ipAddress;
         this.loginTime = LocalDateTime.now();
         account.getLoginLogs().add(this);
     }
@@ -51,7 +46,7 @@ public class LoginLog extends BaseEntity {
         if (account == null) {
             throw new IllegalArgumentException("account must not be null");
         }
-        return new LoginLog(account, account.getEmail(), resolveRoleName(account), LoginStatus.SUCCESS, null);
+        return new LoginLog(account, account.getEmail(), resolveRoleName(account), LoginStatus.SUCCESS);
     }
 
     private static String resolveRoleName(Account account) {
@@ -68,11 +63,11 @@ public class LoginLog extends BaseEntity {
         return null;
     }
 
-    public static LoginLog failure(Account account, String ipAddress) {
+    public static LoginLog failure(Account account) {
         if (account == null) {
             throw new IllegalArgumentException("account must not be null");
         }
-        return new LoginLog(account, account.getEmail(), resolveRoleName(account), LoginStatus.FAILED, ipAddress);
+        return new LoginLog(account, account.getEmail(), resolveRoleName(account), LoginStatus.FAILED);
     }
 
     public boolean isSuccess() {

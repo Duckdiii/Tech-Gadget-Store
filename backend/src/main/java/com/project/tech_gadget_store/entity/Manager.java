@@ -19,12 +19,4 @@ public class Manager extends User {
     public Manager(String fullName, String phone) {
         super(fullName, phone);
     }
-
-    public boolean canManageStaff() {
-        return true;
-    }
-
-    public boolean canViewReports() {
-        return true;
-    }
 }

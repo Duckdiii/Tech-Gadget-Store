@@ -1,5 +1,8 @@
 package com.project.tech_gadget_store.dto.request;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +16,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserRequestDto {
 
+    @NotBlank(message = "fullName must not be blank")
     private String fullName;
+    @NotBlank(message = "phone must not be blank")
     private String phone;
 }

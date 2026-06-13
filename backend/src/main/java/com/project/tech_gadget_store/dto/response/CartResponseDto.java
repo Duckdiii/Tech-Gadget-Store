@@ -16,6 +16,5 @@ public class CartResponseDto {
     private String id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String customerId;
     private List<String> itemsIds;
 }

@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,12 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(
-        name = "memberships",
-        uniqueConstraints = @UniqueConstraint(name = "uk_memberships_tier", columnNames = "tier")
-)
+@Table(name = "memberships", uniqueConstraints = @UniqueConstraint(name = "uk_memberships_tier", columnNames = "tier"))
 @Getter
-@Setter
+@Setter
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Membership extends BaseEntity {
 
@@ -26,7 +23,7 @@ public class Membership extends BaseEntity {
     @Column(name = "tier", nullable = false, length = 30)
     private MembershipTier tier;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "benefit_id", nullable = false, unique = true)
     private MembershipBenefit benefit;
 
@@ -41,15 +38,8 @@ public class Membership extends BaseEntity {
 
     public Membership(MembershipTier tier, MembershipBenefit benefit, BigDecimal minSpending, BigDecimal maxSpending) {
         this.tier = tier;
-        assignBenefit(benefit);
-        changeSpendingRange(minSpending, maxSpending);
-    }
-
-    public void assignBenefit(MembershipBenefit benefit) {
-        if (benefit == null) {
-            throw new IllegalArgumentException("benefit must not be null");
-        }
         this.benefit = benefit;
+        changeSpendingRange(minSpending, maxSpending);
     }
 
     public boolean isSpendingInRange(BigDecimal spending) {

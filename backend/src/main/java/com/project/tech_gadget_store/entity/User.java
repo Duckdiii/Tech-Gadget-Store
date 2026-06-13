@@ -49,7 +49,7 @@ public abstract class User extends BaseEntity {
         this.phone = phone;
     }
 
-    public void updateProfile(String fullName, String phone, String address) {
+    public void updateProfile(String fullName, String phone, Address address) {
         if (fullName == null || fullName.isBlank()) {
             throw new IllegalArgumentException("fullName must not be blank");
         }
@@ -62,15 +62,15 @@ public abstract class User extends BaseEntity {
         this.phone = phone;
     }
 
-    public void changeAddress(String address) {
-        if (address == null || address.isBlank()) {
-            throw new IllegalArgumentException("address must not be blank");
+    public void changeAddress(Address newAddress) {
+        if (newAddress == null) {
+            throw new IllegalArgumentException("address must not be null");
         }
         if (addresses.isEmpty()) {
-            new Address(this, address, null, null, null);
+            addresses.add(newAddress);
             return;
         }
-        addresses.get(0).setStreet(address);
+        addresses.set(0, newAddress);
     }
 
     public String getDisplayName() {
@@ -83,19 +83,10 @@ public abstract class User extends BaseEntity {
         return getId();
     }
 
-    public void addAddress(Address address) {
-        if (address == null) {
-            throw new IllegalArgumentException("address must not be null");
-        }
-        if (!addresses.contains(address)) {
-            addresses.add(address);
-            if (address.getUser() != this) {
-                address.setUser(this);
-            }
-        }
-    }
-
     public void removeAddress(Address address) {
+        if (addresses.size() <= 1) {
+            throw new IllegalStateException("user must have at least one address");
+        }
         addresses.remove(address);
     }
 }

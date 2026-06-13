@@ -17,7 +17,6 @@ public class NotificationResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String title;
-    private String productSubscriptionId;
     private String message;
     private NotificationStatus status;
     private LocalDateTime sentAt;

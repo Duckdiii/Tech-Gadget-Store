@@ -21,5 +21,4 @@ public class LoginLogResponseDto {
     private String roleName;
     private LoginStatus loginStatus;
     private LocalDateTime loginTime;
-    private String ipAddress;
 }

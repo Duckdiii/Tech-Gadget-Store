@@ -24,6 +24,5 @@ public class OrderResponseDto {
     private LocalDateTime orderDate;
     private LocalDateTime paidAt;
     private OrderStatus orderStatus;
-    private String invoiceId;
     private List<String> paymentLogsIds;
 }

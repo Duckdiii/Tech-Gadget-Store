@@ -1,5 +1,8 @@
 package com.project.tech_gadget_store.dto.request;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +17,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ReceiptRequestDto {
 
+    @NotBlank(message = "exportLogId must not be blank")
     private String exportLogId;
     private LocalDateTime issuedAt;
+    @NotBlank(message = "fileUrl must not be blank")
     private String fileUrl;
 }

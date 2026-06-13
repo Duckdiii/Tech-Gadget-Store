@@ -35,15 +35,35 @@ public class BundleService extends BaseEntity {
     @Column(name = "active", nullable = false)
     private Boolean active = true;
 
-    public BundleService(String name, BundleServiceType type, String description, BigDecimal price, Integer durationMonths, Boolean active) {
+    public BundleService(String name, BundleServiceType type, String description, BigDecimal price,
+            Integer durationMonths, Boolean active) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("type must not be null");
+        }
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("description must not be blank");
+        }
+        if (price == null) {
+            throw new IllegalArgumentException("price must not be null");
+        }
+        if (price.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("price must not be negative");
+        }
+        if (durationMonths != null && durationMonths < 0) {
+            throw new IllegalArgumentException("durationMonths must not be negative");
+        }
+        if (active == null) {
+            throw new IllegalArgumentException("active must not be null");
+        }
         this.name = name;
         this.type = type;
         this.description = description;
         this.price = price;
         this.durationMonths = durationMonths;
-        if (active != null) {
-            this.active = active;
-        }
+        this.active = active;
     }
 
     public void activate() {

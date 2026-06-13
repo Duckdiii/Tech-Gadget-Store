@@ -37,7 +37,20 @@ public class Account extends BaseEntity {
         @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
         private List<LoginLog> loginLogs = new ArrayList<>();
 
-        public Account(String email, String password, User user) {
+        public Account(String email, String password, User user, AccountStatus status) {
+                if (email == null || email.isBlank()) {
+                        throw new IllegalArgumentException("email must not be blank");
+                }
+                if (password == null || password.isBlank()) {
+                        throw new IllegalArgumentException("password must not be blank");
+                }
+                if (user == null) {
+                        throw new IllegalArgumentException("user must not be null");
+                }
+                if (status == null) {
+                        throw new IllegalArgumentException("status must not be null");
+                }
+                this.status = status;
                 this.email = email;
                 this.password = password;
                 attachUser(user);
@@ -75,7 +88,7 @@ public class Account extends BaseEntity {
         }
 
         public void recordLoginFailure() {
-                LoginLog.failure(this, null);
+                LoginLog.failure(this);
         }
 
         public void attachUser(User user) {

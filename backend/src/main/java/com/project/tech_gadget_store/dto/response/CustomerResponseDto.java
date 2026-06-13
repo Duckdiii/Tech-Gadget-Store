@@ -21,6 +21,5 @@ public class CustomerResponseDto {
     private String membershipId;
     private String cartId;
     private List<String> ordersIds;
-    private List<String> productSubscriptionsIds;
     private List<String> addressesIds;
 }
