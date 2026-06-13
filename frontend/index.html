@@ -2,9 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>TechStore</title>
+    <script>
+      ;(function(){
+        var d=localStorage.getItem('a11y-dark')==='true'
+        var f=localStorage.getItem('a11y-font')||'md'
+        var m=localStorage.getItem('a11y-motion')==='true'
+        if(d) document.documentElement.classList.add('dark')
+        document.documentElement.setAttribute('data-font',f)
+        if(m) document.documentElement.classList.add('reduce-motion')
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
