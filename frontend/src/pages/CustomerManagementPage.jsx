@@ -4,7 +4,7 @@ import { useNav } from '../hooks/useNav'
 const TIER_CONFIG = {
   VIP:              { bg: 'bg-amber-100',  text: 'text-amber-700'  },
   Premium:          { bg: 'bg-orange-100', text: 'text-orange-600' },
-  'Thành viên mới': { bg: 'bg-blue-100',   text: 'text-blue-600'   },
+  'Thành viên mới': { bg: 'bg-orange-50',   text: 'text-[#E8420A]'   },
 }
 
 const CUSTOMERS = [
@@ -139,7 +139,7 @@ export default function CustomerManagementPage() {
             <input
               type="text"
               placeholder="Tìm kiếm nhanh..."
-              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
             />
           </div>
         </div>
@@ -175,13 +175,13 @@ export default function CustomerManagementPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-lg text-sm transition-colors cursor-pointer">
+            <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
               Xuất dữ liệu
             </button>
-            <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors cursor-pointer">
+            <button className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
@@ -193,7 +193,7 @@ export default function CustomerManagementPage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-4 gap-4">
           {KPI_CARDS.map((card, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 px-5 py-5">
+            <div key={i} className="bg-white rounded border border-gray-200 px-5 py-5">
               <div className="flex items-center gap-2 mb-3">
                 {card.icon}
                 <span className="text-xs font-bold text-gray-400 tracking-wider">{card.label}</span>
@@ -209,7 +209,7 @@ export default function CustomerManagementPage() {
         </div>
 
         {/* Table card */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded border border-gray-200 overflow-hidden">
           {/* Filter row */}
           <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
             {/* Search */}
@@ -222,7 +222,7 @@ export default function CustomerManagementPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Tìm tên, email, sđt..."
-                className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
               />
             </div>
 
@@ -231,7 +231,7 @@ export default function CustomerManagementPage() {
               <select
                 value={tierFilter}
                 onChange={(e) => setTierFilter(e.target.value)}
-                className="appearance-none border border-gray-300 rounded-lg px-4 py-2.5 pr-9 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer min-w-[150px]"
+                className="appearance-none border border-gray-300 rounded px-4 py-2.5 pr-9 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer min-w-[150px]"
               >
                 <option value="">Tất cả hạng</option>
                 <option value="VIP">VIP</option>
@@ -244,7 +244,7 @@ export default function CustomerManagementPage() {
             </div>
 
             {/* Sort */}
-            <button className="ml-auto border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 bg-white hover:bg-gray-50 cursor-pointer transition-colors font-medium">
+            <button className="ml-auto border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-700 bg-white hover:bg-gray-50 cursor-pointer transition-colors font-medium">
               Tổng chi tiêu: Cao - Thấp
             </button>
           </div>
@@ -284,7 +284,7 @@ export default function CustomerManagementPage() {
                   </div>
 
                   {/* Hạng thành viên */}
-                  <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg text-xs font-semibold w-fit ${tier.bg} ${tier.text}`}>
+                  <span className={`inline-flex items-center justify-center px-3 py-1 rounded text-xs font-semibold w-fit ${tier.bg} ${tier.text}`}>
                     {customer.tier}
                   </span>
 
@@ -300,7 +300,7 @@ export default function CustomerManagementPage() {
                   <span className="text-sm text-gray-600">{customer.joinDate}</span>
 
                   {/* Thao tác */}
-                  <button onClick={() => onNavigate('customerDetail')} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+                  <button onClick={() => onNavigate('customerDetail')} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors cursor-pointer">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -315,7 +315,7 @@ export default function CustomerManagementPage() {
           <div className="px-5 py-4 flex items-center justify-between border-t border-gray-100">
             <span className="text-sm text-gray-500">Hiển thị 1 - 10 trên 5,240</span>
             <div className="flex items-center gap-1">
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
+              <button className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
@@ -325,8 +325,8 @@ export default function CustomerManagementPage() {
                 <button
                   key={n}
                   onClick={() => setPage(n)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium cursor-pointer transition-colors ${
-                    page === n ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium cursor-pointer transition-colors ${
+                    page === n ? 'bg-[#E8420A] text-white' : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
                   {n}
@@ -335,11 +335,11 @@ export default function CustomerManagementPage() {
 
               <span className="w-8 h-8 flex items-center justify-center text-gray-400 text-sm">...</span>
 
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors">
+              <button className="w-8 h-8 flex items-center justify-center rounded text-sm font-medium text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors">
                 524
               </button>
 
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
+              <button className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>

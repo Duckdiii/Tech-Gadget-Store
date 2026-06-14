@@ -20,7 +20,7 @@ const EXPORT_LOGS = [
 ]
 
 const EXPORT_TYPE_CFG = {
-  sale:     { label:'Xuất bán',        bg:'bg-blue-100',   text:'text-blue-600'   },
+  sale:     { label:'Xuất bán',        bg:'bg-orange-50',   text:'text-[#E8420A]'   },
   transfer: { label:'Chuyển kho',      bg:'bg-purple-100', text:'text-purple-600' },
   damage:   { label:'Hỏng / Thanh lý', bg:'bg-red-100',    text:'text-red-600'    },
   return:   { label:'Trả NCC',         bg:'bg-amber-100',  text:'text-amber-700'  },
@@ -42,8 +42,8 @@ function ViewImportModal({ log, onClose }) {
     <>
       <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-          <div className="bg-gradient-to-br from-teal-600 to-teal-800 rounded-t-2xl px-6 py-5 text-white">
+        <div className="bg-white rounded shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-teal-700  px-6 py-5 text-white">
             <p className="text-xs font-semibold opacity-70 uppercase tracking-widest">TechStore · Kho vận</p>
             <h2 className="text-2xl font-black mt-1">PHIẾU NHẬP KHO</h2>
             <div className="flex justify-between mt-2 text-sm opacity-90">
@@ -53,10 +53,10 @@ function ViewImportModal({ log, onClose }) {
           </div>
           <div className="px-6 py-4 space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gray-50 rounded-xl p-3"><p className="text-xs text-gray-400">Nhà cung cấp</p><p className="font-semibold text-sm text-gray-800 mt-0.5">{log.supplier}</p></div>
-              <div className="bg-gray-50 rounded-xl p-3"><p className="text-xs text-gray-400">Kho nhận</p><p className="font-semibold text-sm text-gray-800 mt-0.5">{log.warehouse}</p></div>
+              <div className="bg-gray-50 rounded p-3"><p className="text-xs text-gray-400">Nhà cung cấp</p><p className="font-semibold text-sm text-gray-800 mt-0.5">{log.supplier}</p></div>
+              <div className="bg-gray-50 rounded p-3"><p className="text-xs text-gray-400">Kho nhận</p><p className="font-semibold text-sm text-gray-800 mt-0.5">{log.warehouse}</p></div>
             </div>
-            <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <div className="border border-gray-200 rounded overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
@@ -78,7 +78,7 @@ function ViewImportModal({ log, onClose }) {
                 </tbody>
               </table>
             </div>
-            <div className="bg-teal-50 rounded-xl p-4 space-y-1.5 text-sm">
+            <div className="bg-teal-50 rounded p-4 space-y-1.5 text-sm">
               <div className="flex justify-between text-gray-600"><span>Cộng tiền hàng</span><span>{fmt(sub)}đ</span></div>
               <div className="flex justify-between text-gray-600"><span>VAT (10%)</span><span>{fmt(vat)}đ</span></div>
               <div className="flex justify-between border-t border-teal-200 pt-2 font-bold text-teal-700 text-base"><span>TỔNG CỘNG</span><span>{fmt(total)}đ</span></div>
@@ -86,7 +86,7 @@ function ViewImportModal({ log, onClose }) {
             {log.note && <p className="text-xs text-gray-400 italic">Ghi chú: {log.note}</p>}
           </div>
           <div className="flex gap-3 px-6 pb-6">
-            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
+            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
           </div>
         </div>
       </div>
@@ -101,8 +101,8 @@ function ViewExportModal({ log, onClose }) {
     <>
       <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-          <div className="bg-gradient-to-br from-slate-700 to-slate-900 rounded-t-2xl px-6 py-5 text-white">
+        <div className="bg-white rounded shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-900  px-6 py-5 text-white">
             <p className="text-xs font-semibold opacity-70 uppercase tracking-widest">TechStore · Kho vận</p>
             <h2 className="text-2xl font-black mt-1">PHIẾU XUẤT KHO</h2>
             <div className="flex items-center justify-between mt-2">
@@ -113,10 +113,10 @@ function ViewExportModal({ log, onClose }) {
           </div>
           <div className="px-6 py-4 space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gray-50 rounded-xl p-3"><p className="text-xs text-gray-400">Loại xuất</p><p className="font-semibold text-sm text-gray-800 mt-0.5">{tc.label}</p></div>
-              <div className="bg-gray-50 rounded-xl p-3"><p className="text-xs text-gray-400">Người nhận / Đích đến</p><p className="font-semibold text-sm text-gray-800 mt-0.5">{log.recipient}</p></div>
+              <div className="bg-gray-50 rounded p-3"><p className="text-xs text-gray-400">Loại xuất</p><p className="font-semibold text-sm text-gray-800 mt-0.5">{tc.label}</p></div>
+              <div className="bg-gray-50 rounded p-3"><p className="text-xs text-gray-400">Người nhận / Đích đến</p><p className="font-semibold text-sm text-gray-800 mt-0.5">{log.recipient}</p></div>
             </div>
-            <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <div className="border border-gray-200 rounded overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
@@ -137,7 +137,7 @@ function ViewExportModal({ log, onClose }) {
             {log.note && <p className="text-xs text-gray-400 italic">Ghi chú: {log.note}</p>}
           </div>
           <div className="flex gap-3 px-6 pb-6">
-            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
+            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
           </div>
         </div>
       </div>
@@ -193,9 +193,9 @@ export default function StaffLogPage() {
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Số phiếu, nhà cung cấp, đối tượng..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Số phiếu, nhà cung cấp, đối tượng..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
           </div>
-          <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg text-sm cursor-pointer">
+          <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-3 rounded text-sm cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
             Xuất Excel
           </button>
@@ -203,7 +203,7 @@ export default function StaffLogPage() {
 
         {/* Import Log Table */}
         {activeTab === 'import' && (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
@@ -239,7 +239,7 @@ export default function StaffLogPage() {
 
         {/* Export Log Table */}
         {activeTab === 'export' && (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>

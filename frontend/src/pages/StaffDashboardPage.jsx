@@ -23,7 +23,7 @@ const RECENT = [
 ]
 
 const ORDER_STATUS = {
-  processing: { bg:'bg-blue-100',  text:'text-blue-600',  label:'Đang xử lý'   },
+  processing: { bg:'bg-orange-50',  text:'text-[#E8420A]',  label:'Đang xử lý'   },
   pending:    { bg:'bg-amber-100', text:'text-amber-600', label:'Chờ xác nhận' },
   overdue:    { bg:'bg-red-100',   text:'text-red-600',   label:'Quá hạn'      },
 }
@@ -66,7 +66,7 @@ export default function StaffDashboardPage() {
           {KPI.map((c, i) => {
             const cls = {
               teal:  ['bg-teal-500',  'text-teal-600'  ],
-              blue:  ['bg-blue-500',  'text-blue-600'  ],
+              blue:  ['bg-[#E8420A]',  'text-[#E8420A]'  ],
               red:   ['bg-red-500',   'text-red-600'   ],
               amber: ['bg-amber-400', 'text-amber-600' ],
             }[c.color]
@@ -74,9 +74,9 @@ export default function StaffDashboardPage() {
               <div
                 key={i}
                 onClick={() => c.action && onNavigate(c.action)}
-                className={`bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 ${c.action ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+                className={`bg-white rounded border border-gray-200 p-5 flex items-center gap-4 ${c.action ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
               >
-                <span className={`w-12 h-12 ${cls[0]} rounded-xl flex items-center justify-center text-white shrink-0`}>{c.icon}</span>
+                <span className={`w-12 h-12 ${cls[0]} rounded flex items-center justify-center text-white shrink-0`}>{c.icon}</span>
                 <div>
                   <p className="text-xs text-gray-500 font-medium">{c.label}</p>
                   <p className={`text-3xl font-bold ${cls[1]}`}>{c.value}</p>
@@ -90,7 +90,7 @@ export default function StaffDashboardPage() {
         {/* Middle row */}
         <div className="grid grid-cols-5 gap-5">
           {/* Low stock */}
-          <div className="col-span-2 bg-white rounded-xl border border-gray-200">
+          <div className="col-span-2 bg-white rounded border border-gray-200">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -103,7 +103,7 @@ export default function StaffDashboardPage() {
             <div className="divide-y divide-gray-50">
               {LOW_STOCK.map((p, i) => (
                 <div key={i} className="px-5 py-3.5 flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${p.status==='critical' ? 'bg-red-100' : 'bg-amber-100'}`}>
+                  <div className={`w-9 h-9 rounded flex items-center justify-center shrink-0 ${p.status==='critical' ? 'bg-red-100' : 'bg-amber-100'}`}>
                     <svg className={`w-4 h-4 ${p.status==='critical' ? 'text-red-500' : 'text-amber-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
@@ -120,14 +120,14 @@ export default function StaffDashboardPage() {
               ))}
             </div>
             <div className="px-5 py-3 border-t border-gray-50">
-              <button onClick={() => onNavigate('staffImport')} className="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg cursor-pointer transition-colors">
+              <button onClick={() => onNavigate('staffImport')} className="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded cursor-pointer transition-colors">
                 + Tạo phiếu nhập kho
               </button>
             </div>
           </div>
 
           {/* Pending orders */}
-          <div className="col-span-3 bg-white rounded-xl border border-gray-200">
+          <div className="col-span-3 bg-white rounded border border-gray-200">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
               <h3 className="text-sm font-bold text-gray-800">Đơn hàng cần xử lý</h3>
               <button onClick={() => onNavigate('staffOrders')} className="text-xs text-teal-600 hover:text-teal-700 font-semibold cursor-pointer">
@@ -162,7 +162,7 @@ export default function StaffDashboardPage() {
         </div>
 
         {/* Recent receipts */}
-        <div className="bg-white rounded-xl border border-gray-200">
+        <div className="bg-white rounded border border-gray-200">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
             <h3 className="text-sm font-bold text-gray-800">Phiếu gần đây</h3>
             <button onClick={() => onNavigate('staffHistory')} className="text-xs text-teal-600 hover:text-teal-700 font-semibold cursor-pointer">
@@ -177,7 +177,7 @@ export default function StaffDashboardPage() {
                 className="p-5 cursor-pointer hover:bg-gray-50/60 transition-colors"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold ${r.type==='import' ? 'bg-teal-500' : 'bg-blue-500'}`}>
+                  <span className={`w-7 h-7 rounded flex items-center justify-center text-white text-[10px] font-bold ${r.type==='import' ? 'bg-teal-500' : 'bg-[#E8420A]'}`}>
                     {r.type==='import' ? 'NH' : 'XH'}
                   </span>
                   <span className="font-mono text-[11px] text-gray-500 font-semibold">{r.id}</span>

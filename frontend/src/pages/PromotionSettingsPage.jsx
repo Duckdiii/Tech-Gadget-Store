@@ -17,8 +17,8 @@ const PROMO_CODES = [
   {
     code: 'TECHSUMMER24', discount: '-10%',
     used: 50, total: 100, expiry: '30/06/2024',
-    codeBg: 'bg-blue-100', codeText: 'text-blue-800',
-    barColor: 'bg-blue-500', pct: 50,
+    codeBg: 'bg-orange-50', codeText: 'text-[#C4350A]',
+    barColor: 'bg-[#E8420A]', pct: 50,
   },
   {
     code: 'WELCOME50', discount: '-50k',
@@ -31,7 +31,7 @@ const PROMO_CODES = [
 const KPI_CARDS = [
   {
     label: 'Chiến dịch đang chạy', value: '5',
-    iconBg: 'bg-blue-100', iconColor: 'text-blue-600',
+    iconBg: 'bg-orange-50', iconColor: 'text-[#E8420A]',
     icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
   },
   {
@@ -46,7 +46,7 @@ const KPI_CARDS = [
   },
   {
     label: 'Doanh thu từ KM', value: '450,000,000 đ',
-    iconBg: 'bg-blue-100', iconColor: 'text-blue-600',
+    iconBg: 'bg-orange-50', iconColor: 'text-[#E8420A]',
     icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
   },
 ]
@@ -57,7 +57,7 @@ function Toggle({ checked, onChange }) {
     <button
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer focus:outline-none ${
-        checked ? 'bg-blue-500' : 'bg-gray-200'
+        checked ? 'bg-[#E8420A]' : 'bg-gray-200'
       }`}
     >
       <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
@@ -71,7 +71,7 @@ function Toggle({ checked, onChange }) {
 function Dropdown({ label, options = [] }) {
   return (
     <div className="relative">
-      <select className="appearance-none border border-gray-200 rounded-lg px-3 py-2 pr-7 text-sm text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+      <select className="appearance-none border border-gray-200 rounded px-3 py-2 pr-7 text-sm text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
         <option>{label}</option>
         {options.map((o) => <option key={o}>{o}</option>)}
       </select>
@@ -95,7 +95,7 @@ export default function PromotionSettingsPage() {
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input type="text" placeholder="Search..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            <input type="text" placeholder="Search..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
@@ -124,10 +124,10 @@ export default function PromotionSettingsPage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-4 gap-4">
           {KPI_CARDS.map((card, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 px-5 py-4">
+            <div key={i} className="bg-white rounded border border-gray-200 px-5 py-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs text-gray-500 font-medium">{card.label}</span>
-                <span className={`w-8 h-8 flex items-center justify-center rounded-lg ${card.iconBg} ${card.iconColor}`}>
+                <span className={`w-8 h-8 flex items-center justify-center rounded ${card.iconBg} ${card.iconColor}`}>
                   {card.icon}
                 </span>
               </div>
@@ -139,10 +139,10 @@ export default function PromotionSettingsPage() {
         {/* 2-column layout */}
         <div className="grid grid-cols-[1fr_290px] gap-5">
           {/* LEFT: Active Promotions */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded border border-gray-200 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <h2 className="text-base font-bold text-gray-800">Active Promotions</h2>
-              <button className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors cursor-pointer">
+              <button className="flex items-center gap-1.5 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2 px-4 rounded text-sm transition-colors cursor-pointer">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                 </svg>
@@ -166,16 +166,16 @@ export default function PromotionSettingsPage() {
                   <span className="text-sm font-semibold text-gray-800">{p.name}</span>
                   <span className="text-sm text-gray-600">{p.type}</span>
                   <span className="text-sm text-gray-600">{p.period}</span>
-                  <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg text-xs font-semibold w-fit ${st.bg} ${st.text}`}>
+                  <span className={`inline-flex items-center justify-center px-3 py-1 rounded text-xs font-semibold w-fit ${st.bg} ${st.text}`}>
                     {st.label}
                   </span>
                   <div className="flex items-center gap-2">
-                    <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
+                    <button className="p-1.5 text-gray-400 hover:text-[#E8420A] hover:bg-orange-50 rounded transition-colors cursor-pointer">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
-                    <button className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
+                    <button className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                       </svg>
@@ -189,7 +189,7 @@ export default function PromotionSettingsPage() {
           {/* RIGHT column */}
           <div className="flex flex-col gap-4">
             {/* Mã Khuyến Mãi Hoạt Động */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="bg-white rounded border border-gray-200 p-4">
               <h2 className="text-sm font-bold text-gray-800 mb-3">Mã Khuyến Mãi Hoạt Động</h2>
 
               {/* Search */}
@@ -197,7 +197,7 @@ export default function PromotionSettingsPage() {
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <input type="text" placeholder="Tìm mã..." className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                <input type="text" placeholder="Tìm mã..." className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
               </div>
 
               {/* Filters */}
@@ -209,13 +209,13 @@ export default function PromotionSettingsPage() {
               {/* Promo code cards */}
               <div className="space-y-3">
                 {PROMO_CODES.map((pc) => (
-                  <div key={pc.code} className="border border-gray-200 rounded-xl p-3">
+                  <div key={pc.code} className="border border-gray-200 rounded p-3">
                     {/* Top row */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className={`font-bold text-sm px-2.5 py-1 rounded-lg ${pc.codeBg} ${pc.codeText}`}>
+                      <span className={`font-bold text-sm px-2.5 py-1 rounded ${pc.codeBg} ${pc.codeText}`}>
                         {pc.code}
                       </span>
-                      <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">
+                      <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">
                         {pc.discount}
                       </span>
                     </div>
@@ -228,7 +228,7 @@ export default function PromotionSettingsPage() {
                     {/* HSD + Copy */}
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs text-gray-500">HSD: {pc.expiry}</span>
-                      <button className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">Copy</button>
+                      <button className="text-xs font-semibold text-[#E8420A] hover:text-[#C4350A] cursor-pointer">Copy</button>
                     </div>
 
                     {/* Progress bar */}
@@ -240,13 +240,13 @@ export default function PromotionSettingsPage() {
               </div>
 
               {/* View all button */}
-              <button className="w-full mt-3 border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-medium py-2.5 rounded-xl transition-colors cursor-pointer">
+              <button className="w-full mt-3 border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-medium py-2.5 rounded transition-colors cursor-pointer">
                 Xem tất cả mã
               </button>
             </div>
 
             {/* Khách Hàng Thân Thiết */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="bg-white rounded border border-gray-200 p-4">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-orange-400">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

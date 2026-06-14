@@ -7,7 +7,7 @@ function Toggle({ checked, onChange }) {
     <button
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer focus:outline-none ${
-        checked ? 'bg-blue-500' : 'bg-gray-300'
+        checked ? 'bg-[#E8420A]' : 'bg-gray-300'
       }`}
     >
       <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
@@ -50,7 +50,7 @@ export default function SystemConfigPage() {
             <input
               type="text"
               placeholder="Search..."
-              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
             />
           </div>
         </div>
@@ -68,7 +68,7 @@ export default function SystemConfigPage() {
           </button>
           <div className="flex items-center gap-1 text-sm">
             <button className="text-gray-600 hover:text-gray-900 font-medium cursor-pointer px-1">Support</button>
-            <button className="text-blue-600 hover:text-blue-700 font-medium cursor-pointer px-1">Logout</button>
+            <button className="text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-1">Logout</button>
           </div>
           <img src="https://placehold.co/34x34/374151/ffffff?text=AD" alt="avatar" className="w-8 h-8 rounded-full object-cover cursor-pointer" />
         </div>
@@ -90,7 +90,7 @@ export default function SystemConfigPage() {
               onClick={() => setActiveTab(tab)}
               className={`py-3 px-5 text-sm font-medium transition-colors cursor-pointer border-b-2 -mb-px ${
                 activeTab === tab
-                  ? 'border-blue-600 text-blue-600'
+                  ? 'border-[#E8420A] text-[#E8420A]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -106,7 +106,7 @@ export default function SystemConfigPage() {
               {/* LEFT column */}
               <div className="space-y-5">
                 {/* Thông tin cửa hàng */}
-                <div className="bg-white rounded-xl border border-gray-200 px-6 py-6">
+                <div className="bg-white rounded border border-gray-200 px-6 py-6">
                   <h2 className="text-lg font-bold text-gray-900 mb-5">Thông tin cửa hàng</h2>
 
                   {/* Tên cửa hàng */}
@@ -116,7 +116,7 @@ export default function SystemConfigPage() {
                       type="text"
                       value={form.storeName}
                       onChange={handleChange('storeName')}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
                     />
                   </div>
 
@@ -128,7 +128,7 @@ export default function SystemConfigPage() {
                         type="email"
                         value={form.email}
                         onChange={handleChange('email')}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -137,7 +137,7 @@ export default function SystemConfigPage() {
                         type="text"
                         value={form.phone}
                         onChange={handleChange('phone')}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -149,13 +149,13 @@ export default function SystemConfigPage() {
                       type="text"
                       value={form.address}
                       onChange={handleChange('address')}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 {/* Thiết lập hiển thị */}
-                <div className="bg-white rounded-xl border border-gray-200 px-6 py-6">
+                <div className="bg-white rounded border border-gray-200 px-6 py-6">
                   <h2 className="text-lg font-bold text-gray-900 mb-5">Thiết lập hiển thị</h2>
 
                   {/* Bảo trì */}
@@ -183,11 +183,11 @@ export default function SystemConfigPage() {
               {/* RIGHT column */}
               <div className="space-y-4">
                 {/* Logo upload */}
-                <div className="bg-white rounded-xl border border-gray-200 px-5 py-5">
+                <div className="bg-white rounded border border-gray-200 px-5 py-5">
                   <h2 className="text-base font-bold text-gray-900 mb-4">Logo thương hiệu</h2>
 
                   {/* Upload area */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center mb-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors">
+                  <div className="border-2 border-dashed border-gray-300 rounded p-8 flex flex-col items-center justify-center mb-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors">
                     <div className="text-gray-400 mb-1">
                       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -202,20 +202,20 @@ export default function SystemConfigPage() {
                     Định dạng JPG, PNG hoặc SVG. Kích thước tối đa 2MB. Tỉ lệ 1:1 hoặc 16:9.
                   </p>
 
-                  <button className="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 rounded-lg text-sm transition-colors cursor-pointer">
+                  <button className="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 rounded text-sm transition-colors cursor-pointer">
                     Tải ảnh lên
                   </button>
                 </div>
 
                 {/* Info box */}
-                <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-4">
+                <div className="bg-orange-50 border border-orange-100 rounded px-4 py-4">
                   <div className="flex gap-3">
-                    <svg className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-[#E8420A] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                      <p className="text-sm font-bold text-blue-800 mb-1">Lưu ý cập nhật</p>
-                      <p className="text-xs text-blue-700 leading-relaxed">
+                      <p className="text-sm font-bold text-[#C4350A] mb-1">Lưu ý cập nhật</p>
+                      <p className="text-xs text-[#C4350A] leading-relaxed">
                         Thay đổi thông tin cửa hàng có thể mất tối đa 5 phút để hiển thị trên toàn bộ các nền tảng frontend.
                       </p>
                     </div>
@@ -226,10 +226,10 @@ export default function SystemConfigPage() {
 
             {/* Bottom actions */}
             <div className="border-t border-gray-200 pt-5 flex items-center justify-end gap-3">
-              <button className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-6 rounded-lg text-sm transition-colors cursor-pointer">
+              <button className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-6 rounded text-sm transition-colors cursor-pointer">
                 Hủy
               </button>
-              <button className="bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-6 rounded-lg text-sm transition-colors cursor-pointer">
+              <button className="bg-[#0D0F14] hover:bg-[#0D0F14] text-white font-semibold py-2.5 px-6 rounded text-sm transition-colors cursor-pointer">
                 Lưu thay đổi
               </button>
             </div>

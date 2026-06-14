@@ -80,7 +80,7 @@ function AreaChart() {
 const DONUT_CX = 90, DONUT_CY = 90, R_OUT = 74, R_IN = 52
 
 const DONUT_SEGS = [
-  { pct: 0.60, color: '#1d4ed8', label: 'Smartphones' },
+  { pct: 0.60, color: '#E8420A', label: 'Smartphones' },
   { pct: 0.25, color: '#92400e', label: 'Laptops' },
   { pct: 0.15, color: '#d1d5db', label: 'Accessories' },
 ]
@@ -132,8 +132,8 @@ const KPI_CARDS = [
     trend: '+12%',
     trendExtra: ' so với tháng trước',
     trendUp: true,
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-orange-50',
+    iconColor: 'text-[#E8420A]',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2" />
@@ -174,8 +174,8 @@ const KPI_CARDS = [
     trend: '+18%',
     trendExtra: '',
     trendUp: true,
-    iconBg: 'bg-indigo-100',
-    iconColor: 'text-indigo-600',
+    iconBg: 'bg-orange-50',
+    iconColor: 'text-[#E8420A]',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -193,7 +193,7 @@ const BEST_SELLERS = [
 ]
 
 const CATEGORY_COLOR = {
-  Smartphones: 'bg-blue-100 text-blue-700',
+  Smartphones: 'bg-orange-50 text-[#C4350A]',
   Laptops: 'bg-amber-100 text-amber-700',
   Accessories: 'bg-gray-100 text-gray-600',
 }
@@ -228,7 +228,7 @@ export default function RevenueReportPage() {
             <input
               type="text"
               placeholder="Tìm kiếm..."
-              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
             />
           </div>
         </div>
@@ -263,7 +263,7 @@ export default function RevenueReportPage() {
           <h1 className="text-3xl font-bold text-gray-900">Báo cáo doanh thu</h1>
           <div className="flex items-center gap-3">
             {/* Date range */}
-            <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg text-sm transition-colors cursor-pointer">
+            <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm transition-colors cursor-pointer">
               <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -273,7 +273,7 @@ export default function RevenueReportPage() {
               </svg>
             </button>
             {/* Export */}
-            <button className="flex items-center gap-2 bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2 px-5 rounded-lg text-sm transition-colors cursor-pointer">
+            <button className="flex items-center gap-2 bg-[#0D0F14] hover:bg-[#0D0F14] text-white font-semibold py-2 px-5 rounded text-sm transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
@@ -285,10 +285,10 @@ export default function RevenueReportPage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-4 gap-5">
           {KPI_CARDS.map((card, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 px-5 py-5">
+            <div key={i} className="bg-white rounded border border-gray-200 px-5 py-5">
               <div className="flex items-start justify-between mb-3">
                 <span className="text-xs font-bold text-gray-400 tracking-wider">{card.label}</span>
-                <span className={`w-9 h-9 flex items-center justify-center rounded-lg ${card.iconBg} ${card.iconColor}`}>
+                <span className={`w-9 h-9 flex items-center justify-center rounded ${card.iconBg} ${card.iconColor}`}>
                   {card.icon}
                 </span>
               </div>
@@ -301,10 +301,10 @@ export default function RevenueReportPage() {
         {/* Charts row */}
         <div className="grid grid-cols-[1fr_280px] gap-5">
           {/* Area Chart */}
-          <div className="bg-white rounded-xl border border-gray-200 px-5 py-5">
+          <div className="bg-white rounded border border-gray-200 px-5 py-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-gray-800">Xu hướng doanh thu</h2>
-              <button className="p-1.5 hover:bg-gray-100 rounded-lg cursor-pointer text-gray-400">
+              <button className="p-1.5 hover:bg-gray-100 rounded cursor-pointer text-gray-400">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
                 </svg>
@@ -314,12 +314,12 @@ export default function RevenueReportPage() {
           </div>
 
           {/* Donut Chart */}
-          <div className="bg-white rounded-xl border border-gray-200 px-5 py-5 flex flex-col">
+          <div className="bg-white rounded border border-gray-200 px-5 py-5 flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-gray-800 leading-tight">
                 Doanh thu theo danh<br />mục
               </h2>
-              <button className="p-1.5 hover:bg-gray-100 rounded-lg cursor-pointer text-gray-400">
+              <button className="p-1.5 hover:bg-gray-100 rounded cursor-pointer text-gray-400">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
                 </svg>
@@ -333,7 +333,7 @@ export default function RevenueReportPage() {
             {/* Legend */}
             <div className="space-y-2.5 mt-2">
               {[
-                { label: 'Smartphones', pct: '60%', color: 'bg-blue-600' },
+                { label: 'Smartphones', pct: '60%', color: 'bg-[#E8420A]' },
                 { label: 'Laptops', pct: '25%', color: 'bg-amber-800' },
                 { label: 'Accessories', pct: '15%', color: 'bg-gray-300' },
               ].map((item) => (
@@ -350,10 +350,10 @@ export default function RevenueReportPage() {
         </div>
 
         {/* Best Sellers */}
-        <div className="bg-white rounded-xl border border-gray-200">
+        <div className="bg-white rounded border border-gray-200">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <h2 className="text-base font-bold text-gray-800">Sản phẩm bán chạy nhất</h2>
-            <button className="text-sm font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">Xem tất cả</button>
+            <button className="text-sm font-semibold text-[#E8420A] hover:text-[#C4350A] cursor-pointer">Xem tất cả</button>
           </div>
 
           {/* Table header */}
@@ -370,14 +370,14 @@ export default function RevenueReportPage() {
             <div key={row.no} className="grid grid-cols-[3rem_1fr_10rem_10rem_12rem] gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center">
               <span className="text-sm text-gray-500 font-medium">{row.no}</span>
               <div className="flex items-center gap-3">
-                <img src={row.img} alt={row.name} className="w-9 h-9 rounded-lg object-cover shrink-0" />
+                <img src={row.img} alt={row.name} className="w-9 h-9 rounded object-cover shrink-0" />
                 <span className="text-sm font-semibold text-gray-800">{row.name}</span>
               </div>
-              <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-semibold w-fit ${CATEGORY_COLOR[row.category] || 'bg-gray-100 text-gray-600'}`}>
+              <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded text-xs font-semibold w-fit ${CATEGORY_COLOR[row.category] || 'bg-gray-100 text-gray-600'}`}>
                 {row.category}
               </span>
               <span className="text-sm text-gray-700 font-medium">{row.qty}</span>
-              <span className="text-sm font-bold text-blue-600">
+              <span className="text-sm font-bold text-[#E8420A]">
                 {row.revenue.toLocaleString('vi-VN')} đ
               </span>
             </div>

@@ -21,14 +21,14 @@ const SETTINGS_INIT = {
 
 function StatCard({ icon, label, value, sub, color }) {
   const clr = {
-    blue:   ['bg-blue-50',  'bg-blue-500',   'text-blue-700'],
+    blue:   ['bg-orange-50',  'bg-[#E8420A]',   'text-[#C4350A]'],
     green:  ['bg-green-50', 'bg-green-500',  'text-green-700'],
     purple: ['bg-purple-50','bg-purple-500', 'text-purple-700'],
     amber:  ['bg-amber-50', 'bg-amber-500',  'text-amber-700'],
   }[color]
   return (
-    <div className={`${clr[0]} rounded-xl p-5 flex items-center gap-4`}>
-      <div className={`w-11 h-11 ${clr[1]} rounded-xl flex items-center justify-center text-white shrink-0`}>{icon}</div>
+    <div className={`${clr[0]} rounded p-5 flex items-center gap-4`}>
+      <div className={`w-11 h-11 ${clr[1]} rounded flex items-center justify-center text-white shrink-0`}>{icon}</div>
       <div>
         <p className="text-xs text-gray-500 font-medium">{label}</p>
         <p className={`text-xl font-bold ${clr[2]}`}>{value}</p>
@@ -101,7 +101,7 @@ export default function RecoverRestorePage() {
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input type="text" placeholder="Tìm kiếm nhanh..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            <input type="text" placeholder="Tìm kiếm nhanh..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
@@ -125,7 +125,7 @@ export default function RecoverRestorePage() {
           <button
             onClick={handleCreateBackup}
             disabled={creatingBackup}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors cursor-pointer"
+            className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] disabled:bg-[#E8420A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer"
           >
             {creatingBackup ? (
               <>
@@ -180,7 +180,7 @@ export default function RecoverRestorePage() {
         {/* Main grid */}
         <div className="grid grid-cols-[1fr_300px] gap-5">
           {/* Backup list */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-base font-semibold text-gray-800">Lịch sử backup</h2>
               <span className="text-xs text-gray-400">{backups.length} bản lưu</span>
@@ -190,14 +190,14 @@ export default function RecoverRestorePage() {
                 <div key={b.id} className={`px-6 py-4 hover:bg-gray-50/70 transition-colors ${restoredId === b.id ? 'bg-green-50/50' : ''}`}>
                   <div className="flex items-start gap-3">
                     {/* Icon */}
-                    <div className={`mt-0.5 w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${b.status === 'success' ? b.type === 'manual' ? 'bg-purple-100' : 'bg-blue-100' : 'bg-red-100'}`}>
+                    <div className={`mt-0.5 w-9 h-9 rounded flex items-center justify-center shrink-0 ${b.status === 'success' ? b.type === 'manual' ? 'bg-purple-100' : 'bg-orange-50' : 'bg-red-100'}`}>
                       {b.status === 'success' ? (
                         b.type === 'manual' ? (
                           <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                           </svg>
                         ) : (
-                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-[#E8420A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         )
@@ -212,7 +212,7 @@ export default function RecoverRestorePage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-semibold text-gray-800 font-mono">{b.name}</span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${b.type === 'manual' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>{b.type === 'manual' ? 'Thủ công' : 'Tự động'}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${b.type === 'manual' ? 'bg-purple-100 text-purple-600' : 'bg-orange-50 text-[#E8420A]'}`}>{b.type === 'manual' ? 'Thủ công' : 'Tự động'}</span>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${b.status === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'}`}>{b.status === 'success' ? '✓ Thành công' : '✕ Lỗi'}</span>
                         {restoredId === b.id && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-emerald-100 text-emerald-600">Đã khôi phục</span>}
                       </div>
@@ -237,7 +237,7 @@ export default function RecoverRestorePage() {
                       <div className="flex items-center gap-2 shrink-0 ml-2">
                         <button
                           onClick={() => showToast(`Đang tải xuống ${b.name}...`)}
-                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded cursor-pointer transition-colors"
                           title="Tải xuống"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,7 +246,7 @@ export default function RecoverRestorePage() {
                         </button>
                         <button
                           onClick={() => handleRestore(b)}
-                          className="px-3 py-1.5 text-xs font-semibold text-blue-600 border border-blue-200 hover:bg-blue-50 rounded-lg cursor-pointer transition-colors"
+                          className="px-3 py-1.5 text-xs font-semibold text-[#E8420A] border border-orange-200 hover:bg-orange-50 rounded cursor-pointer transition-colors"
                         >
                           Khôi phục
                         </button>
@@ -261,7 +261,7 @@ export default function RecoverRestorePage() {
           {/* Settings */}
           <div className="space-y-4">
             {/* Auto backup settings */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="bg-white rounded border border-gray-200 p-5">
               <h2 className="text-base font-semibold text-gray-800 mb-4">Cài đặt tự động</h2>
               <div className="space-y-4">
                 {/* Enable toggle */}
@@ -272,7 +272,7 @@ export default function RecoverRestorePage() {
                   </div>
                   <button
                     onClick={() => setSettings(s => ({ ...s, autoEnabled: !s.autoEnabled }))}
-                    className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer shrink-0 ${settings.autoEnabled ? 'bg-blue-500' : 'bg-gray-200'}`}
+                    className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer shrink-0 ${settings.autoEnabled ? 'bg-[#E8420A]' : 'bg-gray-200'}`}
                   >
                     <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings.autoEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
                   </button>
@@ -285,7 +285,7 @@ export default function RecoverRestorePage() {
                       <select
                         value={settings.frequency}
                         onChange={e => setSettings(s => ({ ...s, frequency: e.target.value }))}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
                       >
                         <option value="hourly">Mỗi giờ</option>
                         <option value="daily">Hàng ngày</option>
@@ -298,7 +298,7 @@ export default function RecoverRestorePage() {
                         type="time"
                         value={settings.time}
                         onChange={e => setSettings(s => ({ ...s, time: e.target.value }))}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
                       />
                     </div>
                     <div>
@@ -306,7 +306,7 @@ export default function RecoverRestorePage() {
                       <select
                         value={settings.retention}
                         onChange={e => setSettings(s => ({ ...s, retention: e.target.value }))}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
                       >
                         <option value="7">7 ngày</option>
                         <option value="14">14 ngày</option>
@@ -321,7 +321,7 @@ export default function RecoverRestorePage() {
                       </div>
                       <button
                         onClick={() => setSettings(s => ({ ...s, includeMedia: !s.includeMedia }))}
-                        className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer shrink-0 ${settings.includeMedia ? 'bg-blue-500' : 'bg-gray-200'}`}
+                        className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer shrink-0 ${settings.includeMedia ? 'bg-[#E8420A]' : 'bg-gray-200'}`}
                       >
                         <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings.includeMedia ? 'translate-x-5' : 'translate-x-0'}`} />
                       </button>
@@ -331,7 +331,7 @@ export default function RecoverRestorePage() {
 
                 <button
                   onClick={() => showToast('Đã lưu cài đặt backup tự động')}
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold cursor-pointer transition-colors"
+                  className="w-full py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors"
                 >
                   Lưu cài đặt
                 </button>
@@ -339,7 +339,7 @@ export default function RecoverRestorePage() {
             </div>
 
             {/* Storage gauge */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="bg-white rounded border border-gray-200 p-5">
               <h2 className="text-base font-semibold text-gray-800 mb-3">Dung lượng lưu trữ</h2>
               <div className="flex justify-between text-xs text-gray-500 mb-2">
                 <span>Đã dùng: <span className="font-semibold text-gray-800">{totalSize} GB</span></span>
@@ -347,7 +347,7 @@ export default function RecoverRestorePage() {
               </div>
               <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"
+                  className="h-full rounded-full bg-gradient-to-r from-[#E8420A] to-[#C4350A]"
                   style={{ width: `${(totalSize / 50) * 100}%` }}
                 />
               </div>
@@ -355,7 +355,7 @@ export default function RecoverRestorePage() {
             </div>
 
             {/* Danger zone */}
-            <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+            <div className="bg-red-50 border border-red-200 rounded p-5">
               <h2 className="text-sm font-semibold text-red-700 mb-1 flex items-center gap-1.5">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -365,7 +365,7 @@ export default function RecoverRestorePage() {
               <p className="text-xs text-red-500 mb-3">Xoá toàn bộ dữ liệu và khôi phục về trạng thái ban đầu. Không thể hoàn tác.</p>
               <button
                 onClick={() => showToast('Chức năng này yêu cầu xác thực cấp cao hơn')}
-                className="w-full py-2 border border-red-300 text-red-600 hover:bg-red-100 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+                className="w-full py-2 border border-red-300 text-red-600 hover:bg-red-100 rounded text-xs font-semibold cursor-pointer transition-colors"
               >
                 Reset toàn bộ hệ thống
               </button>
@@ -379,18 +379,18 @@ export default function RecoverRestorePage() {
         <>
           <div className="fixed inset-0 bg-black/40 z-50" />
           <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-2xl w-[440px] p-6">
+            <div className="bg-white rounded shadow-2xl w-[440px] p-6">
               {restoring ? (
                 <div className="text-center py-6">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-[#E8420A] animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                   </div>
                   <h3 className="text-lg font-bold text-gray-900">Đang khôi phục dữ liệu...</h3>
                   <p className="text-sm text-gray-400 mt-1">Vui lòng không đóng trình duyệt</p>
                   <div className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 rounded-full animate-pulse w-3/4" />
+                    <div className="h-full bg-[#E8420A] rounded-full animate-pulse w-3/4" />
                   </div>
                 </div>
               ) : (
@@ -404,7 +404,7 @@ export default function RecoverRestorePage() {
                   <p className="text-sm text-gray-500 text-center mt-2">
                     Hệ thống sẽ được khôi phục về trạng thái của bản backup:
                   </p>
-                  <div className="mt-3 p-3 bg-gray-50 rounded-xl text-center">
+                  <div className="mt-3 p-3 bg-gray-50 rounded text-center">
                     <p className="text-sm font-semibold text-gray-800 font-mono">{restoreTarget.name}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{restoreTarget.createdAt} · {restoreTarget.size}</p>
                   </div>
@@ -412,8 +412,8 @@ export default function RecoverRestorePage() {
                     ⚠ Mọi thay đổi sau thời điểm backup này sẽ bị mất.
                   </p>
                   <div className="flex gap-3 mt-5">
-                    <button onClick={() => setRestoreTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ bỏ</button>
-                    <button onClick={confirmRestore} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold cursor-pointer transition-colors">Xác nhận khôi phục</button>
+                    <button onClick={() => setRestoreTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ bỏ</button>
+                    <button onClick={confirmRestore} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors">Xác nhận khôi phục</button>
                   </div>
                 </>
               )}

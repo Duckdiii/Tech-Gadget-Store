@@ -5,23 +5,23 @@ const ROLES       = ['Quản lý', 'Nhân viên bán hàng', 'Quản lý kho', '
 const DEPARTMENTS = ['Kinh doanh', 'Kho vận', 'Tài chính', 'Kỹ thuật', 'CSKH']
 
 const ROLE_BADGE = {
-  'Quản lý':               'bg-blue-100 text-blue-700',
+  'Quản lý':               'bg-orange-50 text-[#C4350A]',
   'Nhân viên bán hàng':    'bg-green-100 text-green-700',
   'Quản lý kho':           'bg-amber-100 text-amber-700',
   'Kế toán':               'bg-purple-100 text-purple-700',
   'Hỗ trợ khách hàng':    'bg-pink-100 text-pink-700',
 }
-const BG_CYCLE = ['bg-blue-500','bg-pink-500','bg-teal-500','bg-purple-500','bg-orange-500','bg-green-500','bg-red-400','bg-indigo-500']
+const BG_CYCLE = ['bg-[#E8420A]','bg-pink-500','bg-teal-500','bg-purple-500','bg-orange-500','bg-green-500','bg-red-400','bg-[#0D0F14]']
 
 const INIT_STAFF = [
-  { id:1, name:'Trần Văn An',     email:'van.an@techstore.vn',      phone:'0901 234 567', role:'Quản lý',              department:'Kinh doanh', status:'active',   joinDate:'12/01/2023', lastLogin:'2 giờ trước',      initials:'TA', bg:'bg-blue-500'   },
+  { id:1, name:'Trần Văn An',     email:'van.an@techstore.vn',      phone:'0901 234 567', role:'Quản lý',              department:'Kinh doanh', status:'active',   joinDate:'12/01/2023', lastLogin:'2 giờ trước',      initials:'TA', bg:'bg-[#E8420A]'   },
   { id:2, name:'Nguyễn Thị Bích', email:'thi.bich@techstore.vn',    phone:'0912 345 678', role:'Nhân viên bán hàng',   department:'Kinh doanh', status:'active',   joinDate:'05/03/2023', lastLogin:'Hôm qua',           initials:'NB', bg:'bg-pink-500'   },
   { id:3, name:'Lê Hoàng Dũng',   email:'hoang.dung@techstore.vn',  phone:'0923 456 789', role:'Quản lý kho',          department:'Kho vận',    status:'active',   joinDate:'20/04/2023', lastLogin:'30 phút trước',     initials:'LD', bg:'bg-teal-500'   },
   { id:4, name:'Phạm Minh Châu',  email:'minh.chau@techstore.vn',   phone:'0934 567 890', role:'Kế toán',              department:'Tài chính',  status:'inactive', joinDate:'15/06/2023', lastLogin:'3 ngày trước',      initials:'PC', bg:'bg-purple-500' },
   { id:5, name:'Hoàng Thị Diệu',  email:'thi.dieu@techstore.vn',    phone:'0945 678 901', role:'Hỗ trợ khách hàng',  department:'CSKH',       status:'active',   joinDate:'01/08/2023', lastLogin:'1 giờ trước',       initials:'HD', bg:'bg-orange-500' },
   { id:6, name:'Vũ Quốc Hùng',    email:'quoc.hung@techstore.vn',   phone:'0956 789 012', role:'Nhân viên bán hàng',  department:'Kinh doanh', status:'active',   joinDate:'22/09/2023', lastLogin:'Vừa xong',          initials:'VH', bg:'bg-green-500'  },
   { id:7, name:'Đỗ Thị Lan',      email:'thi.lan@techstore.vn',     phone:'0967 890 123', role:'Quản lý kho',         department:'Kho vận',    status:'inactive', joinDate:'10/11/2023', lastLogin:'1 tuần trước',      initials:'ĐL', bg:'bg-red-400'    },
-  { id:8, name:'Bùi Thanh Phong', email:'thanh.phong@techstore.vn', phone:'0978 901 234', role:'Kỹ thuật viên',       department:'Kỹ thuật',   status:'active',   joinDate:'03/01/2024', lastLogin:'4 giờ trước',       initials:'BP', bg:'bg-indigo-500' },
+  { id:8, name:'Bùi Thanh Phong', email:'thanh.phong@techstore.vn', phone:'0978 901 234', role:'Kỹ thuật viên',       department:'Kỹ thuật',   status:'active',   joinDate:'03/01/2024', lastLogin:'4 giờ trước',       initials:'BP', bg:'bg-[#0D0F14]' },
 ]
 
 const EMPTY_FORM = { name:'', email:'', phone:'', role:'', department:'', password:'', status:'active' }
@@ -76,7 +76,7 @@ function StaffListTab() {
   const deptCount     = new Set(staff.map(s => s.department)).size
   const selectedStaff = typeof panel === 'number' ? staff.find(s => s.id === panel) : null
 
-  const inp = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400'
+  const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]'
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(null), 2800) }
   function openAdd()   { setForm(EMPTY_FORM); setFormErrors({}); setPanel('add') }
@@ -117,7 +117,7 @@ function StaffListTab() {
           <h1 className="text-2xl font-bold text-gray-900">Danh sách nhân viên</h1>
           <p className="text-sm text-gray-500 mt-0.5">Thêm mới và quản lý thông tin nhân viên</p>
         </div>
-        <button onClick={openAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors cursor-pointer">
+        <button onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
           Thêm nhân viên
         </button>
@@ -131,10 +131,10 @@ function StaffListTab() {
           { label:'Tạm ngưng',      value:inactiveCount, color:'red',    icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
           { label:'Phòng ban',      value:deptCount,     color:'purple', icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> },
         ].map((c, i) => {
-          const clr = { blue:['bg-blue-50','bg-blue-500','text-blue-600'], green:['bg-green-50','bg-green-500','text-green-600'], red:['bg-red-50','bg-red-500','text-red-600'], purple:['bg-purple-50','bg-purple-500','text-purple-600'] }[c.color]
+          const clr = { blue:['bg-orange-50','bg-[#E8420A]','text-[#E8420A]'], green:['bg-green-50','bg-green-500','text-green-600'], red:['bg-red-50','bg-red-500','text-red-600'], purple:['bg-purple-50','bg-purple-500','text-purple-600'] }[c.color]
           return (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
-              <span className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shrink-0 ${clr[1]}`}>{c.icon}</span>
+            <div key={i} className="bg-white rounded border border-gray-200 p-5 flex items-center gap-4">
+              <span className={`w-12 h-12 rounded flex items-center justify-center text-white shrink-0 ${clr[1]}`}>{c.icon}</span>
               <div><p className="text-xs text-gray-500 font-medium">{c.label}</p><p className={`text-3xl font-bold ${clr[2]}`}>{c.value}</p></div>
             </div>
           )
@@ -142,16 +142,16 @@ function StaffListTab() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 px-5 py-3.5 flex items-center gap-3">
+      <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex items-center gap-3">
         <div className="relative flex-1 max-w-xs">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên, email, SĐT..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên, email, SĐT..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
         </div>
-        <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả chức vụ</option>
           {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
         </select>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả trạng thái</option>
           <option value="active">Đang hoạt động</option>
           <option value="inactive">Tạm ngưng</option>
@@ -160,7 +160,7 @@ function StaffListTab() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
@@ -193,7 +193,7 @@ function StaffListTab() {
                     </button>
                   </td>
                   <td className="px-4 py-4">
-                    <button onClick={() => openDetail(s.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-blue-50">
+                    <button onClick={() => openDetail(s.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
                       Chi tiết →
                     </button>
                   </td>
@@ -212,7 +212,7 @@ function StaffListTab() {
         <div className="fixed top-0 right-0 h-full w-[440px] bg-white shadow-2xl z-50 flex flex-col">
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <div><h2 className="text-lg font-bold text-gray-900">Thêm nhân viên mới</h2><p className="text-xs text-gray-400 mt-0.5">Điền đầy đủ thông tin bên dưới</p></div>
-            <button onClick={closePanel} className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
             <Field label="Họ và tên *" error={formErrors.name}><input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="Nguyễn Văn A" className={inp} /></Field>
@@ -225,13 +225,13 @@ function StaffListTab() {
             <Field label="Mật khẩu *" error={formErrors.password}>
               <div className="flex gap-2">
                 <input value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))} placeholder="••••••••" type="text" className={inp} />
-                <button onClick={() => setForm(f=>({...f,password:Math.random().toString(36).slice(2,10)}))} className="shrink-0 px-3 border border-gray-200 rounded-lg text-xs text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap">Tự động</button>
+                <button onClick={() => setForm(f=>({...f,password:Math.random().toString(36).slice(2,10)}))} className="shrink-0 px-3 border border-gray-200 rounded text-xs text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap">Tự động</button>
               </div>
             </Field>
             <Field label="Trạng thái">
               <div className="flex gap-2 mt-0.5">
                 {['active','inactive'].map(v=>(
-                  <button key={v} onClick={()=>setForm(f=>({...f,status:v}))} className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors cursor-pointer ${form.status===v ? v==='active' ? 'bg-green-50 border-green-400 text-green-700' : 'bg-gray-100 border-gray-300 text-gray-600' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}>
+                  <button key={v} onClick={()=>setForm(f=>({...f,status:v}))} className={`flex-1 py-2 rounded text-sm font-medium border transition-colors cursor-pointer ${form.status===v ? v==='active' ? 'bg-green-50 border-green-400 text-green-700' : 'bg-gray-100 border-gray-300 text-gray-600' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}>
                     {v==='active'?'Hoạt động':'Tạm ngưng'}
                   </button>
                 ))}
@@ -239,8 +239,8 @@ function StaffListTab() {
             </Field>
           </div>
           <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-            <button onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
-            <button onClick={handleAdd} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold cursor-pointer transition-colors">Thêm nhân viên</button>
+            <button onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
+            <button onClick={handleAdd} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors">Thêm nhân viên</button>
           </div>
         </div>
       )}
@@ -249,7 +249,7 @@ function StaffListTab() {
       {selectedStaff && (
         <div className="fixed top-0 right-0 h-full w-[440px] bg-white shadow-2xl z-50 flex flex-col">
           <div className="bg-gradient-to-br from-slate-700 to-slate-900 px-6 pt-5 pb-6 relative">
-            <button onClick={closePanel} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-white/10 cursor-pointer"><svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button onClick={closePanel} className="absolute top-4 right-4 p-1.5 rounded hover:bg-white/10 cursor-pointer"><svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
             <div className="flex items-center gap-4">
               <Avatar initials={selectedStaff.initials} bg={selectedStaff.bg} size="lg" />
               <div className="min-w-0">
@@ -283,7 +283,7 @@ function StaffListTab() {
                 <Field label="Trạng thái">
                   <div className="flex gap-2">
                     {['active','inactive'].map(v=>(
-                      <button key={v} onClick={()=>setEditForm(f=>({...f,status:v}))} className={`flex-1 py-2 rounded-lg text-sm font-medium border cursor-pointer ${(editForm.status||selectedStaff.status)===v ? v==='active' ? 'bg-green-50 border-green-400 text-green-700' : 'bg-gray-100 border-gray-300 text-gray-600' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}>
+                      <button key={v} onClick={()=>setEditForm(f=>({...f,status:v}))} className={`flex-1 py-2 rounded text-sm font-medium border cursor-pointer ${(editForm.status||selectedStaff.status)===v ? v==='active' ? 'bg-green-50 border-green-400 text-green-700' : 'bg-gray-100 border-gray-300 text-gray-600' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}>
                         {v==='active'?'Hoạt động':'Tạm ngưng'}
                       </button>
                     ))}
@@ -295,19 +295,19 @@ function StaffListTab() {
           <div className="px-6 py-4 border-t border-gray-100 flex gap-2">
             {!editMode ? (
               <>
-                <button onClick={()=>{setEditMode(true);setEditForm({name:selectedStaff.name,phone:selectedStaff.phone,role:selectedStaff.role,department:selectedStaff.department,status:selectedStaff.status})}} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
+                <button onClick={()=>{setEditMode(true);setEditForm({name:selectedStaff.name,phone:selectedStaff.phone,role:selectedStaff.role,department:selectedStaff.department,status:selectedStaff.status})}} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                   Chỉnh sửa
                 </button>
-                <button onClick={()=>setDeleteId(selectedStaff.id)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer">
+                <button onClick={()=>setDeleteId(selectedStaff.id)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-red-200 rounded text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   Xoá nhân viên
                 </button>
               </>
             ) : (
               <>
-                <button onClick={()=>setEditMode(false)} className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
-                <button onClick={handleSaveEdit} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold cursor-pointer transition-colors">Lưu thay đổi</button>
+                <button onClick={()=>setEditMode(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
+                <button onClick={handleSaveEdit} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors">Lưu thay đổi</button>
               </>
             )}
           </div>
@@ -321,13 +321,13 @@ function StaffListTab() {
           <>
             <div className="fixed inset-0 bg-black/50 z-[60]" />
             <div className="fixed inset-0 flex items-center justify-center z-[60]">
-              <div className="bg-white rounded-2xl shadow-2xl w-[380px] p-6">
+              <div className="bg-white rounded shadow-2xl w-[380px] p-6">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>
                 <h3 className="text-lg font-bold text-gray-900 text-center">Xoá nhân viên?</h3>
                 <p className="text-sm text-gray-500 text-center mt-2">Bạn có chắc muốn xoá <span className="font-semibold text-gray-800">{t?.name}</span>?<br />Hành động này không thể hoàn tác.</p>
                 <div className="flex gap-3 mt-6">
-                  <button onClick={()=>setDeleteId(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ bỏ</button>
-                  <button onClick={()=>handleDelete(deleteId)} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold cursor-pointer transition-colors">Xác nhận xoá</button>
+                  <button onClick={()=>setDeleteId(null)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ bỏ</button>
+                  <button onClick={()=>handleDelete(deleteId)} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-semibold cursor-pointer transition-colors">Xác nhận xoá</button>
                 </div>
               </div>
             </div>
@@ -344,15 +344,15 @@ function StaffListTab() {
    LOGIN LOG TAB
 ══════════════════════════════════════ */
 const LOGIN_LOGS = [
-  { id:'LL-001', staffName:'Trần Văn An',     email:'van.an@techstore.vn',      role:'Quản lý',              date:'13/06/2024', time:'08:12:30', ip:'192.168.1.105', device:'Chrome 125 · Windows 11',  location:'TP.HCM, Việt Nam', status:'success', initials:'TA', bg:'bg-blue-500'   },
+  { id:'LL-001', staffName:'Trần Văn An',     email:'van.an@techstore.vn',      role:'Quản lý',              date:'13/06/2024', time:'08:12:30', ip:'192.168.1.105', device:'Chrome 125 · Windows 11',  location:'TP.HCM, Việt Nam', status:'success', initials:'TA', bg:'bg-[#E8420A]'   },
   { id:'LL-002', staffName:'Vũ Quốc Hùng',    email:'quoc.hung@techstore.vn',   role:'Nhân viên bán hàng',  date:'13/06/2024', time:'08:25:14', ip:'192.168.1.112', device:'Firefox 127 · macOS 14',    location:'TP.HCM, Việt Nam', status:'success', initials:'VH', bg:'bg-green-500'  },
   { id:'LL-003', staffName:'Lê Hoàng Dũng',   email:'hoang.dung@techstore.vn',  role:'Quản lý kho',         date:'13/06/2024', time:'08:31:05', ip:'10.0.0.22',     device:'Chrome 125 · Windows 10',   location:'TP.HCM, Việt Nam', status:'success', initials:'LD', bg:'bg-teal-500'   },
   { id:'LL-004', staffName:'Nguyễn Thị Bích', email:'thi.bich@techstore.vn',    role:'Nhân viên bán hàng',  date:'13/06/2024', time:'09:00:22', ip:'192.168.1.108', device:'Safari 17 · iOS 17',         location:'TP.HCM, Việt Nam', status:'success', initials:'NB', bg:'bg-pink-500'   },
   { id:'LL-005', staffName:'Phạm Minh Châu',  email:'minh.chau@techstore.vn',   role:'Kế toán',             date:'12/06/2024', time:'22:15:30', ip:'203.113.44.92', device:'Chrome 124 · Windows 11',   location:'Hà Nội, Việt Nam', status:'failed',  failReason:'Sai mật khẩu (lần 3)',                     initials:'PC', bg:'bg-purple-500' },
   { id:'LL-006', staffName:'Phạm Minh Châu',  email:'minh.chau@techstore.vn',   role:'Kế toán',             date:'12/06/2024', time:'22:16:02', ip:'203.113.44.92', device:'Chrome 124 · Windows 11',   location:'Hà Nội, Việt Nam', status:'blocked', failReason:'Tài khoản bị khoá sau 3 lần sai mật khẩu', initials:'PC', bg:'bg-purple-500' },
-  { id:'LL-007', staffName:'Bùi Thanh Phong', email:'thanh.phong@techstore.vn', role:'Kỹ thuật viên',       date:'12/06/2024', time:'14:22:10', ip:'192.168.1.120', device:'Chrome 125 · Ubuntu 22.04',  location:'TP.HCM, Việt Nam', status:'success', initials:'BP', bg:'bg-indigo-500' },
+  { id:'LL-007', staffName:'Bùi Thanh Phong', email:'thanh.phong@techstore.vn', role:'Kỹ thuật viên',       date:'12/06/2024', time:'14:22:10', ip:'192.168.1.120', device:'Chrome 125 · Ubuntu 22.04',  location:'TP.HCM, Việt Nam', status:'success', initials:'BP', bg:'bg-[#0D0F14]' },
   { id:'LL-008', staffName:'Hoàng Thị Diệu',  email:'thi.dieu@techstore.vn',    role:'Hỗ trợ khách hàng', date:'11/06/2024', time:'09:45:00', ip:'192.168.1.115', device:'Edge 125 · Windows 11',      location:'TP.HCM, Việt Nam', status:'success', initials:'HD', bg:'bg-orange-500' },
-  { id:'LL-009', staffName:'Trần Văn An',     email:'van.an@techstore.vn',      role:'Quản lý',             date:'11/06/2024', time:'08:05:44', ip:'192.168.1.105', device:'Chrome 125 · Windows 11',   location:'TP.HCM, Việt Nam', status:'success', initials:'TA', bg:'bg-blue-500'   },
+  { id:'LL-009', staffName:'Trần Văn An',     email:'van.an@techstore.vn',      role:'Quản lý',             date:'11/06/2024', time:'08:05:44', ip:'192.168.1.105', device:'Chrome 125 · Windows 11',   location:'TP.HCM, Việt Nam', status:'success', initials:'TA', bg:'bg-[#E8420A]'   },
   { id:'LL-010', staffName:'Lê Hoàng Dũng',   email:'hoang.dung@techstore.vn',  role:'Quản lý kho',         date:'10/06/2024', time:'07:58:30', ip:'10.0.0.22',     device:'Chrome 125 · Windows 10',   location:'TP.HCM, Việt Nam', status:'success', initials:'LD', bg:'bg-teal-500'   },
 ]
 
@@ -391,7 +391,7 @@ function LoginLogTab() {
             {failCount > 0 && <> · <span className="text-red-500 font-semibold">{failCount} thất bại/chặn</span></>}
           </p>
         </div>
-        <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg text-sm cursor-pointer">
+        <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
           Xuất log
         </button>
@@ -401,13 +401,13 @@ function LoginLogTab() {
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-xs">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên, email, IP, thiết bị..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên, email, IP, thiết bị..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
         </div>
-        <select value={staffFilter} onChange={e => setStaff(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={staffFilter} onChange={e => setStaff(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả nhân viên</option>
           {staffNames.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
-        <select value={statusFilter} onChange={e => setStatus(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={statusFilter} onChange={e => setStatus(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả trạng thái</option>
           <option value="success">Thành công</option>
           <option value="failed">Thất bại</option>
@@ -416,7 +416,7 @@ function LoginLogTab() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
@@ -485,7 +485,7 @@ export default function StaffManagementPage() {
         <div className="flex-1 max-w-sm">
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input type="text" placeholder="Tìm kiếm nhanh..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            <input type="text" placeholder="Tìm kiếm nhanh..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
@@ -502,7 +502,7 @@ export default function StaffManagementPage() {
         <div className="flex items-center gap-1">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${activeTab===tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+              className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${activeTab===tab.id ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
               {tab.icon}{tab.label}
             </button>
           ))}

@@ -105,10 +105,10 @@ function formatPrice(price) {
   return price.toLocaleString('vi-VN') + ' đ'
 }
 
-const TAG_STYLE = {
-  'Bán chạy': 'bg-orange-500 text-white',
-  'Mới nhất': 'bg-blue-600 text-white',
-  'Giảm sâu': 'bg-rose-500 text-white',
+const TAG_COLOR = {
+  'Bán chạy': 'var(--accent)',
+  'Mới nhất': '#111827',
+  'Giảm sâu': '#f43f5e',
 }
 
 function StarRating({ rating }) {
@@ -143,23 +143,29 @@ function ProductCard({ product, onNavigate }) {
     : null
 
   return (
-    <div className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
+    <div className="group bg-white border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200 flex flex-col">
 
       {/* ── Image zone ── */}
       <div
         onClick={() => onNavigate('detail')}
-        className="relative bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center h-52 cursor-pointer overflow-hidden"
+        className="relative bg-gray-50 flex items-center justify-center h-52 cursor-pointer overflow-hidden"
       >
         {/* Tag badge */}
         {product.tag && (
-          <span className={`absolute top-3 left-3 z-10 text-[11px] font-bold px-2.5 py-1 rounded-full ${TAG_STYLE[product.tag] ?? 'bg-gray-700 text-white'}`}>
+          <span
+            className="absolute top-3 left-3 z-10 text-[11px] font-bold px-2.5 py-0.5 text-white"
+            style={{ backgroundColor: TAG_COLOR[product.tag] ?? '#374151', borderRadius: '3px' }}
+          >
             {product.tag}
           </span>
         )}
 
         {/* Discount badge */}
         {product.discount && (
-          <span className="absolute top-3 right-3 z-10 bg-rose-500 text-white text-[11px] font-extrabold px-2 py-1 rounded-full">
+          <span
+            className="absolute top-3 right-3 z-10 text-white text-[11px] font-extrabold px-2 py-0.5"
+            style={{ backgroundColor: 'var(--accent)', borderRadius: '3px' }}
+          >
             -{product.discount}%
           </span>
         )}
@@ -167,8 +173,8 @@ function ProductCard({ product, onNavigate }) {
         {/* Wishlist */}
         <button
           onClick={e => { e.stopPropagation(); setWished(w => !w) }}
-          className={`absolute bottom-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border transition-all duration-200
-            ${wished ? 'bg-rose-500 border-rose-500 text-white scale-110' : 'bg-white border-gray-200 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-rose-400'}`}
+          className={`absolute bottom-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-200
+            ${wished ? 'border-rose-400 text-rose-500 bg-white' : 'bg-white border-gray-200 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-rose-400'}`}
         >
           <svg className="w-4 h-4" fill={wished ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -177,15 +183,15 @@ function ProductCard({ product, onNavigate }) {
 
         {/* Unavailable overlay */}
         {!product.available && (
-          <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
-            <span className="bg-gray-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full">Hết hàng</span>
+          <div className="absolute inset-0 bg-white/70 z-10 flex items-center justify-center">
+            <span className="bg-gray-700 text-white text-xs font-semibold px-3 py-1" style={{ borderRadius: '3px' }}>Hết hàng</span>
           </div>
         )}
 
         <img
           src={product.image}
           alt={product.name}
-          className="h-40 w-40 object-contain group-hover:scale-105 transition-transform duration-300"
+          className="h-40 w-40 object-contain group-hover:scale-[1.03] transition-transform duration-300"
         />
       </div>
 
@@ -194,7 +200,7 @@ function ProductCard({ product, onNavigate }) {
 
         {/* Brand + availability */}
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider">{product.brand}</span>
+          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{product.brand}</span>
           {product.available
             ? <span className="flex items-center gap-1 text-[11px] text-green-600 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />Còn hàng</span>
             : <span className="flex items-center gap-1 text-[11px] text-gray-400 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block" />Hết hàng</span>
@@ -204,7 +210,7 @@ function ProductCard({ product, onNavigate }) {
         {/* Name */}
         <p
           onClick={() => onNavigate('detail')}
-          className="text-sm font-semibold text-gray-800 leading-snug cursor-pointer hover:text-blue-600 transition-colors line-clamp-2 min-h-[2.6rem]"
+          className="text-sm font-semibold text-gray-800 leading-snug cursor-pointer hover:text-gray-900 transition-colors line-clamp-2 min-h-[2.6rem]"
         >
           {product.name}
         </p>
@@ -218,21 +224,21 @@ function ProductCard({ product, onNavigate }) {
 
         {/* Specs chips */}
         <div className="flex flex-wrap gap-1.5">
-          <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">RAM {product.ram}</span>
-          <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">{product.storage}</span>
-          <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md truncate max-w-[100px]">{product.color}</span>
+          <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5" style={{ borderRadius: '3px' }}>RAM {product.ram}</span>
+          <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5" style={{ borderRadius: '3px' }}>{product.storage}</span>
+          <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 truncate max-w-[100px]" style={{ borderRadius: '3px' }}>{product.color}</span>
         </div>
 
         {/* Price */}
         <div className="mt-auto pt-1">
           <div className="flex items-end gap-2 flex-wrap">
-            <span className="text-lg font-extrabold text-blue-600 leading-none">{formatPrice(product.price)}</span>
+            <span className="text-lg font-extrabold text-gray-900 leading-none">{formatPrice(product.price)}</span>
             {product.originalPrice && (
               <span className="text-sm text-gray-400 line-through leading-none">{formatPrice(product.originalPrice)}</span>
             )}
           </div>
-          {savings && (
-            <p className="text-[11px] text-rose-500 font-semibold mt-0.5">Tiết kiệm {formatPrice(savings)}</p>
+          {!!savings && (
+            <p className="text-[11px] font-semibold mt-0.5" style={{ color: 'var(--accent)' }}>Tiết kiệm {formatPrice(savings)}</p>
           )}
         </div>
 
@@ -240,11 +246,10 @@ function ProductCard({ product, onNavigate }) {
         {product.available ? (
           <button
             onClick={handleAddToCart}
-            className={`mt-1 w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 rounded-xl transition-all duration-200
-              ${adding
-                ? 'bg-green-500 text-white scale-95'
-                : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md hover:shadow-blue-200'
-              }`}
+            className={`mt-1 w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 text-white transition-all duration-200 ${adding ? 'bg-green-500 scale-95' : ''}`}
+            style={!adding ? { backgroundColor: 'var(--accent)', borderRadius: '4px' } : { borderRadius: '4px' }}
+            onMouseEnter={e => { if (!adding) e.currentTarget.style.backgroundColor = 'var(--accent-d)' }}
+            onMouseLeave={e => { if (!adding) e.currentTarget.style.backgroundColor = 'var(--accent)' }}
           >
             {adding ? (
               <>
@@ -263,7 +268,7 @@ function ProductCard({ product, onNavigate }) {
             )}
           </button>
         ) : (
-          <button className="mt-1 w-full flex items-center justify-center gap-2 border border-gray-200 text-gray-500 bg-gray-50 text-sm font-medium py-2.5 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+          <button className="mt-1 w-full flex items-center justify-center gap-2 border border-gray-200 text-gray-500 bg-gray-50 text-sm font-medium py-2.5 cursor-pointer hover:bg-gray-100 transition-colors" style={{ borderRadius: '4px' }}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
@@ -413,19 +418,22 @@ function FilterPanel() {
   }
 
   return (
-    <aside className="w-64 shrink-0 bg-white border border-gray-200 rounded-xl p-5 h-fit">
+    <aside className="w-64 shrink-0 bg-white border border-gray-100 p-5 h-fit" style={{ borderLeft: '2px solid var(--accent)' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h2 className="text-base font-semibold text-gray-800">Bộ lọc</h2>
           {activeCount > 0 && (
-            <span className="w-5 h-5 bg-blue-600 text-white text-[11px] font-bold rounded-full flex items-center justify-center">
+            <span
+              className="w-5 h-5 text-white text-[11px] font-bold rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--accent)' }}
+            >
               {activeCount}
             </span>
           )}
         </div>
         {activeCount > 0 && (
-          <button onClick={resetAll} className="text-xs text-blue-600 hover:underline">Xoá tất cả</button>
+          <button onClick={resetAll} className="text-xs hover:underline" style={{ color: 'var(--accent)' }}>Xoá tất cả</button>
         )}
       </div>
 
@@ -440,7 +448,8 @@ function FilterPanel() {
             placeholder="Tìm kiếm sản phẩm..."
             value={keyword}
             onChange={e => setKeyword(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg pl-8 pr-3 py-2 text-[13px] text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+            className="w-full border border-gray-200 pl-8 pr-3 py-2 text-[13px] text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400 bg-gray-50"
+            style={{ borderRadius: '4px' }}
           />
         </div>
       </div>
@@ -479,7 +488,8 @@ function FilterPanel() {
                 placeholder="Từ"
                 value={minPrice}
                 onChange={e => setMinPrice(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-[13px] text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                className="w-full border border-gray-200 px-2.5 py-1.5 text-[13px] text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400 bg-gray-50"
+                style={{ borderRadius: '4px' }}
               />
               <span className="text-gray-400 text-xs shrink-0">–</span>
               <input
@@ -487,7 +497,8 @@ function FilterPanel() {
                 placeholder="Đến"
                 value={maxPrice}
                 onChange={e => setMaxPrice(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-[13px] text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                className="w-full border border-gray-200 px-2.5 py-1.5 text-[13px] text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400 bg-gray-50"
+                style={{ borderRadius: '4px' }}
               />
             </div>
           )}
@@ -574,8 +585,9 @@ function FilterPanel() {
                 onClick={() => toggle(setSelectedColors)(value)}
                 title={label}
                 className={`w-6 h-6 rounded-full ${bg} transition-all ${
-                  selectedColors.includes(value) ? 'ring-2 ring-blue-500 ring-offset-1 scale-110' : 'hover:scale-105'
+                  selectedColors.includes(value) ? 'ring-2 ring-offset-1 scale-110' : 'hover:scale-105'
                 }`}
+                style={selectedColors.includes(value) ? { outline: '2px solid var(--accent)', outlineOffset: '2px' } : {}}
               />
             ))}
           </div>
@@ -642,10 +654,9 @@ function Pagination({ current, total }) {
         <button
           key={p}
           className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium cursor-pointer transition-colors ${
-            p === current
-              ? 'bg-blue-600 text-white'
-              : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+            p === current ? 'text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
           }`}
+          style={p === current ? { backgroundColor: 'var(--accent)' } : {}}
         >
           {p}
         </button>
@@ -663,23 +674,41 @@ function Pagination({ current, total }) {
 export default function ProductsPage() {
   const onNavigate = useNav()
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
-      {/* Top bar */}
+    <div className="flex-1 flex flex-col min-h-screen bg-white">
       <StoreNavbar />
 
-      {/* Content */}
-      <div className="flex-1 p-6">
-        {/* Breadcrumb + Sort */}
-        <div className="flex items-center justify-between mb-5">
-          <nav className="text-sm text-gray-500">
-            <span onClick={() => onNavigate('home')} className="hover:text-blue-600 cursor-pointer">Trang chủ</span>
-            <span className="mx-2">›</span>
-            <span className="text-gray-800 font-medium">Sản phẩm</span>
-          </nav>
+      {/* ── Category header ── */}
+      <div style={{ backgroundColor: 'var(--ink)' }} className="py-5">
+        <div className="max-w-screen-2xl mx-auto px-6 flex items-end justify-between">
+          <div>
+            <p className="text-xs font-bold tracking-[0.18em] uppercase mb-0.5" style={{ color: 'var(--accent)' }}>Danh mục</p>
+            <h1 className="text-xl font-bold text-white">Điện thoại di động</h1>
+          </div>
+        </div>
+      </div>
 
+      {/* Content */}
+      <div className="flex-1 max-w-screen-2xl mx-auto w-full px-6 py-6">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-5">
+          <button onClick={() => onNavigate('home')} className="cursor-pointer hover:text-gray-700 transition-colors bg-transparent border-0 p-0 text-sm text-gray-400">Trang chủ</button>
+          <svg className="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+          <span className="text-gray-800 font-medium">Điện thoại di động</span>
+        </nav>
+
+        {/* Sort bar */}
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-sm text-gray-500">
+            <span className="font-semibold text-gray-800">{PRODUCTS.length}</span> sản phẩm
+          </p>
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span>Sắp xếp:</span>
-            <select className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white">
+            <span className="text-gray-400">Sắp xếp:</span>
+            <select
+              className="border border-gray-200 px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:border-gray-400 cursor-pointer bg-white"
+              style={{ borderRadius: '4px' }}
+            >
               <option>Mới nhất</option>
               <option>Giá thấp đến cao</option>
               <option>Giá cao đến thấp</option>
@@ -688,16 +717,14 @@ export default function ProductsPage() {
         </div>
 
         {/* Filter + Grid */}
-        <div className="flex gap-5 items-start">
+        <div className="flex gap-6 items-start">
           <FilterPanel />
-
           <div className="flex-1">
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-3 gap-4">
               {PRODUCTS.map((p) => (
                 <ProductCard key={p.id} product={p} onNavigate={onNavigate} />
               ))}
             </div>
-
             <Pagination current={1} total={3} />
           </div>
         </div>

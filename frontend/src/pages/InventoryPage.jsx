@@ -63,13 +63,13 @@ function InventoryTab() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg text-sm cursor-pointer transition-colors">
+          <button className="flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             Xuất CSV
           </button>
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm cursor-pointer transition-colors">
+          <button className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2 px-4 rounded text-sm cursor-pointer transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
@@ -84,13 +84,13 @@ function InventoryTab() {
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên sản phẩm hoặc SKU..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên sản phẩm hoặc SKU..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white" />
         </div>
-        <select value={category} onChange={e => setCategory(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={category} onChange={e => setCategory(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả danh mục</option>
           {['Smartphones','Laptops','Accessories','Tablets'].map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Trạng thái kho</option>
           <option value="sap_het">Sắp hết</option>
           <option value="con_hang">Còn hàng</option>
@@ -99,7 +99,7 @@ function InventoryTab() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
         <div className="grid grid-cols-[3.5rem_1fr_9rem_8rem_8rem_12rem_8rem_4rem] gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50">
           {['ẢNH','SẢN PHẨM','SKU','DANH MỤC','GIÁ (VNĐ)','MỨC TỒN KHO','TRẠNG THÁI',''].map((h,i) => (
             <span key={i} className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">{h}</span>
@@ -109,16 +109,16 @@ function InventoryTab() {
           <div className="py-12 text-center text-sm text-gray-400">Không tìm thấy sản phẩm nào.</div>
         ) : filtered.map((p) => (
           <div key={p.id} className={`grid grid-cols-[3.5rem_1fr_9rem_8rem_8rem_12rem_8rem_4rem] gap-2 px-5 py-4 border-b border-gray-50 last:border-0 items-center ${p.faded ? 'opacity-50' : ''}`}>
-            <img src={p.img} alt={p.name} className="w-10 h-10 rounded-lg object-cover" />
+            <img src={p.img} alt={p.name} className="w-10 h-10 rounded object-cover" />
             <span className="text-sm font-semibold text-gray-800">{p.name}</span>
             <span className="text-xs font-mono text-gray-500">{p.sku}</span>
             <span className="text-sm text-gray-600">{p.category}</span>
             <span className="text-sm font-medium text-gray-800">{p.price.toLocaleString('vi-VN')}</span>
             <StockBar stock={p.stock} maxStock={p.maxStock} barColor={STATUS_CONFIG[p.status].barColor} />
-            <span className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-lg ${STATUS_CONFIG[p.status].bg} ${STATUS_CONFIG[p.status].text}`}>
+            <span className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded ${STATUS_CONFIG[p.status].bg} ${STATUS_CONFIG[p.status].text}`}>
               {STATUS_CONFIG[p.status].label}
             </span>
-            <button className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors">
+            <button className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded cursor-pointer transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
@@ -130,11 +130,11 @@ function InventoryTab() {
           <div className="flex items-center gap-1">
             {[1,2,3,'...',415].map((n,i) => (
               typeof n === 'number' && n !== 415 ? (
-                <button key={i} onClick={() => setPage(n)} className={`w-8 h-8 rounded-lg text-sm font-medium cursor-pointer ${page===n ? 'bg-blue-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}>{n}</button>
+                <button key={i} onClick={() => setPage(n)} className={`w-8 h-8 rounded text-sm font-medium cursor-pointer ${page===n ? 'bg-[#E8420A] text-white' : 'text-gray-500 hover:bg-gray-100'}`}>{n}</button>
               ) : n === '...' ? (
                 <span key={i} className="w-8 h-8 flex items-center justify-center text-gray-300 text-sm">…</span>
               ) : (
-                <button key={i} onClick={() => setPage(415)} className={`w-8 h-8 rounded-lg text-sm font-medium cursor-pointer ${page===415 ? 'bg-blue-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}>415</button>
+                <button key={i} onClick={() => setPage(415)} className={`w-8 h-8 rounded text-sm font-medium cursor-pointer ${page===415 ? 'bg-[#E8420A] text-white' : 'text-gray-500 hover:bg-gray-100'}`}>415</button>
               )
             ))}
           </div>
@@ -207,17 +207,17 @@ function ImportReceiptModal({ log, onClose }) {
     <>
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[560px] max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded shadow-2xl w-full max-w-[560px] max-h-[90vh] overflow-y-auto">
           <div ref={ref} className="p-8">
             {/* Receipt header */}
             <div className="text-center border-b-2 border-dashed border-gray-200 pb-5 mb-5">
-              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <div className="w-12 h-12 bg-[#E8420A] rounded flex items-center justify-center mx-auto mb-2">
                 <span className="text-white font-black text-base">TS</span>
               </div>
               <h2 className="text-xl font-black text-gray-900 tracking-tight">TECHSTORE</h2>
               <p className="text-xs text-gray-400 mt-0.5">123 Nguyễn Huệ, Q.1, TP.HCM · 028 3825 1234</p>
-              <div className="mt-4 inline-block bg-blue-50 border border-blue-200 rounded-xl px-5 py-2">
-                <p className="text-sm font-black text-blue-700 uppercase tracking-widest">Phiếu Nhập Kho</p>
+              <div className="mt-4 inline-block bg-orange-50 border border-orange-200 rounded px-5 py-2">
+                <p className="text-sm font-black text-[#C4350A] uppercase tracking-widest">Phiếu Nhập Kho</p>
               </div>
             </div>
 
@@ -230,7 +230,7 @@ function ImportReceiptModal({ log, onClose }) {
             </div>
 
             {/* Items */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden mb-5">
+            <div className="border border-gray-200 rounded overflow-hidden mb-5">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
@@ -257,7 +257,7 @@ function ImportReceiptModal({ log, onClose }) {
             </div>
 
             {/* Totals */}
-            <div className="bg-blue-50 rounded-xl p-4 mb-5">
+            <div className="bg-orange-50 rounded p-4 mb-5">
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-500">Tạm tính</span>
                 <span className="font-medium text-gray-700">{subtotal.toLocaleString('vi-VN')} đ</span>
@@ -266,15 +266,15 @@ function ImportReceiptModal({ log, onClose }) {
                 <span className="text-gray-500">VAT (10%)</span>
                 <span className="font-medium text-gray-700">{Math.round(subtotal * 0.1).toLocaleString('vi-VN')} đ</span>
               </div>
-              <div className="border-t border-blue-200 mt-2 pt-2 flex justify-between">
+              <div className="border-t border-orange-200 mt-2 pt-2 flex justify-between">
                 <span className="font-bold text-gray-800">Tổng cộng</span>
-                <span className="font-black text-blue-700 text-lg">{Math.round(subtotal * 1.1).toLocaleString('vi-VN')} đ</span>
+                <span className="font-black text-[#C4350A] text-lg">{Math.round(subtotal * 1.1).toLocaleString('vi-VN')} đ</span>
               </div>
             </div>
 
             {/* Note */}
             {log.note && (
-              <div className="bg-gray-50 rounded-xl px-4 py-3 mb-5">
+              <div className="bg-gray-50 rounded px-4 py-3 mb-5">
                 <p className="text-xs text-gray-400 font-semibold mb-0.5">GHI CHÚ</p>
                 <p className="text-sm text-gray-700">{log.note}</p>
               </div>
@@ -301,8 +301,8 @@ function ImportReceiptModal({ log, onClose }) {
 
           {/* Actions */}
           <div className="flex gap-3 px-8 pb-6">
-            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
-            <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold cursor-pointer transition-colors">
+            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
+            <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
               </svg>
@@ -340,9 +340,9 @@ function ImportLogTab() {
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Nhật ký nhập hàng</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{filtered.length} phiếu · Tổng giá trị: <span className="font-semibold text-blue-600">{fmt(totalValue)}</span></p>
+          <p className="text-sm text-gray-500 mt-0.5">{filtered.length} phiếu · Tổng giá trị: <span className="font-semibold text-[#E8420A]">{fmt(totalValue)}</span></p>
         </div>
-        <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg text-sm cursor-pointer transition-colors">
+        <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
@@ -356,13 +356,13 @@ function ImportLogTab() {
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã phiếu, NCC, sản phẩm..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã phiếu, NCC, sản phẩm..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
         </div>
-        <select value={supplier} onChange={e => setSupplier(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={supplier} onChange={e => setSupplier(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả NCC</option>
           {suppliers.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select value={status} onChange={e => setStatus(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={status} onChange={e => setStatus(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả trạng thái</option>
           <option value="completed">Hoàn thành</option>
           <option value="pending">Chờ duyệt</option>
@@ -371,7 +371,7 @@ function ImportLogTab() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
@@ -386,7 +386,7 @@ function ImportLogTab() {
             ) : filtered.map((log) => (
               <tr key={log.id} className="hover:bg-gray-50/60 transition-colors group">
                 <td className="px-4 py-4">
-                  <span className="font-mono text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{log.id}</span>
+                  <span className="font-mono text-xs font-semibold text-[#C4350A] bg-orange-50 px-2 py-0.5 rounded">{log.id}</span>
                 </td>
                 <td className="px-4 py-4">
                   <p className="text-gray-800 font-medium">{log.date}</p>
@@ -415,7 +415,7 @@ function ImportLogTab() {
                 <td className="px-4 py-4 text-right">
                   <button
                     onClick={() => setReceipt(log)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 cursor-pointer whitespace-nowrap"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold text-[#E8420A] hover:text-[#C4350A] px-3 py-1.5 rounded hover:bg-orange-50 cursor-pointer whitespace-nowrap"
                   >
                     Xem phiếu →
                   </button>
@@ -435,7 +435,7 @@ function ImportLogTab() {
    EXPORT LOG (TAB 3)
 ══════════════════════════════════════════════════ */
 const EXPORT_TYPE = {
-  sale:     { label: 'Bán hàng',      bg: 'bg-blue-100',   text: 'text-blue-700'   },
+  sale:     { label: 'Bán hàng',      bg: 'bg-orange-50',   text: 'text-[#C4350A]'   },
   transfer: { label: 'Điều chuyển',   bg: 'bg-purple-100', text: 'text-purple-700' },
   damage:   { label: 'Hàng hỏng',     bg: 'bg-red-100',    text: 'text-red-600'    },
   return:   { label: 'Trả NCC',        bg: 'bg-amber-100',  text: 'text-amber-700'  },
@@ -491,20 +491,20 @@ function ExportReceiptModal({ log, onClose }) {
     <>
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[560px] max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded shadow-2xl w-full max-w-[560px] max-h-[90vh] overflow-y-auto">
           <div className="p-8">
             {/* Receipt header */}
             <div className="text-center border-b-2 border-dashed border-gray-200 pb-5 mb-5">
-              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <div className="w-12 h-12 bg-[#E8420A] rounded flex items-center justify-center mx-auto mb-2">
                 <span className="text-white font-black text-base">TS</span>
               </div>
               <h2 className="text-xl font-black text-gray-900 tracking-tight">TECHSTORE</h2>
               <p className="text-xs text-gray-400 mt-0.5">123 Nguyễn Huệ, Q.1, TP.HCM · 028 3825 1234</p>
               <div className="mt-4 flex items-center justify-center gap-3">
-                <div className="inline-block bg-gray-900 text-white rounded-xl px-5 py-2">
+                <div className="inline-block bg-gray-900 text-white rounded px-5 py-2">
                   <p className="text-sm font-black uppercase tracking-widest">Phiếu Xuất Kho</p>
                 </div>
-                <span className={`text-xs font-bold px-3 py-2 rounded-xl ${typeInfo.bg} ${typeInfo.text}`}>{typeInfo.label}</span>
+                <span className={`text-xs font-bold px-3 py-2 rounded ${typeInfo.bg} ${typeInfo.text}`}>{typeInfo.label}</span>
               </div>
             </div>
 
@@ -518,7 +518,7 @@ function ExportReceiptModal({ log, onClose }) {
             </div>
 
             {/* Items */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden mb-5">
+            <div className="border border-gray-200 rounded overflow-hidden mb-5">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
@@ -545,7 +545,7 @@ function ExportReceiptModal({ log, onClose }) {
             </div>
 
             {/* Totals */}
-            <div className="bg-gray-900 rounded-xl p-4 mb-5">
+            <div className="bg-gray-900 rounded p-4 mb-5">
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-400">Tạm tính</span>
                 <span className="text-gray-200">{subtotal.toLocaleString('vi-VN')} đ</span>
@@ -558,7 +558,7 @@ function ExportReceiptModal({ log, onClose }) {
               )}
               <div className="border-t border-gray-700 mt-2 pt-2 flex justify-between">
                 <span className="font-bold text-white">Tổng cộng</span>
-                <span className="font-black text-blue-400 text-lg">
+                <span className="font-black text-[#E8420A] text-lg">
                   {(log.type === 'sale' ? Math.round(subtotal * 1.1) : subtotal).toLocaleString('vi-VN')} đ
                 </span>
               </div>
@@ -566,7 +566,7 @@ function ExportReceiptModal({ log, onClose }) {
 
             {/* Note */}
             {log.note && (
-              <div className="bg-gray-50 rounded-xl px-4 py-3 mb-5">
+              <div className="bg-gray-50 rounded px-4 py-3 mb-5">
                 <p className="text-xs text-gray-400 font-semibold mb-0.5">GHI CHÚ</p>
                 <p className="text-sm text-gray-700">{log.note}</p>
               </div>
@@ -593,8 +593,8 @@ function ExportReceiptModal({ log, onClose }) {
 
           {/* Actions */}
           <div className="flex gap-3 px-8 pb-6">
-            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
-            <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-sm font-semibold cursor-pointer transition-colors">
+            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
+            <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
               </svg>
@@ -632,7 +632,7 @@ function ExportLogTab() {
           <h1 className="text-2xl font-bold text-gray-900">Nhật ký xuất hàng</h1>
           <p className="text-sm text-gray-500 mt-0.5">{filtered.length} phiếu · Tổng giá trị: <span className="font-semibold text-gray-700">{fmt(totalValue)}</span></p>
         </div>
-        <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg text-sm cursor-pointer transition-colors">
+        <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
@@ -646,16 +646,16 @@ function ExportLogTab() {
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã phiếu, người nhận, sản phẩm..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã phiếu, người nhận, sản phẩm..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
         </div>
-        <select value={typeFilter} onChange={e => setType(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={typeFilter} onChange={e => setType(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả loại xuất</option>
           <option value="sale">Bán hàng</option>
           <option value="transfer">Điều chuyển</option>
           <option value="damage">Hàng hỏng</option>
           <option value="return">Trả NCC</option>
         </select>
-        <select value={status} onChange={e => setStatus(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={status} onChange={e => setStatus(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả trạng thái</option>
           <option value="completed">Hoàn thành</option>
           <option value="pending">Chờ duyệt</option>
@@ -671,7 +671,7 @@ function ExportLogTab() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
@@ -717,7 +717,7 @@ function ExportLogTab() {
                   <td className="px-4 py-4 text-right">
                     <button
                       onClick={() => setReceipt(log)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-lg cursor-pointer whitespace-nowrap"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded cursor-pointer whitespace-nowrap"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -782,7 +782,7 @@ export default function InventoryPage() {
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input type="text" placeholder="Tìm kiếm nhanh..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            <input type="text" placeholder="Tìm kiếm nhanh..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
@@ -805,7 +805,7 @@ export default function InventoryPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600'
+                  ? 'border-[#E8420A] text-[#E8420A]'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >

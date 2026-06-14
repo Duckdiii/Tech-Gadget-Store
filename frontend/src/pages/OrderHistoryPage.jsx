@@ -6,7 +6,7 @@ function fmt(n) { return n.toLocaleString('vi-VN') + ' đ' }
 
 const STATUS_CFG = {
   completed:  { label: 'Đã hoàn thành', dot: 'bg-green-500',  bg: 'bg-green-100',  text: 'text-green-700'  },
-  shipping:   { label: 'Đang giao',     dot: 'bg-blue-500',   bg: 'bg-blue-100',   text: 'text-blue-700'   },
+  shipping:   { label: 'Đang giao',     dot: 'bg-[#E8420A]',   bg: 'bg-orange-50',   text: 'text-[#C4350A]'   },
   processing: { label: 'Đang xử lý',   dot: 'bg-orange-400', bg: 'bg-orange-100', text: 'text-orange-600' },
   pending:    { label: 'Chờ xác nhận', dot: 'bg-yellow-400', bg: 'bg-yellow-100', text: 'text-yellow-700' },
   cancelled:  { label: 'Đã hủy',       dot: 'bg-red-400',    bg: 'bg-red-100',    text: 'text-red-600'    },
@@ -65,11 +65,11 @@ function OrderListTab() {
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-2xl font-bold text-gray-900">Lịch sử đơn hàng</h1>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm cursor-pointer">
+          <button className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded text-sm cursor-pointer">
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             01/06/2024 — 13/06/2024
           </button>
-          <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg text-sm cursor-pointer">
+          <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
             Xuất Excel
           </button>
@@ -80,13 +80,13 @@ function OrderListTab() {
       <div className="flex items-center gap-2 mb-5 flex-wrap">
         {ORDER_FILTER_TABS.map(tab => (
           <button key={tab.id} onClick={() => setActiveFilter(tab.id)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer border ${activeFilter === tab.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}>
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer border ${activeFilter === tab.id ? 'bg-[#E8420A] text-white border-[#E8420A]' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}>
             {tab.label}
           </button>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
         <div className="grid grid-cols-[160px_120px_140px_1fr_140px_120px_100px] px-6 py-3.5 border-b border-gray-100 bg-gray-50">
           {['MÃ ĐƠN','NGÀY ĐẶT','KHÁCH HÀNG','THANH TOÁN','TỔNG TIỀN','TRẠNG THÁI',''].map((h, i) => (
             <span key={i} className={`text-[11px] font-bold text-gray-400 uppercase tracking-wide ${i === 6 ? 'text-right' : ''}`}>{h}</span>
@@ -109,7 +109,7 @@ function OrderListTab() {
               <span className={`text-sm font-bold ${isCancelled ? 'text-gray-400' : 'text-gray-900'}`}>{fmt(order.total)}</span>
               <StatusBadge status={order.status} />
               <div className="text-right">
-                <button onClick={() => !isCancelled && onNavigate('invoice')} className={`text-sm font-medium cursor-pointer ${isCancelled ? 'text-gray-300' : 'text-blue-600 hover:underline'}`}>
+                <button onClick={() => !isCancelled && onNavigate('invoice')} className={`text-sm font-medium cursor-pointer ${isCancelled ? 'text-gray-300' : 'text-[#E8420A] hover:underline'}`}>
                   Chi tiết →
                 </button>
               </div>
@@ -120,10 +120,10 @@ function OrderListTab() {
           <span className="text-sm text-gray-400">Hiển thị {filtered.length} / 24 đơn hàng</span>
           <div className="flex items-center gap-1">
             {[1,2,3].map(p => (
-              <button key={p} onClick={() => setCurrentPage(p)} className={`w-8 h-8 rounded-lg text-sm font-medium cursor-pointer ${currentPage===p ? 'bg-blue-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}>{p}</button>
+              <button key={p} onClick={() => setCurrentPage(p)} className={`w-8 h-8 rounded text-sm font-medium cursor-pointer ${currentPage===p ? 'bg-[#E8420A] text-white' : 'text-gray-500 hover:bg-gray-100'}`}>{p}</button>
             ))}
             <span className="px-1 text-gray-300">…</span>
-            <button onClick={() => setCurrentPage(5)} className={`w-8 h-8 rounded-lg text-sm font-medium cursor-pointer ${currentPage===5 ? 'bg-blue-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}>5</button>
+            <button onClick={() => setCurrentPage(5)} className={`w-8 h-8 rounded text-sm font-medium cursor-pointer ${currentPage===5 ? 'bg-[#E8420A] text-white' : 'text-gray-500 hover:bg-gray-100'}`}>5</button>
           </div>
         </div>
       </div>
@@ -142,7 +142,7 @@ const PAY_STATUS = {
 }
 
 const METHOD_COLOR = {
-  card:    { bg: 'bg-blue-50',   icon: 'text-blue-600'   },
+  card:    { bg: 'bg-orange-50',   icon: 'text-[#E8420A]'   },
   momo:    { bg: 'bg-pink-50',   icon: 'text-pink-600'   },
   zalopay: { bg: 'bg-cyan-50',   icon: 'text-cyan-600'   },
   banking: { bg: 'bg-green-50',  icon: 'text-green-600'  },
@@ -175,9 +175,9 @@ function TxnDetailModal({ txn, onClose }) {
     <>
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[520px] max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded shadow-2xl w-full max-w-[520px] max-h-[90vh] overflow-y-auto">
           {/* Status hero */}
-          <div className={`px-6 pt-6 pb-5 rounded-t-2xl ${txn.status === 'success' ? 'bg-green-50' : txn.status === 'failed' ? 'bg-red-50' : txn.status === 'refunded' ? 'bg-purple-50' : 'bg-amber-50'}`}>
+          <div className={`px-6 pt-6 pb-5 ${txn.status === 'success' ? 'bg-green-50' : txn.status === 'failed' ? 'bg-red-50' : txn.status === 'refunded' ? 'bg-purple-50' : 'bg-amber-50'}`}>
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <div className={`w-11 h-11 rounded-full flex items-center justify-center text-xl font-bold ${txn.status === 'success' ? 'bg-green-500 text-white' : txn.status === 'failed' ? 'bg-red-500 text-white' : txn.status === 'refunded' ? 'bg-purple-500 text-white' : 'bg-amber-400 text-white'}`}>
@@ -188,7 +188,7 @@ function TxnDetailModal({ txn, onClose }) {
                   <p className="text-xs text-gray-400 mt-0.5">{txn.date} · {txn.time}</p>
                 </div>
               </div>
-              <button onClick={onClose} className="p-1.5 hover:bg-black/10 rounded-lg cursor-pointer">
+              <button onClick={onClose} className="p-1.5 hover:bg-black/10 rounded cursor-pointer">
                 <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -197,12 +197,12 @@ function TxnDetailModal({ txn, onClose }) {
               <p className="text-xs text-gray-400 mt-0.5 font-mono">{txn.id}</p>
             </div>
             {txn.failReason && (
-              <div className="mt-3 bg-red-100 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-600 font-medium">
+              <div className="mt-3 bg-red-100 border border-red-200 rounded px-3 py-2 text-xs text-red-600 font-medium">
                 ⚠ Lý do thất bại: {txn.failReason}
               </div>
             )}
             {(txn.status === 'refunded' || refunded) && (
-              <div className="mt-3 bg-purple-100 border border-purple-200 rounded-lg px-3 py-2 text-xs text-purple-700 font-medium">
+              <div className="mt-3 bg-purple-100 border border-purple-200 rounded px-3 py-2 text-xs text-purple-700 font-medium">
                 ↩ Đã hoàn tiền{txn.refundDate ? ` ngày ${txn.refundDate}` : ''}{refunded && ' (vừa xử lý)'}
               </div>
             )}
@@ -213,7 +213,7 @@ function TxnDetailModal({ txn, onClose }) {
             <section>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Thông tin đơn hàng</p>
               <div className="space-y-2.5">
-                <Row label="Mã đơn hàng"  value={<span className="font-mono font-semibold text-blue-600">{txn.orderId}</span>} />
+                <Row label="Mã đơn hàng"  value={<span className="font-mono font-semibold text-[#E8420A]">{txn.orderId}</span>} />
                 <Row label="Khách hàng"    value={txn.customer.name} />
                 <Row label="Email"         value={txn.customer.email} />
                 <Row label="Số điện thoại" value={txn.customer.phone} />
@@ -225,7 +225,7 @@ function TxnDetailModal({ txn, onClose }) {
             {/* Payment method */}
             <section>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Phương thức thanh toán</p>
-              <div className={`flex items-center gap-3 p-3 rounded-xl mb-3 ${mc.bg}`}>
+              <div className={`flex items-center gap-3 p-3 rounded mb-3 ${mc.bg}`}>
                 <span className={mc.icon}><PayIcon type={txn.method} cls="w-5 h-5" /></span>
                 <span className="text-sm font-semibold text-gray-800">{txn.methodLabel}</span>
               </div>
@@ -252,7 +252,7 @@ function TxnDetailModal({ txn, onClose }) {
             </section>
 
             {txn.note && (
-              <div className="bg-gray-50 rounded-xl px-4 py-3">
+              <div className="bg-gray-50 rounded px-4 py-3">
                 <p className="text-xs text-gray-400 font-semibold mb-0.5">Ghi chú</p>
                 <p className="text-sm text-gray-700">{txn.note}</p>
               </div>
@@ -262,16 +262,16 @@ function TxnDetailModal({ txn, onClose }) {
           {/* Actions */}
           <div className="px-6 pb-6 flex gap-3">
             {txn.status === 'success' && !refunded && (
-              <button onClick={() => setShowRefundConfirm(true)} className="flex-1 py-2.5 border border-purple-200 text-purple-700 hover:bg-purple-50 rounded-xl text-sm font-semibold cursor-pointer transition-colors">
+              <button onClick={() => setShowRefundConfirm(true)} className="flex-1 py-2.5 border border-purple-200 text-purple-700 hover:bg-purple-50 rounded text-sm font-semibold cursor-pointer transition-colors">
                 ↩ Hoàn tiền
               </button>
             )}
             {txn.status === 'failed' && (
-              <button className="flex-1 py-2.5 border border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl text-sm font-semibold cursor-pointer transition-colors">
+              <button className="flex-1 py-2.5 border border-orange-200 text-[#C4350A] hover:bg-orange-50 rounded text-sm font-semibold cursor-pointer transition-colors">
                 ↻ Thử lại
               </button>
             )}
-            <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-sm font-semibold cursor-pointer transition-colors">
+            <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
               Xuất biên lai
             </button>
@@ -282,15 +282,15 @@ function TxnDetailModal({ txn, onClose }) {
             <>
               <div className="fixed inset-0 bg-black/50 z-[60]" />
               <div className="fixed inset-0 flex items-center justify-center z-[60]">
-                <div className="bg-white rounded-2xl shadow-2xl w-[360px] p-6">
+                <div className="bg-white rounded shadow-2xl w-[360px] p-6">
                   <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                   </div>
                   <h3 className="text-base font-bold text-gray-900 text-center">Xác nhận hoàn tiền?</h3>
                   <p className="text-sm text-gray-500 text-center mt-1">Hoàn lại <span className="font-semibold text-gray-800">{fmt(txn.amount)}</span> cho <span className="font-semibold text-gray-800">{txn.customer.name}</span>?</p>
                   <div className="flex gap-3 mt-5">
-                    <button onClick={() => setShowRefundConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
-                    <button onClick={doRefund} className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold cursor-pointer">Xác nhận</button>
+                    <button onClick={() => setShowRefundConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
+                    <button onClick={doRefund} className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm font-semibold cursor-pointer">Xác nhận</button>
                   </div>
                 </div>
               </div>
@@ -341,7 +341,7 @@ function PaymentLogTab() {
             {countRefunded > 0 && <> · <span className="text-purple-600 font-semibold">{countRefunded} hoàn tiền</span></>}
           </p>
         </div>
-        <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg text-sm cursor-pointer">
+        <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
           Xuất Excel
         </button>
@@ -351,9 +351,9 @@ function PaymentLogTab() {
       <div className="flex items-center gap-3 mb-5">
         <div className="relative flex-1 max-w-xs">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã GD, mã đơn, khách hàng..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã GD, mã đơn, khách hàng..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
         </div>
-        <select value={methodFilter} onChange={e => setMethod(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={methodFilter} onChange={e => setMethod(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả phương thức</option>
           <option value="card">Thẻ tín dụng/ghi nợ</option>
           <option value="momo">Ví MoMo</option>
@@ -361,7 +361,7 @@ function PaymentLogTab() {
           <option value="banking">Chuyển khoản NH</option>
           <option value="cod">COD</option>
         </select>
-        <select value={statusFilter} onChange={e => setStatus(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <select value={statusFilter} onChange={e => setStatus(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
           <option value="">Tất cả trạng thái</option>
           <option value="success">Thành công</option>
           <option value="failed">Thất bại</option>
@@ -371,7 +371,7 @@ function PaymentLogTab() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
@@ -400,20 +400,20 @@ function PaymentLogTab() {
                     <p className="text-xs text-gray-400">{log.customer.email}</p>
                   </td>
                   <td className="px-4 py-4">
-                    <div className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg ${mc.bg}`}>
+                    <div className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded ${mc.bg}`}>
                       <span className={mc.icon}><PayIcon type={log.method} cls="w-3.5 h-3.5" /></span>
                       <span className="text-xs font-semibold text-gray-700">{log.methodLabel}</span>
                     </div>
                   </td>
                   <td className="px-4 py-4">
-                    <span className="text-xs font-mono font-semibold text-blue-600">{log.orderId}</span>
+                    <span className="text-xs font-mono font-semibold text-[#E8420A]">{log.orderId}</span>
                   </td>
                   <td className="px-4 py-4 text-right font-bold text-gray-800">{fmt(log.amount)}</td>
                   <td className="px-4 py-4 text-right">
                     <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${ps.bg} ${ps.text}`}>{ps.label}</span>
                   </td>
                   <td className="px-4 py-4 text-right">
-                    <button onClick={() => setSelected(log)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 cursor-pointer whitespace-nowrap">
+                    <button onClick={() => setSelected(log)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold text-[#E8420A] hover:text-[#C4350A] px-3 py-1.5 rounded hover:bg-orange-50 cursor-pointer whitespace-nowrap">
                       Xem →
                     </button>
                   </td>
@@ -447,7 +447,7 @@ export default function OrderHistoryPage() {
         <div className="flex-1 max-w-sm">
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input type="text" placeholder="Tìm kiếm đơn hàng..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            <input type="text" placeholder="Tìm kiếm đơn hàng..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
@@ -464,7 +464,7 @@ export default function OrderHistoryPage() {
         <div className="flex items-center gap-1">
           {MAIN_TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${activeTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+              className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${activeTab === tab.id ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
               {tab.icon}{tab.label}
             </button>
           ))}

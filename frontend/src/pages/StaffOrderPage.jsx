@@ -3,7 +3,7 @@ import { useState } from 'react'
 const fmt = n => n.toLocaleString('vi-VN')
 
 const ORDER_STATUS = {
-  processing: { label:'Đang xử lý',   bg:'bg-blue-100',   text:'text-blue-700'  },
+  processing: { label:'Đang xử lý',   bg:'bg-orange-50',   text:'text-[#C4350A]'  },
   pending:    { label:'Chờ xác nhận', bg:'bg-amber-100',  text:'text-amber-700' },
   shipping:   { label:'Đang giao',    bg:'bg-purple-100', text:'text-purple-700'},
   overdue:    { label:'Quá hạn',      bg:'bg-red-100',    text:'text-red-600'   },
@@ -79,8 +79,8 @@ function OrderDetailDrawer({ order, onClose, onMarkDone }) {
       <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
       <div className="fixed top-0 right-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-br from-slate-700 to-slate-900 px-6 pt-5 pb-5 text-white relative">
-          <button onClick={onClose} className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-lg cursor-pointer">
+        <div className="bg-gray-900 px-6 pt-5 pb-5 text-white relative">
+          <button onClick={onClose} className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded cursor-pointer">
             <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
           <p className="text-sm font-bold opacity-70">Đơn hàng</p>
@@ -95,7 +95,7 @@ function OrderDetailDrawer({ order, onClose, onMarkDone }) {
           {/* Customer */}
           <div>
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Thông tin khách hàng</h3>
-            <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+            <div className="bg-gray-50 rounded p-4 space-y-2 text-sm">
               <div className="flex gap-2 items-center">
                 <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 <span className="font-semibold text-gray-800">{order.customer.name}</span>
@@ -122,8 +122,8 @@ function OrderDetailDrawer({ order, onClose, onMarkDone }) {
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Sản phẩm ({order.items.length})</h3>
             <div className="space-y-2">
               {order.items.map((item, i) => (
-                <div key={i} className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
-                  <div className="w-10 h-10 bg-white rounded-lg border border-gray-100 flex items-center justify-center text-lg shrink-0">📦</div>
+                <div key={i} className="flex items-center gap-3 bg-gray-50 rounded px-4 py-3">
+                  <div className="w-10 h-10 bg-white rounded border border-gray-100 flex items-center justify-center text-lg shrink-0">📦</div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-gray-800">{item.name}</p>
                     <p className="text-[11px] text-gray-400">{item.sku} · SL: {item.qty}</p>
@@ -137,7 +137,7 @@ function OrderDetailDrawer({ order, onClose, onMarkDone }) {
           {/* Payment */}
           <div>
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Thanh toán</h3>
-            <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+            <div className="bg-gray-50 rounded p-4 space-y-2 text-sm">
               <div className="flex justify-between text-gray-500"><span>Tạm tính</span><span>{fmt(subtotal)}đ</span></div>
               <div className="flex justify-between text-gray-500"><span>Phí giao hàng</span><span>{fmt(ship)}đ</span></div>
               <div className="flex justify-between border-t border-gray-200 pt-2 font-bold text-gray-800 text-base"><span>Tổng cộng</span><span className="text-teal-700">{fmt(total)}đ</span></div>
@@ -151,7 +151,7 @@ function OrderDetailDrawer({ order, onClose, onMarkDone }) {
         {/* Footer */}
         {(order.status === 'processing' || order.status === 'pending') && (
           <div className="px-6 py-4 border-t border-gray-100">
-            <button onClick={() => onMarkDone(order.id)} className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-bold cursor-pointer transition-colors flex items-center justify-center gap-2">
+            <button onClick={() => onMarkDone(order.id)} className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded text-sm font-bold cursor-pointer transition-colors flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               Xác nhận xử lý xong
             </button>
@@ -209,9 +209,9 @@ export default function StaffOrderPage() {
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã đơn, tên khách, SĐT..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã đơn, tên khách, SĐT..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
           </div>
-          <select value={statusF} onChange={e => setStatusF(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer">
+          <select value={statusF} onChange={e => setStatusF(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer">
             <option value="">Tất cả trạng thái</option>
             {Object.entries(ORDER_STATUS).map(([k,v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
@@ -219,7 +219,7 @@ export default function StaffOrderPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>

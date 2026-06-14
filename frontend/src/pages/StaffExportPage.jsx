@@ -19,7 +19,7 @@ const EXPORT_TYPES = [
 ]
 
 const TYPE_BADGE = {
-  sale:     'bg-blue-100 text-blue-700',
+  sale:     'bg-orange-50 text-[#C4350A]',
   transfer: 'bg-purple-100 text-purple-700',
   damage:   'bg-red-100 text-red-600',
   return:   'bg-amber-100 text-amber-700',
@@ -56,9 +56,9 @@ function ExportReceiptModal({ receipt, onClose }) {
     <>
       <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
           {/* Header */}
-          <div className="bg-gradient-to-br from-slate-700 to-slate-900 rounded-t-2xl px-6 py-5 text-white">
+          <div className="bg-gray-900  px-6 py-5 text-white">
             <p className="text-xs font-semibold opacity-70 uppercase tracking-widest">TechStore · Kho vận</p>
             <h2 className="text-2xl font-black mt-1">PHIẾU XUẤT KHO</h2>
             <div className="flex items-center justify-between mt-2">
@@ -71,18 +71,18 @@ function ExportReceiptModal({ receipt, onClose }) {
           <div className="px-6 py-4 space-y-4">
             {/* Meta */}
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="bg-gray-50 rounded-xl p-3">
+              <div className="bg-gray-50 rounded p-3">
                 <p className="text-xs text-gray-400 font-medium mb-0.5">Loại xuất</p>
                 <p className="font-semibold text-gray-800">{type?.label}</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3">
+              <div className="bg-gray-50 rounded p-3">
                 <p className="text-xs text-gray-400 font-medium mb-0.5">{type?.recipientLabel}</p>
                 <p className="font-semibold text-gray-800">{receipt.recipient || '—'}</p>
               </div>
             </div>
 
             {/* Items */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <div className="border border-gray-200 rounded overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
@@ -112,7 +112,7 @@ function ExportReceiptModal({ receipt, onClose }) {
             </div>
 
             {isSale && (
-              <div className="bg-slate-50 rounded-xl p-4 space-y-2 text-sm">
+              <div className="bg-slate-50 rounded p-4 space-y-2 text-sm">
                 <div className="flex justify-between text-gray-500"><span>Tổng giá trị xuất</span><span className="font-semibold">{fmt(sub)}đ</span></div>
                 <div className="flex justify-between text-gray-500"><span>VAT (10%)</span><span className="font-semibold">{fmt(vat)}đ</span></div>
                 <div className="flex justify-between border-t border-slate-200 pt-2 font-bold text-slate-700 text-base"><span>TỔNG CỘNG</span><span>{fmt(total)}đ</span></div>
@@ -135,8 +135,8 @@ function ExportReceiptModal({ receipt, onClose }) {
           </div>
 
           <div className="flex gap-3 px-6 pb-6">
-            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
-            <button onClick={() => window.print()} className="flex-1 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-sm font-semibold cursor-pointer transition-colors flex items-center justify-center gap-2">
+            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
+            <button onClick={() => window.print()} className="flex-1 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded text-sm font-semibold cursor-pointer transition-colors flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
               In phiếu
             </button>
@@ -157,7 +157,7 @@ export default function StaffExportPage() {
   const [errors,     setErrors]     = useState({})
   const [receipt,    setReceipt]    = useState(null)
 
-  const inp = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400'
+  const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400'
   const sel = inp + ' cursor-pointer'
   const currentType = EXPORT_TYPES.find(t => t.id === exportType)
 
@@ -210,12 +210,12 @@ export default function StaffExportPage() {
         <div className="max-w-4xl mx-auto space-y-5">
 
           {/* Export type selector */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-white rounded border border-gray-200 p-5">
             <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Loại xuất kho</h2>
             <div className="grid grid-cols-4 gap-2">
               {EXPORT_TYPES.map(t => {
                 const colorMap = {
-                  blue:   ['bg-blue-600',   'border-blue-600',   'text-blue-600',   'bg-blue-50'  ],
+                  blue:   ['bg-[#E8420A]',   'border-[#E8420A]',   'text-[#E8420A]',   'bg-orange-50'  ],
                   purple: ['bg-purple-600', 'border-purple-600', 'text-purple-600', 'bg-purple-50'],
                   red:    ['bg-red-600',    'border-red-600',    'text-red-600',    'bg-red-50'   ],
                   amber:  ['bg-amber-500',  'border-amber-500',  'text-amber-600',  'bg-amber-50' ],
@@ -225,7 +225,7 @@ export default function StaffExportPage() {
                   <button
                     key={t.id}
                     onClick={() => { setExportType(t.id); setRecipient('') }}
-                    className={`py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all cursor-pointer ${isActive ? `${colorMap[1]} ${colorMap[3]} ${colorMap[2]}` : 'border-gray-100 text-gray-500 hover:border-gray-200 bg-gray-50'}`}
+                    className={`py-3 px-4 rounded border-2 text-sm font-semibold transition-all cursor-pointer ${isActive ? `${colorMap[1]} ${colorMap[3]} ${colorMap[2]}` : 'border-gray-100 text-gray-500 hover:border-gray-200 bg-gray-50'}`}
                   >
                     {t.label}
                   </button>
@@ -235,7 +235,7 @@ export default function StaffExportPage() {
           </div>
 
           {/* Info */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded border border-gray-200 p-6">
             <h2 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Thông tin phiếu xuất</h2>
             <div className="grid grid-cols-3 gap-4">
               <div>
@@ -255,7 +255,7 @@ export default function StaffExportPage() {
           </div>
 
           {/* Product rows */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded border border-gray-200 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
               <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Danh sách hàng xuất</h2>
               <button onClick={addRow} className="flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-700 font-semibold cursor-pointer">
@@ -280,14 +280,14 @@ export default function StaffExportPage() {
                   <div key={i} className={`px-6 py-3.5 flex items-center gap-3 ${overstock ? 'bg-red-50/50' : ''}`}>
                     <span className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">{i+1}</span>
 
-                    <select value={row.productId} onChange={e => updateRow(i, 'productId', e.target.value)} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer">
+                    <select value={row.productId} onChange={e => updateRow(i, 'productId', e.target.value)} className="flex-1 border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer">
                       <option value="">-- Chọn sản phẩm --</option>
                       {PRODUCTS.map(p => <option key={p.id} value={String(p.id)}>{p.name} (Còn: {p.stock})</option>)}
                     </select>
 
                     <div className="w-20 shrink-0">
                       <input type="number" min={1} value={row.qty} onChange={e => updateRow(i, 'qty', e.target.value)}
-                        className={`w-full border rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 ${overstock ? 'border-red-400 focus:ring-red-300 bg-red-50' : 'border-gray-200 focus:ring-teal-400'}`}
+                        className={`w-full border rounded px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 ${overstock ? 'border-red-400 focus:ring-red-300 bg-red-50' : 'border-gray-200 focus:ring-teal-400'}`}
                       />
                     </div>
 
@@ -315,8 +315,8 @@ export default function StaffExportPage() {
 
           {/* Actions */}
           <div className="flex gap-3 justify-end">
-            <button onClick={resetForm} className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Làm mới</button>
-            <button onClick={handleSubmit} className="px-6 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-sm font-bold cursor-pointer transition-colors flex items-center gap-2">
+            <button onClick={resetForm} className="px-5 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Làm mới</button>
+            <button onClick={handleSubmit} className="px-6 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded text-sm font-bold cursor-pointer transition-colors flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               Tạo phiếu xuất
             </button>

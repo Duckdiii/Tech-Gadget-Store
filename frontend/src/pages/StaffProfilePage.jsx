@@ -28,7 +28,7 @@ export default function StaffProfilePage() {
   const [pwdSuccess, setPwdSuccess] = useState(false)
   const [showPwd, setShowPwd]   = useState({ current:false, next:false, confirm:false })
 
-  const inp = 'w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400'
+  const inp = 'w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400'
 
   function handleChangePwd() {
     const e = {}
@@ -64,9 +64,9 @@ export default function StaffProfilePage() {
         <div className="max-w-3xl mx-auto space-y-5">
 
           {/* Profile card */}
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-br from-teal-600 to-teal-800 px-8 py-8 flex items-center gap-5">
-              <div className={`w-20 h-20 ${PROFILE.bg} rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shrink-0`}>
+          <div className="bg-white rounded border border-gray-200 overflow-hidden">
+            <div className="bg-teal-700 px-8 py-8 flex items-center gap-5" style={{ backgroundColor: '#0f766e' }}>
+              <div className={`w-20 h-20 ${PROFILE.bg} rounded flex items-center justify-center text-white text-2xl font-black shadow-lg shrink-0`}>
                 {PROFILE.initials}
               </div>
               <div>
@@ -91,9 +91,9 @@ export default function StaffProfilePage() {
           </div>
 
           {/* Change password */}
-          <div className="bg-white rounded-2xl border border-gray-200 px-8 py-6">
+          <div className="bg-white rounded border border-gray-200 px-8 py-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-teal-100 rounded-xl flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 bg-teal-100 rounded flex items-center justify-center shrink-0">
                 <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
               </div>
               <div>
@@ -103,7 +103,7 @@ export default function StaffProfilePage() {
             </div>
 
             {pwdSuccess && (
-              <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-4">
+              <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded px-4 py-3 mb-4">
                 <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <p className="text-sm font-semibold text-green-700">Đổi mật khẩu thành công!</p>
               </div>
@@ -148,7 +148,7 @@ export default function StaffProfilePage() {
                   {[1,2,3,4].map(i => {
                     const len = pwdForm.next.length
                     const filled = i <= (len < 6 ? 1 : len < 8 ? 2 : len < 12 ? 3 : 4)
-                    return <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${filled ? (len < 6 ? 'bg-red-400' : len < 8 ? 'bg-amber-400' : len < 12 ? 'bg-blue-400' : 'bg-green-500') : 'bg-gray-100'}`} />
+                    return <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${filled ? (len < 6 ? 'bg-red-400' : len < 8 ? 'bg-amber-400' : len < 12 ? 'bg-[#E8420A]' : 'bg-green-500') : 'bg-gray-100'}`} />
                   })}
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1">
@@ -157,7 +157,7 @@ export default function StaffProfilePage() {
               </div>
             )}
 
-            <button onClick={handleChangePwd} className="mt-5 w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-bold cursor-pointer transition-colors">
+            <button onClick={handleChangePwd} className="mt-5 w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded text-sm font-bold cursor-pointer transition-colors">
               Cập nhật mật khẩu
             </button>
           </div>

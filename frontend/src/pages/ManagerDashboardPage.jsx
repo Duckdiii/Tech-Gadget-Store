@@ -52,8 +52,8 @@ function RevenueChart() {
     <svg viewBox={`0 0 ${CW} ${CH + CPAD_B}`} className="w-full h-auto">
       <defs>
         <linearGradient id="dashGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.03" />
+          <stop offset="0%" stopColor="#E8420A" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#E8420A" stopOpacity="0.03" />
         </linearGradient>
       </defs>
 
@@ -62,11 +62,11 @@ function RevenueChart() {
       ))}
 
       <path d={areaPath} fill="url(#dashGrad)" />
-      <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d={linePath} fill="none" stroke="#E8420A" strokeWidth="2.5" strokeLinejoin="round" />
 
       {pts.map((pt, i) => (
         <g key={i}>
-          <circle cx={pt.x} cy={pt.y} r="5" fill="#3b82f6" />
+          <circle cx={pt.x} cy={pt.y} r="5" fill="#E8420A" />
           <circle cx={pt.x} cy={pt.y} r="2.5" fill="white" />
         </g>
       ))}
@@ -150,8 +150,8 @@ const KPI_CARDS = [
 ]
 
 const COLOR_MAP = {
-  blue:   { bg: 'bg-blue-50',   icon: 'bg-blue-500',   text: 'text-blue-600'   },
-  indigo: { bg: 'bg-indigo-50', icon: 'bg-indigo-500', text: 'text-indigo-600' },
+  blue:   { bg: 'bg-orange-50',   icon: 'bg-[#E8420A]',   text: 'text-[#E8420A]'   },
+  indigo: { bg: 'bg-orange-50', icon: 'bg-[#0D0F14]', text: 'text-[#E8420A]' },
   green:  { bg: 'bg-green-50',  icon: 'bg-green-500',  text: 'text-green-600'  },
   purple: { bg: 'bg-purple-50', icon: 'bg-purple-500', text: 'text-purple-600' },
   red:    { bg: 'bg-red-50',    icon: 'bg-red-500',    text: 'text-red-600'    },
@@ -167,7 +167,7 @@ const RECENT_ORDERS = [
 
 const STATUS_STYLE = {
   'Hoàn thành':    'bg-green-100 text-green-700',
-  'Đang giao':     'bg-blue-100 text-blue-700',
+  'Đang giao':     'bg-orange-50 text-[#C4350A]',
   'Chờ xác nhận': 'bg-amber-100 text-amber-700',
   'Đã hủy':       'bg-red-100 text-red-600',
 }
@@ -258,12 +258,12 @@ const QUICK_ACTIONS = [
 ]
 
 const QA_COLOR = {
-  blue:   { bg: 'bg-blue-50',   icon: 'bg-blue-500',   hover: 'hover:bg-blue-100',   text: 'text-blue-700'   },
+  blue:   { bg: 'bg-orange-50',   icon: 'bg-[#E8420A]',   hover: 'hover:bg-orange-50',   text: 'text-[#C4350A]'   },
   purple: { bg: 'bg-purple-50', icon: 'bg-purple-500', hover: 'hover:bg-purple-100', text: 'text-purple-700' },
   amber:  { bg: 'bg-amber-50',  icon: 'bg-amber-500',  hover: 'hover:bg-amber-100',  text: 'text-amber-700'  },
   green:  { bg: 'bg-green-50',  icon: 'bg-green-500',  hover: 'hover:bg-green-100',  text: 'text-green-700'  },
   red:    { bg: 'bg-red-50',    icon: 'bg-red-500',    hover: 'hover:bg-red-100',    text: 'text-red-700'    },
-  indigo: { bg: 'bg-indigo-50', icon: 'bg-indigo-500', hover: 'hover:bg-indigo-100', text: 'text-indigo-700' },
+  indigo: { bg: 'bg-orange-50', icon: 'bg-[#0D0F14]', hover: 'hover:bg-orange-50', text: 'text-[#C4350A]' },
 }
 
 function fmt(n) {
@@ -292,7 +292,7 @@ export default function ManagerDashboardPage() {
             <input
               type="text"
               placeholder="Tìm kiếm nhanh..."
-              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
             />
           </div>
         </div>
@@ -323,7 +323,7 @@ export default function ManagerDashboardPage() {
               Tổng quan hoạt động hôm nay — {now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg text-sm transition-colors cursor-pointer">
+          <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm transition-colors cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
@@ -336,9 +336,9 @@ export default function ManagerDashboardPage() {
           {KPI_CARDS.map((card, i) => {
             const c = COLOR_MAP[card.color]
             return (
-              <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-3">
+              <div key={i} className="bg-white rounded border border-gray-200 p-5 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className={`w-9 h-9 rounded-lg flex items-center justify-center text-white shrink-0 ${c.icon}`}>
+                  <span className={`w-9 h-9 rounded flex items-center justify-center text-white shrink-0 ${c.icon}`}>
                     {card.icon}
                   </span>
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${card.up ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
@@ -360,18 +360,18 @@ export default function ManagerDashboardPage() {
         {/* Chart + Quick Actions */}
         <div className="grid grid-cols-[1fr_280px] gap-5">
           {/* Revenue Chart */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h2 className="text-base font-semibold text-gray-800">Doanh thu theo tháng</h2>
                 <p className="text-xs text-gray-400 mt-0.5">Năm 2024 · tỷ đồng</p>
               </div>
-              <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+              <div className="flex gap-1 bg-gray-100 p-1 rounded">
                 {['week', 'month', 'year'].map((p) => (
                   <button
                     key={p}
                     onClick={() => setChartPeriod(p)}
-                    className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${chartPeriod === p ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${chartPeriod === p ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   >
                     {p === 'week' ? 'Tuần' : p === 'month' ? 'Tháng' : 'Năm'}
                   </button>
@@ -382,7 +382,7 @@ export default function ManagerDashboardPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-white rounded border border-gray-200 p-5">
             <h2 className="text-base font-semibold text-gray-800 mb-4">Truy cập nhanh</h2>
             <div className="grid grid-cols-2 gap-2">
               {QUICK_ACTIONS.map((qa) => {
@@ -391,9 +391,9 @@ export default function ManagerDashboardPage() {
                   <button
                     key={qa.id}
                     onClick={() => onNavigate(qa.id)}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-colors cursor-pointer text-center ${c.bg} ${c.hover}`}
+                    className={`flex flex-col items-center gap-2 p-3 rounded transition-colors cursor-pointer text-center ${c.bg} ${c.hover}`}
                   >
-                    <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-white ${c.icon}`}>
+                    <span className={`w-10 h-10 rounded flex items-center justify-center text-white ${c.icon}`}>
                       {qa.icon}
                     </span>
                     <span className={`text-[11px] font-semibold leading-tight ${c.text}`}>{qa.label}</span>
@@ -407,12 +407,12 @@ export default function ManagerDashboardPage() {
         {/* Recent Orders + Top Products + Low Stock */}
         <div className="grid grid-cols-[1fr_320px] gap-5">
           {/* Recent Orders */}
-          <div className="bg-white rounded-xl border border-gray-200">
+          <div className="bg-white rounded border border-gray-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <h2 className="text-base font-semibold text-gray-800">Đơn hàng gần đây</h2>
               <button
                 onClick={() => onNavigate('orderHistory')}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
+                className="text-sm text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer"
               >
                 Xem tất cả →
               </button>
@@ -442,7 +442,7 @@ export default function ManagerDashboardPage() {
           {/* Right column */}
           <div className="flex flex-col gap-5">
             {/* Top Products */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 flex-1">
+            <div className="bg-white rounded border border-gray-200 p-5 flex-1">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-semibold text-gray-800">Sản phẩm bán chạy</h2>
                 <span className="text-xs text-gray-400">Tháng này</span>
@@ -456,7 +456,7 @@ export default function ManagerDashboardPage() {
                     </div>
                     <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
+                        className="h-full bg-gradient-to-r from-[#E8420A] to-[#C4350A] rounded-full"
                         style={{ width: `${p.pct}%` }}
                       />
                     </div>
@@ -466,12 +466,12 @@ export default function ManagerDashboardPage() {
             </div>
 
             {/* Low Stock Alerts */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="bg-white rounded border border-gray-200 p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-semibold text-gray-800">Cảnh báo tồn kho</h2>
                 <button
                   onClick={() => onNavigate('inventory')}
-                  className="text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
+                  className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer"
                 >
                   Xem kho →
                 </button>

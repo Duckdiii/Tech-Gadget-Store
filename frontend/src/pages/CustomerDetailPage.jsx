@@ -32,7 +32,7 @@ const TABS = ['Transaction History', 'Purchased Products', 'Notes']
 
 function StatCard({ icon, label, value, valueClass = 'text-gray-900' }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 px-4 py-4 flex-1">
+    <div className="bg-white rounded border border-gray-200 px-4 py-4 flex-1">
       <div className="flex items-center gap-1.5 mb-2">
         <span className="text-gray-400">{icon}</span>
         <span className="text-xs text-gray-400 font-medium">{label}</span>
@@ -59,7 +59,7 @@ export default function CustomerDetailPage() {
             <input
               type="text"
               placeholder="Search customers, orders..."
-              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
             />
           </div>
         </div>
@@ -95,20 +95,20 @@ export default function CustomerDetailPage() {
         <div className="flex items-start justify-between mb-5">
           <div>
             <p className="text-sm text-gray-500 mb-1">
-              <span onClick={() => onNavigate('customerManagement')} className="hover:text-blue-600 cursor-pointer">Customers</span>
+              <span onClick={() => onNavigate('customerManagement')} className="hover:text-[#E8420A] cursor-pointer">Customers</span>
               <span className="mx-2">›</span>
               <span className="text-gray-700 font-medium">{CUSTOMER.name}</span>
             </p>
             <h1 className="text-3xl font-bold text-gray-900">Customer Detail</h1>
           </div>
           <div className="flex items-center gap-3 mt-1">
-            <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-lg text-sm transition-colors cursor-pointer">
+            <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
               Edit Profile
             </button>
-            <button className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors cursor-pointer">
+            <button className="flex items-center gap-2 bg-[#C4350A] hover:bg-[#0D0F14] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
               </svg>
@@ -120,7 +120,7 @@ export default function CustomerDetailPage() {
         {/* Main grid */}
         <div className="grid grid-cols-[290px_1fr] gap-5">
           {/* LEFT: Customer info card */}
-          <div className="bg-white rounded-xl border border-gray-200 px-6 py-7 flex flex-col items-center">
+          <div className="bg-white rounded border border-gray-200 px-6 py-7 flex flex-col items-center">
             {/* Avatar */}
             <img
               src={CUSTOMER.avatar}
@@ -231,7 +231,7 @@ export default function CustomerDetailPage() {
             </div>
 
             {/* Tabs + Table */}
-            <div className="bg-white rounded-xl border border-gray-200 flex-1 overflow-hidden">
+            <div className="bg-white rounded border border-gray-200 flex-1 overflow-hidden">
               {/* Tab navigation */}
               <div className="flex border-b border-gray-200 px-5">
                 {TABS.map((tab) => (
@@ -240,7 +240,7 @@ export default function CustomerDetailPage() {
                     onClick={() => setActiveTab(tab)}
                     className={`py-4 px-3 mr-4 text-sm font-medium transition-colors cursor-pointer border-b-2 ${
                       activeTab === tab
-                        ? 'border-blue-600 text-blue-600'
+                        ? 'border-[#E8420A] text-[#E8420A]'
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                     }`}
                   >
@@ -269,7 +269,7 @@ export default function CustomerDetailPage() {
                         className="grid grid-cols-[140px_110px_1fr_130px_110px_70px] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center"
                       >
                         {/* Order ID */}
-                        <span className="text-sm font-semibold text-blue-600 cursor-pointer hover:underline">
+                        <span className="text-sm font-semibold text-[#E8420A] cursor-pointer hover:underline">
                           {tx.id}
                         </span>
 
@@ -285,12 +285,12 @@ export default function CustomerDetailPage() {
                         <span className="text-sm text-gray-700">{tx.payment}</span>
 
                         {/* Status */}
-                        <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold w-fit ${st.bg} ${st.text}`}>
+                        <span className={`inline-flex items-center px-3 py-1 rounded text-xs font-semibold w-fit ${st.bg} ${st.text}`}>
                           {tx.status}
                         </span>
 
                         {/* Action */}
-                        <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
+                        <button className="p-1.5 text-gray-400 hover:text-[#E8420A] hover:bg-orange-50 rounded transition-colors cursor-pointer">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -304,7 +304,7 @@ export default function CustomerDetailPage() {
                   <div className="px-5 py-4 flex items-center justify-between border-t border-gray-100">
                     <span className="text-sm text-gray-500">Showing 1 to 3 of 42 entries</span>
                     <div className="flex items-center gap-1">
-                      <button className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
+                      <button className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
@@ -313,14 +313,14 @@ export default function CustomerDetailPage() {
                         <button
                           key={n}
                           onClick={() => setPage(n)}
-                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium cursor-pointer transition-colors ${
-                            page === n ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                          className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium cursor-pointer transition-colors ${
+                            page === n ? 'bg-[#E8420A] text-white' : 'text-gray-600 hover:bg-gray-100'
                           }`}
                         >
                           {n}
                         </button>
                       ))}
-                      <button className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
+                      <button className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>

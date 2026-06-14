@@ -11,8 +11,8 @@ const OVERVIEW_ORDERS = [
     total: 24500000, product: 'MacBook Pro 14" M3 Pro 512GB Space Black', extra: 'Cùng 1 sản phẩm khác', img: 'Mac',
   },
   {
-    id: '#ORD-2507001033', date: '15/07/2025', status: 'Đang giao hàng', statusClass: 'text-blue-700',
-    statusBg: 'bg-blue-50 border-blue-200',
+    id: '#ORD-2507001033', date: '15/07/2025', status: 'Đang giao hàng', statusClass: 'text-[#E8420A]',
+    statusBg: 'bg-orange-50 border-orange-200',
     total: 29490000, product: 'iPhone 15 Pro Max 256GB Titan Tự Nhiên', extra: 'Cùng 2 sản phẩm khác', img: 'iOS',
   },
   {
@@ -24,7 +24,7 @@ const OVERVIEW_ORDERS = [
 
 const ORDER_STATUS = {
   completed:  { label: 'Đã nhận hàng',   dot: 'bg-green-500',  text: 'text-green-700',  bg: 'bg-green-50 border-green-200'  },
-  shipping:   { label: 'Đang vận chuyển', dot: 'bg-blue-500',   text: 'text-blue-700',   bg: 'bg-blue-50 border-blue-200'    },
+  shipping:   { label: 'Đang vận chuyển', dot: 'bg-[#E8420A]',  text: 'text-[#E8420A]',  bg: 'bg-orange-50 border-orange-200' },
   processing: { label: 'Đang xử lý',      dot: 'bg-orange-400', text: 'text-orange-700', bg: 'bg-orange-50 border-orange-200'},
   pending:    { label: 'Chờ xác nhận',    dot: 'bg-yellow-400', text: 'text-yellow-700', bg: 'bg-yellow-50 border-yellow-200'},
   cancelled:  { label: 'Đã huỷ',          dot: 'bg-red-400',    text: 'text-red-700',    bg: 'bg-red-50 border-red-200'      },
@@ -166,8 +166,8 @@ const WALLETS_INIT = [
   },
   {
     id: 'zalopay', name: 'ZaloPay',  linked: false, phone: null,
-    color: 'from-blue-500 to-blue-700', bg: 'bg-blue-50',
-    border: 'border-blue-200', textColor: 'text-blue-700',
+    color: 'from-slate-500 to-slate-700', bg: 'bg-slate-50',
+    border: 'border-slate-200', textColor: 'text-slate-700',
     desc: 'Thanh toán qua ứng dụng Zalo',
   },
   {
@@ -241,7 +241,7 @@ const TICKETS_INIT = [
 ]
 
 const TICKET_STATUS = {
-  open:       { label: 'Mới',         dot: 'bg-blue-500',   text: 'text-blue-700',   bg: 'bg-blue-50 border-blue-200'   },
+  open:       { label: 'Mới',         dot: 'bg-[#E8420A]',  text: 'text-[#E8420A]',  bg: 'bg-orange-50 border-orange-200' },
   processing: { label: 'Đang xử lý',  dot: 'bg-orange-400', text: 'text-orange-700', bg: 'bg-orange-50 border-orange-200'},
   resolved:   { label: 'Đã giải quyết', dot: 'bg-green-500', text: 'text-green-700',  bg: 'bg-green-50 border-green-200' },
   closed:     { label: 'Đã đóng',     dot: 'bg-gray-400',   text: 'text-gray-600',   bg: 'bg-gray-100 border-gray-200'  },
@@ -278,7 +278,7 @@ const MEMBERSHIP_TIERS = [
   { id: 'member',  label: 'Thành viên', min: 0,          max: 5000000,   color: 'bg-gray-400',   ring: 'ring-gray-300',   text: 'text-gray-600'   },
   { id: 'silver',  label: 'Bạc',        min: 5000000,    max: 20000000,  color: 'bg-slate-400',  ring: 'ring-slate-300',  text: 'text-slate-600'  },
   { id: 'gold',    label: 'Vàng',       min: 20000000,   max: 50000000,  color: 'bg-amber-400',  ring: 'ring-amber-300',  text: 'text-amber-600'  },
-  { id: 'elite',   label: 'Elite',      min: 50000000,   max: 100000000, color: 'bg-indigo-500', ring: 'ring-indigo-300', text: 'text-indigo-600' },
+  { id: 'elite',   label: 'Elite',      min: 50000000,   max: 100000000, color: 'bg-[#E8420A]',  ring: 'ring-orange-300', text: 'text-[#E8420A]'  },
   { id: 'eliteplus',label: 'Elite+',    min: 100000000,  max: null,      color: 'bg-purple-600', ring: 'ring-purple-300', text: 'text-purple-700' },
 ]
 
@@ -307,7 +307,7 @@ const COUPONS_DATA = [
     desc: 'Áp dụng cho tất cả sản phẩm, tối đa 500.000đ',
     exp: '30/06/2026', minOrder: 1000000,
     type: 'percent', value: 10,
-    color: 'from-blue-600 to-indigo-600', badge: 'bg-blue-100 text-blue-700',
+    color: 'from-[#E8420A] to-orange-700', badge: 'bg-orange-100 text-[#E8420A]',
   },
   {
     id: 2, code: 'FREESHIP', status: 'active',
@@ -398,7 +398,7 @@ function maskCardNumber(number) {
 }
 
 const CARD_GRADIENTS = {
-  visa:       'from-blue-700 via-blue-600 to-indigo-700',
+  visa:       'from-slate-700 via-slate-600 to-slate-800',
   mastercard: 'from-orange-500 via-red-500 to-rose-600',
   jcb:        'from-green-600 via-teal-600 to-emerald-700',
   unknown:    'from-gray-600 via-gray-500 to-gray-700',
@@ -416,7 +416,7 @@ function CardLogo({ type, small }) {
       </div>
     )
   if (type === 'jcb')
-    return <span className={`font-black tracking-widest text-white bg-blue-800 px-1.5 py-0.5 rounded ${sz}`}>JCB</span>
+    return <span className={`font-black tracking-widest text-white bg-[#0D0F14] px-1.5 py-0.5 rounded ${sz}`}>JCB</span>
   return <span className={`font-bold text-white/70 ${sz}`}>CARD</span>
 }
 
@@ -455,7 +455,7 @@ function AddCardModal({ onClose, onSave }) {
   const handleSave = () => { if (validate()) onSave({ ...form, type: cardType }) }
 
   const inputCls = (k) =>
-    `w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-colors ${errors[k] ? 'border-red-400 bg-red-50' : 'border-gray-300'}`
+    `w-full border rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition-colors ${errors[k] ? 'border-red-400 bg-red-50' : 'border-gray-300'}`
 
   /* live card preview */
   const displayNumber = form.number || '**** **** **** ****'
@@ -464,15 +464,15 @@ function AddCardModal({ onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[94vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-white rounded shadow-2xl w-full max-w-lg max-h-[94vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-7 py-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
+        <div className="flex items-center justify-between px-7 py-5 border-b border-gray-100 sticky top-0 bg-white rounded-t z-10">
           <div>
             <h2 className="text-base font-black text-gray-900">Thêm thẻ mới</h2>
             <p className="text-xs text-gray-400 mt-0.5">Hỗ trợ Visa, Mastercard và JCB</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+          <button onClick={onClose} className="w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -481,7 +481,7 @@ function AddCardModal({ onClose, onSave }) {
 
         <div className="px-7 py-6 space-y-6">
           {/* Live card preview */}
-          <div className={`relative h-44 rounded-2xl bg-gradient-to-br ${CARD_GRADIENTS[cardType]} p-6 shadow-lg overflow-hidden select-none`}>
+          <div className={`relative h-44 rounded bg-gradient-to-br ${CARD_GRADIENTS[cardType]} p-6 shadow-lg overflow-hidden select-none`}>
             {/* decorative circles */}
             <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10" />
             <div className="absolute -bottom-10 -left-6 w-36 h-36 rounded-full bg-white/10" />
@@ -594,7 +594,7 @@ function AddCardModal({ onClose, onSave }) {
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <div
               onClick={() => set('isDefault')(!form.isDefault)}
-              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${form.isDefault ? 'bg-blue-600 border-blue-600' : 'border-gray-300 hover:border-blue-400'}`}
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${form.isDefault ? 'bg-[#E8420A] border-[#E8420A]' : 'border-gray-300 hover:border-[#E8420A]'}`}
             >
               {form.isDefault && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
             </div>
@@ -605,7 +605,7 @@ function AddCardModal({ onClose, onSave }) {
           </label>
 
           {/* Security note */}
-          <div className="flex items-start gap-2.5 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+          <div className="flex items-start gap-2.5 bg-green-50 border border-green-200 rounded px-4 py-3">
             <svg className="w-4 h-4 text-green-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
@@ -614,9 +614,9 @@ function AddCardModal({ onClose, onSave }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-7 py-5 border-t border-gray-100 bg-gray-50/60 rounded-b-2xl sticky bottom-0">
-          <button onClick={onClose} className="px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-100 transition-colors">Huỷ bỏ</button>
-          <button onClick={handleSave} className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors">Thêm thẻ</button>
+        <div className="flex items-center justify-end gap-3 px-7 py-5 border-t border-gray-100 bg-gray-50/60 rounded-b sticky bottom-0">
+          <button onClick={onClose} className="px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors">Huỷ bỏ</button>
+          <button onClick={handleSave} className="px-6 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded shadow-sm transition-colors">Thêm thẻ</button>
         </div>
       </div>
     </div>
@@ -674,7 +674,7 @@ function PaymentSection() {
 
       {/* Toast */}
       {toast && (
-        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-5 py-3 rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-5 py-3 rounded shadow-sm">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
@@ -685,11 +685,11 @@ function PaymentSection() {
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Thẻ đã lưu',       value: cards.length,  color: 'bg-blue-50 border-blue-100 text-blue-700'  },
+          { label: 'Thẻ đã lưu',       value: cards.length,  color: 'bg-orange-50 border-orange-100 text-[#E8420A]'  },
           { label: 'Ví đã liên kết',    value: linkedCount,   color: 'bg-green-50 border-green-100 text-green-700' },
-          { label: 'Tổng phương thức',  value: cards.length + linkedCount, color: 'bg-purple-50 border-purple-100 text-purple-700' },
+          { label: 'Tổng phương thức',  value: cards.length + linkedCount, color: 'bg-gray-50 border-gray-200 text-gray-700' },
         ].map((s, i) => (
-          <div key={i} className={`rounded-2xl border px-5 py-4 text-center ${s.color}`}>
+          <div key={i} className={`rounded border px-5 py-4 text-center ${s.color}`}>
             <p className="text-3xl font-black">{s.value}</p>
             <p className="text-xs font-semibold mt-1 opacity-80">{s.label}</p>
           </div>
@@ -697,7 +697,7 @@ function PaymentSection() {
       </div>
 
       {/* Main panel */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 shadow-sm overflow-hidden">
 
         {/* Tab bar + action button */}
         <div className="flex items-center justify-between border-b border-gray-200 px-2 pt-2">
@@ -710,18 +710,18 @@ function PaymentSection() {
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
-                  tab === t.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-800'
+                  tab === t.id ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
                 {t.label}
-                <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${tab === t.id ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>{t.count}</span>
+                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${tab === t.id ? 'bg-orange-100 text-[#E8420A]' : 'bg-gray-100 text-gray-500'}`}>{t.count}</span>
               </button>
             ))}
           </div>
           {tab === 'cards' && (
             <button
               onClick={() => setShowAddCard(true)}
-              className="flex items-center gap-1.5 mb-2 mr-2 px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors"
+              className="flex items-center gap-1.5 mb-2 mr-2 px-4 py-2 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded shadow-sm transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -743,7 +743,7 @@ function PaymentSection() {
                 </div>
                 <p className="text-base font-semibold text-gray-600">Chưa có thẻ nào</p>
                 <p className="text-sm text-gray-400 mt-1">Thêm thẻ để thanh toán nhanh hơn</p>
-                <button onClick={() => setShowAddCard(true)} className="mt-5 flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm">
+                <button onClick={() => setShowAddCard(true)} className="mt-5 flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded transition-colors shadow-sm">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                   </svg>
@@ -755,7 +755,7 @@ function PaymentSection() {
                 {cards.map(card => (
                   <div key={card.id} className="space-y-3">
                     {/* Card visual */}
-                    <div className={`relative h-40 rounded-2xl bg-gradient-to-br ${CARD_GRADIENTS[card.type]} p-5 shadow-md overflow-hidden ${card.isDefault ? 'ring-2 ring-blue-400 ring-offset-2' : ''}`}>
+                    <div className={`relative h-40 rounded bg-gradient-to-br ${CARD_GRADIENTS[card.type]} p-5 shadow-md overflow-hidden ${card.isDefault ? 'ring-2 ring-[#E8420A] ring-offset-2' : ''}`}>
                       <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10" />
                       <div className="absolute -bottom-8 -left-4 w-24 h-24 rounded-full bg-white/10" />
 
@@ -791,23 +791,23 @@ function PaymentSection() {
                     </div>
 
                     {/* Card info + actions */}
-                    <div className="bg-gray-50 rounded-xl border border-gray-200 px-4 py-3">
+                    <div className="bg-gray-50 rounded border border-gray-200 px-4 py-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-bold text-gray-700 capitalize">{card.type.toUpperCase()}{card.bank ? ` · ${card.bank}` : ''}</span>
                         {card.isDefault
-                          ? <span className="text-xs font-black text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded-full">Mặc định</span>
-                          : <button onClick={() => handleSetDefaultCard(card.id)} className="text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors">Đặt mặc định</button>
+                          ? <span className="text-xs font-black text-[#E8420A] bg-orange-100 border border-orange-200 px-2 py-0.5 rounded">Mặc định</span>
+                          : <button onClick={() => handleSetDefaultCard(card.id)} className="text-xs font-semibold text-gray-500 hover:text-[#E8420A] transition-colors">Đặt mặc định</button>
                         }
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => setDeletingCardId(card.id)} className="flex-1 text-xs font-semibold text-red-500 hover:text-red-700 border border-red-200 hover:bg-red-50 py-1.5 rounded-lg transition-colors">
+                        <button onClick={() => setDeletingCardId(card.id)} className="flex-1 text-xs font-semibold text-red-500 hover:text-red-700 border border-red-200 hover:bg-red-50 py-1.5 rounded transition-colors">
                           Xoá thẻ
                         </button>
                       </div>
 
                       {/* Delete confirm */}
                       {deletingCardId === card.id && (
-                        <div className="mt-2 flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                        <div className="mt-2 flex items-center gap-2 bg-red-50 border border-red-200 rounded px-3 py-2">
                           <p className="text-xs font-semibold text-red-700 flex-1">Xác nhận xoá thẻ này?</p>
                           <button onClick={() => setDeletingCardId(null)} className="text-xs font-bold text-gray-500 px-2 py-1 hover:bg-white rounded border border-gray-200 transition-colors">Huỷ</button>
                           <button onClick={() => handleDeleteCard(card.id)} className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded transition-colors">Xoá</button>
@@ -820,14 +820,14 @@ function PaymentSection() {
                 {/* Add card tile */}
                 <button
                   onClick={() => setShowAddCard(true)}
-                  className="h-40 rounded-2xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30 flex flex-col items-center justify-center gap-2 transition-all group"
+                  className="h-40 rounded border-2 border-dashed border-gray-300 hover:border-[#E8420A] hover:bg-orange-50/30 flex flex-col items-center justify-center gap-2 transition-all group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                    <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-10 h-10 rounded bg-gray-100 group-hover:bg-orange-100 flex items-center justify-center transition-colors">
+                    <svg className="w-5 h-5 text-gray-400 group-hover:text-[#E8420A] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
-                  <span className="text-sm font-semibold text-gray-400 group-hover:text-blue-600 transition-colors">Thêm thẻ mới</span>
+                  <span className="text-sm font-semibold text-gray-400 group-hover:text-[#E8420A] transition-colors">Thêm thẻ mới</span>
                 </button>
               </div>
             )}
@@ -840,7 +840,7 @@ function PaymentSection() {
             {wallets.map(wallet => (
               <div key={wallet.id} className={`flex items-center gap-5 px-6 py-5 hover:bg-gray-50/60 transition-colors ${wallet.linked ? 'bg-white' : ''}`}>
                 {/* Logo block */}
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${wallet.color} flex items-center justify-center shrink-0 shadow-md`}>
+                <div className={`w-14 h-14 rounded bg-gradient-to-br ${wallet.color} flex items-center justify-center shrink-0 shadow-md`}>
                   <span className="text-white text-xs font-black leading-tight text-center px-1">{wallet.name}</span>
                 </div>
 
@@ -866,10 +866,10 @@ function PaymentSection() {
                 {/* Toggle button */}
                 <button
                   onClick={() => handleToggleWallet(wallet.id)}
-                  className={`shrink-0 px-5 py-2 text-sm font-bold rounded-xl border transition-colors ${
+                  className={`shrink-0 px-5 py-2 text-sm font-bold rounded border transition-colors ${
                     wallet.linked
                       ? 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-red-600 hover:border-red-200'
-                      : 'border-blue-500 text-blue-600 hover:bg-blue-600 hover:text-white'
+                      : 'border-[#E8420A] text-[#E8420A] hover:bg-[#E8420A] hover:text-white'
                   }`}
                 >
                   {wallet.linked ? 'Huỷ liên kết' : 'Liên kết'}
@@ -881,13 +881,13 @@ function PaymentSection() {
       </div>
 
       {/* Security note */}
-      <div className="bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 flex items-start gap-3">
-        <svg className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="bg-gray-50 border border-gray-200 rounded px-5 py-4 flex items-start gap-3">
+        <svg className="w-5 h-5 text-gray-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
         <div>
-          <p className="text-xs font-bold text-blue-800 mb-0.5">Bảo mật thanh toán</p>
-          <p className="text-xs text-blue-700">Thông tin thẻ và ví được mã hóa 256-bit SSL. Chúng tôi không lưu trữ mã CVV. Mọi giao dịch đều yêu cầu xác thực OTP.</p>
+          <p className="text-xs font-bold text-gray-800 mb-0.5">Bảo mật thanh toán</p>
+          <p className="text-xs text-gray-600">Thông tin thẻ và ví được mã hóa 256-bit SSL. Chúng tôi không lưu trữ mã CVV. Mọi giao dịch đều yêu cầu xác thực OTP.</p>
         </div>
       </div>
 
@@ -909,14 +909,14 @@ function FaqAccordion({ items }) {
             onClick={() => setOpen(open === i ? null : i)}
             className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50/60 transition-colors"
           >
-            <span className={`text-sm font-semibold pr-4 leading-snug ${open === i ? 'text-blue-700' : 'text-gray-800'}`}>{item.q}</span>
-            <svg className={`w-5 h-5 shrink-0 text-gray-400 transition-transform duration-200 ${open === i ? 'rotate-180 text-blue-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className={`text-sm font-semibold pr-4 leading-snug ${open === i ? 'text-[#E8420A]' : 'text-gray-800'}`}>{item.q}</span>
+            <svg className={`w-5 h-5 shrink-0 text-gray-400 transition-transform duration-200 ${open === i ? 'rotate-180 text-[#E8420A]' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
           {open === i && (
             <div className="px-5 pb-5">
-              <p className="text-sm text-gray-600 leading-relaxed bg-blue-50/50 border border-blue-100 rounded-xl px-4 py-3">{item.a}</p>
+              <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 border border-gray-200 rounded px-4 py-3">{item.a}</p>
             </div>
           )}
         </div>
@@ -976,7 +976,7 @@ function SupportSection() {
 
   const priorityStyle = {
     low:    { label: 'Thấp',    color: 'bg-gray-100 text-gray-600 border-gray-200'         },
-    medium: { label: 'Trung bình', color: 'bg-blue-50 text-blue-700 border-blue-200'       },
+    medium: { label: 'Trung bình', color: 'bg-orange-50 text-[#E8420A] border-orange-200'  },
     high:   { label: 'Cao',     color: 'bg-orange-50 text-orange-700 border-orange-200'    },
     urgent: { label: 'Khẩn',   color: 'bg-red-50 text-red-700 border-red-200'             },
   }
@@ -986,7 +986,7 @@ function SupportSection() {
 
       {/* Toast */}
       {toast && (
-        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-5 py-3 rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-5 py-3 rounded shadow-sm">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
@@ -1019,8 +1019,8 @@ function SupportSection() {
             title: 'Email',
             value: 'support@techgadget.vn',
             sub: 'Phản hồi trong 24 giờ',
-            color: 'bg-blue-50 border-blue-100',
-            iconBg: 'bg-blue-600',
+            color: 'bg-gray-50 border-gray-200',
+            iconBg: 'bg-gray-700',
             cta: 'Gửi email',
           },
           {
@@ -1032,13 +1032,13 @@ function SupportSection() {
             title: 'Live Chat',
             value: 'Chat trực tuyến',
             sub: 'Phản hồi dưới 5 phút',
-            color: 'bg-purple-50 border-purple-100',
-            iconBg: 'bg-purple-600',
+            color: 'bg-orange-50 border-orange-100',
+            iconBg: 'bg-[#E8420A]',
             cta: 'Bắt đầu chat',
           },
         ].map((c, i) => (
-          <div key={i} className={`rounded-2xl border p-5 ${c.color} flex flex-col gap-3`}>
-            <div className={`w-11 h-11 rounded-xl ${c.iconBg} text-white flex items-center justify-center shadow-sm`}>
+          <div key={i} className={`rounded border p-5 ${c.color} flex flex-col gap-3`}>
+            <div className={`w-11 h-11 rounded ${c.iconBg} text-white flex items-center justify-center shadow-sm`}>
               {c.icon}
             </div>
             <div className="flex-1">
@@ -1046,7 +1046,7 @@ function SupportSection() {
               <p className="text-sm font-black text-gray-900 mt-0.5">{c.value}</p>
               <p className="text-xs text-gray-400 mt-0.5">{c.sub}</p>
             </div>
-            <button className="w-full text-xs font-bold text-white py-2 rounded-xl transition-colors shadow-sm" style={{ background: c.iconBg.replace('bg-', '').includes('green') ? '#16a34a' : c.iconBg.replace('bg-', '').includes('blue') ? '#2563eb' : '#9333ea' }}>
+            <button className="w-full text-xs font-bold text-white py-2 rounded transition-colors shadow-sm bg-[#E8420A] hover:bg-[#c93808]">
               {c.cta}
             </button>
           </div>
@@ -1054,7 +1054,7 @@ function SupportSection() {
       </div>
 
       {/* ── Main panel ───────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 shadow-sm overflow-hidden">
 
         {/* Tab bar */}
         <div className="flex items-center border-b border-gray-200 px-2 pt-2 gap-1">
@@ -1067,7 +1067,7 @@ function SupportSection() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
-                tab === t.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-800'
+                tab === t.id ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-800'
               }`}
             >
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1075,7 +1075,7 @@ function SupportSection() {
               </svg>
               {t.label}
               {t.badge > 0 && (
-                <span className={`text-xs font-black px-1.5 py-0.5 rounded-full ${tab === t.id ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                <span className={`text-xs font-black px-1.5 py-0.5 rounded ${tab === t.id ? 'bg-orange-100 text-[#E8420A]' : 'bg-orange-100 text-orange-700'}`}>
                   {t.badge}
                 </span>
               )}
@@ -1092,9 +1092,9 @@ function SupportSection() {
                 <button
                   key={cat.id}
                   onClick={() => setFaqCat(cat.id)}
-                  className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
+                  className={`shrink-0 px-4 py-2 rounded text-xs font-bold transition-colors ${
                     faqCat === cat.id
-                      ? 'bg-blue-600 text-white shadow-sm'
+                      ? 'bg-[#E8420A] text-white shadow-sm'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -1111,7 +1111,7 @@ function SupportSection() {
               <p className="text-sm text-gray-500">Không tìm thấy câu trả lời bạn cần?</p>
               <button
                 onClick={() => setTab('new')}
-                className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 transition-colors"
+                className="text-sm font-bold text-[#E8420A] hover:text-[#c93808] flex items-center gap-1.5 transition-colors"
               >
                 Gửi yêu cầu hỗ trợ
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1145,7 +1145,7 @@ function SupportSection() {
                     value={form.subject}
                     onChange={setF('subject')}
                     placeholder="Mô tả ngắn gọn vấn đề bạn gặp phải..."
-                    className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-colors ${formErrors.subject ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                    className={`w-full border rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition-colors ${formErrors.subject ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
                   />
                   {formErrors.subject && <p className="text-xs text-red-500 mt-1">{formErrors.subject}</p>}
                 </div>
@@ -1157,7 +1157,7 @@ function SupportSection() {
                     <select
                       value={form.category}
                       onChange={setF('category')}
-                      className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-colors ${formErrors.category ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                      className={`w-full border rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition-colors ${formErrors.category ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
                     >
                       <option value="">-- Chọn danh mục --</option>
                       {SUPPORT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -1171,13 +1171,13 @@ function SupportSection() {
                         { v: 'low', l: 'Thấp' }, { v: 'medium', l: 'Trung bình' },
                         { v: 'high', l: 'Cao' }, { v: 'urgent', l: 'Khẩn' },
                       ].map(p => (
-                        <label key={p.v} className={`flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer transition-all text-xs font-bold ${
+                        <label key={p.v} className={`flex items-center gap-2 px-3 py-2 rounded border cursor-pointer transition-all text-xs font-bold ${
                           form.priority === p.v
-                            ? priorityStyle[p.v].color + ' ring-1 ring-offset-1 ' + (p.v === 'urgent' ? 'ring-red-400' : p.v === 'high' ? 'ring-orange-400' : p.v === 'medium' ? 'ring-blue-400' : 'ring-gray-400')
+                            ? priorityStyle[p.v].color + ' ring-1 ring-offset-1 ' + (p.v === 'urgent' ? 'ring-red-400' : p.v === 'high' ? 'ring-orange-400' : p.v === 'medium' ? 'ring-[#E8420A]/40' : 'ring-gray-400')
                             : 'border-gray-200 text-gray-500 hover:border-gray-300'
                         }`}>
                           <input type="radio" name="priority" value={p.v} checked={form.priority === p.v} onChange={setF('priority')} className="hidden" />
-                          <span className={`w-2 h-2 rounded-full ${form.priority === p.v ? (p.v === 'urgent' ? 'bg-red-500' : p.v === 'high' ? 'bg-orange-500' : p.v === 'medium' ? 'bg-blue-500' : 'bg-gray-400') : 'bg-gray-300'}`} />
+                          <span className={`w-2 h-2 rounded-full ${form.priority === p.v ? (p.v === 'urgent' ? 'bg-red-500' : p.v === 'high' ? 'bg-orange-500' : p.v === 'medium' ? 'bg-[#E8420A]' : 'bg-gray-400') : 'bg-gray-300'}`} />
                           {p.l}
                         </label>
                       ))}
@@ -1193,7 +1193,7 @@ function SupportSection() {
                     onChange={setF('message')}
                     rows={6}
                     placeholder="Mô tả chi tiết vấn đề bạn gặp phải: thời gian xảy ra, mã đơn hàng liên quan (nếu có), các bước đã thực hiện..."
-                    className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-colors resize-none leading-relaxed ${formErrors.message ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                    className={`w-full border rounded px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition-colors resize-none leading-relaxed ${formErrors.message ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
                   />
                   <div className="flex items-center justify-between mt-1">
                     {formErrors.message
@@ -1205,8 +1205,8 @@ function SupportSection() {
                 </div>
 
                 {/* File attach hint */}
-                <div className="border-2 border-dashed border-gray-200 rounded-xl px-5 py-4 flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/20 transition-colors cursor-pointer">
-                  <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                <div className="border-2 border-dashed border-gray-200 rounded px-5 py-4 flex items-center gap-4 hover:border-[#E8420A]/40 hover:bg-orange-50/20 transition-colors cursor-pointer">
+                  <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                     </svg>
@@ -1248,7 +1248,7 @@ function SupportSection() {
                   <p className="text-xs text-gray-400">Chúng tôi sẽ phản hồi qua email <span className="font-semibold text-gray-600">alex@example.com</span></p>
                   <button
                     onClick={handleSubmit}
-                    className="flex items-center gap-2 px-7 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors"
+                    className="flex items-center gap-2 px-7 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded shadow-sm transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -1276,8 +1276,8 @@ function SupportSection() {
                 <button
                   key={f.id}
                   onClick={() => setTicketFilter(f.id)}
-                  className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
-                    ticketFilter === f.id ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded text-xs font-bold transition-colors ${
+                    ticketFilter === f.id ? 'bg-[#E8420A] text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {f.label}
@@ -1286,7 +1286,7 @@ function SupportSection() {
               ))}
               <button
                 onClick={() => setTab('new')}
-                className="shrink-0 flex items-center gap-1.5 ml-auto px-4 py-2 text-xs font-bold text-blue-600 border border-blue-200 hover:bg-blue-50 rounded-xl transition-colors"
+                className="shrink-0 flex items-center gap-1.5 ml-auto px-4 py-2 text-xs font-bold text-[#E8420A] border border-orange-200 hover:bg-orange-50 rounded transition-colors"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -1350,7 +1350,7 @@ function SupportSection() {
                         </div>
 
                         {/* View button */}
-                        <button className="shrink-0 text-xs font-bold text-blue-600 border border-blue-200 hover:bg-blue-50 px-4 py-2 rounded-xl transition-colors">
+                        <button className="shrink-0 text-xs font-bold text-[#E8420A] border border-orange-200 hover:bg-orange-50 px-4 py-2 rounded transition-colors">
                           Xem chi tiết
                         </button>
                       </div>
@@ -1401,23 +1401,23 @@ function AddressModal({ initial, onClose, onSave }) {
   }
 
   const inputCls = (key) =>
-    `w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-colors ${
+    `w-full border rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition-colors ${
       errors[key] ? 'border-red-400 bg-red-50' : 'border-gray-300'
     }`
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[92vh] overflow-y-auto"
+        className="bg-white rounded shadow-2xl w-full max-w-xl max-h-[92vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-7 py-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
+        <div className="flex items-center justify-between px-7 py-5 border-b border-gray-100 sticky top-0 bg-white rounded-t z-10">
           <div>
             <h2 className="text-base font-black text-gray-900">{initial ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới'}</h2>
             <p className="text-xs text-gray-400 mt-0.5">Điền đầy đủ thông tin để đặt hàng chính xác</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+          <button onClick={onClose} className="w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -1516,9 +1516,9 @@ function AddressModal({ initial, onClose, onSave }) {
                 { v: 'office', l: 'Công ty',     icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
                 { v: 'other',  l: 'Khác',        icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z' },
               ].map(t => (
-                <label key={t.v} className={`flex-1 flex items-center gap-2.5 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                <label key={t.v} className={`flex-1 flex items-center gap-2.5 px-4 py-3 rounded border cursor-pointer transition-all ${
                   form.type === t.v
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    ? 'border-[#E8420A] bg-orange-50 text-[#E8420A]'
                     : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                 }`}>
                   <input type="radio" name="addrType" value={t.v} checked={form.type === t.v} onChange={set('type')} className="hidden" />
@@ -1535,8 +1535,8 @@ function AddressModal({ initial, onClose, onSave }) {
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <div
               onClick={() => setForm(prev => ({ ...prev, isDefault: !prev.isDefault }))}
-              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${
-                form.isDefault ? 'bg-blue-600 border-blue-600' : 'border-gray-300 hover:border-blue-400'
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors shrink-0 ${
+                form.isDefault ? 'bg-[#E8420A] border-[#E8420A]' : 'border-gray-300 hover:border-[#E8420A]'
               }`}
             >
               {form.isDefault && (
@@ -1553,11 +1553,11 @@ function AddressModal({ initial, onClose, onSave }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-7 py-5 border-t border-gray-100 bg-gray-50/60 rounded-b-2xl sticky bottom-0">
-          <button onClick={onClose} className="px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-100 transition-colors">
+        <div className="flex items-center justify-end gap-3 px-7 py-5 border-t border-gray-100 bg-gray-50/60 rounded-b sticky bottom-0">
+          <button onClick={onClose} className="px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors">
             Huỷ bỏ
           </button>
-          <button onClick={handleSave} className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors">
+          <button onClick={handleSave} className="px-6 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded shadow-sm transition-colors">
             {initial ? 'Lưu thay đổi' : 'Thêm địa chỉ'}
           </button>
         </div>
@@ -1613,7 +1613,7 @@ function AddressSection() {
   }
 
   const typeInfo = {
-    home:   { label: 'Nhà riêng', color: 'bg-blue-50 text-blue-700 border-blue-200',   icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+    home:   { label: 'Nhà riêng', color: 'bg-orange-50 text-[#E8420A] border-orange-200', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     office: { label: 'Công ty',   color: 'bg-purple-50 text-purple-700 border-purple-200', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
     other:  { label: 'Khác',      color: 'bg-gray-50 text-gray-600 border-gray-200',   icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z' },
   }
@@ -1623,7 +1623,7 @@ function AddressSection() {
 
       {/* Toast */}
       {toast && (
-        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-5 py-3 rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-5 py-3 rounded shadow-sm">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
@@ -1632,7 +1632,7 @@ function AddressSection() {
       )}
 
       {/* Header card */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+      <div className="bg-white rounded border border-gray-200 shadow-sm">
         <div className="flex items-center justify-between px-6 py-5">
           <div>
             <h3 className="text-base font-bold text-gray-900">Sổ địa chỉ</h3>
@@ -1642,7 +1642,7 @@ function AddressSection() {
           </div>
           <button
             onClick={() => setModal('add')}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded shadow-sm transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -1664,7 +1664,7 @@ function AddressSection() {
             <p className="text-sm text-gray-400 mt-1">Thêm địa chỉ để đặt hàng nhanh hơn</p>
             <button
               onClick={() => setModal('add')}
-              className="mt-5 flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm"
+              className="mt-5 flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded transition-colors shadow-sm"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -1680,11 +1680,11 @@ function AddressSection() {
               return (
                 <div
                   key={addr.id}
-                  className={`px-6 py-5 transition-colors ${addr.isDefault ? 'bg-blue-50/40' : 'hover:bg-gray-50/60'}`}
+                  className={`px-6 py-5 transition-colors ${addr.isDefault ? 'bg-orange-50/40' : 'hover:bg-gray-50/60'}`}
                 >
                   <div className="flex items-start gap-4">
                     {/* Icon */}
-                    <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${ti.color}`}>
+                    <div className={`w-11 h-11 rounded border flex items-center justify-center shrink-0 ${ti.color}`}>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={ti.icon} />
                       </svg>
@@ -1698,7 +1698,7 @@ function AddressSection() {
                         <span className="text-sm text-gray-500">{addr.phone}</span>
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${ti.color}`}>{ti.label}</span>
                         {addr.isDefault && (
-                          <span className="text-xs font-black text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded-full">
+                          <span className="text-xs font-black text-[#E8420A] bg-orange-100 border border-orange-200 px-2 py-0.5 rounded">
                             Mặc định
                           </span>
                         )}
@@ -1709,21 +1709,21 @@ function AddressSection() {
                       <div className="flex items-center gap-1 mt-3">
                         <button
                           onClick={() => setModal({ editId: addr.id })}
-                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg transition-colors"
+                          className="text-xs font-semibold text-[#E8420A] hover:text-[#c93808] hover:bg-orange-50 border border-orange-200 px-3 py-1.5 rounded transition-colors"
                         >
                           Chỉnh sửa
                         </button>
                         {!addr.isDefault && (
                           <button
                             onClick={() => handleSetDefault(addr.id)}
-                            className="text-xs font-semibold text-gray-600 hover:text-gray-800 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors"
+                            className="text-xs font-semibold text-gray-600 hover:text-gray-800 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded transition-colors"
                           >
                             Đặt làm mặc định
                           </button>
                         )}
                         <button
                           onClick={() => setDeletingId(addr.id)}
-                          className="text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg transition-colors ml-1"
+                          className="text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 border border-red-200 px-3 py-1.5 rounded transition-colors ml-1"
                         >
                           Xoá
                         </button>
@@ -1733,13 +1733,13 @@ function AddressSection() {
 
                   {/* Delete confirm inline */}
                   {deletingId === addr.id && (
-                    <div className="mt-4 flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                    <div className="mt-4 flex items-center gap-3 bg-red-50 border border-red-200 rounded px-4 py-3">
                       <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
                       <p className="text-sm font-semibold text-red-700 flex-1">Xác nhận xoá địa chỉ này?</p>
-                      <button onClick={() => setDeletingId(null)} className="text-xs font-bold text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-white border border-gray-200 transition-colors">Huỷ</button>
-                      <button onClick={() => handleDelete(addr.id)} className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-4 py-1.5 rounded-lg transition-colors">Xoá</button>
+                      <button onClick={() => setDeletingId(null)} className="text-xs font-bold text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded hover:bg-white border border-gray-200 transition-colors">Huỷ</button>
+                      <button onClick={() => handleDelete(addr.id)} className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-4 py-1.5 rounded transition-colors">Xoá</button>
                     </div>
                   )}
                 </div>
@@ -1750,7 +1750,7 @@ function AddressSection() {
       </div>
 
       {/* Tip */}
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex items-start gap-3">
+      <div className="bg-amber-50 border border-amber-200 rounded px-5 py-4 flex items-start gap-3">
         <svg className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -1882,14 +1882,14 @@ function AccountSection() {
     <div className="space-y-5">
 
       {/* ── Avatar + name hero ────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        {/* Blue top strip */}
-        <div className="h-24 bg-gradient-to-r from-blue-600 to-indigo-600" />
+      <div className="bg-white rounded border border-gray-200 shadow-sm overflow-hidden">
+        {/* Top strip */}
+        <div className="h-24 bg-gradient-to-r from-[#E8420A] to-[#c93808]" />
 
         <div className="px-8 pb-6 -mt-12 flex items-end gap-6">
           {/* Avatar */}
           <div className="relative shrink-0">
-            <div className="w-24 h-24 rounded-full ring-4 ring-white shadow-lg overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full ring-4 ring-white shadow-lg overflow-hidden bg-gradient-to-br from-[#E8420A] to-[#c93808] flex items-center justify-center">
               {avatarSrc
                 ? <img src={avatarSrc} alt="avatar" className="w-full h-full object-cover" />
                 : <span className="text-white text-3xl font-black">AJ</span>
@@ -1897,7 +1897,7 @@ function AccountSection() {
             </div>
             <button
               onClick={() => fileRef.current?.click()}
-              className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md transition-colors border-2 border-white"
+              className="absolute bottom-0 right-0 w-8 h-8 bg-[#E8420A] hover:bg-[#c93808] text-white rounded-full flex items-center justify-center shadow-md transition-colors border-2 border-white"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -1916,7 +1916,7 @@ function AccountSection() {
           {/* Edit / Save buttons */}
           <div className="flex items-center gap-2 pt-14">
             {saved && (
-              <span className="flex items-center gap-1.5 text-sm font-bold text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded-xl">
+              <span className="flex items-center gap-1.5 text-sm font-bold text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
@@ -1925,11 +1925,11 @@ function AccountSection() {
             )}
             {editing ? (
               <>
-                <button onClick={handleCancel} className="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">Huỷ</button>
-                <button onClick={handleSave} className="px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm">Lưu thay đổi</button>
+                <button onClick={handleCancel} className="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors">Huỷ</button>
+                <button onClick={handleSave} className="px-5 py-2 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded transition-colors shadow-sm">Lưu thay đổi</button>
               </>
             ) : (
-              <button onClick={() => setEditing(true)} className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-300 hover:border-blue-400 hover:text-blue-600 rounded-xl transition-colors shadow-sm">
+              <button onClick={() => setEditing(true)} className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-300 hover:border-[#E8420A] hover:text-[#E8420A] rounded transition-colors shadow-sm">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
@@ -1941,14 +1941,14 @@ function AccountSection() {
       </div>
 
       {/* ── Personal information ───────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+      <div className="bg-white rounded border border-gray-200 shadow-sm">
         <div className="px-8 py-5 border-b border-gray-100 flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-gray-900">Thông tin cá nhân</h3>
             <p className="text-xs text-gray-400 mt-0.5">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
           </div>
           {editing && (
-            <span className="text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">Đang chỉnh sửa</span>
+            <span className="text-xs font-semibold text-[#E8420A] bg-orange-50 border border-orange-200 px-3 py-1 rounded">Đang chỉnh sửa</span>
           )}
         </div>
 
@@ -1958,7 +1958,7 @@ function AccountSection() {
             <input
               value={draft.firstName}
               onChange={set('firstName')}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+              className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]"
               placeholder="Nhập họ"
             />
           </Field>
@@ -1968,7 +1968,7 @@ function AccountSection() {
             <input
               value={draft.lastName}
               onChange={set('lastName')}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+              className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]"
               placeholder="Nhập tên"
             />
           </Field>
@@ -1981,14 +1981,14 @@ function AccountSection() {
             verified
           >
             <div className="flex gap-2">
-              <div className="flex items-center gap-2 border border-gray-300 rounded-xl px-3 py-2.5 bg-gray-50 text-sm text-gray-600 shrink-0">
+              <div className="flex items-center gap-2 border border-gray-300 rounded px-3 py-2.5 bg-gray-50 text-sm text-gray-600 shrink-0">
                 <span className="text-base">🇻🇳</span>
                 <span>+84</span>
               </div>
               <input
                 value={draft.phone}
                 onChange={set('phone')}
-                className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                className="flex-1 border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]"
                 placeholder="Số điện thoại"
                 maxLength={10}
               />
@@ -2002,10 +2002,10 @@ function AccountSection() {
                 value={draft.email}
                 onChange={set('email')}
                 type="email"
-                className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                className="flex-1 border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]"
                 placeholder="Địa chỉ email"
               />
-              <button className="text-sm font-semibold text-blue-600 border border-blue-200 hover:bg-blue-50 px-4 rounded-xl transition-colors shrink-0">
+              <button className="text-sm font-semibold text-[#E8420A] border border-orange-200 hover:bg-orange-50 px-4 rounded transition-colors shrink-0">
                 Xác minh
               </button>
             </div>
@@ -2017,7 +2017,7 @@ function AccountSection() {
               value={draft.dob}
               onChange={set('dob')}
               type="date"
-              className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+              className="border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]"
             />
           </Field>
 
@@ -2025,14 +2025,14 @@ function AccountSection() {
           <Field label="Giới tính" value={genderLabel[info.gender] ?? '—'} editing={editing}>
             <div className="flex gap-3">
               {[{ v: 'male', l: 'Nam' }, { v: 'female', l: 'Nữ' }, { v: 'other', l: 'Khác' }].map(g => (
-                <label key={g.v} className={`flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer transition-colors text-sm font-medium ${
+                <label key={g.v} className={`flex items-center gap-2 px-4 py-2 rounded border cursor-pointer transition-colors text-sm font-medium ${
                   draft.gender === g.v
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    ? 'border-[#E8420A] bg-orange-50 text-[#E8420A]'
                     : 'border-gray-300 text-gray-600 hover:border-gray-400'
                 }`}>
                   <input type="radio" name="gender" value={g.v} checked={draft.gender === g.v} onChange={set('gender')} className="hidden" />
                   {draft.gender === g.v
-                    ? <span className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center"><span className="w-2 h-2 rounded-full bg-white" /></span>
+                    ? <span className="w-4 h-4 rounded-full bg-[#E8420A] flex items-center justify-center"><span className="w-2 h-2 rounded-full bg-white" /></span>
                     : <span className="w-4 h-4 rounded-full border-2 border-gray-400" />
                   }
                   {g.l}
@@ -2047,7 +2047,7 @@ function AccountSection() {
               value={draft.bio}
               onChange={set('bio')}
               rows={3}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent resize-none"
+              className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] resize-none"
               placeholder="Viết vài dòng giới thiệu về bản thân..."
             />
           </Field>
@@ -2055,24 +2055,24 @@ function AccountSection() {
 
         {/* Bottom action bar — only in edit mode */}
         {editing && (
-          <div className="px-8 py-4 border-t border-gray-100 bg-gray-50/60 flex items-center justify-between rounded-b-2xl">
+          <div className="px-8 py-4 border-t border-gray-100 bg-gray-50/60 flex items-center justify-between rounded-b">
             <p className="text-xs text-gray-400">Các trường có dấu <span className="text-green-600 font-bold">Đã xác minh</span> cần xác minh lại nếu thay đổi.</p>
             <div className="flex gap-2">
-              <button onClick={handleCancel} className="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-100 transition-colors">Huỷ bỏ</button>
-              <button onClick={handleSave} className="px-6 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm">Lưu thay đổi</button>
+              <button onClick={handleCancel} className="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors">Huỷ bỏ</button>
+              <button onClick={handleSave} className="px-6 py-2 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded transition-colors shadow-sm">Lưu thay đổi</button>
             </div>
           </div>
         )}
       </div>
 
       {/* ── Password change ────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 shadow-sm overflow-hidden">
         <button
           onClick={() => setPwSection(v => !v)}
           className="w-full flex items-center justify-between px-8 py-5 hover:bg-gray-50/60 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded bg-orange-50 border border-orange-100 flex items-center justify-center shrink-0">
               <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
@@ -2104,7 +2104,7 @@ function AccountSection() {
                       value={pw[f.key]}
                       onChange={setPwField(f.key)}
                       placeholder={f.placeholder}
-                      className="w-full border border-gray-300 rounded-xl px-4 py-2.5 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded px-4 py-2.5 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]"
                     />
                     <button
                       type="button"
@@ -2141,7 +2141,7 @@ function AccountSection() {
               )}
 
               {pwError && (
-                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded px-4 py-3">
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -2150,7 +2150,7 @@ function AccountSection() {
               )}
 
               {pwSaved && (
-                <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded px-4 py-3">
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
@@ -2160,7 +2160,7 @@ function AccountSection() {
 
               <button
                 onClick={handleSavePw}
-                className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm"
+                className="px-6 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded transition-colors shadow-sm"
               >
                 Xác nhận đổi mật khẩu
               </button>
@@ -2170,10 +2170,10 @@ function AccountSection() {
       </div>
 
       {/* ── 2FA & Security ────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+      <div className="bg-white rounded border border-gray-200 shadow-sm p-8">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 rounded bg-orange-50 border border-orange-100 flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5 text-[#E8420A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
@@ -2185,9 +2185,9 @@ function AccountSection() {
 
         <div className="space-y-4">
           {/* 2FA toggle */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200">
+          <div className="flex items-center justify-between p-4 rounded bg-gray-50 border border-gray-200">
             <div className="flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${twoFa ? 'bg-green-100' : 'bg-gray-100'}`}>
+              <div className={`w-9 h-9 rounded flex items-center justify-center ${twoFa ? 'bg-green-100' : 'bg-gray-100'}`}>
                 <svg className={`w-5 h-5 ${twoFa ? 'text-green-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18h.01M8 21h8a2 2 0 002-2v-1a7 7 0 00-14 0v1a2 2 0 002 2zM12 3a4 4 0 100 8 4 4 0 000-8z" />
                 </svg>
@@ -2199,14 +2199,14 @@ function AccountSection() {
             </div>
             <button
               onClick={() => setTwoFa(v => !v)}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${twoFa ? 'bg-blue-600' : 'bg-gray-300'}`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${twoFa ? 'bg-[#E8420A]' : 'bg-gray-300'}`}
             >
               <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-200 ${twoFa ? 'left-[26px]' : 'left-0.5'}`} />
             </button>
           </div>
 
           {/* Login devices */}
-          <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+          <div className="p-4 rounded bg-gray-50 border border-gray-200">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold text-gray-900">Thiết bị đang đăng nhập</p>
               <button className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors">Đăng xuất tất cả</button>
@@ -2217,7 +2217,7 @@ function AccountSection() {
                 { name: 'Safari · iPhone 15',  loc: 'TP. Hồ Chí Minh',  time: '2 ngày trước', current: false },
               ].map((d, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded bg-white border border-gray-200 flex items-center justify-center shrink-0">
                     <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
@@ -2238,7 +2238,7 @@ function AccountSection() {
       </div>
 
       {/* ── Linked accounts ────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+      <div className="bg-white rounded border border-gray-200 shadow-sm p-8">
         <h3 className="text-sm font-bold text-gray-900 mb-1">Tài khoản liên kết</h3>
         <p className="text-xs text-gray-400 mb-5">Đăng nhập nhanh hơn bằng tài khoản mạng xã hội</p>
         <div className="space-y-3">
@@ -2263,8 +2263,8 @@ function AccountSection() {
               ),
             },
           ].map(acc => (
-            <div key={acc.name} className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-gray-50/50">
-              <div className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center shrink-0 shadow-sm">
+            <div key={acc.name} className="flex items-center gap-4 p-4 rounded border border-gray-200 bg-gray-50/50">
+              <div className="w-10 h-10 rounded bg-white border border-gray-200 flex items-center justify-center shrink-0 shadow-sm">
                 {acc.icon}
               </div>
               <div className="flex-1 min-w-0">
@@ -2274,10 +2274,10 @@ function AccountSection() {
               {acc.linked ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-green-600 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full">Đã liên kết</span>
-                  <button className="text-xs font-semibold text-gray-400 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50 border border-transparent hover:border-red-100">Huỷ</button>
+                  <button className="text-xs font-semibold text-gray-400 hover:text-red-500 transition-colors px-2 py-1 rounded hover:bg-red-50 border border-transparent hover:border-red-100">Huỷ</button>
                 </div>
               ) : (
-                <button className="text-sm font-bold text-blue-600 border border-blue-200 hover:bg-blue-50 px-4 py-1.5 rounded-xl transition-colors">
+                <button className="text-sm font-bold text-[#E8420A] border border-orange-200 hover:bg-orange-50 px-4 py-1.5 rounded transition-colors">
                   Liên kết
                 </button>
               )}
@@ -2306,8 +2306,8 @@ function MembershipSection() {
     <div className="space-y-5">
 
       {/* ── Current tier hero card ───────────────────────────── */}
-      <div className="rounded-2xl overflow-hidden shadow-sm border border-indigo-100">
-        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 px-8 py-8">
+      <div className="rounded overflow-hidden shadow-sm border border-gray-200">
+        <div className="bg-gradient-to-br from-[#0D0F14] via-gray-800 to-gray-900 px-8 py-8">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-semibold text-white/70 mb-1">Hạng thành viên hiện tại</p>
@@ -2346,15 +2346,15 @@ function MembershipSection() {
         </div>
 
         {/* Benefits summary strip */}
-        <div className="bg-white px-8 py-4 flex items-center gap-6 border-t border-indigo-100">
+        <div className="bg-white px-8 py-4 flex items-center gap-6 border-t border-gray-200">
           {[
             { icon: '3x', label: 'Nhân điểm' },
             { icon: '🚀', label: 'Giao hỏa tốc' },
             { icon: 'VIP', label: 'Hỗ trợ 24/7' },
             { icon: '🎁', label: 'Quà tháng' },
           ].map((b, i) => (
-            <div key={i} className="flex items-center gap-2 text-sm text-indigo-700 font-semibold">
-              <span className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-xs font-black">{b.icon}</span>
+            <div key={i} className="flex items-center gap-2 text-sm text-[#E8420A] font-semibold">
+              <span className="w-9 h-9 rounded bg-orange-50 border border-orange-100 flex items-center justify-center text-xs font-black">{b.icon}</span>
               {b.label}
             </div>
           ))}
@@ -2362,7 +2362,7 @@ function MembershipSection() {
       </div>
 
       {/* ── Tier roadmap ─────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+      <div className="bg-white rounded border border-gray-200 p-6 shadow-sm">
         <h3 className="text-base font-bold text-gray-900 mb-5">Lộ trình hạng thành viên</h3>
         <div className="relative">
           {/* Connector line */}
@@ -2395,7 +2395,7 @@ function MembershipSection() {
                       {(tier.min / 1000000).toFixed(0)}tr đ
                     </span>
                   )}
-                  {isActive && <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">Của bạn</span>}
+                  {isActive && <span className="text-[10px] font-black text-[#E8420A] bg-orange-50 px-1.5 py-0.5 rounded">Của bạn</span>}
                 </div>
               )
             })}
@@ -2404,15 +2404,15 @@ function MembershipSection() {
       </div>
 
       {/* ── Benefits grid for current tier ───────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+      <div className="bg-white rounded border border-gray-200 p-6 shadow-sm">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-base font-bold text-gray-900">Quyền lợi hạng Elite</h3>
-          <span className="text-xs font-bold px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">6 quyền lợi</span>
+          <span className="text-xs font-bold px-3 py-1 bg-orange-100 text-[#E8420A] rounded">6 quyền lợi</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {TIER_BENEFITS.elite.map((benefit, i) => (
-            <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-indigo-50/50 border border-indigo-100">
-              <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+            <div key={i} className="flex items-start gap-3 p-3.5 rounded bg-orange-50/50 border border-orange-100">
+              <div className="w-6 h-6 rounded-full bg-[#E8420A] flex items-center justify-center shrink-0 mt-0.5">
                 <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
@@ -2423,21 +2423,21 @@ function MembershipSection() {
         </div>
 
         {/* Elite+ preview */}
-        <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100">
-          <p className="text-xs font-bold text-purple-700 mb-2">Thêm quyền lợi khi lên hạng Elite+ ✨</p>
+        <div className="mt-4 p-4 rounded bg-gray-50 border border-gray-200">
+          <p className="text-xs font-bold text-gray-700 mb-2">Thêm quyền lợi khi lên hạng Elite+ ✨</p>
           <div className="flex flex-wrap gap-2">
             {TIER_BENEFITS.eliteplus.slice(4).map((b, i) => (
-              <span key={i} className="text-xs bg-white border border-purple-200 text-purple-700 font-semibold px-2.5 py-1 rounded-lg">{b}</span>
+              <span key={i} className="text-xs bg-white border border-gray-300 text-gray-700 font-semibold px-2.5 py-1 rounded">{b}</span>
             ))}
           </div>
         </div>
       </div>
 
       {/* ── Points history ───────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden shadow-sm">
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <h3 className="text-base font-bold text-gray-900">Lịch sử điểm thưởng</h3>
-          <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-gray-100 rounded p-1">
             {[
               { id: 'all', label: 'Tất cả' },
               { id: 'earn', label: 'Tích điểm' },
@@ -2447,7 +2447,7 @@ function MembershipSection() {
               <button
                 key={t.id}
                 onClick={() => setHistTab(t.id)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
                   histTab === t.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -2459,7 +2459,7 @@ function MembershipSection() {
         <div className="divide-y divide-gray-100">
           {filteredHist.map(h => (
             <div key={h.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+              <div className={`w-10 h-10 rounded flex items-center justify-center shrink-0 ${
                 h.type === 'earn'   ? 'bg-green-100' :
                 h.type === 'redeem' ? 'bg-orange-100' : 'bg-purple-100'
               }`}>
@@ -2519,10 +2519,10 @@ function CouponsSection() {
       <div className="grid grid-cols-3 gap-4">
         {[
           { label: 'Mã còn hiệu lực', value: COUPONS_DATA.filter(c => c.status === 'active').length, color: 'bg-green-50 border-green-100 text-green-700' },
-          { label: 'Mã đã sử dụng',   value: COUPONS_DATA.filter(c => c.status === 'used').length,    color: 'bg-blue-50 border-blue-100 text-blue-700'   },
+          { label: 'Mã đã sử dụng',   value: COUPONS_DATA.filter(c => c.status === 'used').length,    color: 'bg-gray-50 border-gray-200 text-gray-600'   },
           { label: 'Mã hết hạn',       value: COUPONS_DATA.filter(c => c.status === 'expired').length, color: 'bg-gray-50 border-gray-200 text-gray-500'   },
         ].map((s, i) => (
-          <div key={i} className={`rounded-2xl border px-5 py-4 text-center ${s.color}`}>
+          <div key={i} className={`rounded border px-5 py-4 text-center ${s.color}`}>
             <p className="text-3xl font-black">{s.value}</p>
             <p className="text-xs font-semibold mt-1 opacity-80">{s.label}</p>
           </div>
@@ -2530,7 +2530,7 @@ function CouponsSection() {
       </div>
 
       {/* Coupon list */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden shadow-sm">
         {/* Tabs */}
         <div className="flex items-center border-b border-gray-200 px-2 pt-2 gap-1">
           {[
@@ -2544,7 +2544,7 @@ function CouponsSection() {
               onClick={() => setTab(t.id)}
               className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
                 tab === t.id
-                  ? 'border-blue-600 text-blue-600'
+                  ? 'border-[#E8420A] text-[#E8420A]'
                   : 'border-transparent text-gray-500 hover:text-gray-800'
               }`}
             >
@@ -2573,7 +2573,7 @@ function CouponsSection() {
               return (
                 <div
                   key={coupon.id}
-                  className={`rounded-2xl overflow-hidden border transition-shadow ${
+                  className={`rounded overflow-hidden border transition-shadow ${
                     isInactive ? 'border-gray-200 opacity-60' : 'border-gray-200 hover:shadow-md'
                   }`}
                 >
@@ -2586,7 +2586,7 @@ function CouponsSection() {
                       {/* Main info */}
                       <div className="flex-1 px-5 py-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className={`text-xs font-black px-2.5 py-1 rounded-lg ${coupon.badge}`}>
+                          <span className={`text-xs font-black px-2.5 py-1 rounded ${coupon.badge}`}>
                             {valueLabel(coupon)}
                           </span>
                           {coupon.status === 'used'    && <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Đã dùng</span>}
@@ -2610,10 +2610,10 @@ function CouponsSection() {
                           {!isInactive ? (
                             <button
                               onClick={() => handleCopy(coupon.code)}
-                              className={`text-xs font-bold px-4 py-1.5 rounded-xl transition-all ${
+                              className={`text-xs font-bold px-4 py-1.5 rounded transition-all ${
                                 copied === coupon.code
                                   ? 'bg-green-500 text-white'
-                                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                  : 'bg-[#E8420A] hover:bg-[#c93808] text-white'
                               }`}
                             >
                               {copied === coupon.code ? '✓ Đã sao chép' : 'Sao chép'}
@@ -2634,7 +2634,7 @@ function CouponsSection() {
         {/* Footer note */}
         {tab === 'active' && filtered.length > 0 && (
           <div className="px-5 pb-5">
-            <p className="text-xs text-gray-400 text-center bg-gray-50 rounded-xl py-3">
+            <p className="text-xs text-gray-400 text-center bg-gray-50 rounded py-3">
               Mã giảm giá sẽ được áp dụng tự động hoặc nhập thủ công tại trang <span className="font-semibold">Xác nhận đặt hàng</span>
             </p>
           </div>
@@ -2647,7 +2647,7 @@ function CouponsSection() {
 /* ─────────────────── WISHLIST SECTION ─────────────────── */
 
 const CATEGORY_STYLE = {
-  'Laptop':         { bg: 'from-blue-500 to-indigo-600' },
+  'Laptop':         { bg: 'from-slate-600 to-slate-800' },
   'Điện thoại':     { bg: 'from-slate-600 to-slate-800' },
   'Tai nghe':       { bg: 'from-purple-500 to-violet-600' },
   'Màn hình':       { bg: 'from-teal-500 to-cyan-600' },
@@ -2709,13 +2709,13 @@ function WishlistSection() {
     <div className="space-y-4">
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-gray-900 text-white text-sm px-5 py-3 rounded-2xl shadow-2xl">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-gray-900 text-white text-sm px-5 py-3 rounded shadow-2xl">
           <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
           {toast}
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded border border-gray-200 shadow-sm overflow-hidden">
         {/* Header */}
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between gap-4">
           <div>
@@ -2724,19 +2724,19 @@ function WishlistSection() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {/* View toggle */}
-            <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+            <div className="flex border border-gray-200 rounded overflow-hidden">
               {[['grid', <><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>],
                 ['list', <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>]
               ].map(([v, icon]) => (
                 <button key={v} onClick={() => setView(v)}
-                  className={`p-2 transition-colors ${view === v ? 'bg-blue-600 text-white' : 'bg-white text-gray-400 hover:bg-gray-50'}`}>
+                  className={`p-2 transition-colors ${view === v ? 'bg-[#E8420A] text-white' : 'bg-white text-gray-400 hover:bg-gray-50'}`}>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">{icon}</svg>
                 </button>
               ))}
             </div>
             {/* Sort */}
             <select value={sort} onChange={e => setSort(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer">
+              className="text-sm border border-gray-200 rounded px-3 py-2 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 cursor-pointer">
               <option value="newest">Mới thêm</option>
               <option value="price_asc">Giá thấp → cao</option>
               <option value="price_desc">Giá cao → thấp</option>
@@ -2758,7 +2758,7 @@ function WishlistSection() {
                 <p className="text-gray-800 font-bold text-lg">Chưa có sản phẩm yêu thích</p>
                 <p className="text-gray-400 text-sm mt-1 max-w-xs">Thêm sản phẩm vào danh sách để dễ dàng theo dõi giá và mua sau</p>
               </div>
-              <button className="mt-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors">
+              <button className="mt-1 px-6 py-2.5 bg-[#E8420A] hover:bg-[#c93808] text-white text-sm font-semibold rounded transition-colors">
                 Khám phá sản phẩm
               </button>
             </div>
@@ -2768,7 +2768,7 @@ function WishlistSection() {
                 const disc = getDiscount(item)
                 return (
                   <div key={item.id}
-                    className={`border border-gray-100 rounded-2xl overflow-hidden hover:border-blue-200 hover:shadow-md transition-all duration-300 ${removing === item.id ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+                    className={`border border-gray-100 rounded overflow-hidden hover:border-[#E8420A]/30 hover:shadow-md transition-all duration-300 ${removing === item.id ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
                     {/* Thumb */}
                     <div className="relative aspect-[4/3]">
                       <ProductThumb category={item.category} />
@@ -2785,7 +2785,7 @@ function WishlistSection() {
                     {/* Info */}
                     <div className="p-3.5">
                       <div className="flex items-center gap-1.5 mb-1.5">
-                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">{item.brand}</span>
+                        <span className="text-[10px] font-bold text-[#E8420A] bg-orange-50 px-1.5 py-0.5 rounded">{item.brand}</span>
                         <span className="text-[10px] text-gray-400">{item.category}</span>
                       </div>
                       <p className="text-[13px] font-semibold text-gray-800 leading-snug line-clamp-2 min-h-[36px]">{item.name}</p>
@@ -2794,12 +2794,12 @@ function WishlistSection() {
                         <span className="text-[10px] text-gray-400">({item.reviews})</span>
                       </div>
                       <div className="mt-2">
-                        <p className="text-[15px] font-bold text-blue-700">{fmt(item.price)}</p>
+                        <p className="text-[15px] font-bold text-[#E8420A]">{fmt(item.price)}</p>
                         {item.original && <p className="text-[11px] text-gray-400 line-through">{fmt(item.original)}</p>}
                       </div>
                       <div className="mt-1.5"><StockBadge stock={item.stock} /></div>
                       <button disabled={item.stock === 'out'}
-                        className={`mt-3 w-full py-2 text-[12px] font-semibold rounded-xl transition-colors ${item.stock === 'out' ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
+                        className={`mt-3 w-full py-2 text-[12px] font-semibold rounded transition-colors ${item.stock === 'out' ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#E8420A] hover:bg-[#c93808] text-white'}`}>
                         {item.stock === 'out' ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
                       </button>
                     </div>
@@ -2813,9 +2813,9 @@ function WishlistSection() {
                 const disc = getDiscount(item)
                 return (
                   <div key={item.id}
-                    className={`flex gap-4 border border-gray-100 rounded-2xl p-4 hover:border-blue-200 hover:shadow-sm transition-all duration-300 ${removing === item.id ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0'}`}>
+                    className={`flex gap-4 border border-gray-100 rounded p-4 hover:border-[#E8420A]/30 hover:shadow-sm transition-all duration-300 ${removing === item.id ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0'}`}>
                     {/* Thumb */}
-                    <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 relative">
+                    <div className="w-24 h-24 rounded overflow-hidden shrink-0 relative">
                       <ProductThumb category={item.category} />
                       {disc > 0 && <span className="absolute top-1 left-1 bg-red-500 text-white text-[9px] font-bold px-1 py-0.5 rounded">-{disc}%</span>}
                     </div>
@@ -2824,7 +2824,7 @@ function WishlistSection() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">{item.brand}</span>
+                            <span className="text-[10px] font-bold text-[#E8420A] bg-orange-50 px-1.5 py-0.5 rounded">{item.brand}</span>
                             <span className="text-[10px] text-gray-400">{item.category}</span>
                           </div>
                           <p className="text-[14px] font-semibold text-gray-800 leading-snug line-clamp-2">{item.name}</p>
@@ -2842,12 +2842,12 @@ function WishlistSection() {
                       </div>
                       <div className="flex items-end justify-between mt-2">
                         <div>
-                          <p className="text-[16px] font-bold text-blue-700">{fmt(item.price)}</p>
+                          <p className="text-[16px] font-bold text-[#E8420A]">{fmt(item.price)}</p>
                           {item.original && <p className="text-[11px] text-gray-400 line-through">{fmt(item.original)}</p>}
                           <div className="mt-1"><StockBadge stock={item.stock} /></div>
                         </div>
                         <button disabled={item.stock === 'out'}
-                          className={`px-4 py-2 text-[12px] font-semibold rounded-xl transition-colors ${item.stock === 'out' ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
+                          className={`px-4 py-2 text-[12px] font-semibold rounded transition-colors ${item.stock === 'out' ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#E8420A] hover:bg-[#c93808] text-white'}`}>
                           {item.stock === 'out' ? 'Hết hàng' : 'Thêm vào giỏ'}
                         </button>
                       </div>
@@ -2868,10 +2868,10 @@ function OverviewSection({ banners, onDismiss, onNavigate }) {
     <div className="space-y-5">
       {/* Banners */}
       {banners.map(b => (
-        <div key={b.id} className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4">
+        <div key={b.id} className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded px-5 py-4">
           <div className="flex items-center gap-3 text-sm text-gray-700">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-[#E8420A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
@@ -2880,7 +2880,7 @@ function OverviewSection({ banners, onDismiss, onNavigate }) {
           <div className="flex items-center gap-4 shrink-0 ml-4">
             <button
               onClick={() => b.action && onNavigate(b.action)}
-              className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors px-4 py-1.5 bg-blue-600/10 hover:bg-blue-600/20 rounded-lg"
+              className="text-sm font-bold text-[#E8420A] hover:text-[#c93808] transition-colors px-4 py-1.5 bg-[#E8420A]/10 hover:bg-[#E8420A]/20 rounded"
             >
               {b.cta}
             </button>
@@ -2894,10 +2894,10 @@ function OverviewSection({ banners, onDismiss, onNavigate }) {
       ))}
 
       {/* Recent orders */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden shadow-sm">
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <h2 className="text-base font-bold text-gray-900">Đơn hàng gần đây</h2>
-          <button onClick={() => onNavigate('orders')} className="text-sm text-blue-600 hover:text-blue-800 font-semibold transition-colors flex items-center gap-1">
+          <button onClick={() => onNavigate('orders')} className="text-sm text-[#E8420A] hover:text-[#c93808] font-semibold transition-colors flex items-center gap-1">
             Xem tất cả
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -2907,7 +2907,7 @@ function OverviewSection({ banners, onDismiss, onNavigate }) {
         <div className="divide-y divide-gray-100">
           {OVERVIEW_ORDERS.map(order => (
             <div key={order.id} className="px-6 py-5 flex items-center gap-5 hover:bg-gray-50/50 transition-colors">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shrink-0 text-xs font-bold text-gray-500 border border-gray-200">
+              <div className="w-16 h-16 rounded bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shrink-0 text-xs font-bold text-gray-500 border border-gray-200">
                 {order.img}
               </div>
               <div className="flex-1 min-w-0">
@@ -2923,8 +2923,8 @@ function OverviewSection({ banners, onDismiss, onNavigate }) {
                 <span className={`inline-block text-xs font-bold px-2.5 py-1 rounded-full border ${order.statusBg} ${order.statusClass}`}>
                   {order.status}
                 </span>
-                <p className="text-base font-black text-blue-600">{fmt(order.total)}</p>
-                <button onClick={() => onNavigate('invoice')} className="text-xs text-gray-500 hover:text-blue-600 font-semibold transition-colors flex items-center gap-0.5 ml-auto">
+                <p className="text-base font-black text-[#E8420A]">{fmt(order.total)}</p>
+                <button onClick={() => onNavigate('invoice')} className="text-xs text-gray-500 hover:text-[#E8420A] font-semibold transition-colors flex items-center gap-0.5 ml-auto">
                   Chi tiết <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
                 </button>
               </div>
@@ -2934,19 +2934,19 @@ function OverviewSection({ banners, onDismiss, onNavigate }) {
       </div>
 
       {/* Wishlist */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="bg-white rounded border border-gray-200 overflow-hidden shadow-sm">
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <h2 className="text-base font-bold text-gray-900">Sản phẩm yêu thích</h2>
-          <button className="text-sm text-blue-600 hover:text-blue-800 font-semibold transition-colors flex items-center gap-1">
+          <button className="text-sm text-[#E8420A] hover:text-[#c93808] font-semibold transition-colors flex items-center gap-1">
             Xem tất cả <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
         <div className="grid grid-cols-3 gap-px bg-gray-100">
           {WISHLIST.map((item, i) => (
-            <div key={i} className="bg-white px-4 py-4 hover:bg-blue-50/30 cursor-pointer transition-colors group">
-              <div className="w-full h-28 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl mb-3 flex items-center justify-center text-xs text-gray-400 font-medium border border-gray-100 group-hover:border-blue-100 transition-colors">IMG</div>
+            <div key={i} className="bg-white px-4 py-4 hover:bg-orange-50/30 cursor-pointer transition-colors group">
+              <div className="w-full h-28 bg-gradient-to-br from-gray-100 to-gray-200 rounded mb-3 flex items-center justify-center text-xs text-gray-400 font-medium border border-gray-100 group-hover:border-orange-100 transition-colors">IMG</div>
               <p className="text-xs text-gray-800 font-medium leading-snug line-clamp-2 min-h-[2.5rem]">{item.name}</p>
-              <p className="text-sm font-black text-blue-600 mt-2">{fmt(item.price)}</p>
+              <p className="text-sm font-black text-[#E8420A] mt-2">{fmt(item.price)}</p>
               {item.original && (
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <p className="text-xs text-gray-400 line-through">{fmt(item.original)}</p>
@@ -2974,7 +2974,7 @@ function OrdersSection({ onNavigate }) {
   })
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+    <div className="bg-white rounded border border-gray-200 overflow-hidden shadow-sm">
       {/* Filter tabs */}
       <div className="flex items-center border-b border-gray-200 overflow-x-auto">
         {ORDER_FILTER_TABS.map(tab => (
@@ -2983,7 +2983,7 @@ function OrdersSection({ onNavigate }) {
             onClick={() => setActiveTab(tab.id)}
             className={`shrink-0 px-6 py-4 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
               activeTab === tab.id
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-[#E8420A] text-[#E8420A]'
                 : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
             }`}
           >
@@ -2995,7 +2995,7 @@ function OrdersSection({ onNavigate }) {
       {/* Search & date bar */}
       <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100 bg-gray-50/60">
         <span className="text-sm font-semibold text-gray-700 shrink-0">Lịch sử mua hàng</span>
-        <div className="flex items-center gap-2 border border-gray-300 rounded-xl px-3 py-2 bg-white text-sm text-gray-600 shadow-sm">
+        <div className="flex items-center gap-2 border border-gray-300 rounded px-3 py-2 bg-white text-sm text-gray-600 shadow-sm">
           <span>01/01/2025</span>
           <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -3014,7 +3014,7 @@ function OrdersSection({ onNavigate }) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Tìm theo mã đơn hoặc tên sản phẩm..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent bg-white shadow-sm"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] bg-white shadow-sm"
           />
         </div>
       </div>
@@ -3041,7 +3041,7 @@ function OrdersSection({ onNavigate }) {
 
                 {/* Product row */}
                 <div className="flex items-center gap-5">
-                  <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shrink-0 text-xs font-bold text-gray-500 border border-gray-200">
+                  <div className="w-20 h-20 rounded bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shrink-0 text-xs font-bold text-gray-500 border border-gray-200">
                     {order.img}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -3051,10 +3051,10 @@ function OrdersSection({ onNavigate }) {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-xs text-gray-500 mb-1">Tổng thanh toán</p>
-                    <p className="text-xl font-black text-blue-600">{fmt(order.total)}</p>
+                    <p className="text-xl font-black text-[#E8420A]">{fmt(order.total)}</p>
                     <button
                       onClick={() => onNavigate('invoice')}
-                      className="mt-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-xl transition-colors flex items-center gap-1 ml-auto"
+                      className="mt-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] px-4 py-1.5 rounded transition-colors flex items-center gap-1 ml-auto"
                     >
                       Xem chi tiết
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3076,7 +3076,7 @@ function OrdersSection({ onNavigate }) {
           </div>
           <p className="text-base font-semibold text-gray-600">Không có đơn hàng nào</p>
           <p className="text-sm text-gray-400 mt-1">Hãy mua sắm ngay để xem lịch sử đơn hàng</p>
-          <button onClick={() => onNavigate('list')} className="mt-5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors">
+          <button onClick={() => onNavigate('list')} className="mt-5 bg-[#E8420A] hover:bg-[#c93808] text-white text-sm font-bold px-6 py-2.5 rounded transition-colors">
             Mua sắm ngay
           </button>
         </div>
@@ -3112,7 +3112,7 @@ export default function UserProfilePage() {
 
             {/* Avatar */}
             <div className="relative shrink-0">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-black ring-4 ring-white shadow-lg">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#E8420A] to-[#c93808] flex items-center justify-center text-white text-3xl font-black ring-4 ring-white shadow-lg">
                 AJ
               </div>
               <span className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-sm" />
@@ -3123,14 +3123,14 @@ export default function UserProfilePage() {
               <h1 className="text-2xl font-black text-gray-900 leading-tight">Alex Johnson</h1>
               <p className="text-sm text-gray-500 mt-1">096·····35 · alex@example.com</p>
               <div className="flex items-center gap-2 mt-2.5">
-                <span className="px-3 py-1 text-xs font-black bg-blue-100 text-blue-700 rounded-full">T-MEM</span>
-                <span className="px-3 py-1 text-xs font-black bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full shadow-sm">Elite</span>
+                <span className="px-3 py-1 text-xs font-black bg-orange-100 text-[#E8420A] rounded">T-MEM</span>
+                <span className="px-3 py-1 text-xs font-black bg-[#0D0F14] text-white rounded shadow-sm">Elite</span>
                 <span className="px-3 py-1 text-xs font-semibold bg-green-50 text-green-700 border border-green-200 rounded-full">Đã xác minh</span>
               </div>
             </div>
 
             {/* Edit button */}
-            <button className="ml-auto flex items-center gap-2 border border-gray-300 hover:border-blue-400 hover:text-blue-600 text-gray-700 text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shrink-0 shadow-sm">
+            <button className="ml-auto flex items-center gap-2 border border-gray-300 hover:border-[#E8420A] hover:text-[#E8420A] text-gray-700 text-sm font-semibold px-5 py-2.5 rounded transition-colors shrink-0 shadow-sm">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
@@ -3141,21 +3141,21 @@ export default function UserProfilePage() {
           {/* Stats row */}
           <div className="grid grid-cols-4 gap-4 pb-6">
             {/* Orders count */}
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-sm">
+            <div className="bg-orange-50 border border-orange-100 rounded px-5 py-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded bg-[#E8420A] flex items-center justify-center shrink-0 shadow-sm">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
               <div>
-                <p className="text-3xl font-black text-blue-700 leading-none">15</p>
-                <p className="text-xs text-blue-600/70 font-medium mt-1">Tổng đơn hàng</p>
+                <p className="text-3xl font-black text-[#E8420A] leading-none">15</p>
+                <p className="text-xs text-[#E8420A]/70 font-medium mt-1">Tổng đơn hàng</p>
               </div>
             </div>
 
             {/* Spend */}
-            <div className="bg-green-50 border border-green-100 rounded-2xl px-5 py-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-green-600 flex items-center justify-center shrink-0 shadow-sm">
+            <div className="bg-green-50 border border-green-100 rounded px-5 py-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded bg-green-600 flex items-center justify-center shrink-0 shadow-sm">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -3167,28 +3167,28 @@ export default function UserProfilePage() {
             </div>
 
             {/* Points */}
-            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0 shadow-sm">
+            <div className="bg-gray-50 border border-gray-200 rounded px-5 py-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded bg-[#0D0F14] flex items-center justify-center shrink-0 shadow-sm">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={ICON_PATHS.star} />
                 </svg>
               </div>
               <div>
-                <p className="text-3xl font-black text-indigo-700 leading-none">1.250</p>
-                <p className="text-xs text-indigo-600/70 font-medium mt-1">Điểm thành viên</p>
+                <p className="text-3xl font-black text-gray-900 leading-none">1.250</p>
+                <p className="text-xs text-gray-500 font-medium mt-1">Điểm thành viên</p>
               </div>
             </div>
 
             {/* Level progress */}
-            <div className="bg-purple-50 border border-purple-100 rounded-2xl px-5 py-4">
+            <div className="bg-orange-50 border border-orange-100 rounded px-5 py-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-purple-700">Tiến trình lên hạng Elite+</span>
-                <span className="text-xs font-black text-purple-700">43.75%</span>
+                <span className="text-xs font-bold text-[#E8420A]">Tiến trình lên hạng Elite+</span>
+                <span className="text-xs font-black text-[#E8420A]">43.75%</span>
               </div>
-              <div className="w-full bg-purple-200 rounded-full h-2.5 mb-2">
-                <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2.5 rounded-full" style={{ width: '43.75%' }} />
+              <div className="w-full bg-orange-200 rounded-full h-2.5 mb-2">
+                <div className="bg-[#E8420A] h-2.5 rounded-full" style={{ width: '43.75%' }} />
               </div>
-              <p className="text-xs text-purple-600/80">Cần thêm <span className="font-black">28.125.000đ</span> để lên hạng tiếp</p>
+              <p className="text-xs text-[#E8420A]/80">Cần thêm <span className="font-black">28.125.000đ</span> để lên hạng tiếp</p>
             </div>
           </div>
 
@@ -3200,7 +3200,7 @@ export default function UserProfilePage() {
                 onClick={() => tab.action ? onNavigate(tab.action) : setActiveSection(tab.id)}
                 className={`shrink-0 px-5 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
                   activeSection === tab.id
-                    ? 'border-blue-600 text-blue-600'
+                    ? 'border-[#E8420A] text-[#E8420A]'
                     : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
                 }`}
               >
@@ -3216,7 +3216,7 @@ export default function UserProfilePage() {
         <div className="grid grid-cols-[280px_1fr_300px] gap-6 items-start">
 
           {/* Left sidebar */}
-          <aside className="bg-white rounded-2xl border border-gray-200 overflow-hidden sticky top-24 shadow-sm">
+          <aside className="bg-white rounded border border-gray-200 overflow-hidden sticky top-24 shadow-sm">
             <ul className="py-3">
               {SIDEBAR_ITEMS.map((item, i) => {
                 if (!item) return <li key={i} className="my-2 border-t border-gray-100 mx-4" />
@@ -3228,7 +3228,7 @@ export default function UserProfilePage() {
                       onClick={() => handleSidebarClick(item)}
                       className={`w-full flex items-center gap-3.5 text-sm transition-all text-left
                         ${isActive
-                          ? 'bg-blue-50 text-blue-700 font-bold border-l-[3px] border-blue-600 pl-[17px] pr-5 py-3'
+                          ? 'bg-orange-50 text-[#E8420A] font-bold border-l-[3px] border-[#E8420A] pl-[17px] pr-5 py-3'
                           : isLogout
                             ? 'text-red-500 hover:bg-red-50 px-5 py-3'
                             : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 px-5 py-3'
@@ -3236,11 +3236,11 @@ export default function UserProfilePage() {
                     >
                       <SvgIcon
                         name={item.icon}
-                        className={`w-5 h-5 shrink-0 ${isActive ? 'text-blue-600' : isLogout ? 'text-red-400' : 'text-gray-500'}`}
+                        className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#E8420A]' : isLogout ? 'text-red-400' : 'text-gray-500'}`}
                       />
                       <span>{item.label}</span>
                       {isActive && (
-                        <svg className="w-4 h-4 text-blue-500 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-[#E8420A] ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                         </svg>
                       )}
@@ -3288,7 +3288,7 @@ export default function UserProfilePage() {
             {activeSection === 'support' && (
               <div className="space-y-4">
                 {/* Working hours */}
-                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                <div className="bg-white border border-gray-200 rounded p-5 shadow-sm">
                   <h4 className="text-sm font-bold text-gray-900 mb-4">Giờ làm việc</h4>
                   <div className="space-y-3">
                     {[
@@ -3302,15 +3302,15 @@ export default function UserProfilePage() {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-4 flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                  <div className="mt-4 flex items-center gap-2 bg-green-50 border border-green-200 rounded px-3 py-2.5">
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />
                     <span className="text-xs font-bold text-green-700">Đang trong giờ làm việc</span>
                   </div>
                 </div>
 
                 {/* SLA */}
-                <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
-                  <h4 className="text-sm font-bold text-blue-800 mb-3">Cam kết phản hồi</h4>
+                <div className="bg-gray-50 border border-gray-200 rounded p-5">
+                  <h4 className="text-sm font-bold text-gray-800 mb-3">Cam kết phản hồi</h4>
                   <div className="space-y-2.5">
                     {[
                       { channel: 'Live Chat',  time: '< 5 phút',  icon: '💬' },
@@ -3319,17 +3319,17 @@ export default function UserProfilePage() {
                       { channel: 'Email',      time: '< 48 giờ', icon: '📧' },
                     ].map((s, i) => (
                       <div key={i} className="flex items-center justify-between text-xs">
-                        <span className="text-blue-700 font-medium flex items-center gap-1.5">
+                        <span className="text-gray-700 font-medium flex items-center gap-1.5">
                           <span>{s.icon}</span>{s.channel}
                         </span>
-                        <span className="font-black text-blue-900 bg-white border border-blue-200 px-2 py-0.5 rounded-lg">{s.time}</span>
+                        <span className="font-black text-gray-900 bg-white border border-gray-200 px-2 py-0.5 rounded">{s.time}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Useful links */}
-                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                <div className="bg-white border border-gray-200 rounded p-5 shadow-sm">
                   <h4 className="text-sm font-bold text-gray-900 mb-3">Liên kết hữu ích</h4>
                   <div className="space-y-2">
                     {[
@@ -3338,7 +3338,7 @@ export default function UserProfilePage() {
                       'Hướng dẫn mua hàng',
                       'Điều khoản sử dụng',
                     ].map((link, i) => (
-                      <button key={i} className="w-full flex items-center justify-between text-sm text-blue-600 hover:text-blue-800 font-medium py-1 transition-colors text-left">
+                      <button key={i} className="w-full flex items-center justify-between text-sm text-[#E8420A] hover:text-[#c93808] font-medium py-1 transition-colors text-left">
                         {link}
                         <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -3353,16 +3353,16 @@ export default function UserProfilePage() {
             {/* Payment tips — chỉ hiện khi ở tab payment */}
             {activeSection === 'payment' && (
               <div className="space-y-4">
-                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                <div className="bg-white border border-gray-200 rounded p-5 shadow-sm">
                   <h4 className="text-sm font-bold text-gray-900 mb-4">Phương thức được chấp nhận</h4>
                   <div className="space-y-3">
                     {[
-                      { name: 'Visa / Mastercard / JCB', desc: 'Thẻ tín dụng & ghi nợ quốc tế', color: 'bg-blue-50 border-blue-100' },
+                      { name: 'Visa / Mastercard / JCB', desc: 'Thẻ tín dụng & ghi nợ quốc tế', color: 'bg-gray-50 border-gray-200' },
                       { name: 'MoMo & ZaloPay',           desc: 'Ví điện tử phổ biến',          color: 'bg-pink-50 border-pink-100'  },
                       { name: 'VNPay',                    desc: 'Thanh toán qua QR code',       color: 'bg-red-50 border-red-100'    },
                       { name: 'COD',                      desc: 'Thanh toán khi nhận hàng',     color: 'bg-green-50 border-green-100'},
                     ].map((m, i) => (
-                      <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border ${m.color}`}>
+                      <div key={i} className={`flex items-start gap-3 p-3 rounded border ${m.color}`}>
                         <svg className="w-4 h-4 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                         </svg>
@@ -3375,7 +3375,7 @@ export default function UserProfilePage() {
                   </div>
                 </div>
 
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+                <div className="bg-amber-50 border border-amber-200 rounded p-5">
                   <h4 className="text-sm font-bold text-amber-800 mb-2">Lưu ý bảo mật</h4>
                   <ul className="space-y-2">
                     {[
@@ -3395,7 +3395,7 @@ export default function UserProfilePage() {
 
             {/* Address tips — chỉ hiện khi ở tab address */}
             {activeSection === 'address' && (
-              <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="bg-white border border-gray-200 rounded p-5 shadow-sm space-y-4">
                 <h4 className="text-sm font-bold text-gray-900">Lưu ý về địa chỉ</h4>
                 <ul className="space-y-3">
                   {[
@@ -3429,12 +3429,12 @@ export default function UserProfilePage() {
             {/* Account tips — chỉ hiện khi ở tab account */}
             {activeSection === 'account' && (
               <div className="space-y-4">
-                <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+                <div className="bg-gray-50 border border-gray-200 rounded p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <svg className="w-5 h-5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-gray-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <h4 className="text-sm font-bold text-blue-800">Gợi ý bảo mật</h4>
+                    <h4 className="text-sm font-bold text-gray-800">Gợi ý bảo mật</h4>
                   </div>
                   <ul className="space-y-2.5">
                     {[
@@ -3443,8 +3443,8 @@ export default function UserProfilePage() {
                       'Không chia sẻ mật khẩu với người khác',
                       'Kiểm tra thiết bị đăng nhập thường xuyên',
                     ].map((tip, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-blue-700">
-                        <svg className="w-3.5 h-3.5 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <li key={i} className="flex items-start gap-2 text-xs text-gray-700">
+                        <svg className="w-3.5 h-3.5 text-gray-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                         </svg>
                         {tip}
@@ -3453,7 +3453,7 @@ export default function UserProfilePage() {
                   </ul>
                 </div>
 
-                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                <div className="bg-white border border-gray-200 rounded p-5 shadow-sm">
                   <h4 className="text-sm font-bold text-gray-900 mb-3">Độ hoàn chỉnh hồ sơ</h4>
                   <div className="space-y-2">
                     {[
@@ -3491,23 +3491,23 @@ export default function UserProfilePage() {
 
             {/* Membership card */}
             {activeSection !== 'orders' && activeSection !== 'wishlist' && activeSection !== 'membership' && activeSection !== 'coupons' && activeSection !== 'account' && activeSection !== 'address' && activeSection !== 'payment' && activeSection !== 'support' && (
-              <div className="rounded-2xl overflow-hidden shadow-sm border border-indigo-100">
-                <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 px-5 py-5">
+              <div className="rounded overflow-hidden shadow-sm border border-gray-200">
+                <div className="bg-[#0D0F14] px-5 py-5">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm font-bold text-white/90">Hạng thành viên</span>
-                    <span className="text-xs font-black px-3 py-1 bg-white/20 text-white rounded-full border border-white/30">Elite</span>
+                    <span className="text-xs font-black px-3 py-1 bg-white/20 text-white rounded border border-white/30">Elite</span>
                   </div>
                   <div className="flex items-baseline gap-2 mb-3">
                     <span className="text-4xl font-black text-white">1.250</span>
                     <span className="text-sm font-semibold text-white/70">điểm</span>
                   </div>
                   <div className="w-full bg-white/20 rounded-full h-2.5 mb-2">
-                    <div className="bg-white h-2.5 rounded-full" style={{ width: '62.5%' }} />
+                    <div className="bg-[#E8420A] h-2.5 rounded-full" style={{ width: '62.5%' }} />
                   </div>
                   <p className="text-xs text-white/70">Còn <span className="font-black text-white">750 điểm</span> để lên hạng tiếp theo</p>
                 </div>
                 <div className="bg-white px-5 py-3">
-                  <button className="w-full py-2.5 text-sm font-bold text-indigo-700 border border-indigo-200 rounded-xl hover:bg-indigo-50 transition-colors">
+                  <button className="w-full py-2.5 text-sm font-bold text-[#E8420A] border border-orange-200 rounded hover:bg-orange-50 transition-colors">
                     Xem quyền lợi thành viên
                   </button>
                 </div>
@@ -3516,26 +3516,26 @@ export default function UserProfilePage() {
 
             {/* Deals */}
             {activeSection !== 'orders' && activeSection !== 'wishlist' && activeSection !== 'membership' && activeSection !== 'coupons' && activeSection !== 'account' && activeSection !== 'address' && activeSection !== 'payment' && activeSection !== 'support' && (
-              <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <div className="bg-white rounded border border-gray-200 p-5 shadow-sm">
                 <h3 className="text-sm font-bold text-gray-900 mb-4">Ưu đãi của bạn</h3>
                 <div className="space-y-3">
                   {[
-                    { label: 'Giảm 10% cho đơn hàng tiếp theo', exp: 'HSD: 30/06/2026', code: 'ELITE10',  color: 'border-blue-200 bg-blue-50/40'    },
+                    { label: 'Giảm 10% cho đơn hàng tiếp theo', exp: 'HSD: 30/06/2026', code: 'ELITE10',  color: 'border-orange-200 bg-orange-50/40' },
                     { label: 'Miễn phí vận chuyển',              exp: 'HSD: 15/06/2026', code: 'FREESHIP', color: 'border-green-200 bg-green-50/40'  },
                     { label: 'Tích thêm 2x điểm cuối tuần',     exp: 'HSD: 08/06/2026', code: null,        color: 'border-orange-200 bg-orange-50/40'},
                   ].map((deal, i) => (
-                    <div key={i} className={`border border-dashed rounded-xl p-3.5 ${deal.color}`}>
+                    <div key={i} className={`border border-dashed rounded p-3.5 ${deal.color}`}>
                       <p className="text-sm font-semibold text-gray-800 leading-snug">{deal.label}</p>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-xs text-gray-400">{deal.exp}</span>
                         {deal.code && (
-                          <span className="text-xs font-black font-mono bg-white border border-blue-200 text-blue-700 px-2 py-1 rounded-lg shadow-sm">{deal.code}</span>
+                          <span className="text-xs font-black font-mono bg-white border border-orange-200 text-[#E8420A] px-2 py-1 rounded shadow-sm">{deal.code}</span>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
-                <button className="w-full mt-4 py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                <button className="w-full mt-4 py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 transition-colors">
                   Xem tất cả ưu đãi
                 </button>
               </div>
@@ -3543,7 +3543,7 @@ export default function UserProfilePage() {
 
             {/* Security */}
             {activeSection !== 'orders' && activeSection !== 'wishlist' && activeSection !== 'membership' && activeSection !== 'coupons' && activeSection !== 'account' && activeSection !== 'address' && activeSection !== 'payment' && activeSection !== 'support' && (
-              <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <div className="bg-white rounded border border-gray-200 p-5 shadow-sm">
                 <h3 className="text-sm font-bold text-gray-900 mb-4">Bảo mật tài khoản</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -3551,7 +3551,7 @@ export default function UserProfilePage() {
                       <p className="text-sm font-semibold text-gray-800">Mật khẩu</p>
                       <p className="text-xs text-gray-400 mt-0.5">Đổi lần cuối 2 tháng trước</p>
                     </div>
-                    <button className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors px-3 py-1 rounded-lg hover:bg-blue-50">Cập nhật</button>
+                    <button className="text-sm font-bold text-[#E8420A] hover:text-[#c93808] transition-colors px-3 py-1 rounded hover:bg-orange-50">Cập nhật</button>
                   </div>
                   <div className="border-t border-gray-100" />
                   <div className="flex items-center justify-between">
@@ -3559,7 +3559,7 @@ export default function UserProfilePage() {
                       <p className="text-sm font-semibold text-gray-800">Xác thực 2 bước</p>
                       <p className="text-xs text-green-600 font-bold mt-0.5">Đã bật</p>
                     </div>
-                    <div className="w-11 h-6 bg-blue-500 rounded-full flex items-center justify-end px-0.5 shadow-inner cursor-pointer">
+                    <div className="w-11 h-6 bg-[#E8420A] rounded-full flex items-center justify-end px-0.5 shadow-inner cursor-pointer">
                       <div className="w-5 h-5 bg-white rounded-full shadow-sm" />
                     </div>
                   </div>

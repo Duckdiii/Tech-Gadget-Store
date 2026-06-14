@@ -1,4 +1,11 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --accent:   #E8420A;   /* warm tech-orange — main accent */
+  --accent-d: #C4350A;   /* darker for hover */
+  --ink:      #0D0F14;   /* near-black with cool tint */
+}
 
 @keyframes bell-ring {
   0%   { transform: rotate(0deg); }
@@ -20,7 +27,12 @@
 
 body {
   margin: 0;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--accent);
 }
 
 /* ── Font size ── */

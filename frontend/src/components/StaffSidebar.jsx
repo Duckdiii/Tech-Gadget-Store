@@ -55,7 +55,7 @@ export default function StaffSidebar() {
     <aside className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col shrink-0">
       {/* Logo */}
       <div className="px-5 pt-5 pb-4 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded bg-teal-600 flex items-center justify-center shrink-0">
           <span className="text-white font-black text-sm tracking-tight">TS</span>
         </div>
         <div>
@@ -65,7 +65,7 @@ export default function StaffSidebar() {
       </div>
 
       {/* Staff card */}
-      <div className="mx-3 mb-3 bg-teal-50 rounded-xl px-3 py-2.5 flex items-center gap-2.5">
+      <div className="mx-3 mb-3 bg-teal-50 rounded px-3 py-2.5 flex items-center gap-2.5">
         <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">LD</div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold text-gray-800 truncate">Lê Hoàng Dũng</p>
@@ -88,7 +88,7 @@ export default function StaffSidebar() {
                   <button
                     key={item.id}
                     onClick={() => onNavigate(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition-colors cursor-pointer ${
                       isActive
                         ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600 pl-2'
                         : 'text-gray-600 hover:bg-gray-100 border-l-4 border-transparent'
@@ -108,7 +108,7 @@ export default function StaffSidebar() {
       <div className="px-3 border-t border-gray-100 pt-3 pb-5">
         <button
           onClick={() => onNavigate('login')}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 cursor-pointer transition-colors border-l-4 border-transparent"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 cursor-pointer transition-colors border-l-4 border-transparent"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

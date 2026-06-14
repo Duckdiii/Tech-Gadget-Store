@@ -44,7 +44,7 @@ export default function ImportStockPage() {
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
       {/* Top bar */}
       <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-4">
-        <span className="text-lg font-bold text-blue-700 shrink-0">TechStore Warehouse</span>
+        <span className="text-lg font-bold text-[#C4350A] shrink-0">TechStore Warehouse</span>
 
         <div className="flex-1 max-w-md mx-4">
           <div className="relative">
@@ -54,7 +54,7 @@ export default function ImportStockPage() {
             <input
               type="text"
               placeholder="Tìm kiếm sản phẩm..."
-              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
             />
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function ImportStockPage() {
         </div>
 
         {/* Section 1: Thông tin chung */}
-        <div className="bg-white rounded-xl border border-gray-200 px-6 py-5">
+        <div className="bg-white rounded border border-gray-200 px-6 py-5">
           <h2 className="text-base font-bold text-gray-800 mb-5">Thông tin chung</h2>
           <div className="grid grid-cols-4 gap-5">
             {/* Mã phiếu */}
@@ -105,7 +105,7 @@ export default function ImportStockPage() {
                 type="text"
                 value="PN-2023-0045"
                 readOnly
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 bg-gray-50 focus:outline-none cursor-default"
+                className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm text-gray-700 bg-gray-50 focus:outline-none cursor-default"
               />
             </div>
 
@@ -115,7 +115,7 @@ export default function ImportStockPage() {
                 Nhà cung cấp <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <select className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer bg-white">
+                <select className="w-full border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#E8420A] appearance-none cursor-pointer bg-white">
                   <option value="">Chọn nhà cung cấp</option>
                   <option value="apple">Apple Vietnam</option>
                   <option value="samsung">Samsung Vietnam</option>
@@ -134,7 +134,7 @@ export default function ImportStockPage() {
               <input
                 type="date"
                 defaultValue="2023-10-24"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                className="w-full border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
               />
             </div>
 
@@ -146,7 +146,7 @@ export default function ImportStockPage() {
               <input
                 type="text"
                 defaultValue="Nguyễn Văn A"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 bg-gray-50 focus:outline-none cursor-default"
+                className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm text-gray-700 bg-gray-50 focus:outline-none cursor-default"
                 readOnly
               />
             </div>
@@ -154,12 +154,12 @@ export default function ImportStockPage() {
         </div>
 
         {/* Section 2: Danh sách sản phẩm nhập */}
-        <div className="bg-white rounded-xl border border-gray-200 px-6 py-5">
+        <div className="bg-white rounded border border-gray-200 px-6 py-5">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-gray-800">Danh sách sản phẩm nhập</h2>
             <button
               onClick={addItem}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors cursor-pointer"
+              className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2 px-4 rounded text-sm transition-colors cursor-pointer"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -198,7 +198,7 @@ export default function ImportStockPage() {
                       value={item.name}
                       onChange={(e) => updateItem(item.id, 'name', e.target.value)}
                       placeholder="Chọn hoặc nhập tên s..."
-                      className={`w-full pr-8 pl-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                      className={`w-full pr-8 pl-3 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-[#E8420A] ${
                         isEmpty
                           ? 'border border-dashed border-gray-300 text-gray-400 placeholder-gray-400'
                           : 'border border-gray-300 text-gray-800'
@@ -221,7 +221,7 @@ export default function ImportStockPage() {
                     onChange={(e) => updateItem(item.id, 'qty', e.target.value)}
                     placeholder="0"
                     min="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] text-center"
                   />
 
                   {/* Đơn giá nhập */}
@@ -231,7 +231,7 @@ export default function ImportStockPage() {
                     onChange={(e) => updateItem(item.id, 'unitPrice', e.target.value)}
                     placeholder="0"
                     min="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 text-right"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] text-right"
                   />
 
                   {/* Thành tiền */}
@@ -247,19 +247,19 @@ export default function ImportStockPage() {
         {/* Bottom: Ghi chú + Tóm tắt */}
         <div className="grid grid-cols-[1fr_320px] gap-5">
           {/* Ghi chú */}
-          <div className="bg-white rounded-xl border border-gray-200 px-6 py-5">
+          <div className="bg-white rounded border border-gray-200 px-6 py-5">
             <h2 className="text-base font-bold text-gray-800 mb-4">Ghi chú</h2>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Nhập ghi chú cho phiếu nhập kho này (không bắt buộc)..."
               rows={6}
-              className="w-full border border-gray-200 rounded-lg px-3 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+              className="w-full border border-gray-200 rounded px-3 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A] resize-none"
             />
           </div>
 
           {/* Tóm tắt */}
-          <div className="bg-white rounded-xl border border-gray-200 px-6 py-5 flex flex-col">
+          <div className="bg-white rounded border border-gray-200 px-6 py-5 flex flex-col">
             <h2 className="text-base font-bold text-gray-800 mb-5">Tóm tắt</h2>
 
             <div className="space-y-3 flex-1">
@@ -276,13 +276,13 @@ export default function ImportStockPage() {
             <div className="border-t border-gray-100 pt-4 mt-4 mb-5">
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-base font-bold text-gray-800">Tổng tiền:</span>
-                <span className="text-2xl font-black text-blue-600">
+                <span className="text-2xl font-black text-[#E8420A]">
                   {totalAmount.toLocaleString('vi-VN')} đ
                 </span>
               </div>
             </div>
 
-            <button className="w-full bg-blue-900 hover:bg-blue-950 text-white font-semibold py-3 px-4 rounded-xl transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
+            <button className="w-full bg-[#0D0F14] hover:bg-[#0D0F14] text-white font-semibold py-3 px-4 rounded transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
