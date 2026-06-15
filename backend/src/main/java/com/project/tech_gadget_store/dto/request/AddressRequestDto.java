@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.dto.request;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 import lombok.AllArgsConstructor;
