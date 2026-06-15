@@ -1,6 +1,9 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 
 const AuthContext = createContext(null)
+
+const TOKEN_KEY = 'tech_store_token'
+const USER_KEY  = 'tech_store_user'
 
 export const ROLE_PAGES = {
   customer: new Set([
@@ -23,14 +26,34 @@ export const ROLE_LANDING = {
   staff:    '/staff/dash',
 }
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+function loadPersistedUser() {
+  try {
+    const raw = localStorage.getItem(USER_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
 
-  const login  = (userData) => setUser(userData)
-  const logout = () => setUser(null)
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(loadPersistedUser)
+
+  const login = (userData, token) => {
+    setUser(userData)
+    localStorage.setItem(USER_KEY, JSON.stringify(userData))
+    if (token) localStorage.setItem(TOKEN_KEY, token)
+  }
+
+  const logout = () => {
+    setUser(null)
+    localStorage.removeItem(USER_KEY)
+    localStorage.removeItem(TOKEN_KEY)
+  }
+
+  const value = useMemo(() => ({ user, login, logout }), [user])
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )
@@ -38,4 +61,8 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   return useContext(AuthContext)
+}
+
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY)
 }

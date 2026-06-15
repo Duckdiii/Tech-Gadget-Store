@@ -1,105 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNav } from '../hooks/useNav'
 import StoreNavbar from '../components/StoreNavbar'
 
-const PRODUCTS = [
-  {
-    id: 1,
-    brand: 'Apple',
-    name: 'iPhone 15 Pro Max 256GB',
-    price: 28990000,
-    originalPrice: 32990000,
-    available: true,
-    discount: 12,
-    rating: 4.9,
-    reviews: 2341,
-    ram: '8GB',
-    storage: '256GB',
-    color: 'Titan Tự Nhiên',
-    tag: 'Bán chạy',
-    image: 'https://placehold.co/300x300/f3f4f6/374151?text=iPhone+15+Pro',
-  },
-  {
-    id: 2,
-    brand: 'Samsung',
-    name: 'Galaxy S24 Ultra 512GB',
-    price: 31490000,
+function mapApiProduct(p) {
+  const nameSlug = encodeURIComponent(p.name.replace(/\s+/g, '+'))
+  return {
+    id: p.id,
+    brand: p.brandName ?? '',
+    name: p.name,
+    price: p.minPrice ? Number(p.minPrice) : 0,
     originalPrice: null,
-    available: true,
+    available: p.hasVariants,
     discount: null,
-    rating: 4.8,
-    reviews: 1892,
-    ram: '12GB',
-    storage: '512GB',
-    color: 'Titanium Gray',
-    tag: 'Mới nhất',
-    image: 'https://placehold.co/300x300/f3f4f6/374151?text=Galaxy+S24',
-  },
-  {
-    id: 3,
-    brand: 'Google',
-    name: 'Pixel 8 Pro 128GB',
-    price: 22990000,
-    originalPrice: 25990000,
-    available: false,
-    discount: 12,
-    rating: 4.6,
-    reviews: 543,
-    ram: '12GB',
-    storage: '128GB',
-    color: 'Obsidian',
+    rating: null,
+    reviews: 0,
+    ram: p.ramGb != null ? `${p.ramGb}GB` : null,
+    storage: p.storageGb != null ? `${p.storageGb}GB` : null,
+    color: p.color ?? null,
     tag: null,
-    image: 'https://placehold.co/300x300/f3f4f6/374151?text=Pixel+8+Pro',
-  },
-  {
-    id: 4,
-    brand: 'Apple',
-    name: 'iPhone 14 128GB',
-    price: 18490000,
-    originalPrice: 22990000,
-    available: true,
-    discount: 20,
-    rating: 4.7,
-    reviews: 3120,
-    ram: '6GB',
-    storage: '128GB',
-    color: 'Midnight',
-    tag: 'Giảm sâu',
-    image: 'https://placehold.co/300x300/f3f4f6/374151?text=iPhone+14',
-  },
-  {
-    id: 5,
-    brand: 'Xiaomi',
-    name: '14 Ultra 512GB',
-    price: 26990000,
-    originalPrice: null,
-    available: true,
-    discount: null,
-    rating: 4.7,
-    reviews: 876,
-    ram: '16GB',
-    storage: '512GB',
-    color: 'Black',
-    tag: 'Mới nhất',
-    image: 'https://placehold.co/300x300/f3f4f6/374151?text=Xiaomi+14+Ultra',
-  },
-  {
-    id: 6,
-    brand: 'OPPO',
-    name: 'Find X7 Pro 256GB',
-    price: 23490000,
-    originalPrice: 25990000,
-    available: true,
-    discount: 10,
-    rating: 4.5,
-    reviews: 412,
-    ram: '12GB',
-    storage: '256GB',
-    color: 'Desert Silver',
-    tag: null,
-    image: 'https://placehold.co/300x300/f3f4f6/374151?text=Find+X7+Pro',
-  },
-]
+    image: p.imageUrl ?? `https://placehold.co/300x300/f3f4f6/374151?text=${nameSlug}`,
+  }
+}
 
 function formatPrice(price) {
   return price.toLocaleString('vi-VN') + ' đ'
@@ -112,6 +33,7 @@ const TAG_COLOR = {
 }
 
 function StarRating({ rating }) {
+  if (rating == null) return null
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map(i => {
@@ -216,18 +138,22 @@ function ProductCard({ product, onNavigate }) {
         </p>
 
         {/* Rating */}
-        <div className="flex items-center gap-1.5">
-          <StarRating rating={product.rating} />
-          <span className="text-[12px] font-semibold text-amber-500">{product.rating}</span>
-          <span className="text-[12px] text-gray-400">({product.reviews.toLocaleString('vi-VN')} đánh giá)</span>
-        </div>
+        {product.rating != null && (
+          <div className="flex items-center gap-1.5">
+            <StarRating rating={product.rating} />
+            <span className="text-[12px] font-semibold text-amber-500">{product.rating}</span>
+            <span className="text-[12px] text-gray-400">({product.reviews.toLocaleString('vi-VN')} đánh giá)</span>
+          </div>
+        )}
 
         {/* Specs chips */}
-        <div className="flex flex-wrap gap-1.5">
-          <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5" style={{ borderRadius: '3px' }}>RAM {product.ram}</span>
-          <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5" style={{ borderRadius: '3px' }}>{product.storage}</span>
-          <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 truncate max-w-[100px]" style={{ borderRadius: '3px' }}>{product.color}</span>
-        </div>
+        {(product.ram || product.storage || product.color) && (
+          <div className="flex flex-wrap gap-1.5">
+            {product.ram && <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5" style={{ borderRadius: '3px' }}>RAM {product.ram}</span>}
+            {product.storage && <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5" style={{ borderRadius: '3px' }}>{product.storage}</span>}
+            {product.color && <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 truncate max-w-[100px]" style={{ borderRadius: '3px' }}>{product.color}</span>}
+          </div>
+        )}
 
         {/* Price */}
         <div className="mt-auto pt-1">
@@ -673,6 +599,21 @@ function Pagination({ current, total }) {
 
 export default function ProductsPage() {
   const onNavigate = useNav()
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json()
+      })
+      .then(data => setProducts(data.map(mapApiProduct)))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-white">
       <StoreNavbar />
@@ -701,7 +642,10 @@ export default function ProductsPage() {
         {/* Sort bar */}
         <div className="flex items-center justify-between mb-5">
           <p className="text-sm text-gray-500">
-            <span className="font-semibold text-gray-800">{PRODUCTS.length}</span> sản phẩm
+            {loading
+              ? <span className="text-gray-400">Đang tải...</span>
+              : <><span className="font-semibold text-gray-800">{products.length}</span> sản phẩm</>
+            }
           </p>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="text-gray-400">Sắp xếp:</span>
@@ -720,12 +664,27 @@ export default function ProductsPage() {
         <div className="flex gap-6 items-start">
           <FilterPanel />
           <div className="flex-1">
-            <div className="grid grid-cols-3 gap-4">
-              {PRODUCTS.map((p) => (
-                <ProductCard key={p.id} product={p} onNavigate={onNavigate} />
-              ))}
-            </div>
-            <Pagination current={1} total={3} />
+            {error && (
+              <div className="text-sm text-red-500 border border-red-200 bg-red-50 px-4 py-3 mb-4" style={{ borderRadius: '4px' }}>
+                Không thể tải sản phẩm: {error}
+              </div>
+            )}
+            {loading ? (
+              <div className="grid grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-gray-100 animate-pulse h-80" style={{ borderRadius: '4px' }} />
+                ))}
+              </div>
+            ) : products.length === 0 && !error ? (
+              <div className="text-center py-16 text-gray-400 text-sm">Chưa có sản phẩm nào.</div>
+            ) : (
+              <div className="grid grid-cols-3 gap-4">
+                {products.map((p) => (
+                  <ProductCard key={p.id} product={p} onNavigate={onNavigate} />
+                ))}
+              </div>
+            )}
+            {!loading && products.length > 0 && <Pagination current={1} total={Math.ceil(products.length / 9)} />}
           </div>
         </div>
       </div>
