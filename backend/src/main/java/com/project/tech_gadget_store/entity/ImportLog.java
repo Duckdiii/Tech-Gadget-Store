@@ -24,9 +24,8 @@ public class ImportLog extends BaseEntity {
     @JoinColumn(name = "import_log_id", nullable = false)
     private List<ImportLogItem> items = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "performed_by", nullable = false)
-    private User performedBy;
+    @Column(name = "performed_by", nullable = false, length = 120)
+    private String performedBy;
 
     @Column(name = "imported_at", nullable = false)
     private LocalDateTime importedAt;
@@ -45,16 +44,15 @@ public class ImportLog extends BaseEntity {
         }
     }
 
-    public ImportLog(User performedBy, ImportAndExportStatus status) {
-        if (performedBy == null) {
-            throw new IllegalArgumentException("performedBy must not be null");
+    public ImportLog(String performedBy, ImportAndExportStatus status) {
+        if (performedBy == null || performedBy.isBlank()) {
+            throw new IllegalArgumentException("performedBy must not be blank");
         }
         if (status == null) {
             throw new IllegalArgumentException("status must not be null");
         }
         this.performedBy = performedBy;
         this.status = status;
-        performedBy.getImportLogs().add(this);
     }
 
     public void addItem(ImportLogItem item) {

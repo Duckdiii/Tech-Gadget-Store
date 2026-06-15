@@ -12,6 +12,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,12 +38,6 @@ public abstract class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Address> addresses = new ArrayList<>();
-
-    @OneToMany(mappedBy = "performedBy", fetch = FetchType.LAZY)
-    private List<ImportLog> importLogs = new ArrayList<>();
-
-    @OneToMany(mappedBy = "performedBy", fetch = FetchType.LAZY)
-    private List<ExportLog> exportLogs = new ArrayList<>();
 
     protected User(String fullName, String phone) {
         if (fullName == null || fullName.isBlank()) {

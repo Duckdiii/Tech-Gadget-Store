@@ -1,22 +1,13 @@
 package com.project.tech_gadget_store.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -39,17 +30,48 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @Column(name = "screen_size")
+    private Double screenSize;
+
+    @Column(name = "rear_camera", length = 255)
+    private String rearCamera;
+
+    @Column(name = "front_camera", length = 255)
+    private String frontCamera;
+
+    @Column(name = "chipset", length = 120)
+    private String chipset;
+
+    @Column(name = "nfc_supported")
+    private Boolean nfcSupported;
+
+    @Column(name = "battery_capacity")
+    private Integer batteryCapacity;
+
+    @Column(name = "sim_type", length = 100)
+    private String simType;
+
+    @Column(name = "operating_system", length = 120)
+    private String operatingSystem;
+
+    @Column(name = "screen_resolution", length = 120)
+    private String screenResolution;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private List<ProductImage> images = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "phone_specification_id", unique = true)
-    private PhoneSpecification spec;
-
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "product_promotions", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "promotion_id"))
+    @JoinTable(name = "product_promotions",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_id"))
     private List<Promotion> promotions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ProductVariant> variants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<FavoriteProduct> favoriteProducts = new ArrayList<>();
 
     public Product(String name, String description, Brand brand, Category category) {
         if (name == null || name.isBlank()) {
@@ -78,14 +100,6 @@ public class Product extends BaseEntity {
 
     public void removeImage(ProductImage image) {
         images.remove(image);
-    }
-
-    public void assignSpec(PhoneSpecification spec) {
-        this.spec = spec;
-    }
-
-    public void removeSpec() {
-        this.spec = null;
     }
 
     public void changeBasicInfo(String name, String description) {

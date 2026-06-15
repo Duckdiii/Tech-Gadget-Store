@@ -26,8 +26,15 @@ public class Customer extends User {
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     private List<Notification> notifications = new ArrayList<>();
 
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    private List<FavoriteProduct> favoriteProducts = new ArrayList<>();
+
     public Customer(String fullName, String phone, Membership membership) {
         super(fullName, phone);
+        if (membership == null) {
+            throw new IllegalArgumentException("membership must not be null");
+        }
+
         assignMembership(membership);
     }
 
@@ -54,4 +61,3 @@ public class Customer extends User {
     }
 
 }
-

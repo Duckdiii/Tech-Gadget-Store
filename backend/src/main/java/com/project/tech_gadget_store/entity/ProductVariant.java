@@ -5,22 +5,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import jakarta.persistence.CascadeType;
 
 @Entity
 @Table(name = "product_variants")
@@ -29,7 +23,7 @@ import jakarta.persistence.CascadeType;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductVariant extends BaseEntity {
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
@@ -44,6 +38,12 @@ public class ProductVariant extends BaseEntity {
 
     @Column(name = "price", precision = 15, scale = 2)
     private BigDecimal price;
+
+    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
+    private List<ImportLogItem> importLogItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
+    private List<ExportLogItem> exportLogItems = new ArrayList<>();
 
     public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price) {
         if (product == null) {

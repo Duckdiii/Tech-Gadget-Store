@@ -25,16 +25,15 @@ public class ExportLog extends BaseEntity {
     @Column(name = "exported_at", nullable = false)
     private LocalDateTime exportedAt;
 
+    @Column(name = "performed_by", nullable = false, length = 120)
+    private String performedBy;
+
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private ImportAndExportStatus status = ImportAndExportStatus.PENDING;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "performed_by", nullable = false)
-    private User performedBy;
 
     @PrePersist
     protected void prePersistExportLog() {
@@ -43,9 +42,9 @@ public class ExportLog extends BaseEntity {
         }
     }
 
-    public ExportLog(User performedBy, String reason, ImportAndExportStatus status) {
-        if (performedBy == null) {
-            throw new IllegalArgumentException("performedBy must not be null");
+    public ExportLog(String performedBy, String reason, ImportAndExportStatus status) {
+        if (performedBy == null || performedBy.isBlank()) {
+            throw new IllegalArgumentException("performedBy must not be blank");
         }
         if (status == null) {
             throw new IllegalArgumentException("status must not be null");
@@ -53,7 +52,6 @@ public class ExportLog extends BaseEntity {
         this.performedBy = performedBy;
         this.reason = reason;
         this.status = status;
-        performedBy.getExportLogs().add(this);
     }
 
     public void addItem(ExportLogItem item) {
