@@ -18,7 +18,6 @@ public class AccountResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String email;
-    private String password;
     private AccountStatus status;
     private String userId;
     private List<String> loginLogsIds;

@@ -40,9 +40,6 @@ public class Notification extends BaseEntity {
     @Column(name = "status", nullable = false, length = 30)
     private NotificationStatus status = NotificationStatus.PENDING;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
     @Column(name = "sent_at")
     private LocalDateTime sentAt;
 
@@ -57,14 +54,10 @@ public class Notification extends BaseEntity {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @PrePersist
-    protected void prePersist() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+    public Notification(Customer customer, String title, NotificationType type, String message, List<NotificationChannel> channels) {
+        if (customer == null) {
+            throw new IllegalArgumentException("customer must not be null");
         }
-    }
-
-    public Notification(String title, NotificationType type, String message, List<NotificationChannel> channels) {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("title must not be blank");
         }
@@ -74,10 +67,12 @@ public class Notification extends BaseEntity {
         if (channels == null) {
             throw new IllegalArgumentException("channels must not be null");
         }
+        this.customer = customer;
         this.title = title;
         this.type = type;
         this.message = message;
         this.channels.addAll(channels);
+        customer.getNotifications().add(this);
     }
 
     public void markSent() {
@@ -90,7 +85,8 @@ public class Notification extends BaseEntity {
     }
 
     public void markRead() {
-        if (readAt == null) readAt = LocalDateTime.now();
+        if (readAt == null)
+            readAt = LocalDateTime.now();
     }
 
     public boolean isRead() {
