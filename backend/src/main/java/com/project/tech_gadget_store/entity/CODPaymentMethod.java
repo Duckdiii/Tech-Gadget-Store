@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.entity;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,10 +12,10 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "cod_payment_methods")
 @DiscriminatorValue("COD")
 @Getter
-@Setter
+@Setter
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CODPaymentMethod extends PaymentMethod {
 
