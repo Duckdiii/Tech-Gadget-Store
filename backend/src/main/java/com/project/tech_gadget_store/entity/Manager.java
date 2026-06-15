@@ -10,7 +10,6 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "managers")
-@DiscriminatorValue("MANAGER")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

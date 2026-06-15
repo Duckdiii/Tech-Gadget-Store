@@ -9,7 +9,6 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "staffs")
-@DiscriminatorValue("STAFF")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

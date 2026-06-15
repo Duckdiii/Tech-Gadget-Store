@@ -10,7 +10,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "customers")
-@DiscriminatorValue("CUSTOMER")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
