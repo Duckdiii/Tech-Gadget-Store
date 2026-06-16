@@ -3100,11 +3100,11 @@ export default function UserProfilePage() {
   const handleViewAllOrders = (sectionId) => setActiveSection(sectionId)
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-100 min-h-screen">
+    <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
       <StoreNavbar />
 
       {/* ── Hero banner ─────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div style={{ backgroundColor: 'var(--ink)', borderBottom: '1px solid var(--b1)' }}>
         <div className="max-w-screen-2xl mx-auto px-8">
 
           {/* Profile row */}
@@ -3112,7 +3112,7 @@ export default function UserProfilePage() {
 
             {/* Avatar */}
             <div className="relative shrink-0">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#E8420A] to-[#c93808] flex items-center justify-center text-white text-3xl font-black ring-4 ring-white shadow-lg">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#E8420A] to-[#c93808] flex items-center justify-center text-white text-3xl font-black ring-4 shadow-lg" style={{ ringColor: 'rgba(255,255,255,0.15)' }}>
                 AJ
               </div>
               <span className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-sm" />
@@ -3120,17 +3120,24 @@ export default function UserProfilePage() {
 
             {/* Name + meta */}
             <div className="min-w-0">
-              <h1 className="text-2xl font-black text-gray-900 leading-tight">Alex Johnson</h1>
-              <p className="text-sm text-gray-500 mt-1">096·····35 · alex@example.com</p>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-[10px] font-bold tracking-[0.18em] uppercase" style={{ color: 'var(--accent)' }}>Hồ sơ thành viên</p>
+              </div>
+              <h1 className="text-2xl font-black leading-tight" style={{ color: 'var(--t1)', fontFamily: 'Syne, sans-serif' }}>Alex Johnson</h1>
+              <p className="text-sm mt-1" style={{ color: 'var(--t3)' }}>096·····35 · alex@example.com</p>
               <div className="flex items-center gap-2 mt-2.5">
-                <span className="px-3 py-1 text-xs font-black bg-orange-100 text-[#E8420A] rounded">T-MEM</span>
-                <span className="px-3 py-1 text-xs font-black bg-[#0D0F14] text-white rounded shadow-sm">Elite</span>
-                <span className="px-3 py-1 text-xs font-semibold bg-green-50 text-green-700 border border-green-200 rounded-full">Đã xác minh</span>
+                <span className="px-3 py-1 text-xs font-black rounded" style={{ backgroundColor: 'rgba(232,66,10,0.15)', color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.3)' }}>T-MEM</span>
+                <span className="px-3 py-1 text-xs font-black text-white rounded" style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>Elite</span>
+                <span className="px-3 py-1 text-xs font-semibold rounded" style={{ backgroundColor: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.25)' }}>Đã xác minh</span>
               </div>
             </div>
 
             {/* Edit button */}
-            <button className="ml-auto flex items-center gap-2 border border-gray-300 hover:border-[#E8420A] hover:text-[#E8420A] text-gray-700 text-sm font-semibold px-5 py-2.5 rounded transition-colors shrink-0 shadow-sm">
+            <button className="ml-auto flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded transition-colors shrink-0"
+              style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'var(--t2)', backgroundColor: 'rgba(255,255,255,0.06)' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'var(--t2)' }}
+            >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
@@ -3141,54 +3148,54 @@ export default function UserProfilePage() {
           {/* Stats row */}
           <div className="grid grid-cols-4 gap-4 pb-6">
             {/* Orders count */}
-            <div className="bg-orange-50 border border-orange-100 rounded px-5 py-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded bg-[#E8420A] flex items-center justify-center shrink-0 shadow-sm">
+            <div className="rounded px-5 py-4 flex items-center gap-4" style={{ backgroundColor: 'rgba(232,66,10,0.1)', border: '1px solid rgba(232,66,10,0.2)' }}>
+              <div className="w-12 h-12 rounded flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--accent)' }}>
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
               <div>
-                <p className="text-3xl font-black text-[#E8420A] leading-none">15</p>
-                <p className="text-xs text-[#E8420A]/70 font-medium mt-1">Tổng đơn hàng</p>
+                <p className="text-3xl font-black leading-none" style={{ color: 'var(--accent)', fontFamily: 'Syne, sans-serif' }}>15</p>
+                <p className="text-xs font-medium mt-1" style={{ color: 'rgba(232,66,10,0.7)' }}>Tổng đơn hàng</p>
               </div>
             </div>
 
             {/* Spend */}
-            <div className="bg-green-50 border border-green-100 rounded px-5 py-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded bg-green-600 flex items-center justify-center shrink-0 shadow-sm">
+            <div className="rounded px-5 py-4 flex items-center gap-4" style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>
+              <div className="w-12 h-12 rounded flex items-center justify-center shrink-0" style={{ backgroundColor: '#16a34a' }}>
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <p className="text-xl font-black text-green-700 leading-none">21.875.000đ</p>
-                <p className="text-xs text-green-600/70 font-medium mt-1">Tổng tiền tích lũy</p>
+                <p className="text-xl font-black leading-none" style={{ color: '#4ade80', fontFamily: 'Syne, sans-serif' }}>21.875.000đ</p>
+                <p className="text-xs font-medium mt-1" style={{ color: 'rgba(74,222,128,0.7)' }}>Tổng tiền tích lũy</p>
               </div>
             </div>
 
             {/* Points */}
-            <div className="bg-gray-50 border border-gray-200 rounded px-5 py-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded bg-[#0D0F14] flex items-center justify-center shrink-0 shadow-sm">
+            <div className="rounded px-5 py-4 flex items-center gap-4" style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="w-12 h-12 rounded flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={ICON_PATHS.star} />
                 </svg>
               </div>
               <div>
-                <p className="text-3xl font-black text-gray-900 leading-none">1.250</p>
-                <p className="text-xs text-gray-500 font-medium mt-1">Điểm thành viên</p>
+                <p className="text-3xl font-black leading-none" style={{ color: 'var(--t1)', fontFamily: 'Syne, sans-serif' }}>1.250</p>
+                <p className="text-xs font-medium mt-1" style={{ color: 'var(--t3)' }}>Điểm thành viên</p>
               </div>
             </div>
 
             {/* Level progress */}
-            <div className="bg-orange-50 border border-orange-100 rounded px-5 py-4">
+            <div className="rounded px-5 py-4" style={{ backgroundColor: 'rgba(232,66,10,0.1)', border: '1px solid rgba(232,66,10,0.2)' }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-[#E8420A]">Tiến trình lên hạng Elite+</span>
-                <span className="text-xs font-black text-[#E8420A]">43.75%</span>
+                <span className="text-xs font-bold" style={{ color: 'var(--accent)' }}>Tiến trình lên hạng Elite+</span>
+                <span className="text-xs font-black" style={{ color: 'var(--accent)' }}>43.75%</span>
               </div>
-              <div className="w-full bg-orange-200 rounded-full h-2.5 mb-2">
-                <div className="bg-[#E8420A] h-2.5 rounded-full" style={{ width: '43.75%' }} />
+              <div className="w-full rounded-full h-2.5 mb-2" style={{ backgroundColor: 'rgba(232,66,10,0.2)' }}>
+                <div className="h-2.5 rounded-full" style={{ width: '43.75%', backgroundColor: 'var(--accent)' }} />
               </div>
-              <p className="text-xs text-[#E8420A]/80">Cần thêm <span className="font-black">28.125.000đ</span> để lên hạng tiếp</p>
+              <p className="text-xs" style={{ color: 'rgba(232,66,10,0.8)' }}>Cần thêm <span className="font-black">28.125.000đ</span> để lên hạng tiếp</p>
             </div>
           </div>
 
@@ -3198,11 +3205,13 @@ export default function UserProfilePage() {
               <button
                 key={tab.id}
                 onClick={() => tab.action ? onNavigate(tab.action) : setActiveSection(tab.id)}
-                className={`shrink-0 px-5 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
-                  activeSection === tab.id
-                    ? 'border-[#E8420A] text-[#E8420A]'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-                }`}
+                className="shrink-0 px-5 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap"
+                style={{
+                  borderBottomColor: activeSection === tab.id ? 'var(--accent)' : 'transparent',
+                  color: activeSection === tab.id ? 'var(--accent)' : 'var(--t3)',
+                }}
+                onMouseEnter={e => { if (activeSection !== tab.id) { e.currentTarget.style.color = 'var(--t1)'; e.currentTarget.style.borderBottomColor = 'rgba(255,255,255,0.3)' } }}
+                onMouseLeave={e => { if (activeSection !== tab.id) { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.borderBottomColor = 'transparent' } }}
               >
                 {tab.label}
               </button>
@@ -3216,27 +3225,29 @@ export default function UserProfilePage() {
         <div className="grid grid-cols-[280px_1fr_300px] gap-6 items-start">
 
           {/* Left sidebar */}
-          <aside className="bg-white rounded border border-gray-200 overflow-hidden sticky top-24 shadow-sm">
+          <aside className="overflow-hidden sticky top-24" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--cb)', borderRadius: '4px', borderTop: '3px solid var(--accent)' }}>
             <ul className="py-3">
               {SIDEBAR_ITEMS.map((item, i) => {
-                if (!item) return <li key={i} className="my-2 border-t border-gray-100 mx-4" />
+                if (!item) return <li key={i} className="my-2 mx-4" style={{ borderTop: '1px solid var(--cb)' }} />
                 const isActive = activeSection === item.id && !item.action
                 const isLogout = item.id === 'logout'
                 return (
                   <li key={item.id}>
                     <button
                       onClick={() => handleSidebarClick(item)}
-                      className={`w-full flex items-center gap-3.5 text-sm transition-all text-left
-                        ${isActive
-                          ? 'bg-orange-50 text-[#E8420A] font-bold border-l-[3px] border-[#E8420A] pl-[17px] pr-5 py-3'
-                          : isLogout
-                            ? 'text-red-500 hover:bg-red-50 px-5 py-3'
-                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 px-5 py-3'
-                        }`}
+                      className="w-full flex items-center gap-3.5 text-sm transition-all text-left"
+                      style={isActive
+                        ? { backgroundColor: 'rgba(232,66,10,0.06)', color: 'var(--accent)', fontWeight: '700', borderLeft: '3px solid var(--accent)', paddingLeft: '17px', paddingRight: '20px', paddingTop: '12px', paddingBottom: '12px' }
+                        : isLogout
+                          ? { color: 'var(--err)', padding: '12px 20px' }
+                          : { color: 'var(--ct2)', padding: '12px 20px' }
+                      }
+                      onMouseEnter={e => { if (!isActive && !isLogout) { e.currentTarget.style.backgroundColor = 'var(--page)'; e.currentTarget.style.color = 'var(--ct1)' } }}
+                      onMouseLeave={e => { if (!isActive && !isLogout) { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = 'var(--ct2)' } }}
                     >
                       <SvgIcon
                         name={item.icon}
-                        className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#E8420A]' : isLogout ? 'text-red-400' : 'text-gray-500'}`}
+                        className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#E8420A]' : isLogout ? 'text-red-400' : 'opacity-60'}`}
                       />
                       <span>{item.label}</span>
                       {isActive && (
