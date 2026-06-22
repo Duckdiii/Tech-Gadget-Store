@@ -5,7 +5,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Formula;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +58,9 @@ public class Product extends BaseEntity {
 
     @Column(name = "screen_resolution", length = 120)
     private String screenResolution;
+
+    @Formula("(SELECT MIN(pv.price) FROM product_variants pv WHERE pv.product_id = id)")
+    private BigDecimal minPrice;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
