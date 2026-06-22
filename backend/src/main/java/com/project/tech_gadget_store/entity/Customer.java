@@ -50,7 +50,9 @@ public class Customer extends User {
         if (membership == null) {
             throw new IllegalArgumentException("membership must not be null");
         }
-        if (this.membership == membership) {
+        // so sánh theo id để tránh false-negative khi JPA dùng proxy khác nhau
+        if (this.membership != null && this.membership.getId() != null
+                && this.membership.getId().equals(membership.getId())) {
             return;
         }
         if (this.membership != null) {

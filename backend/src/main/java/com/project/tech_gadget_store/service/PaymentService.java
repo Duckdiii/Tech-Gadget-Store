@@ -13,6 +13,7 @@ import com.project.tech_gadget_store.repository.OrderRepository;
 import com.project.tech_gadget_store.repository.PaymentLogRepository;
 import com.project.tech_gadget_store.repository.VNPayPaymentMethodRepository;
 import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,19 +30,22 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final MomoProperties momoProps;
     private final VNPayProperties vnpayProps;
+    private final CustomerService customerService;
 
     public PaymentService(PaymentLogRepository paymentLogRepository,
                           MomoPaymentMethodRepository momoMethodRepository,
                           VNPayPaymentMethodRepository vnpayMethodRepository,
                           OrderRepository orderRepository,
                           MomoProperties momoProps,
-                          VNPayProperties vnpayProps) {
+                          VNPayProperties vnpayProps,
+                          @Lazy CustomerService customerService) {
         this.paymentLogRepository = paymentLogRepository;
         this.momoMethodRepository = momoMethodRepository;
         this.vnpayMethodRepository = vnpayMethodRepository;
         this.orderRepository = orderRepository;
         this.momoProps = momoProps;
         this.vnpayProps = vnpayProps;
+        this.customerService = customerService;
     }
 
     // Đảm bảo DB luôn có bản ghi PaymentMethod cho MoMo và VNPay dựa trên config yml
@@ -98,11 +102,12 @@ public class PaymentService {
                     log.markSuccess();
                 });
 
-        // Cập nhật trạng thái Order — chỉ cập nhật nếu chưa được paid
         orderRepository.findById(orderId).ifPresent(order -> {
             if (!order.isPaid()) {
                 order.markPaid();
             }
+            // Tính lại hạng membership ngay sau khi thanh toán thành công
+            customerService.recalculateMembership(order.getCustomer().getId());
         });
     }
 
