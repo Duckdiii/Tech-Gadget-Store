@@ -32,6 +32,9 @@ public class PaymentLog extends BaseEntity {
     @Column(name = "status", nullable = false, length = 40)
     private PaymentLogStatus status;
 
+    @Column(name = "transaction_id", length = 255)
+    private String transactionId;
+
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 

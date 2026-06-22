@@ -20,7 +20,7 @@ public class PaymentLogRequestDto {
 
     @NotBlank(message = "orderId must not be blank")
     private String orderId;
-    private String transactionCode;
+    private String transactionId;
     @NotNull(message = "amount must not be null")
     @DecimalMin(value = "0.00", message = "amount must not be negative")
     private BigDecimal amount;

@@ -18,7 +18,7 @@ public class PaymentLogResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String orderId;
-    private String transactionCode;
+    private String transactionId;
     private BigDecimal amount;
     private PaymentLogStatus status;
     private String failureReason;
