@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.controller;
 
 import com.project.tech_gadget_store.dto.request.ProductFilterRequestDto;
 import com.project.tech_gadget_store.dto.response.FlashSaleProductResponseDto;
+import com.project.tech_gadget_store.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductPageResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.service.ProductService;
@@ -27,7 +28,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> getById(@PathVariable String id) {
+    public ResponseEntity<ProductDetailResponseDto> getById(@PathVariable String id) {
         return ResponseEntity.ok(productService.viewDetailProduct(id));
     }
 

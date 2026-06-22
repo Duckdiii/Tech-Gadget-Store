@@ -1,7 +1,9 @@
 package com.project.tech_gadget_store.mapper;
 
 import com.project.tech_gadget_store.dto.response.FlashSaleProductResponseDto;
+import com.project.tech_gadget_store.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductResponseDto;
+import com.project.tech_gadget_store.dto.response.ProductVariantResponseDto;
 import com.project.tech_gadget_store.entity.Product;
 import com.project.tech_gadget_store.entity.ProductImage;
 import com.project.tech_gadget_store.entity.ProductVariant;
@@ -38,6 +40,45 @@ public class ProductMapper {
                                 .storageGb(first != null ? first.getStorageGb() : null)
                                 .color(first != null ? first.getColor() : null)
                                 .hasVariants(!variants.isEmpty())
+                                .build();
+        }
+
+        public ProductDetailResponseDto toProductDetailResponseDto(Product product) {
+                List<String> imageUrls = product.getImages().stream()
+                                .map(ProductImage::getImageUrl)
+                                .toList();
+
+                List<ProductVariantResponseDto> variants = product.getVariants().stream()
+                                .map(v -> ProductVariantResponseDto.builder()
+                                                .id(v.getId())
+                                                .createdAt(v.getCreatedAt())
+                                                .updatedAt(v.getUpdatedAt())
+                                                .productId(product.getId())
+                                                .ramGb(v.getRamGb())
+                                                .storageGb(v.getStorageGb())
+                                                .color(v.getColor())
+                                                .price(v.getPrice())
+                                                .build())
+                                .toList();
+
+                return ProductDetailResponseDto.builder()
+                                .id(product.getId())
+                                .name(product.getName())
+                                .description(product.getDescription())
+                                .brandName(product.getBrand().getName())
+                                .brandLogoUrl(product.getBrand().getLogoUrl())
+                                .categoryName(product.getCategory().getName())
+                                .imageUrls(imageUrls)
+                                .variants(variants)
+                                .screenSize(product.getScreenSize())
+                                .screenResolution(product.getScreenResolution())
+                                .rearCamera(product.getRearCamera())
+                                .frontCamera(product.getFrontCamera())
+                                .chipset(product.getChipset())
+                                .nfcSupported(product.getNfcSupported())
+                                .batteryCapacity(product.getBatteryCapacity())
+                                .simType(product.getSimType())
+                                .operatingSystem(product.getOperatingSystem())
                                 .build();
         }
 

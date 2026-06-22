@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.service;
 
 import com.project.tech_gadget_store.dto.request.ProductFilterRequestDto;
 import com.project.tech_gadget_store.dto.response.FlashSaleProductResponseDto;
+import com.project.tech_gadget_store.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductPageResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.entity.Product;
@@ -42,9 +43,9 @@ public class ProductService {
                 .toList();
     }
 
-    public ProductResponseDto viewDetailProduct(String id) {
+    public ProductDetailResponseDto viewDetailProduct(String id) {
         return productRepository.findById(id)
-                .map(productMapper::toProductResponseDto)
+                .map(productMapper::toProductDetailResponseDto)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
     }
 
