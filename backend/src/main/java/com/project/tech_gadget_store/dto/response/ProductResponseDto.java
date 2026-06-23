@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Getter
-@Builder
+@Builder // lombok
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductResponseDto {
@@ -16,6 +16,7 @@ public class ProductResponseDto {
     private String id;
     private String name;
     private String brandName;
+    private String categoryName;
     private BigDecimal minPrice;
     private String imageUrl;
     private Integer ramGb;

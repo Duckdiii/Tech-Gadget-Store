@@ -34,6 +34,7 @@ public class ProductMapper {
                                 .id(product.getId())
                                 .name(product.getName())
                                 .brandName(product.getBrand().getName())
+                                .categoryName(product.getCategory().getName())
                                 .minPrice(minPrice)
                                 .imageUrl(imageUrl)
                                 .ramGb(first != null ? first.getRamGb() : null)

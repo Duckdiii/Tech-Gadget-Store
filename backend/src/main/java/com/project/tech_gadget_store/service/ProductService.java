@@ -97,6 +97,10 @@ public class ProductService {
                 predicates.add(root.get("brand").get("name").in(f.getBrandNames()));
             }
 
+            if (hasItems(f.getCategoryNames())) {
+                predicates.add(root.get("category").get("name").in(f.getCategoryNames()));
+            }
+
             if (f.getMinPrice() != null || f.getMaxPrice() != null) {
                 predicates.add(variantPriceInRange(root, query, cb, f.getMinPrice(), f.getMaxPrice()));
             }
@@ -146,6 +150,10 @@ public class ProductService {
                         "%" + f.getSimType().trim().toLowerCase() + "%"));
             }
 
+            if (Boolean.TRUE.equals(f.getOnlyAvailable())) {
+                predicates.add(hasAvailableVariant(root, query, cb));
+            }
+
             if (Boolean.TRUE.equals(f.getOnPromotion())) {
                 predicates.add(hasActivePromotion(root, query, cb));
             }
@@ -187,6 +195,15 @@ public class ProductService {
                 .map(c -> (Predicate) cb.like(cb.lower(v.get("color")), "%" + c.trim().toLowerCase() + "%"))
                 .collect(Collectors.toList());
         sq.where(cb.equal(v.get("product"), root), cb.or(colorPredicates.toArray(new Predicate[0])));
+        return cb.exists(sq);
+    }
+
+    private Predicate hasAvailableVariant(Root<Product> root, CriteriaQuery<?> query,
+            CriteriaBuilder cb) {
+        Subquery<String> sq = query.subquery(String.class);
+        Root<ProductVariant> v = sq.from(ProductVariant.class);
+        sq.select(v.get("id"));
+        sq.where(cb.equal(v.get("product"), root));
         return cb.exists(sq);
     }
 

@@ -1,5 +1,6 @@
 package com.project.tech_gadget_store.dto.request;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -20,12 +21,18 @@ public class ProductFilterRequestDto {
 
     private String keyword;
     private List<String> brandNames;
+    private List<String> categoryNames;
 
     @DecimalMin(value = "0.0", message = "minPrice must not be negative")
     private BigDecimal minPrice;
 
     @DecimalMin(value = "0.0", message = "maxPrice must not be negative")
     private BigDecimal maxPrice;
+
+    @AssertTrue(message = "minPrice must not be greater than maxPrice")
+    private boolean isPriceRangeValid() {
+        return minPrice == null || maxPrice == null || minPrice.compareTo(maxPrice) <= 0;
+    }
 
     private List<Integer> ramGb;
     private List<Integer> storageGb;
