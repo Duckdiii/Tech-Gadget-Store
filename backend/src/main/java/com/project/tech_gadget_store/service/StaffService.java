@@ -4,12 +4,16 @@ import com.project.tech_gadget_store.dto.request.StaffRequestDto;
 import com.project.tech_gadget_store.dto.response.StaffResponseDto;
 import com.project.tech_gadget_store.entity.Account;
 import com.project.tech_gadget_store.entity.Staff;
+import com.project.tech_gadget_store.entity.enums.AuditAction;
 import com.project.tech_gadget_store.exception.DuplicateResourceException;
+import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.repository.AccountRepository;
 import com.project.tech_gadget_store.repository.StaffRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class StaffService {
 
@@ -48,5 +52,22 @@ public class StaffService {
                 .email(account.getEmail())
                 .accountId(account.getId())
                 .build();
+    }
+
+    @Transactional
+    public void deleteStaff(String staffId) {
+        Staff staff = staffRepository.findById(staffId)
+                .orElseThrow(() -> new ResourceNotFoundException("Staff not found"));
+
+        Account account = staff.getAccount();
+        if (account == null) {
+            throw new ResourceNotFoundException("Account does not exist for this staff");
+        }
+
+        // Delete Account use case (included)
+        accountService.deleteStaffAccount(account);
+
+        log.info("Action: {} | staffId: {} | staffCode: {}", AuditAction.DELETE_STAFF, staffId, staff.getStaffCode());
+        staffRepository.delete(staff);
     }
 }

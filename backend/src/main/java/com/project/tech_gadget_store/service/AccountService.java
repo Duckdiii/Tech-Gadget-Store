@@ -5,23 +5,32 @@ import com.project.tech_gadget_store.dto.response.LoginLogResponseDto;
 import com.project.tech_gadget_store.entity.Account;
 import com.project.tech_gadget_store.entity.Staff;
 import com.project.tech_gadget_store.entity.enums.AccountStatus;
+import com.project.tech_gadget_store.entity.enums.AuditAction;
 import com.project.tech_gadget_store.entity.enums.LoginStatus;
 import com.project.tech_gadget_store.exception.DuplicateResourceException;
+import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.repository.AccountRepository;
+import com.project.tech_gadget_store.repository.LoginLogRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final LoginLogRepository loginLogRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AccountService(AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
+    public AccountService(AccountRepository accountRepository,
+            LoginLogRepository loginLogRepository,
+            PasswordEncoder passwordEncoder) {
         this.accountRepository = accountRepository;
+        this.loginLogRepository = loginLogRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -70,5 +79,18 @@ public class AccountService {
                 staff,
                 AccountStatus.ACTIVE);
         return accountRepository.save(account);
+    }
+
+    @Transactional
+    public void deleteStaffAccount(Account account) {
+        if (account == null) {
+            throw new ResourceNotFoundException("Account does not exist");
+        }
+        if (!(account.getUser() instanceof Staff)) {
+            throw new IllegalStateException("Account deletion is not allowed for this account type");
+        }
+        loginLogRepository.deleteByAccountId(account.getId());
+        log.info("Action: {} | accountId: {} | email: {}", AuditAction.DELETE_ACCOUNT, account.getId(), account.getEmail());
+        accountRepository.delete(account);
     }
 }
