@@ -1,9 +1,11 @@
 package com.project.tech_gadget_store.mapper;
 
+import com.project.tech_gadget_store.dto.response.BundleServiceResponseDto;
 import com.project.tech_gadget_store.dto.response.FlashSaleProductResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductVariantResponseDto;
+import com.project.tech_gadget_store.entity.BundleService;
 import com.project.tech_gadget_store.entity.Product;
 import com.project.tech_gadget_store.entity.ProductImage;
 import com.project.tech_gadget_store.entity.ProductVariant;
@@ -44,12 +46,20 @@ public class ProductMapper {
                                 .build();
         }
 
-        public ProductDetailResponseDto toProductDetailResponseDto(Product product) {
+        public ProductDetailResponseDto toProductDetailResponseDto(Product product, List<BundleService> bundleServices) {
                 List<String> imageUrls = product.getImages().stream()
                                 .map(ProductImage::getImageUrl)
                                 .toList();
 
-                List<ProductVariantResponseDto> variants = product.getVariants().stream()
+                List<ProductVariant> productVariants = product.getVariants();
+
+                BigDecimal minPrice = productVariants.stream()
+                                .map(ProductVariant::getPrice)
+                                .filter(Objects::nonNull)
+                                .min(BigDecimal::compareTo)
+                                .orElse(null);
+
+                List<ProductVariantResponseDto> variantDtos = productVariants.stream()
                                 .map(v -> ProductVariantResponseDto.builder()
                                                 .id(v.getId())
                                                 .createdAt(v.getCreatedAt())
@@ -62,6 +72,20 @@ public class ProductMapper {
                                                 .build())
                                 .toList();
 
+                List<BundleServiceResponseDto> bundleServiceDtos = bundleServices.stream()
+                                .map(bs -> BundleServiceResponseDto.builder()
+                                                .id(bs.getId())
+                                                .createdAt(bs.getCreatedAt())
+                                                .updatedAt(bs.getUpdatedAt())
+                                                .name(bs.getName())
+                                                .type(bs.getType())
+                                                .description(bs.getDescription())
+                                                .price(bs.getPrice())
+                                                .durationMonths(bs.getDurationMonths())
+                                                .active(bs.getActive())
+                                                .build())
+                                .toList();
+
                 return ProductDetailResponseDto.builder()
                                 .id(product.getId())
                                 .name(product.getName())
@@ -69,8 +93,11 @@ public class ProductMapper {
                                 .brandName(product.getBrand().getName())
                                 .brandLogoUrl(product.getBrand().getLogoUrl())
                                 .categoryName(product.getCategory().getName())
+                                .minPrice(minPrice)
+                                .hasVariants(!productVariants.isEmpty())
                                 .imageUrls(imageUrls)
-                                .variants(variants)
+                                .variants(variantDtos)
+                                .bundleServices(bundleServiceDtos)
                                 .screenSize(product.getScreenSize())
                                 .screenResolution(product.getScreenResolution())
                                 .rearCamera(product.getRearCamera())

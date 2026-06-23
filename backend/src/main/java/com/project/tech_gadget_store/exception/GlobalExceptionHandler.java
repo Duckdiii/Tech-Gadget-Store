@@ -7,7 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +32,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "Invalid filter input. Please check your search criteria", errors);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
@@ -44,22 +49,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex) {
-        if (ex.getMessage() != null && ex.getMessage().startsWith("Product not found")) {
-            return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
-        }
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                "Unable to load products. Please try again later", null);
+                "Unable to load product details. Please try again later", null);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                "Unable to load products. Please try again later", null);
+                "Unable to load product details. Please try again later", null);
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message, List<String> errors) {
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("timestamp", Instant.now().toString());
         body.put("status", status.value());
         body.put("message", message);
         if (errors != null && !errors.isEmpty()) {

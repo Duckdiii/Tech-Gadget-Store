@@ -5,10 +5,13 @@ import com.project.tech_gadget_store.dto.response.FlashSaleProductResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductPageResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductResponseDto;
+import com.project.tech_gadget_store.entity.BundleService;
 import com.project.tech_gadget_store.entity.Product;
 import com.project.tech_gadget_store.entity.ProductVariant;
 import com.project.tech_gadget_store.entity.Promotion;
+import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.mapper.ProductMapper;
+import com.project.tech_gadget_store.repository.BundleServiceRepository;
 import com.project.tech_gadget_store.repository.ProductRepository;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.Page;
@@ -30,10 +33,14 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final BundleServiceRepository bundleServiceRepository;
     private final ProductMapper productMapper;
 
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper) {
+    public ProductService(ProductRepository productRepository,
+            BundleServiceRepository bundleServiceRepository,
+            ProductMapper productMapper) {
         this.productRepository = productRepository;
+        this.bundleServiceRepository = bundleServiceRepository;
         this.productMapper = productMapper;
     }
 
@@ -44,9 +51,10 @@ public class ProductService {
     }
 
     public ProductDetailResponseDto viewDetailProduct(String id) {
-        return productRepository.findById(id)
-                .map(productMapper::toProductDetailResponseDto)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("This product is no longer available"));
+        List<BundleService> activeBundleServices = bundleServiceRepository.findByActiveTrue();
+        return productMapper.toProductDetailResponseDto(product, activeBundleServices);
     }
 
     public List<FlashSaleProductResponseDto> findTodayFlashSaleProducts() {

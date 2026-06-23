@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -21,8 +22,12 @@ public class ProductDetailResponseDto {
     private String brandLogoUrl;
     private String categoryName;
 
+    private BigDecimal minPrice;
+    private boolean hasVariants;
+
     private List<String> imageUrls;
     private List<ProductVariantResponseDto> variants;
+    private List<BundleServiceResponseDto> bundleServices;
 
     private Double screenSize;
     private String screenResolution;
