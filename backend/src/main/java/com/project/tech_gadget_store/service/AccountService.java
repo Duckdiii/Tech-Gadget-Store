@@ -1,25 +1,28 @@
 package com.project.tech_gadget_store.service;
 
+import com.project.tech_gadget_store.dto.response.AccountResponseDto;
+import com.project.tech_gadget_store.dto.response.LoginLogResponseDto;
+import com.project.tech_gadget_store.entity.Account;
+import com.project.tech_gadget_store.entity.Staff;
 import com.project.tech_gadget_store.entity.enums.AccountStatus;
+import com.project.tech_gadget_store.entity.enums.LoginStatus;
+import com.project.tech_gadget_store.exception.DuplicateResourceException;
+import com.project.tech_gadget_store.repository.AccountRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import org.springframework.stereotype.Service;
-
-import com.project.tech_gadget_store.dto.response.LoginLogResponseDto;
-import com.project.tech_gadget_store.dto.response.AccountResponseDto;
-import com.project.tech_gadget_store.entity.Account;
-import com.project.tech_gadget_store.entity.enums.LoginStatus;
-import com.project.tech_gadget_store.repository.AccountRepository;
-
 @Service
-
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
         this.accountRepository = accountRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public LoginLogResponseDto viewLoginInfo(String email) {
@@ -56,4 +59,16 @@ public class AccountService {
                 .build();
     }
 
+    @Transactional
+    public Account createStaffAccount(String email, String rawPassword, Staff staff) {
+        if (accountRepository.existsByEmail(email)) {
+            throw new DuplicateResourceException("Email already exists");
+        }
+        Account account = new Account(
+                email,
+                passwordEncoder.encode(rawPassword),
+                staff,
+                AccountStatus.ACTIVE);
+        return accountRepository.save(account);
+    }
 }
