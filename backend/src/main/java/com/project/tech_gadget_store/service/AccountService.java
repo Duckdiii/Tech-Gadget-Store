@@ -90,7 +90,8 @@ public class AccountService {
             throw new IllegalStateException("Account deletion is not allowed for this account type");
         }
         loginLogRepository.deleteByAccountId(account.getId());
-        log.info("Action: {} | accountId: {} | email: {}", AuditAction.DELETE_ACCOUNT, account.getId(), account.getEmail());
+        log.info("Action: {} | accountId: {} | email: {}", AuditAction.DELETE_ACCOUNT, account.getId(),
+                account.getEmail());
         accountRepository.delete(account);
     }
 }

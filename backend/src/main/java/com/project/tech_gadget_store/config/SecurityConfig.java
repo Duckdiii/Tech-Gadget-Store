@@ -65,6 +65,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/payment/momo/ipn").permitAll()
                         .requestMatchers("/api/manager/**").hasRole("MANAGER")
                         .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/import-logs/**").hasAnyRole("STAFF", "MANAGER")
+                        .requestMatchers("/api/export-logs/**").hasAnyRole("STAFF", "MANAGER")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

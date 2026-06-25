@@ -12,4 +12,6 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
 
     @Query("SELECT DISTINCT p FROM Product p JOIN p.promotions promo WHERE promo.active = true AND promo.startAt <= :now AND promo.endAt >= :now")
     List<Product> findTodayFlashSaleProducts(LocalDateTime now);
+
+    boolean existsByNameIgnoreCase(String name);
 }
