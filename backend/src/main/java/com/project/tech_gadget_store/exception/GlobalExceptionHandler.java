@@ -57,6 +57,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(PaymentLogLoadException.class)
+    public ResponseEntity<Map<String, Object>> handlePaymentLogLoad(PaymentLogLoadException ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
