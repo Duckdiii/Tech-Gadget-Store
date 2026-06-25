@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentLog extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "order_id", nullable = true)
     private Order order;
 
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)
@@ -41,10 +41,10 @@ public class PaymentLog extends BaseEntity {
     @Column(name = "failure_reason", columnDefinition = "TEXT")
     private String failureReason;
 
+    @Column(name = "checkout_data", columnDefinition = "TEXT")
+    private String checkoutData;
+
     public PaymentLog(Order order, BigDecimal amount, PaymentMethod paymentMethod, PaymentLogStatus status) {
-        if (order == null) {
-            throw new IllegalArgumentException("order must not be null");
-        }
         if (amount == null) {
             throw new IllegalArgumentException("amount must not be null");
         }

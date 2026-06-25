@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,8 +18,12 @@ public class InvoiceResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String orderId;
+    private BigDecimal originalAmount;
     private BigDecimal vatAmount;
     private BigDecimal discountAmount;
     private BigDecimal finalAmount;
     private LocalDateTime issuedAt;
+    private String paymentMethod;
+    private List<InvoiceItemResponseDto> items;
 }
+

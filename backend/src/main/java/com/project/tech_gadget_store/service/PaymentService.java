@@ -1,61 +1,97 @@
 package com.project.tech_gadget_store.service;
 
+import tools.jackson.databind.ObjectMapper;
 import com.project.tech_gadget_store.config.MomoProperties;
 import com.project.tech_gadget_store.config.VNPayProperties;
-import com.project.tech_gadget_store.entity.MomoPaymentMethod;
-import com.project.tech_gadget_store.entity.Order;
-import com.project.tech_gadget_store.entity.PaymentLog;
-import com.project.tech_gadget_store.entity.PaymentMethod;
-import com.project.tech_gadget_store.entity.VNPayPaymentMethod;
+import com.project.tech_gadget_store.entity.*;
+import com.project.tech_gadget_store.entity.enums.OrderStatus;
 import com.project.tech_gadget_store.entity.enums.PaymentLogStatus;
-import com.project.tech_gadget_store.repository.MomoPaymentMethodRepository;
-import com.project.tech_gadget_store.repository.OrderRepository;
-import com.project.tech_gadget_store.repository.PaymentLogRepository;
-import com.project.tech_gadget_store.repository.VNPayPaymentMethodRepository;
+import com.project.tech_gadget_store.repository.*;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class PaymentService {
 
     private final PaymentLogRepository paymentLogRepository;
     private final MomoPaymentMethodRepository momoMethodRepository;
     private final VNPayPaymentMethodRepository vnpayMethodRepository;
+    private final CODPaymentMethodRepository codMethodRepository;
     private final OrderRepository orderRepository;
+    private final CustomerRepository customerRepository;
+    private final AddressRepository addressRepository;
+    private final ProductVariantRepository productVariantRepository;
+    private final BundleServiceRepository bundleServiceRepository;
     private final MomoProperties momoProps;
     private final VNPayProperties vnpayProps;
     private final CustomerService customerService;
+    private final ObjectMapper objectMapper;
+    private final JdbcTemplate jdbcTemplate;
 
     public PaymentService(PaymentLogRepository paymentLogRepository,
                           MomoPaymentMethodRepository momoMethodRepository,
                           VNPayPaymentMethodRepository vnpayMethodRepository,
+                          CODPaymentMethodRepository codMethodRepository,
                           OrderRepository orderRepository,
+                          CustomerRepository customerRepository,
+                          AddressRepository addressRepository,
+                          ProductVariantRepository productVariantRepository,
+                          BundleServiceRepository bundleServiceRepository,
                           MomoProperties momoProps,
                           VNPayProperties vnpayProps,
-                          @Lazy CustomerService customerService) {
+                          @Lazy CustomerService customerService,
+                          ObjectMapper objectMapper,
+                          JdbcTemplate jdbcTemplate) {
         this.paymentLogRepository = paymentLogRepository;
         this.momoMethodRepository = momoMethodRepository;
         this.vnpayMethodRepository = vnpayMethodRepository;
+        this.codMethodRepository = codMethodRepository;
         this.orderRepository = orderRepository;
+        this.customerRepository = customerRepository;
+        this.addressRepository = addressRepository;
+        this.productVariantRepository = productVariantRepository;
+        this.bundleServiceRepository = bundleServiceRepository;
         this.momoProps = momoProps;
         this.vnpayProps = vnpayProps;
         this.customerService = customerService;
+        this.objectMapper = objectMapper;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
-    // Đảm bảo DB luôn có bản ghi PaymentMethod cho MoMo và VNPay dựa trên config yml
     @PostConstruct
+    void init() {
+        // Drop NOT NULL constraint on order_id in payment_logs table
+        try {
+            jdbcTemplate.execute("ALTER TABLE payment_logs ALTER COLUMN order_id DROP NOT NULL;");
+            log.info("Successfully dropped NOT NULL constraint on payment_logs.order_id");
+        } catch (Exception e) {
+            log.warn("Could not drop NOT NULL constraint on payment_logs.order_id (it may already be nullable): {}", e.getMessage());
+        }
+
+        // Initialize payment methods
+        initPaymentMethods();
+    }
+
     void initPaymentMethods() {
         if (momoMethodRepository.findFirstByOrderByCreatedAtAsc().isEmpty()) {
             MomoPaymentMethod momo = new MomoPaymentMethod(
                     "Ví MoMo", "Thanh toán qua ví điện tử MoMo",
                     momoProps.getPartnerCode(),
-                    momoProps.getAccessKey(),   // merchantId = accessKey
+                    momoProps.getAccessKey(),
                     momoProps.getEndpoint(),
                     momoProps.getRedirectUrl(),
                     momoProps.getIpnUrl()
@@ -72,6 +108,15 @@ public class PaymentService {
                     vnpayProps.getHashSecret()
             );
             vnpayMethodRepository.save(vnpay);
+        }
+
+        if (codMethodRepository.findFirstByOrderByCreatedAtAsc().isEmpty()) {
+            CODPaymentMethod cod = new CODPaymentMethod(
+                    "COD", "Thanh toán khi nhận hàng (COD)",
+                    new BigDecimal("50000000.00"), // 50 million limit
+                    BigDecimal.ZERO // free service fee
+            );
+            codMethodRepository.save(cod);
         }
     }
 
@@ -95,25 +140,176 @@ public class PaymentService {
     }
 
     @Transactional
-    public void markSuccess(String orderId, String transactionId) {
-        paymentLogRepository.findFirstByOrderIdAndStatus(orderId, PaymentLogStatus.PENDING)
-                .ifPresent(log -> {
-                    log.setTransactionId(transactionId);
-                    log.markSuccess();
-                });
-
-        orderRepository.findById(orderId).ifPresent(order -> {
-            if (!order.isPaid()) {
-                order.markPaid();
-            }
-            // Tính lại hạng membership ngay sau khi thanh toán thành công
-            customerService.recalculateMembership(order.getCustomer().getId());
-        });
+    public PaymentLog createPendingOnlineLog(BigDecimal amount, PaymentMethod method, String checkoutData) {
+        PaymentLog log = new PaymentLog(null, amount, method, PaymentLogStatus.PENDING);
+        log.setCheckoutData(checkoutData);
+        return paymentLogRepository.save(log);
     }
 
     @Transactional
-    public void markFailed(String orderId, String reason) {
-        paymentLogRepository.findFirstByOrderIdAndStatus(orderId, PaymentLogStatus.PENDING)
-                .ifPresent(log -> log.markFailed(reason));
+    public void markSuccess(String logId, String transactionId) {
+        // Try looking up by log ID (since logId is passed as the txn ref/orderId)
+        PaymentLog logRecord = paymentLogRepository.findById(logId)
+                .or(() -> paymentLogRepository.findFirstByOrderIdAndStatus(logId, PaymentLogStatus.PENDING))
+                .orElse(null);
+
+        if (logRecord == null) {
+            log.warn("PaymentLog not found with ID or OrderID: {}", logId);
+            return;
+        }
+
+        if (logRecord.getStatus() != PaymentLogStatus.PENDING) {
+            return; // Already processed
+        }
+
+        logRecord.setTransactionId(transactionId);
+        logRecord.markSuccess();
+
+        // If order hasn't been created yet, reconstruct it now
+        if (logRecord.getOrder() == null && logRecord.getCheckoutData() != null) {
+            Order order = reconstructOrderAndClearCart(logRecord);
+            logRecord.setOrder(order);
+        }
+
+        paymentLogRepository.save(logRecord);
+
+        if (logRecord.getOrder() != null) {
+            Order order = logRecord.getOrder();
+            if (!order.isPaid()) {
+                order.markPaid();
+                orderRepository.save(order);
+            }
+            customerService.recalculateMembership(order.getCustomer().getId());
+        }
+    }
+
+    @Transactional
+    public void markFailed(String logId, String reason) {
+        PaymentLog logRecord = paymentLogRepository.findById(logId)
+                .or(() -> paymentLogRepository.findFirstByOrderIdAndStatus(logId, PaymentLogStatus.PENDING))
+                .orElse(null);
+
+        if (logRecord == null) {
+            log.warn("PaymentLog not found with ID or OrderID: {}", logId);
+            return;
+        }
+
+        if (logRecord.getStatus() != PaymentLogStatus.PENDING) {
+            return; // Already processed
+        }
+
+        if (reason != null && (reason.contains("resultCode=49") || reason.contains("responseCode=24") || reason.toLowerCase().contains("cancel"))) {
+            logRecord.setStatus(PaymentLogStatus.CANCELLED);
+            logRecord.setFailureReason(reason);
+        } else {
+            logRecord.markFailed(reason);
+        }
+        paymentLogRepository.save(logRecord);
+    }
+
+    private Order reconstructOrderAndClearCart(PaymentLog paymentLog) {
+        CheckoutDataJson data;
+        try {
+            data = objectMapper.readValue(paymentLog.getCheckoutData(), CheckoutDataJson.class);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi giải mã checkout data: " + e.getMessage(), e);
+        }
+
+        Customer customer = customerRepository.findById(data.customerId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng: " + data.customerId));
+        Address address = addressRepository.findById(data.addressId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ: " + data.addressId));
+
+        Order order = new Order(customer, address, paymentLog.getPaymentMethod());
+
+        boolean inventoryUpdateFailed = false;
+        try {
+            for (CheckoutDataJson.CheckoutItemJson itemJson : data.items) {
+                ProductVariant variant = productVariantRepository.findById(itemJson.productVariantId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phiên bản sản phẩm: " + itemJson.productVariantId));
+                
+                List<ProductVariant> availableUnits = productVariantRepository.findAvailablePhysicalUnits(
+                        variant.getProduct().getId(),
+                        variant.getRamGb(),
+                        variant.getStorageGb(),
+                        variant.getColor()
+                );
+                if (availableUnits.size() < itemJson.quantity) {
+                    throw new IllegalStateException("Sản phẩm không đủ số lượng trong kho");
+                }
+                for (int i = 0; i < itemJson.quantity; i++) {
+                    ProductVariant unit = availableUnits.get(i);
+                    OrderItem orderItem = new OrderItem(order, unit, 1, variant.getPrice());
+                    if (itemJson.bundleServiceIds != null) {
+                        for (String serviceId : itemJson.bundleServiceIds) {
+                            BundleService service = bundleServiceRepository.findById(serviceId)
+                                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy dịch vụ: " + serviceId));
+                            orderItem.addBundleService(service);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            inventoryUpdateFailed = true;
+        }
+
+        if (inventoryUpdateFailed) {
+            try {
+                order.getItems().clear();
+                orderRepository.save(order);
+            } catch (Exception ex) {
+                // Ignore
+            }
+            throw new com.project.tech_gadget_store.exception.InventoryUpdateException(
+                    "Unable to update inventory information. Please contact support or try again later.");
+        }
+
+        Order savedOrder;
+        try {
+            order.confirm();
+            savedOrder = orderRepository.save(order);
+
+            // Clear items from the customer's cart
+            Cart cart = customer.getCart();
+            if (cart != null && cart.getItems() != null) {
+                List<CartItem> itemsToRemove = new ArrayList<>();
+                for (CheckoutDataJson.CheckoutItemJson itemJson : data.items) {
+                    for (CartItem cartItem : cart.getItems()) {
+                        if (cartItem.getProductVariant().getId().equals(itemJson.productVariantId)) {
+                            List<String> cartBundleIds = cartItem.getBundleServices().stream()
+                                    .map(BaseEntity::getId)
+                                    .collect(Collectors.toList());
+                            List<String> targetBundleIds = itemJson.bundleServiceIds != null ? itemJson.bundleServiceIds : Collections.emptyList();
+                            
+                            if (cartBundleIds.size() == targetBundleIds.size() && cartBundleIds.containsAll(targetBundleIds)) {
+                                itemsToRemove.add(cartItem);
+                                break;
+                            }
+                        }
+                    }
+                }
+                for (CartItem itemToRemove : itemsToRemove) {
+                    cart.removeItem(itemToRemove);
+                }
+                customerRepository.save(customer);
+            }
+        } catch (Exception e) {
+            throw new com.project.tech_gadget_store.exception.OrderSaveException(
+                    "Unable to complete your order. Please try again later.", e);
+        }
+
+        return savedOrder;
+    }
+
+    public static class CheckoutDataJson {
+        public String customerId;
+        public String addressId;
+        public List<CheckoutItemJson> items;
+
+        public static class CheckoutItemJson {
+            public String productVariantId;
+            public Integer quantity;
+            public List<String> bundleServiceIds;
+        }
     }
 }

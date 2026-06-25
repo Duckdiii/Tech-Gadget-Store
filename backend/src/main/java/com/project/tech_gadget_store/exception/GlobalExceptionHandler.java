@@ -62,6 +62,21 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(CartUpdateException.class)
+    public ResponseEntity<Map<String, Object>> handleCartUpdateException(CartUpdateException ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(OrderSaveException.class)
+    public ResponseEntity<Map<String, Object>> handleOrderSaveException(OrderSaveException ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(InventoryUpdateException.class)
+    public ResponseEntity<Map<String, Object>> handleInventoryUpdateException(InventoryUpdateException ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(RevenueReportLoadException.class)
     public ResponseEntity<Map<String, Object>> handleRevenueReportLoad(RevenueReportLoadException ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);

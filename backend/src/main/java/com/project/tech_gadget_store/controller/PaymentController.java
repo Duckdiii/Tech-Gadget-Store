@@ -125,7 +125,7 @@ public class PaymentController {
         return ResponseEntity.ok(PaymentVerifyResponseDto.builder()
                 .success(false)
                 .orderId(orderId)
-                .message("Thanh toán thất bại, mã lỗi: " + responseCode)
+                .message("Payment failed. Please try again or choose another payment method.")
                 .build());
     }
 }
