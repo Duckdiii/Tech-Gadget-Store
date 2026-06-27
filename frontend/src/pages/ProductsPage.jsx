@@ -41,35 +41,56 @@ function ProductCard({ product, onNavigate }) {
 
   return (
     <div
-      className="group overflow-hidden flex flex-col transition-shadow duration-200 cursor-pointer"
-      style={{ backgroundColor: 'var(--card)', border: '1px solid var(--cb)', borderRadius: '4px' }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor = '#c8d0e4' }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--cb)' }}
+      className="group overflow-hidden flex flex-col cursor-pointer relative"
+      style={{
+        backgroundColor: 'var(--card)',
+        border: '1.5px solid var(--cb)',
+        borderRadius: '14px',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.08)'
+        e.currentTarget.style.borderColor = '#c8d0e4'
+        e.currentTarget.style.transform = 'translateY(-3px)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)'
+        e.currentTarget.style.borderColor = 'var(--cb)'
+        e.currentTarget.style.transform = 'none'
+      }}
     >
-      {/* Image */}
+      {/* Image Container */}
       <div
         onClick={() => onNavigate('detail')}
         className="relative flex items-center justify-center h-48 overflow-hidden"
         style={{ backgroundColor: 'var(--page)', borderBottom: '1px solid var(--cb)' }}
       >
         {product.tag && (
-          <span className="absolute top-2.5 left-2.5 z-10 text-[10px] font-bold px-2 py-0.5 text-white uppercase tracking-wide" style={{ backgroundColor: 'var(--accent)', borderRadius: '2px' }}>
+          <span
+            className="absolute top-3 left-3 z-10 text-[10px] font-bold px-2.5 py-1 text-white uppercase tracking-wide"
+            style={{ backgroundColor: product.tag === 'Mới' ? '#059669' : 'var(--accent)', borderRadius: '20px' }}
+          >
             {product.tag}
           </span>
         )}
         {product.discount && (
-          <span className="absolute top-2.5 right-2.5 z-10 text-[10px] font-extrabold px-2 py-0.5 text-white" style={{ backgroundColor: 'var(--accent)', borderRadius: '2px' }}>
+          <span
+            className="absolute top-3 right-3 z-10 text-[10px] font-extrabold px-2 py-1 text-white"
+            style={{ backgroundColor: 'var(--accent)', borderRadius: '20px' }}
+          >
             -{product.discount}%
           </span>
         )}
         <button
           onClick={e => { e.stopPropagation(); setWished(w => !w) }}
-          className="absolute bottom-2.5 right-2.5 z-10 w-7 h-7 flex items-center justify-center transition-all duration-150 opacity-0 group-hover:opacity-100"
+          className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
           style={{
-            backgroundColor: wished ? 'rgba(239,68,68,0.1)' : 'var(--card)',
-            border: `1px solid ${wished ? 'rgba(239,68,68,0.4)' : 'var(--cb)'}`,
-            borderRadius: '3px',
+            backgroundColor: wished ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.9)',
+            border: `1px solid ${wished ? 'rgba(239,68,68,0.3)' : 'var(--cb)'}`,
+            borderRadius: '50%',
             color: wished ? '#ef4444' : 'var(--ct3)',
+            backdropFilter: 'blur(4px)',
           }}
         >
           <svg className="w-3.5 h-3.5" fill={wished ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -77,26 +98,34 @@ function ProductCard({ product, onNavigate }) {
           </svg>
         </button>
         {!product.available && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center" style={{ backgroundColor: 'rgba(238,241,249,0.8)' }}>
-            <span className="text-xs font-bold px-3 py-1" style={{ backgroundColor: 'var(--ct2)', color: 'white', borderRadius: '2px' }}>Hết hàng</span>
+          <div className="absolute inset-0 z-10 flex items-center justify-center" style={{ backgroundColor: 'rgba(238,241,249,0.8)', borderRadius: '14px 14px 0 0' }}>
+            <span className="text-xs font-bold px-3 py-1" style={{ backgroundColor: 'var(--ct2)', color: 'white', borderRadius: '20px' }}>Hết hàng</span>
           </div>
         )}
-        <img src={product.image} alt={product.name} className="h-36 w-36 object-contain group-hover:scale-[1.03] transition-transform duration-300" />
+        <img
+          src={product.image}
+          alt={product.name}
+          className="h-36 w-36 object-contain transition-transform duration-300"
+          style={{
+            transform: 'scale(1)',
+            filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.06))',
+          }}
+        />
       </div>
 
       {/* Info */}
-      <div className="flex flex-col flex-1 p-3.5 gap-2">
+      <div className="flex flex-col flex-1 p-4 gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>{product.brand}</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>{product.brand}</span>
           {product.available
-            ? <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--ok)' }}><span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: 'var(--ok)' }} />Còn hàng</span>
-            : <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--ct3)' }}><span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: 'var(--ct3)' }} />Hết hàng</span>
+            ? <span className="flex items-center gap-1.5 text-[10px] font-semibold" style={{ color: 'var(--ok)' }}><span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: 'var(--ok)' }} />Còn hàng</span>
+            : <span className="flex items-center gap-1.5 text-[10px] font-semibold" style={{ color: 'var(--ct3)' }}><span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: 'var(--ct3)' }} />Hết hàng</span>
           }
         </div>
 
         <p
           onClick={() => onNavigate('detail')}
-          className="text-[13px] font-medium leading-snug line-clamp-2 min-h-[2.5rem] transition-colors"
+          className="text-[13px] font-bold leading-snug line-clamp-2 min-h-[2.5rem] transition-colors"
           style={{ color: 'var(--ct1)' }}
           onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
           onMouseLeave={e => e.currentTarget.style.color = 'var(--ct1)'}
@@ -105,53 +134,53 @@ function ProductCard({ product, onNavigate }) {
         </p>
 
         {product.rating != null && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {[...Array(5)].map((_, i) => (
               <svg key={i} className="w-3 h-3" style={{ color: i < Math.floor(product.rating) ? '#F59E0B' : '#e5e7eb' }} fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
             ))}
-            <span className="text-[11px]" style={{ color: 'var(--ct3)' }}>({product.reviews.toLocaleString('vi-VN')})</span>
+            <span className="text-[11px] ml-1" style={{ color: 'var(--ct3)' }}>({product.reviews.toLocaleString('vi-VN')})</span>
           </div>
         )}
 
         {(product.ram || product.storage || product.color) && (
-          <div className="flex flex-wrap gap-1">
-            {product.ram && <span className="text-[10px] font-medium px-1.5 py-0.5" style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', border: '1px solid var(--cb)', borderRadius: '2px' }}>RAM {product.ram}</span>}
-            {product.storage && <span className="text-[10px] font-medium px-1.5 py-0.5" style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', border: '1px solid var(--cb)', borderRadius: '2px' }}>{product.storage}</span>}
-            {product.color && <span className="text-[10px] font-medium px-1.5 py-0.5 truncate max-w-[100px]" style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', border: '1px solid var(--cb)', borderRadius: '2px' }}>{product.color}</span>}
+          <div className="flex flex-wrap gap-1 mt-1">
+            {product.ram && <span className="text-[10px] font-bold px-2 py-0.5" style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', border: '1.5px solid var(--cb)', borderRadius: '6px' }}>RAM {product.ram}</span>}
+            {product.storage && <span className="text-[10px] font-bold px-2 py-0.5" style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', border: '1.5px solid var(--cb)', borderRadius: '6px' }}>{product.storage}</span>}
+            {product.color && <span className="text-[10px] font-bold px-2 py-0.5 truncate max-w-[100px]" style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', border: '1.5px solid var(--cb)', borderRadius: '6px' }}>{product.color}</span>}
           </div>
         )}
 
-        <div className="mt-auto pt-1">
-          <div className="flex items-end gap-2 flex-wrap">
-            <span className="text-[16px] font-extrabold leading-none" style={{ color: 'var(--accent)', fontFamily: 'Syne, sans-serif' }}>{formatPrice(product.price)}</span>
+        <div className="mt-auto pt-2 flex flex-col gap-2">
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <span className="text-[17px] font-extrabold leading-none" style={{ color: 'var(--accent)', fontFamily: 'Syne, sans-serif' }}>{formatPrice(product.price)}</span>
             {product.originalPrice && <span className="text-[12px] leading-none line-through" style={{ color: 'var(--ct3)' }}>{formatPrice(product.originalPrice)}</span>}
           </div>
-          {!!savings && <p className="text-[10px] font-semibold mt-0.5" style={{ color: 'var(--ok)' }}>Tiết kiệm {formatPrice(savings)}</p>}
+          {!!savings && <p className="text-[10px] font-bold" style={{ color: 'var(--ok)' }}>Tiết kiệm {formatPrice(savings)}</p>}
         </div>
 
         {product.available ? (
           <button
             onClick={handleAddToCart}
-            className="mt-1 w-full flex items-center justify-center gap-2 text-[13px] font-semibold py-2 text-white transition-colors"
-            style={{ backgroundColor: adding ? 'var(--ok)' : 'var(--accent)', borderRadius: '3px' }}
+            className="mt-2 w-full flex items-center justify-center gap-2 text-[13px] font-bold py-2.5 text-white transition-all duration-200"
+            style={{ backgroundColor: adding ? 'var(--ok)' : 'var(--accent)', borderRadius: '8px', boxShadow: adding ? 'none' : '0 4px 12px rgba(232,66,10,0.18)' }}
             onMouseEnter={e => { if (!adding) e.currentTarget.style.backgroundColor = 'var(--accent-d)' }}
             onMouseLeave={e => { if (!adding) e.currentTarget.style.backgroundColor = 'var(--accent)' }}
           >
             {adding
-              ? <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>Đã thêm!</>
-              : <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>Thêm vào giỏ</>
+              ? <><svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>Đã thêm!</>
+              : <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>Thêm vào giỏ</>
             }
           </button>
         ) : (
           <button
-            className="mt-1 w-full flex items-center justify-center gap-2 text-[13px] font-medium py-2 transition-colors"
-            style={{ border: '1px solid var(--cb)', color: 'var(--ct3)', borderRadius: '3px' }}
+            className="mt-2 w-full flex items-center justify-center gap-2 text-[13px] font-bold py-2.5 transition-colors"
+            style={{ border: '1.5px solid var(--cb)', color: 'var(--ct3)', borderRadius: '8px' }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#c8d0e4'; e.currentTarget.style.color = 'var(--ct2)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--cb)'; e.currentTarget.style.color = 'var(--ct3)' }}
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
             Nhận thông báo
@@ -161,6 +190,8 @@ function ProductCard({ product, onNavigate }) {
     </div>
   )
 }
+
+
 
 /* ── Filter panel ── */
 
@@ -253,8 +284,13 @@ function FilterPanel() {
 
   return (
     <aside
-      className="w-56 shrink-0 p-4 h-fit sticky top-4"
-      style={{ backgroundColor: 'var(--card)', border: '1px solid var(--cb)', borderRadius: '4px', borderTop: '3px solid var(--accent)' }}
+      className="w-56 shrink-0 p-5 h-fit sticky top-4"
+      style={{
+        backgroundColor: 'var(--card)',
+        border: '1.5px solid var(--cb)',
+        borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
+      }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3 pb-3" style={{ borderBottom: '1px solid var(--cb)' }}>
@@ -344,9 +380,9 @@ function FilterPanel() {
           <div className="flex flex-wrap gap-2">
             {COLOR_OPTIONS.map(({ value, label, hex }) => (
               <button key={value} onClick={() => toggle(setSelectedColors)(value)} title={label}
-                className="w-5 h-5 transition-all"
+                className="w-6 h-6 transition-all cursor-pointer"
                 style={{
-                  backgroundColor: hex, borderRadius: '2px',
+                  backgroundColor: hex, borderRadius: '50%',
                   outline: selectedColors.includes(value) ? '2px solid var(--accent)' : '1px solid var(--cb)',
                   outlineOffset: selectedColors.includes(value) ? '2px' : '0',
                   transform: selectedColors.includes(value) ? 'scale(1.15)' : 'scale(1)',
@@ -383,23 +419,23 @@ function FilterPanel() {
 function Pagination({ current, total }) {
   const pages = Array.from({ length: Math.min(total, 3) }, (_, i) => i + 1)
   return (
-    <div className="flex items-center justify-center gap-1 mt-8">
-      <button className="w-8 h-8 flex items-center justify-center transition-colors" style={{ border: '1px solid var(--cb)', borderRadius: '3px', color: 'var(--ct3)', backgroundColor: 'var(--card)' }}
+    <div className="flex items-center justify-center gap-1.5 mt-10">
+      <button className="w-9 h-9 flex items-center justify-center transition-colors cursor-pointer" style={{ border: '1px solid var(--cb)', borderRadius: '8px', color: 'var(--ct3)', backgroundColor: 'var(--card)' }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = '#c8d0e4'; e.currentTarget.style.color = 'var(--ct1)' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--cb)'; e.currentTarget.style.color = 'var(--ct3)' }}
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
       </button>
       {pages.map(p => (
-        <button key={p} className="w-8 h-8 flex items-center justify-center text-[13px] font-semibold transition-colors"
+        <button key={p} className="w-9 h-9 flex items-center justify-center text-[13px] font-bold transition-colors cursor-pointer"
           style={p === current
-            ? { backgroundColor: 'var(--accent)', color: 'white', borderRadius: '3px' }
-            : { border: '1px solid var(--cb)', color: 'var(--ct2)', borderRadius: '3px', backgroundColor: 'var(--card)' }
+            ? { backgroundColor: 'var(--accent)', color: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }
+            : { border: '1px solid var(--cb)', color: 'var(--ct2)', borderRadius: '8px', backgroundColor: 'var(--card)' }
           }
         >{p}</button>
       ))}
-      {total > 3 && <span className="w-8 h-8 flex items-center justify-center text-[13px]" style={{ color: 'var(--ct3)' }}>…</span>}
-      <button className="w-8 h-8 flex items-center justify-center transition-colors" style={{ border: '1px solid var(--cb)', borderRadius: '3px', color: 'var(--ct3)', backgroundColor: 'var(--card)' }}
+      {total > 3 && <span className="w-9 h-9 flex items-center justify-center text-[13px]" style={{ color: 'var(--ct3)' }}>…</span>}
+      <button className="w-9 h-9 flex items-center justify-center transition-colors cursor-pointer" style={{ border: '1px solid var(--cb)', borderRadius: '8px', color: 'var(--ct3)', backgroundColor: 'var(--card)' }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = '#c8d0e4'; e.currentTarget.style.color = 'var(--ct1)' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--cb)'; e.currentTarget.style.color = 'var(--ct3)' }}
       >
@@ -471,13 +507,13 @@ export default function ProductsPage() {
               </div>
             )}
             {loading ? (
-              <div className="grid grid-cols-3 gap-3">
-                {[...Array(6)].map((_, i) => <div key={i} className="h-72" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--cb)', borderRadius: '4px', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />)}
+              <div className="grid grid-cols-3 gap-5">
+                {[...Array(6)].map((_, i) => <div key={i} className="h-72" style={{ backgroundColor: 'var(--card)', border: '1.5px solid var(--cb)', borderRadius: '14px', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />)}
               </div>
             ) : products.length === 0 && !error ? (
               <div className="text-center py-16 text-[13px]" style={{ color: 'var(--ct3)' }}>Chưa có sản phẩm nào.</div>
             ) : (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-5">
                 {products.map(p => <ProductCard key={p.id} product={p} onNavigate={onNavigate} />)}
               </div>
             )}

@@ -40,8 +40,8 @@ function fmt(n) { return n.toLocaleString('vi-VN') + 'đ' }
 function StatusBadge({ status }) {
   const c = STATUS_CONFIG[status]
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold"
-      style={{ backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}`, borderRadius: '3px' }}>
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold"
+      style={{ backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}`, borderRadius: '20px' }}>
       <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c.dotColor }} />
       {c.label}
     </span>
@@ -53,10 +53,22 @@ function OrderCard({ order, onNavigate }) {
 
   return (
     <div
-      className="overflow-hidden transition-shadow"
-      style={{ backgroundColor: 'var(--card)', border: '1px solid var(--cb)', borderRadius: '4px', borderLeft: order.status === 'shipping' || order.status === 'processing' ? '3px solid var(--accent)' : '1px solid var(--cb)' }}
-      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.07)'}
-      onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+      className="overflow-hidden transition-all duration-200"
+      style={{
+        backgroundColor: 'var(--card)',
+        border: '1.5px solid var(--cb)',
+        borderRadius: '16px',
+        borderLeft: order.status === 'shipping' || order.status === 'processing' ? '4.5px solid var(--accent)' : '1.5px solid var(--cb)',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.06)'
+        e.currentTarget.style.transform = 'translateY(-2px)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)'
+        e.currentTarget.style.transform = 'none'
+      }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4">
@@ -90,46 +102,46 @@ function OrderCard({ order, onNavigate }) {
           {order.items.map((item, i) => (
             <div key={i} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--page)', border: '1px solid var(--cb)', borderRadius: '3px' }}>
+                <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--page)', border: '1px solid var(--cb)', borderRadius: '8px' }}>
                   <svg className="w-3.5 h-3.5" style={{ color: 'var(--ct3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
                 </div>
-                <span className="text-sm" style={{ color: 'var(--ct1)' }}>{item.name}</span>
+                <span className="text-sm font-semibold" style={{ color: 'var(--ct1)' }}>{item.name}</span>
                 <span className="text-xs" style={{ color: 'var(--ct3)' }}>x{item.qty}</span>
               </div>
-              <span className="text-sm font-medium" style={{ color: 'var(--ct2)' }}>{fmt(item.price)}</span>
+              <span className="text-sm font-bold" style={{ color: 'var(--ct2)' }}>{fmt(item.price)}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2 px-5 py-3" style={{ borderTop: '1px solid var(--cb)', backgroundColor: 'var(--page)' }}>
+      <div className="flex items-center justify-end gap-2.5 px-5 py-3" style={{ borderTop: '1px solid var(--cb)', backgroundColor: 'var(--page)' }}>
         {order.status === 'shipping' && (
-          <button className="text-xs font-semibold px-3 py-1.5 transition-colors"
-            style={{ color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.3)', backgroundColor: 'rgba(232,66,10,0.05)', borderRadius: '3px' }}
+          <button className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
+            style={{ color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.3)', backgroundColor: 'rgba(232,66,10,0.05)', borderRadius: '8px' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(232,66,10,0.1)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(232,66,10,0.05)'}
           >Theo dõi đơn hàng</button>
         )}
         {order.status === 'completed' && (
-          <button className="text-xs font-semibold px-3 py-1.5 transition-colors"
-            style={{ color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.3)', backgroundColor: 'rgba(232,66,10,0.05)', borderRadius: '3px' }}
+          <button className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
+            style={{ color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.3)', backgroundColor: 'rgba(232,66,10,0.05)', borderRadius: '8px' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(232,66,10,0.1)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(232,66,10,0.05)'}
           >Mua lại</button>
         )}
         {order.status === 'pending' && (
-          <button className="text-xs font-semibold px-3 py-1.5 transition-colors"
-            style={{ color: 'var(--err)', border: '1px solid rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.05)', borderRadius: '3px' }}
+          <button className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
+            style={{ color: 'var(--err)', border: '1px solid rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.05)', borderRadius: '8px' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.05)'}
           >Hủy đơn</button>
         )}
         <button onClick={() => onNavigate('invoice')}
-          className="text-xs font-semibold px-3 py-1.5 transition-colors"
-          style={{ color: 'var(--ct2)', border: '1px solid var(--cb)', backgroundColor: 'var(--card)', borderRadius: '3px' }}
+          className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
+          style={{ color: 'var(--ct2)', border: '1px solid var(--cb)', backgroundColor: 'var(--card)', borderRadius: '8px' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#c8d0e4'; e.currentTarget.style.color = 'var(--ct1)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--cb)'; e.currentTarget.style.color = 'var(--ct2)' }}
         >Xem chi tiết</button>
@@ -192,20 +204,20 @@ export default function CustomerOrdersPage() {
         <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
           {FILTER_TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium transition-colors"
+              className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold transition-all duration-200 cursor-pointer"
               style={activeTab === tab.id
-                ? { backgroundColor: 'var(--accent)', color: 'white', borderRadius: '3px' }
-                : { backgroundColor: 'var(--card)', color: 'var(--ct2)', border: '1px solid var(--cb)', borderRadius: '3px' }
+                ? { backgroundColor: 'var(--accent)', color: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }
+                : { backgroundColor: 'var(--card)', color: 'var(--ct2)', border: '1.5px solid var(--cb)', borderRadius: '8px' }
               }
               onMouseEnter={e => { if (activeTab !== tab.id) { e.currentTarget.style.borderColor = '#c8d0e4'; e.currentTarget.style.color = 'var(--ct1)' } }}
               onMouseLeave={e => { if (activeTab !== tab.id) { e.currentTarget.style.borderColor = 'var(--cb)'; e.currentTarget.style.color = 'var(--ct2)' } }}
             >
               {tab.label}
-              <span className="text-[11px] font-bold px-1.5 py-0.5"
+              <span className="text-[11px] font-bold px-2 py-0.5"
                 style={{
                   backgroundColor: activeTab === tab.id ? 'rgba(255,255,255,0.25)' : 'var(--page)',
                   color: activeTab === tab.id ? 'white' : 'var(--ct3)',
-                  borderRadius: '2px',
+                  borderRadius: '20px',
                 }}
               >{tab.count}</span>
             </button>
@@ -219,16 +231,16 @@ export default function CustomerOrdersPage() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-16 h-16 flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--cb)', borderRadius: '4px' }}>
+            <div className="w-16 h-16 flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--card)', border: '1.5px solid var(--cb)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
               <svg className="w-8 h-8" style={{ color: 'var(--ct3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <p className="font-medium" style={{ color: 'var(--ct2)' }}>Không có đơn hàng nào</p>
+            <p className="font-bold" style={{ color: 'var(--ct2)' }}>Không có đơn hàng nào</p>
             <p className="text-sm mt-1" style={{ color: 'var(--ct3)' }}>Hãy thử thay đổi bộ lọc hoặc tìm kiếm khác</p>
             <button onClick={() => onNavigate('list')}
-              className="mt-5 text-white text-sm font-semibold px-5 py-2.5 transition-colors"
-              style={{ backgroundColor: 'var(--accent)', borderRadius: '3px' }}
+              className="mt-5 text-white text-sm font-bold px-5 py-2.5 transition-all duration-200 cursor-pointer"
+              style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
               onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
             >Mua sắm ngay</button>

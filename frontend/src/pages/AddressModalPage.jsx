@@ -11,7 +11,7 @@ function SelectField({ label, required, value, onChange, placeholder, options })
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full appearance-none border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent pr-8 cursor-pointer transition ${
+          className={`w-full appearance-none border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] pr-8 cursor-pointer transition ${
             value ? 'text-gray-800' : 'text-gray-400'
           }`}
         >
@@ -51,9 +51,9 @@ function RadioOption({ id, checked, onSelect, icon, label }) {
       className="flex items-center gap-2 cursor-pointer select-none"
     >
       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-        checked ? 'border-blue-700' : 'border-gray-400'
+        checked ? 'border-[#E8420A]' : 'border-gray-400'
       }`}>
-        {checked && <div className="w-2.5 h-2.5 rounded-full bg-blue-700" />}
+        {checked && <div className="w-2.5 h-2.5 rounded-full bg-[#E8420A]" />}
       </div>
       {icon}
       <span className="text-sm text-gray-700">{label}</span>
@@ -104,7 +104,7 @@ export default function AddressModalPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Nhập họ và tên"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition"
               />
             </div>
             <div>
@@ -116,7 +116,7 @@ export default function AddressModalPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Nhập số điện thoại"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition"
               />
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function AddressModalPage() {
               onChange={(e) => setDetail(e.target.value)}
               placeholder="Số nhà, tên đường, tòa nhà..."
               rows={4}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none transition"
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] resize-none transition"
             />
           </div>
 
@@ -188,7 +188,7 @@ export default function AddressModalPage() {
               type="checkbox"
               checked={isDefault}
               onChange={(e) => setIsDefault(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 accent-blue-700 cursor-pointer"
+              className="w-4 h-4 rounded border-gray-300 accent-[#E8420A] cursor-pointer"
             />
             <span className="text-sm text-gray-700">Đặt làm địa chỉ mặc định</span>
           </label>
@@ -197,10 +197,14 @@ export default function AddressModalPage() {
 
         {/* Footer */}
         <div className="border-t border-gray-200 bg-gray-50 px-7 py-4 flex items-center justify-end gap-3">
-          <button onClick={() => onNavigate('userProfile')} className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2.5 px-6 rounded-xl text-sm transition-colors cursor-pointer">
+          <button onClick={() => onNavigate('userProfile')} className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors cursor-pointer">
             Hủy
           </button>
-          <button onClick={() => onNavigate('userProfile')} className="bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2.5 px-6 rounded-xl text-sm transition-colors cursor-pointer">
+          <button onClick={() => onNavigate('userProfile')} className="text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all duration-200 cursor-pointer"
+            style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+          >
             Thêm địa chỉ
           </button>
         </div>

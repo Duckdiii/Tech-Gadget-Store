@@ -40,6 +40,8 @@ class ExportLogServiceTest {
     @Mock
     private CustomerRepository customerRepository;
     @Mock
+    private FavoriteProductRepository favoriteProductRepository;
+    @Mock
     private ExportLogMapper exportLogMapper;
 
     @InjectMocks
@@ -99,7 +101,7 @@ class ExportLogServiceTest {
     }
 
     @Test
-    void exportProducts_Success_FullFlow() {
+    void exportProducts_Success_FullFlow_ProductAvailable() {
         ExportLogRequestDto requestDto = ExportLogRequestDto.builder()
                 .performedById("performer-id")
                 .items(List.of(
@@ -135,9 +137,8 @@ class ExportLogServiceTest {
         when(receipt.getId()).thenReturn("receipt-id");
         when(receiptRepository.save(any(Receipt.class))).thenReturn(receipt);
 
-        // Mock Customer exist for Notification
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
-        when(customer.getNotifications()).thenReturn(new java.util.ArrayList<>());
+        // Mock remaining qty > 0 (Available case)
+        when(productVariantRepository.countAvailablePhysicalUnitsByProductId("product-id")).thenReturn(5L);
 
         // Mock Mapper
         when(exportLogMapper.toExportLogResponseDto(any(ExportLog.class), eq("receipt-id"), eq("Products exported successfully.")))
@@ -157,8 +158,76 @@ class ExportLogServiceTest {
         assertEquals("Products exported successfully.", response.getMessage());
 
         verify(receiptRepository).save(any(Receipt.class));
-        verify(notificationRepository).save(any(Notification.class));
+        verify(notificationRepository, never()).save(any(Notification.class));
         verify(exportLogRepository).save(any(ExportLog.class));
+    }
+
+    @Test
+    void exportProducts_Success_ProductOutOfStock_SendsNotifications() {
+        ExportLogRequestDto requestDto = ExportLogRequestDto.builder()
+                .performedById("performer-id")
+                .items(List.of(
+                        ExportLogItemRequestDto.builder()
+                                .productVariantId("variant-id")
+                                .quantity(1)
+                                .build()
+                ))
+                .reason("Test Export Out of Stock")
+                .build();
+
+        when(userRepository.existsById("performer-id")).thenReturn(true);
+        when(productVariantRepository.findById("variant-id")).thenReturn(Optional.of(variant));
+        when(variant.getProduct()).thenReturn(product);
+        when(product.getId()).thenReturn("product-id");
+        when(product.getName()).thenReturn("iPhone 15");
+        when(variant.getRamGb()).thenReturn(8);
+        when(variant.getStorageGb()).thenReturn(256);
+        when(variant.getColor()).thenReturn("Silver");
+
+        ProductVariant unit1 = mock(ProductVariant.class);
+        when(productVariantRepository.findAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
+                .thenReturn(List.of(unit1));
+
+        when(exportLogRepository.save(any(ExportLog.class))).thenAnswer(inv -> {
+            ExportLog el = inv.getArgument(0);
+            el.setId("export-log-id");
+            return el;
+        });
+
+        // Mock Receipt save
+        Receipt receipt = mock(Receipt.class);
+        when(receipt.getId()).thenReturn("receipt-id");
+        when(receiptRepository.save(any(Receipt.class))).thenReturn(receipt);
+
+        // Mock remaining qty = 0 (Out of stock case)
+        when(productVariantRepository.countAvailablePhysicalUnitsByProductId("product-id")).thenReturn(0L);
+
+        // Mock Subscribed customers
+        FavoriteProduct fav = mock(FavoriteProduct.class);
+        when(fav.getCustomer()).thenReturn(customer);
+        when(favoriteProductRepository.findByProductIdAndStatus("product-id", com.project.tech_gadget_store.entity.enums.SubscriptionStatus.SUBSCRIBED))
+                .thenReturn(List.of(fav));
+        when(customer.getNotifications()).thenReturn(new java.util.ArrayList<>());
+
+        // Mock Mapper
+        when(exportLogMapper.toExportLogResponseDto(any(ExportLog.class), eq("receipt-id"), eq("Products exported successfully.")))
+                .thenReturn(ExportLogResponseDto.builder()
+                        .id("export-log-id")
+                        .performedById("performer-id")
+                        .receiptId("receipt-id")
+                        .status(ImportAndExportStatus.SUCCESS)
+                        .message("Products exported successfully.")
+                        .build());
+
+        ExportLogResponseDto response = exportLogService.exportProducts(requestDto);
+
+        assertNotNull(response);
+        assertEquals("export-log-id", response.getId());
+        assertEquals("Products exported successfully.", response.getMessage());
+
+        verify(receiptRepository).save(any(Receipt.class));
+        verify(notificationRepository).save(any(Notification.class));
+        verify(favoriteProductRepository).findByProductIdAndStatus(eq("product-id"), any());
     }
 
     @Test
@@ -192,9 +261,8 @@ class ExportLogServiceTest {
             return el;
         });
 
-        // Mock Customer exist for Notification
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
-        when(customer.getNotifications()).thenReturn(new java.util.ArrayList<>());
+        // Mock remaining qty > 0 (Available case)
+        when(productVariantRepository.countAvailablePhysicalUnitsByProductId("product-id")).thenReturn(5L);
 
         // Mock Mapper to expect null receiptId and warning message
         when(exportLogMapper.toExportLogResponseDto(any(ExportLog.class), isNull(), eq("Products were exported, but the receipt could not be generated")))
@@ -214,11 +282,10 @@ class ExportLogServiceTest {
         assertEquals("Products were exported, but the receipt could not be generated", response.getMessage());
 
         verify(receiptRepository, never()).save(any(Receipt.class));
-        verify(notificationRepository).save(any(Notification.class));
     }
 
     @Test
-    void exportProducts_NotificationFails_SavesExportButReturnsWarningMessage() {
+    void exportProducts_RetrieveInventoryFails_ReturnsRetrieveWarning() {
         ExportLogRequestDto requestDto = ExportLogRequestDto.builder()
                 .performedById("performer-id")
                 .items(List.of(
@@ -227,7 +294,7 @@ class ExportLogServiceTest {
                                 .quantity(1)
                                 .build()
                 ))
-                .reason("FORCE_NOTIFICATION_FAILURE")
+                .reason("FORCE_RETRIEVE_FAILURE")
                 .build();
 
         when(userRepository.existsById("performer-id")).thenReturn(true);
@@ -254,13 +321,13 @@ class ExportLogServiceTest {
         when(receiptRepository.save(any(Receipt.class))).thenReturn(receipt);
 
         // Mock Mapper to expect warning message
-        when(exportLogMapper.toExportLogResponseDto(any(ExportLog.class), eq("receipt-id"), eq("Inventory was updated, but notification status could not be displayed")))
+        when(exportLogMapper.toExportLogResponseDto(any(ExportLog.class), eq("receipt-id"), eq("Unable to retrieve inventory status")))
                 .thenReturn(ExportLogResponseDto.builder()
                         .id("export-log-id")
                         .performedById("performer-id")
                         .receiptId("receipt-id")
                         .status(ImportAndExportStatus.SUCCESS)
-                        .message("Inventory was updated, but notification status could not be displayed")
+                        .message("Unable to retrieve inventory status")
                         .build());
 
         ExportLogResponseDto response = exportLogService.exportProducts(requestDto);
@@ -268,9 +335,63 @@ class ExportLogServiceTest {
         assertNotNull(response);
         assertEquals("export-log-id", response.getId());
         assertEquals("receipt-id", response.getReceiptId());
-        assertEquals("Inventory was updated, but notification status could not be displayed", response.getMessage());
+        assertEquals("Unable to retrieve inventory status", response.getMessage());
+    }
 
-        verify(receiptRepository).save(any(Receipt.class));
-        verify(notificationRepository, never()).save(any(Notification.class));
+    @Test
+    void exportProducts_RecordInventoryChangeFails_ReturnsRecordWarning() {
+        ExportLogRequestDto requestDto = ExportLogRequestDto.builder()
+                .performedById("performer-id")
+                .items(List.of(
+                        ExportLogItemRequestDto.builder()
+                                .productVariantId("variant-id")
+                                .quantity(1)
+                                .build()
+                ))
+                .reason("FORCE_RECORD_FAILURE")
+                .build();
+
+        when(userRepository.existsById("performer-id")).thenReturn(true);
+        when(productVariantRepository.findById("variant-id")).thenReturn(Optional.of(variant));
+        when(variant.getProduct()).thenReturn(product);
+        when(product.getId()).thenReturn("product-id");
+        when(variant.getRamGb()).thenReturn(8);
+        when(variant.getStorageGb()).thenReturn(256);
+        when(variant.getColor()).thenReturn("Silver");
+
+        ProductVariant unit1 = mock(ProductVariant.class);
+        when(productVariantRepository.findAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
+                .thenReturn(List.of(unit1));
+
+        when(exportLogRepository.save(any(ExportLog.class))).thenAnswer(inv -> {
+            ExportLog el = inv.getArgument(0);
+            el.setId("export-log-id");
+            return el;
+        });
+
+        // Mock Receipt save
+        Receipt receipt = mock(Receipt.class);
+        when(receipt.getId()).thenReturn("receipt-id");
+        when(receiptRepository.save(any(Receipt.class))).thenReturn(receipt);
+
+        // Mock remaining qty = 0 (triggers recording notification)
+        when(productVariantRepository.countAvailablePhysicalUnitsByProductId("product-id")).thenReturn(0L);
+
+        // Mock Mapper to expect warning message
+        when(exportLogMapper.toExportLogResponseDto(any(ExportLog.class), eq("receipt-id"), eq("Unable to record inventory change status")))
+                .thenReturn(ExportLogResponseDto.builder()
+                        .id("export-log-id")
+                        .performedById("performer-id")
+                        .receiptId("receipt-id")
+                        .status(ImportAndExportStatus.SUCCESS)
+                        .message("Unable to record inventory change status")
+                        .build());
+
+        ExportLogResponseDto response = exportLogService.exportProducts(requestDto);
+
+        assertNotNull(response);
+        assertEquals("export-log-id", response.getId());
+        assertEquals("receipt-id", response.getReceiptId());
+        assertEquals("Unable to record inventory change status", response.getMessage());
     }
 }

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNav } from '../hooks/useNav'
 
 const CARD_GRADIENT = {
-  background: 'linear-gradient(135deg, #2d7de0 0%, #1a55c8 55%, #1040a8 100%)',
+  background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
 }
 
 const fmtCard = (v) => {
@@ -67,13 +67,13 @@ export default function AddCardModalPage() {
             {/* Holder + Expiry */}
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-[9px] font-semibold text-blue-200 uppercase tracking-widest mb-0.5">Tên chủ thẻ</p>
+                <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mb-0.5">Tên chủ thẻ</p>
                 <p className="text-sm font-bold text-white uppercase tracking-wider leading-tight">
                   {holder || 'TÊN CHỦ THẺ'}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-[9px] font-semibold text-blue-200 uppercase tracking-widest mb-0.5">Hết hạn</p>
+                <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mb-0.5">Hết hạn</p>
                 <p className="text-sm font-bold text-white leading-tight">
                   {expiry || 'MM/YY'}
                 </p>
@@ -96,7 +96,7 @@ export default function AddCardModalPage() {
                 onChange={(e) => setCardNum(fmtCard(e.target.value))}
                 placeholder="0000 0000 0000 0000"
                 maxLength={19}
-                className="w-full pl-10 pr-24 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent font-mono transition"
+                className="w-full pl-10 pr-24 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] font-mono transition"
               />
               {/* Card brand icons */}
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -117,7 +117,7 @@ export default function AddCardModalPage() {
               value={holder}
               onChange={(e) => setHolder(e.target.value.toUpperCase())}
               placeholder="NGUYEN VAN A"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent uppercase tracking-wider transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] uppercase tracking-wider transition"
             />
           </div>
 
@@ -131,7 +131,7 @@ export default function AddCardModalPage() {
                 onChange={(e) => setExpiry(fmtExpiry(e.target.value))}
                 placeholder="MM/YY"
                 maxLength={5}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-center font-mono transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] text-center font-mono transition"
               />
             </div>
             <div>
@@ -147,7 +147,7 @@ export default function AddCardModalPage() {
                 onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 placeholder="123"
                 maxLength={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-center font-mono transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] text-center font-mono transition"
               />
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function AddCardModalPage() {
               type="checkbox"
               checked={isDefault}
               onChange={(e) => setIsDefault(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 accent-blue-700 cursor-pointer"
+              className="w-4 h-4 rounded border-gray-300 accent-[#E8420A] cursor-pointer"
             />
             <span className="text-sm text-gray-700">Đặt làm phương thức thanh toán mặc định</span>
           </label>
@@ -167,10 +167,14 @@ export default function AddCardModalPage() {
 
         {/* ── Footer ── */}
         <div className="border-t border-gray-200 px-6 py-4 flex items-center justify-end gap-3">
-          <button onClick={() => onNavigate('paymentMethods')} className="text-blue-600 hover:text-blue-800 font-medium text-sm cursor-pointer transition-colors px-2 py-1.5">
+          <button onClick={() => onNavigate('paymentMethods')} className="text-gray-600 hover:text-gray-800 font-bold text-sm cursor-pointer transition-colors px-3 py-1.5">
             Hủy
           </button>
-          <button onClick={() => onNavigate('paymentMethods')} className="flex items-center gap-2 bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-5 rounded-xl text-sm transition-colors cursor-pointer">
+          <button onClick={() => onNavigate('paymentMethods')} className="flex items-center gap-2 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all duration-200 cursor-pointer"
+            style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+          >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
             </svg>

@@ -12,6 +12,7 @@ import com.project.tech_gadget_store.mapper.ExportLogMapper;
 import com.project.tech_gadget_store.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class ExportLogService {
     private final ReceiptRepository receiptRepository;
     private final NotificationRepository notificationRepository;
     private final CustomerRepository customerRepository;
+    private final FavoriteProductRepository favoriteProductRepository;
     private final ExportLogMapper exportLogMapper;
 
     public ExportLogService(ExportLogRepository exportLogRepository,
@@ -36,6 +38,7 @@ public class ExportLogService {
             ReceiptRepository receiptRepository,
             NotificationRepository notificationRepository,
             CustomerRepository customerRepository,
+            FavoriteProductRepository favoriteProductRepository,
             ExportLogMapper exportLogMapper) {
         this.exportLogRepository = exportLogRepository;
         this.productVariantRepository = productVariantRepository;
@@ -43,6 +46,7 @@ public class ExportLogService {
         this.receiptRepository = receiptRepository;
         this.notificationRepository = notificationRepository;
         this.customerRepository = customerRepository;
+        this.favoriteProductRepository = favoriteProductRepository;
         this.exportLogMapper = exportLogMapper;
     }
 
@@ -62,7 +66,8 @@ public class ExportLogService {
             ProductVariant referenceVariant = productVariantRepository.findById(itemDto.getProductVariantId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product variant not found"));
 
-            // Find available physical units
+            // Trả về số lượng đơn vị vật lý có sẵn dựa trên các thông số kỹ thuật của biến
+            // thể sản phẩm tham chiếu
             List<ProductVariant> availableUnits = productVariantRepository.findAvailablePhysicalUnits( // trả về danh
                                                                                                        // sách các đơn
                                                                                                        // vị vật lý có
@@ -104,35 +109,73 @@ public class ExportLogService {
         }
 
         // 3. Notify Inventory Change Status
+        String notificationMessage = null;
         try {
-            if ("FORCE_NOTIFICATION_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
-                throw new RuntimeException("Simulated notification failure");
+            if ("FORCE_RETRIEVE_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
+                throw new RuntimeException("Simulated retrieve failure");
             }
-            List<Customer> customers = customerRepository.findAll();
-            if (!customers.isEmpty()) {
-                Customer customer = customers.get(0);
-                Notification notification = new Notification(
-                        customer,
-                        "Stock Exported",
-                        NotificationType.STOCK_CHANGE,
-                        "Inventory updated for exported products",
-                        List.of(NotificationChannel.WEB));
-                notification.markSent();
-                notificationRepository.save(notification);
-            } else {
-                throw new IllegalStateException("No customers available to receive notifications");
+
+            for (ExportLogItemRequestDto itemDto : requestDto.getItems()) {
+                ProductVariant referenceVariant = productVariantRepository.findById(itemDto.getProductVariantId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Product variant not found"));
+                Product product = referenceVariant.getProduct();
+
+                // Retrieve updated quantity
+                long remainingQty;
+                try {
+                    remainingQty = productVariantRepository.countAvailablePhysicalUnitsByProductId(product.getId());
+                } catch (Exception e) {
+                    log.error("Failed to retrieve updated inventory quantity for product: {}", product.getId(), e);
+                    throw new IllegalStateException("RETRIEVE_ERROR");
+                }
+
+                // Determine inventory status & record inventory change status
+                if (remainingQty == 0) {
+                    try {
+                        if ("FORCE_RECORD_FAILURE".equalsIgnoreCase(requestDto.getReason())
+                                || "FORCE_NOTIFICATION_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
+                            throw new RuntimeException("Simulated record failure");
+                        }
+
+                        List<FavoriteProduct> subscriptions = favoriteProductRepository.findByProductIdAndStatus(
+                                product.getId(), SubscriptionStatus.SUBSCRIBED);
+
+                        for (FavoriteProduct sub : subscriptions) {
+                            Notification notification = new Notification(
+                                    sub.getCustomer(),
+                                    "Stock Out",
+                                    NotificationType.STOCK_CHANGE,
+                                    "Sản phẩm " + product.getName() + " đã hết hàng (Out of Stock).",
+                                    List.of(NotificationChannel.WEB));
+                            notification.markSent();
+                            notificationRepository.save(notification);
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to record inventory change status for product: {}", product.getId(), e);
+                        throw new IllegalStateException("RECORD_ERROR");
+                    }
+                }
             }
         } catch (Exception e) {
-            log.error("Failed to send notification: {}", e.getMessage(), e);
-            notificationFailed = true;
+            if ("RETRIEVE_ERROR".equals(e.getMessage())) {
+                notificationMessage = "Unable to retrieve inventory status";
+            } else if ("RECORD_ERROR".equals(e.getMessage())) {
+                notificationMessage = "Unable to record inventory change status";
+            } else {
+                if ("FORCE_RETRIEVE_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
+                    notificationMessage = "Unable to retrieve inventory status";
+                } else {
+                    notificationMessage = "Unable to record inventory change status";
+                }
+            }
         }
 
         // Determine message based on failures
         String message;
         if (receiptFailed) {
             message = "Products were exported, but the receipt could not be generated";
-        } else if (notificationFailed) {
-            message = "Inventory was updated, but notification status could not be displayed";
+        } else if (notificationMessage != null) {
+            message = notificationMessage;
         } else {
             message = "Products exported successfully.";
         }

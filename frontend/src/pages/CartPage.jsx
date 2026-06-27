@@ -27,15 +27,15 @@ function fmt(price) { return price.toLocaleString('vi-VN') + ' đ' }
 
 function QuantityControl({ qty, onIncrease, onDecrease }) {
   return (
-    <div className="flex items-center" style={{ border: '1px solid var(--cb)', borderRadius: '3px', overflow: 'hidden' }}>
-      <button onClick={onDecrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors"
-        style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', borderRight: '1px solid var(--cb)' }}
+    <div className="flex items-center" style={{ border: '1.5px solid var(--cb)', borderRadius: '8px', overflow: 'hidden' }}>
+      <button onClick={onDecrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer"
+        style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', borderRight: '1.5px solid var(--cb)' }}
         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--cb)'}
         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--page)'}
       >−</button>
-      <span className="w-11 h-9 flex items-center justify-center text-sm font-bold" style={{ backgroundColor: 'var(--card)', color: 'var(--ct1)' }}>{qty}</span>
-      <button onClick={onIncrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors"
-        style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', borderLeft: '1px solid var(--cb)' }}
+      <span className="w-11 h-9 flex items-center justify-center text-sm font-extrabold" style={{ backgroundColor: 'var(--card)', color: 'var(--ct1)' }}>{qty}</span>
+      <button onClick={onIncrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer"
+        style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', borderLeft: '1.5px solid var(--cb)' }}
         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--cb)'}
         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--page)'}
       >+</button>
@@ -53,11 +53,12 @@ function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove })
       className={`overflow-hidden transition-opacity duration-200 ${!item.checked ? 'opacity-60' : ''}`}
       style={{
         backgroundColor: 'var(--card)',
-        borderTop: '1px solid var(--cb)',
-        borderRight: '1px solid var(--cb)',
-        borderBottom: '1px solid var(--cb)',
-        borderLeft: item.checked ? '3px solid var(--accent)' : '1px solid var(--cb)',
-        borderRadius: '4px',
+        borderTop: '1.5px solid var(--cb)',
+        borderRight: '1.5px solid var(--cb)',
+        borderBottom: '1.5px solid var(--cb)',
+        borderLeft: item.checked ? '4.5px solid var(--accent)' : '1.5px solid var(--cb)',
+        borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
       }}
     >
       {/* Main row */}
@@ -65,7 +66,7 @@ function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove })
         <div className="flex items-center shrink-0">
           <input type="checkbox" checked={item.checked} onChange={() => onToggleItem(item.id)} className="w-5 h-5 cursor-pointer" />
         </div>
-        <div className="w-28 h-24 shrink-0 flex items-center justify-center" style={{ backgroundColor: 'var(--page)', border: '1px solid var(--cb)', borderRadius: '3px' }}>
+        <div className="w-28 h-24 shrink-0 flex items-center justify-center" style={{ backgroundColor: 'var(--page)', border: '1px solid var(--cb)', borderRadius: '10px' }}>
           <img src={item.image} alt={item.name} className="w-full h-full object-contain p-2" />
         </div>
         <div className="flex-1 min-w-0">
@@ -76,9 +77,9 @@ function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove })
               <p className="text-[13px] mt-1" style={{ color: 'var(--ct3)' }}>{item.variant}</p>
             </div>
             <button onClick={() => onRemove(item.id)}
-              className="shrink-0 w-8 h-8 flex items-center justify-center transition-colors"
+              className="shrink-0 w-8 h-8 flex items-center justify-center transition-colors cursor-pointer"
               style={{ color: 'var(--ct3)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'var(--err)'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.06)'; e.currentTarget.style.borderRadius = '3px' }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--err)'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.06)'; e.currentTarget.style.borderRadius = '8px' }}
               onMouseLeave={e => { e.currentTarget.style.color = 'var(--ct3)'; e.currentTarget.style.backgroundColor = 'transparent' }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,9 +145,9 @@ function OrderSummary({ items }) {
   const total = subtotal + serviceFee
 
   return (
-    <div className="sticky top-6 overflow-hidden text-white" style={{ backgroundColor: 'var(--ink)', borderRadius: '4px' }}>
+    <div className="sticky top-6 overflow-hidden text-white" style={{ backgroundColor: 'var(--ink)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
       {/* Header */}
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid var(--b1)' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="flex items-center gap-2">
           <div className="w-[2px] h-5" style={{ backgroundColor: 'var(--accent)' }} />
           <h2 className="text-[15px] font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>Tổng quan đơn hàng</h2>
@@ -242,8 +243,8 @@ export default function CartPage() {
             </svg>
             <p className="text-lg font-semibold" style={{ color: 'var(--ct2)' }}>Giỏ hàng của bạn đang trống</p>
             <button onClick={() => onNavigate('list')}
-              className="mt-4 text-white px-6 py-2.5 text-sm font-semibold transition-colors"
-              style={{ backgroundColor: 'var(--accent)', borderRadius: '3px' }}
+              className="mt-4 text-white px-6 py-2.5 text-sm font-bold transition-all duration-200 cursor-pointer"
+              style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
               onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
             >Khám phá sản phẩm</button>
@@ -252,7 +253,7 @@ export default function CartPage() {
           <div className="flex gap-7 items-start">
             <div className="flex-1 min-w-0">
               {/* Select all bar */}
-              <div className="flex items-center gap-3 px-5 py-3 mb-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--cb)', borderRadius: '4px' }}>
+              <div className="flex items-center gap-3 px-5 py-4 mb-4" style={{ backgroundColor: 'var(--card)', border: '1.5px solid var(--cb)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
                 <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-5 h-5 cursor-pointer" />
                 <span className="text-sm font-semibold" style={{ color: 'var(--ct1)' }}>Chọn tất cả ({items.length} sản phẩm)</span>
                 {someChecked && (
@@ -298,8 +299,8 @@ export default function CartPage() {
             </div>
             <button
               onClick={() => onNavigate('checkout')}
-              className="flex items-center gap-2.5 text-white font-bold text-[15px] px-10 py-3.5 transition-colors"
-              style={{ backgroundColor: 'var(--accent)', borderRadius: '3px' }}
+              className="flex items-center gap-2.5 text-white font-bold text-[15px] px-10 py-3.5 transition-all duration-200 cursor-pointer"
+              style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
               onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
             >

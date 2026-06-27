@@ -52,43 +52,43 @@ function AnnouncementBar() {
   const item = TICKER_ITEMS[idx]
 
   return (
-    <div style={{ backgroundColor: '#0A0C11', borderBottom: '1px solid var(--b1)' }}>
+    <div style={{ backgroundColor: 'var(--accent)', borderBottom: '1px solid var(--accent-d)' }}>
       <div className="max-w-screen-2xl mx-auto px-8 py-1.5 flex items-center justify-between relative">
-        <div className="flex items-center gap-4 text-[11px]" style={{ color: 'var(--t3)' }}>
-          <span>Hỗ trợ: <strong style={{ color: 'var(--t2)', fontWeight: 600 }}>1800-9999</strong></span>
-          <span style={{ color: 'var(--b2)' }}>|</span>
+        <div className="flex items-center gap-4 text-[11px]" style={{ color: 'rgba(255,255,255,0.8)' }}>
+          <span>Hỗ trợ: <strong style={{ color: '#fff', fontWeight: 700 }}>1800-9999</strong></span>
+          <span style={{ color: 'rgba(255,255,255,0.4)' }}>|</span>
           <span>T2–T7 · 8:00–22:00</span>
         </div>
 
         <p
-          className="text-[11px] font-medium transition-opacity duration-300 text-center absolute left-1/2 -translate-x-1/2"
+          className="text-[11px] font-semibold transition-opacity duration-300 text-center absolute left-1/2 -translate-x-1/2 text-white"
           style={{ opacity: visible ? 1 : 0 }}
         >
-          <span className="mr-1.5" style={{ color: 'var(--accent)' }}>{item.icon}</span>
-          <span style={{ color: 'var(--t2)' }}>{item.text}</span>
+          <span className="mr-1.5">⚡</span>
+          <span>{item.text}</span>
           <span
-            className="ml-3 cursor-pointer transition-colors"
-            style={{ color: 'var(--accent)' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-h)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--accent)'}
+            className="ml-3 cursor-pointer underline underline-offset-2 transition-opacity"
+            style={{ opacity: 0.85 }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '0.85'}
           >
             Xem ngay →
           </span>
         </p>
 
-        <div className="flex items-center gap-4 text-[11px]" style={{ color: 'var(--t3)' }}>
+        <div className="flex items-center gap-4 text-[11px]" style={{ color: 'rgba(255,255,255,0.8)' }}>
           <span
-            className="cursor-pointer transition-colors"
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--t2)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}
+            className="cursor-pointer transition-opacity"
+            onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '0.8'}
           >
             Tra cứu đơn hàng
           </span>
-          <span style={{ color: 'var(--b2)' }}>|</span>
+          <span style={{ color: 'rgba(255,255,255,0.4)' }}>|</span>
           <span
-            className="cursor-pointer transition-colors"
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--t2)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}
+            className="cursor-pointer transition-opacity"
+            onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '0.8'}
           >
             Cửa hàng gần nhất
           </span>
@@ -146,7 +146,7 @@ export default function StoreNavbar() {
       <AnnouncementBar />
 
       {/* ── Main bar ── */}
-      <div style={{ backgroundColor: 'var(--ink)', borderBottom: '1px solid var(--b1)' }}>
+      <div style={{ backgroundColor: 'var(--ink)', borderBottom: '1px solid var(--b1)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
         <div className="max-w-screen-2xl mx-auto px-8 h-[72px] flex items-center gap-8">
 
           {/* Logo */}
@@ -202,8 +202,8 @@ export default function StoreNavbar() {
                 placeholder="Tìm điện thoại, máy tính, phụ kiện..."
                 className="w-full pl-10 pr-20 py-2.5 text-[13px] transition-all"
                 style={{
-                  backgroundColor: 'var(--s1)',
-                  border: `1px solid ${searchFocused ? 'var(--accent)' : 'var(--b2)'}`,
+                  backgroundColor: 'var(--s2)',
+                  border: `1px solid ${searchFocused ? 'var(--accent)' : 'var(--b1)'}`,
                   borderRadius: '3px',
                   color: 'var(--t1)',
                   outline: 'none',
@@ -274,7 +274,7 @@ export default function StoreNavbar() {
               {bell.open && (
                 <div
                   className="notif-in absolute right-0 top-full mt-2 w-80 overflow-hidden"
-                  style={{ backgroundColor: 'var(--s1)', border: '1px solid var(--b2)', borderRadius: '4px' }}
+                  style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
                 >
                   <div
                     className="flex items-center justify-between px-4 py-2.5"
@@ -314,7 +314,7 @@ export default function StoreNavbar() {
                           borderBottom: '1px solid var(--b1)',
                           backgroundColor: n.unread ? 'rgba(232,66,10,0.05)' : 'transparent',
                         }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--s2)'}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--s1)'}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = n.unread ? 'rgba(232,66,10,0.05)' : 'transparent'}
                       >
                         <span className="text-lg shrink-0 mt-0.5">{n.emoji}</span>
@@ -352,9 +352,9 @@ export default function StoreNavbar() {
                 onClick={handleUserMenu}
                 className="w-8 h-8 flex items-center justify-center text-white text-[12px] font-bold transition-all"
                 style={{
-                  backgroundColor: userMenu.open ? 'var(--accent)' : 'var(--s2)',
+                  backgroundColor: userMenu.open ? 'var(--accent)' : 'var(--s3)',
                   border: `1px solid ${userMenu.open ? 'var(--accent)' : 'var(--b2)'}`,
-                  borderRadius: '3px',
+                  borderRadius: '6px',
                 }}
                 aria-label="Tài khoản"
               >
@@ -368,10 +368,10 @@ export default function StoreNavbar() {
               {userMenu.open && (
                 <div
                   className="notif-in absolute right-0 top-full mt-2 w-72 overflow-hidden"
-                  style={{ backgroundColor: 'var(--s1)', border: '1px solid var(--b2)', borderRadius: '4px' }}
+                  style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
                 >
                   {/* User header */}
-                  <div className="px-4 pt-4 pb-3.5" style={{ borderBottom: '1px solid var(--b1)', backgroundColor: '#0A0C11' }}>
+                  <div className="px-4 pt-4 pb-3.5" style={{ borderBottom: '1px solid var(--b1)', backgroundColor: 'var(--s2)' }}>
                     <div className="flex items-center gap-3">
                       <div
                         className="w-10 h-10 flex items-center justify-center text-white font-bold text-[13px] shrink-0"
@@ -545,6 +545,7 @@ function NavItem({ icon, label, sub, badge, arrow, onClick, danger }) {
       style={{ borderRadius: '3px' }}
       onMouseEnter={e => e.currentTarget.style.backgroundColor = danger ? 'rgba(239,68,68,0.08)' : 'var(--s2)'}
       onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+
     >
       <span
         className="w-6 h-6 flex items-center justify-center shrink-0"

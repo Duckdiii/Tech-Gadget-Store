@@ -15,7 +15,7 @@ function PasswordInput({ value, onChange, placeholder }) {
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition"
       />
     </div>
   )
@@ -34,13 +34,13 @@ export default function ResetPasswordPage() {
         {/* Card with thick blue top border */}
         <div
           className="bg-white rounded-2xl w-full max-w-[420px]"
-          style={{ border: '1px solid #e5e7eb', borderTop: '4px solid #1e40af' }}
+          style={{ border: '1.5px solid #e5e7eb', borderTop: '4px solid var(--accent)' }}
         >
           <div className="px-10 py-9">
 
             {/* Titles */}
             <div className="text-center mb-7">
-              <h1 className="text-[2rem] font-black text-blue-800 leading-tight mb-2">TechStore</h1>
+              <h1 className="text-[2.6rem] font-black leading-tight mb-2" style={{ color: 'var(--accent)' }}>TechStore</h1>
               <h2 className="text-xl font-bold text-gray-900 mb-3">Đặt lại mật khẩu</h2>
               <p className="text-sm text-gray-500 leading-relaxed">
                 Vui lòng thiết lập mật khẩu mới cho tài<br />khoản của bạn.
@@ -68,8 +68,8 @@ export default function ResetPasswordPage() {
             </div>
 
             {/* Info box */}
-            <div className="flex items-start gap-2.5 bg-blue-50 rounded-xl px-4 py-3.5 mb-5">
-              <svg className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-start gap-2.5 rounded-xl px-4 py-3.5 mb-5" style={{ backgroundColor: 'var(--accent-dim)' }}>
+              <svg className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -79,13 +79,23 @@ export default function ResetPasswordPage() {
             </div>
 
             {/* Submit button */}
-            <button onClick={() => onNavigate('login')} className="w-full bg-blue-700 hover:bg-blue-800 active:scale-[.99] text-white font-bold py-3.5 rounded-xl text-sm transition-all cursor-pointer mb-5 tracking-wide">
+            <button onClick={() => onNavigate('login')}
+              className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer mb-5 tracking-wide"
+              style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+            >
               Cập nhật mật khẩu
             </button>
 
             {/* Back to login */}
             <div className="flex justify-center">
-              <button onClick={() => onNavigate('login')} className="flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:text-blue-900 cursor-pointer transition-colors">
+              <button onClick={() => onNavigate('login')}
+                className="flex items-center gap-1.5 text-sm font-bold cursor-pointer transition-colors"
+                style={{ color: 'var(--accent)' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-d)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--accent)'}
+              >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>

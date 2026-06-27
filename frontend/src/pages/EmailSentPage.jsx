@@ -8,7 +8,7 @@ export default function EmailSentPage() {
       style={{ backgroundColor: '#eef0f8' }}
     >
       {/* ── Brand title (outside card) ── */}
-      <h1 className="text-[2.6rem] font-black text-blue-800 text-center mb-8 tracking-tight">
+      <h1 className="text-[2.6rem] font-black text-center mb-8 tracking-tight" style={{ color: 'var(--accent)' }}>
         TechStore
       </h1>
 
@@ -17,8 +17,8 @@ export default function EmailSentPage() {
 
         {/* Check-circle icon */}
         <div className="flex justify-center mb-5">
-          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-            <svg className="w-8 h-8 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--accent-dim)' }}>
+            <svg className="w-8 h-8" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.7}
                 d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -38,14 +38,23 @@ export default function EmailSentPage() {
         </p>
 
         {/* Back to login button */}
-        <button onClick={() => onNavigate('login')} className="w-full bg-blue-700 hover:bg-blue-800 active:scale-[.99] text-white font-semibold py-3.5 rounded-xl text-sm transition-all cursor-pointer mb-4 tracking-wide">
+        <button onClick={() => onNavigate('login')}
+          className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer mb-4 tracking-wide"
+          style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+        >
           Quay lại Đăng nhập
         </button>
 
         {/* Resend */}
         <p className="text-sm text-gray-500 text-center">
           Bạn không nhận được email?{' '}
-          <button className="text-blue-600 hover:text-blue-800 font-medium cursor-pointer transition-colors">
+          <button className="hover:underline font-bold cursor-pointer transition-colors"
+            style={{ color: 'var(--accent)' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-d)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--accent)'}
+          >
             Gửi lại
           </button>
         </p>

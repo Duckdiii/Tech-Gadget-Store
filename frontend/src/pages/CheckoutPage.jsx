@@ -25,9 +25,9 @@ function fmt(n) { return n.toLocaleString('vi-VN') + ' đ' }
 
 function SectionCard({ step, title, icon, children }) {
   return (
-    <div className="overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--cb)', borderRadius: '4px' }}>
+    <div className="overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1.5px solid var(--cb)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
       <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid var(--cb)', backgroundColor: 'var(--page)' }}>
-        <div className="w-7 h-7 flex items-center justify-center text-white text-[13px] font-bold shrink-0" style={{ backgroundColor: 'var(--accent)', borderRadius: '3px' }}>{step}</div>
+        <div className="w-8 h-8 flex items-center justify-center text-white text-[13px] font-bold shrink-0" style={{ backgroundColor: 'var(--accent)', borderRadius: '8px' }}>{step}</div>
         <span style={{ color: 'var(--accent)' }}>{icon}</span>
         <h2 className="text-[15px] font-bold" style={{ color: 'var(--ct1)', fontFamily: 'Syne, sans-serif' }}>{title}</h2>
       </div>
@@ -47,7 +47,7 @@ function ProductsSection() {
         {shown.map((p, i) => (
           <div key={p.id}>
             <div className="flex items-start gap-4">
-              <div className="w-16 h-14 flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--page)', border: '1px solid var(--cb)', borderRadius: '3px' }}>
+              <div className="w-16 h-14 flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--page)', border: '1px solid var(--cb)', borderRadius: '8px' }}>
                 <img src={p.image} alt={p.name} className="w-full h-full object-contain p-1" />
               </div>
               <div className="flex-1 min-w-0">
@@ -59,8 +59,8 @@ function ProductsSection() {
                     {p.bundles.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {p.bundles.map((b, bi) => (
-                          <span key={bi} className="text-[11px] font-medium px-2 py-0.5"
-                            style={{ color: 'var(--accent)', backgroundColor: 'rgba(232,66,10,0.07)', border: '1px solid rgba(232,66,10,0.2)', borderRadius: '2px' }}>
+                          <span key={bi} className="text-[11px] font-semibold px-2 py-0.5"
+                            style={{ color: 'var(--accent)', backgroundColor: 'rgba(232,66,10,0.07)', border: '1px solid rgba(232,66,10,0.2)', borderRadius: '20px' }}>
                             + {b.label} · {fmt(b.price)}
                           </span>
                         ))}
@@ -99,31 +99,29 @@ function AddressSection({ selected, onSelect }) {
           <label key={addr.id} onClick={() => onSelect(addr.id)}
             className="flex items-start gap-3 p-4 cursor-pointer transition-all"
             style={{
-              border: selected === addr.id ? '2px solid var(--accent)' : '1px solid var(--cb)',
-              backgroundColor: selected === addr.id ? 'rgba(232,66,10,0.04)' : 'var(--card)',
-              borderRadius: '4px',
+              backgroundColor: selected === addr.id ? 'rgba(232,66,10,0.03)' : 'var(--card)',
+              border: selected === addr.id ? '2px solid var(--accent)' : '1.5px solid var(--cb)',
+              borderRadius: '12px',
             }}
-            onMouseEnter={e => { if (selected !== addr.id) e.currentTarget.style.borderColor = '#c8d0e4' }}
-            onMouseLeave={e => { if (selected !== addr.id) e.currentTarget.style.borderColor = 'var(--cb)' }}
           >
-            <div className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors`}
-              style={{ borderColor: selected === addr.id ? 'var(--accent)' : 'var(--cb)' }}>
-              {selected === addr.id && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />}
+            <div className="pt-0.5">
+              <input type="radio" name="address" checked={selected === addr.id} readOnly className="w-4 h-4" />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[14px] font-semibold" style={{ color: 'var(--ct1)' }}>{addr.name}</span>
-                <span className="text-[13px]" style={{ color: 'var(--ct3)' }}>· {addr.phone}</span>
-                {addr.isDefault && <span className="text-[11px] font-semibold px-2 py-0.5" style={{ color: 'var(--accent)', backgroundColor: 'rgba(232,66,10,0.07)', border: '1px solid rgba(232,66,10,0.2)', borderRadius: '2px' }}>Mặc định</span>}
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[14px] font-bold" style={{ color: 'var(--ct1)' }}>{addr.name}</span>
+                <span className="text-[13px]" style={{ color: 'var(--ct2)' }}>{addr.phone}</span>
+                {addr.isDefault && <span className="text-[11px] font-semibold px-2 py-0.5" style={{ color: 'var(--accent)', backgroundColor: 'rgba(232,66,10,0.07)', border: '1px solid rgba(232,66,10,0.2)', borderRadius: '20px' }}>Mặc định</span>}
               </div>
-              <p className="text-[13px]" style={{ color: 'var(--ct2)' }}>{addr.line1}</p>
-              <p className="text-[13px]" style={{ color: 'var(--ct3)' }}>{addr.line2}</p>
+              <p className="text-[13px] mt-1" style={{ color: 'var(--ct2)' }}>{addr.line1}</p>
+              <p className="text-[12px] mt-0.5" style={{ color: 'var(--ct3)' }}>{addr.line2}</p>
             </div>
-            {selected === addr.id && <svg className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>}
+            {selected === addr.id && <svg className="w-5 h-5 shrink-0" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>}
           </label>
         ))}
-        <button className="w-full flex items-center justify-center gap-2 py-3 text-[13px] font-medium transition-colors"
-          style={{ border: '2px dashed var(--cb)', borderRadius: '4px', color: 'var(--ct3)' }}
+        <button
+          className="w-full py-3.5 text-[13px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          style={{ border: '2px dashed var(--cb)', borderRadius: '12px', color: 'var(--ct3)' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--cb)'; e.currentTarget.style.color = 'var(--ct3)' }}
         >
@@ -141,9 +139,9 @@ function PromoSection({ applied, code, onCodeChange, onApply, onRemove, discount
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
     }>
       {applied ? (
-        <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '4px' }}>
+        <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '12px' }}>
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 flex items-center justify-center" style={{ backgroundColor: 'var(--ok)', borderRadius: '3px' }}>
+            <div className="w-8 h-8 flex items-center justify-center" style={{ backgroundColor: 'var(--ok)', borderRadius: '8px' }}>
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
             </div>
             <div>
@@ -151,7 +149,7 @@ function PromoSection({ applied, code, onCodeChange, onApply, onRemove, discount
               <p className="text-[12px]" style={{ color: '#166534' }}>Giảm {fmt(discount)}</p>
             </div>
           </div>
-          <button onClick={onRemove} className="text-[12px] font-medium transition-colors" style={{ color: 'var(--ct3)' }}
+          <button onClick={onRemove} className="text-[12px] font-medium transition-colors cursor-pointer" style={{ color: 'var(--ct3)' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--err)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--ct3)'}
           >Xoá</button>
@@ -163,8 +161,8 @@ function PromoSection({ applied, code, onCodeChange, onApply, onRemove, discount
             className="field-light flex-1 px-4 py-2.5 text-[14px] font-mono tracking-widest uppercase"
           />
           <button onClick={onApply} disabled={!code.trim()}
-            className="px-5 py-2.5 text-[13px] font-bold shrink-0 transition-colors"
-            style={{ backgroundColor: code.trim() ? 'var(--accent)' : 'var(--page)', color: code.trim() ? 'white' : 'var(--ct3)', borderRadius: '4px', border: code.trim() ? 'none' : '1px solid var(--cb)', cursor: code.trim() ? 'pointer' : 'not-allowed' }}
+            className="px-5 py-2.5 text-[13px] font-bold shrink-0 transition-all duration-200 cursor-pointer"
+            style={{ backgroundColor: code.trim() ? 'var(--accent)' : 'var(--page)', color: code.trim() ? 'white' : 'var(--ct3)', borderRadius: '8px', border: code.trim() ? 'none' : '1px solid var(--cb)', cursor: code.trim() ? 'pointer' : 'not-allowed', boxShadow: code.trim() ? '0 4px 12px rgba(232,66,10,0.15)' : 'none' }}
             onMouseEnter={e => { if (code.trim()) e.currentTarget.style.backgroundColor = 'var(--accent-d)' }}
             onMouseLeave={e => { if (code.trim()) e.currentTarget.style.backgroundColor = 'var(--accent)' }}
           >Áp dụng</button>
@@ -186,7 +184,7 @@ function PaymentSection({ selected, onSelect }) {
             style={{
               border: selected === m.id ? '2px solid var(--accent)' : '1px solid var(--cb)',
               backgroundColor: selected === m.id ? 'rgba(232,66,10,0.04)' : 'var(--card)',
-              borderRadius: '4px',
+              borderRadius: '12px',
             }}
             onMouseEnter={e => { if (selected !== m.id) e.currentTarget.style.borderColor = '#c8d0e4' }}
             onMouseLeave={e => { if (selected !== m.id) e.currentTarget.style.borderColor = 'var(--cb)' }}
@@ -196,7 +194,7 @@ function PaymentSection({ selected, onSelect }) {
               {selected === m.id && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />}
             </div>
             <div className="w-10 h-10 flex items-center justify-center shrink-0 text-white font-black text-[11px] text-center leading-tight"
-              style={{ backgroundColor: m.color, borderRadius: '3px' }}>
+              style={{ backgroundColor: m.color, borderRadius: '8px' }}>
               {m.id === 'momo' ? 'Momo' : m.id === 'vnpay' ? 'VN\nPAY' : '₫'}
             </div>
             <div className="flex-1">
@@ -224,9 +222,9 @@ function PriceSummary({ paymentMethod, promoDiscount, promoCode }) {
   const totalSavings = productSavings + promoDiscount + methodBonus
 
   return (
-    <div className="overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--cb)', borderRadius: '4px' }}>
+    <div className="overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1.5px solid var(--cb)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
       {/* Dark summary header */}
-      <div className="px-5 py-4 text-white" style={{ backgroundColor: 'var(--ink)', borderBottom: '1px solid var(--b1)' }}>
+      <div className="px-5 py-4 text-white" style={{ backgroundColor: 'var(--ink)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="flex items-center gap-2">
           <div className="w-[2px] h-5" style={{ backgroundColor: 'var(--accent)' }} />
           <h3 className="text-[15px] font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>Tóm tắt thanh toán</h3>
@@ -334,10 +332,10 @@ export default function CheckoutPage() {
               <div key={s} className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5">
                   <div className="w-6 h-6 flex items-center justify-center text-[12px] font-bold"
-                    style={{ backgroundColor: i === 1 ? 'var(--accent)' : i < 1 ? 'var(--ct3)' : 'var(--cb)', color: i <= 1 ? 'white' : 'var(--ct3)', borderRadius: '3px' }}>
+                    style={{ backgroundColor: i === 1 ? 'var(--accent)' : i < 1 ? 'var(--ct3)' : 'var(--cb)', color: i <= 1 ? 'white' : 'var(--ct3)', borderRadius: '8px' }}>
                     {i + 1}
                   </div>
-                  <span className="text-[13px] font-semibold" style={{ color: i === 1 ? 'var(--accent)' : 'var(--ct3)' }}>{s}</span>
+                  <span className="text-[13px] font-bold" style={{ color: i === 1 ? 'var(--accent)' : 'var(--ct3)' }}>{s}</span>
                 </div>
                 {i < 2 && <div className="w-8 h-[2px]" style={{ backgroundColor: 'var(--cb)' }} />}
               </div>
@@ -369,8 +367,8 @@ export default function CheckoutPage() {
           {/* Confirm CTA */}
           <button
             onClick={() => onNavigate('invoice')}
-            className="w-full text-white font-bold text-[16px] py-4 transition-colors flex items-center justify-center gap-2.5"
-            style={{ backgroundColor: 'var(--accent)', borderRadius: '4px' }}
+            className="w-full text-white font-bold text-[16px] py-4 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer"
+            style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
           >

@@ -18,4 +18,6 @@ public interface FavoriteProductRepository extends JpaRepository<FavoriteProduct
     Optional<FavoriteProduct> findByCustomerIdAndProductId(String customerId, String productId);
 
     boolean existsByCustomerIdAndProductIdAndStatus(String customerId, String productId, SubscriptionStatus status);
+
+    java.util.List<FavoriteProduct> findByProductIdAndStatus(String productId, SubscriptionStatus status);
 }

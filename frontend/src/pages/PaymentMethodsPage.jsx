@@ -15,19 +15,29 @@ const CHECKERBOARD = {
 function CreditCard({ brand, lastFour, holder, expiry, isDefault, dark }) {
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col justify-between"
+      className="rounded-2xl p-5 flex flex-col justify-between transition-all duration-200"
       style={dark
-        ? { background: 'linear-gradient(135deg, #0f172a 0%, #1e2a3a 100%)', minHeight: '180px' }
-        : { ...CHECKERBOARD, minHeight: '180px' }
+        ? { background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', minHeight: '180px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }
+        : { background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', border: '1.5px solid var(--cb)', minHeight: '180px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }
       }
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'translateY(-3px)'
+        e.currentTarget.style.boxShadow = dark ? '0 12px 28px rgba(0,0,0,0.15)' : '0 8px 24px rgba(0,0,0,0.05)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'none'
+        e.currentTarget.style.boxShadow = dark ? '0 4px 20px rgba(0,0,0,0.06)' : '0 4px 20px rgba(0,0,0,0.02)'
+      }}
     >
       {/* Top row: brand + default badge */}
       <div className="flex items-start justify-between">
-        <div className={`px-2.5 py-1 rounded-md text-xs font-black tracking-wider ${dark ? 'bg-white text-blue-700' : 'bg-white text-gray-700'}`}>
+        <div className={`px-2.5 py-1 rounded-md text-xs font-black tracking-wider shadow-sm`}
+          style={dark ? { backgroundColor: 'white', color: 'var(--accent)' } : { backgroundColor: 'white', color: 'var(--ct1)' }}>
           {brand}
         </div>
         {isDefault && (
-          <span className="bg-blue-700 text-white text-xs font-semibold px-3 py-1 rounded-full">
+          <span className="text-white text-xs font-bold px-3 py-1 rounded-full"
+            style={{ backgroundColor: 'var(--accent)', boxShadow: '0 2px 8px rgba(232,66,10,0.2)' }}>
             Mặc định
           </span>
         )}
@@ -110,7 +120,12 @@ export default function PaymentMethodsPage() {
               </svg>
               <h2 className="text-base font-bold text-gray-900">Thẻ Tín Dụng / Ghi Nợ</h2>
             </div>
-            <button onClick={() => onNavigate('addCard')} className="flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-colors cursor-pointer">
+            <button onClick={() => onNavigate('addCard')}
+              className="flex items-center gap-1.5 text-white font-bold py-2 px-4 rounded-xl text-sm transition-all duration-200 cursor-pointer"
+              style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+            >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>

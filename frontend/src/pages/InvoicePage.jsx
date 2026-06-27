@@ -49,7 +49,7 @@ function InvoiceDocument({ onClose }) {
         {/* Modal top bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
-            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            <svg className="w-5 h-5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             Hóa đơn điện tử
           </h2>
           <div className="flex items-center gap-2">
@@ -70,10 +70,10 @@ function InvoiceDocument({ onClose }) {
           <div className="flex items-start justify-between mb-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent)' }}>
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2" /></svg>
                 </div>
-                <span className="text-xl font-black text-blue-700">TechStore</span>
+                <span className="text-xl font-black" style={{ color: 'var(--accent)' }}>TechStore</span>
               </div>
               <div className="text-[13px] text-gray-500 space-y-0.5">
                 <p>123 Nguyễn Văn Linh, Quận 7, TP. HCM</p>
@@ -132,7 +132,7 @@ function InvoiceDocument({ onClose }) {
                     <p className="text-[13px] font-bold text-gray-900">{item.name}</p>
                     <p className="text-[12px] text-gray-500 mt-0.5">{item.variant}</p>
                     {item.bundles.map((b, bi) => (
-                      <p key={bi} className="text-[11px] text-blue-600 mt-0.5">+ {b.label} · {fmt(b.price)}</p>
+                      <p key={bi} className="text-[11px] mt-0.5" style={{ color: 'var(--accent)' }}>+ {b.label} · {fmt(b.price)}</p>
                     ))}
                   </div>
                   <span className="text-[13px] text-gray-700 text-center">{item.qty}</span>
@@ -170,8 +170,8 @@ function InvoiceDocument({ onClose }) {
               )}
               {ORDER.methodBonus > 0 && (
                 <div className="flex justify-between text-[13px]">
-                  <span className="text-blue-600">Ưu đãi {ORDER.paymentMethod}</span>
-                  <span className="font-bold text-blue-600">−{fmt(ORDER.methodBonus)}</span>
+                  <span style={{ color: 'var(--accent)' }}>Ưu đãi {ORDER.paymentMethod}</span>
+                  <span className="font-bold" style={{ color: 'var(--accent)' }}>−{fmt(ORDER.methodBonus)}</span>
                 </div>
               )}
               <div className="flex justify-between text-[13px]">
@@ -187,7 +187,7 @@ function InvoiceDocument({ onClose }) {
                   <span className="text-[14px] font-bold text-gray-800">Tổng cộng</span>
                   <p className="text-[11px] text-gray-400">Đã bao gồm VAT</p>
                 </div>
-                <span className="text-xl font-black text-blue-700">{fmt(total)}</span>
+                <span className="text-xl font-black" style={{ color: 'var(--accent)' }}>{fmt(total)}</span>
               </div>
             </div>
           </div>
@@ -268,15 +268,15 @@ export default function InvoicePage() {
               ].map(({ label, value, highlight, green }) => (
                 <div key={label} className="px-5 py-4 text-center">
                   <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mb-1">{label}</p>
-                  <p className={`text-[15px] font-black ${highlight ? 'text-blue-700' : green ? 'text-green-600' : 'text-gray-800'}`}>{value}</p>
+                  <p className={`text-[15px] font-black ${highlight ? 'text-[#E8420A]' : green ? 'text-green-600' : 'text-gray-800'}`}>{value}</p>
                 </div>
               ))}
             </div>
 
             {/* Delivery address */}
             <div className="px-6 py-4 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: 'var(--accent-dim)' }}>
+                <svg className="w-4 h-4" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               </div>
               <div>
                 <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-1">Địa chỉ giao hàng</p>
@@ -304,7 +304,7 @@ export default function InvoicePage() {
                       <p className="text-[13px] font-bold text-gray-900 truncate">{item.name}</p>
                       <p className="text-[12px] text-gray-400 mt-0.5">{item.variant} · SL: {item.qty}</p>
                       {item.bundles.length > 0 && (
-                        <p className="text-[11px] text-blue-600 mt-0.5">{item.bundles.map(b => b.label).join(', ')}</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--accent)' }}>{item.bundles.map(b => b.label).join(', ')}</p>
                       )}
                     </div>
                     <p className="text-[14px] font-bold text-gray-800 shrink-0">{fmt((item.price + bundleFee) * item.qty)}</p>
@@ -313,19 +313,25 @@ export default function InvoicePage() {
               })}
             </div>
           </div>
-
+ 
           {/* ── Action buttons ── */}
           <div className={`flex flex-col sm:flex-row gap-3 transition-all duration-700 delay-[450ms] ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <button
               onClick={() => setShowInvoice(true)}
-              className="flex-1 flex items-center justify-center gap-2 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold text-[14px] py-3.5 rounded-xl transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 font-bold text-[14px] py-3.5 rounded-xl transition-all cursor-pointer"
+              style={{ border: '2px solid var(--accent)', color: 'var(--accent)', backgroundColor: 'transparent' }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-dim)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               Xem hóa đơn
             </button>
             <button
               onClick={() => onNavigate('home')}
-              className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[14px] py-3.5 rounded-xl transition-colors shadow-md shadow-blue-200"
+              className="flex-1 flex items-center justify-center gap-2 text-white font-bold text-[14px] py-3.5 rounded-xl transition-all cursor-pointer"
+              style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
               Về trang chủ
@@ -334,7 +340,7 @@ export default function InvoicePage() {
 
           <p className="text-center text-[12px] text-gray-400 mt-5">
             Có vấn đề về đơn hàng?{' '}
-            <span className="text-blue-500 hover:underline cursor-pointer font-medium">Liên hệ hỗ trợ</span>
+            <span className="hover:underline cursor-pointer font-bold" style={{ color: 'var(--accent)' }}>Liên hệ hỗ trợ</span>
             {' '}· Hotline: <span className="font-semibold text-gray-600">1800 1234</span>
           </p>
         </div>
