@@ -2900,7 +2900,7 @@ function OverviewSection({ banners, onDismiss, onNavigate }) {
 
       {/* Recent orders */}
       <div className="bg-white overflow-hidden"
-        style={{ border: '1.5px solid var(--cb)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+        style={{ border: '1px solid var(--b1)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(15,23,42,0.02)' }}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <h2 className="text-base font-bold text-gray-900">Đơn hàng gần đây</h2>
           <button onClick={() => onNavigate('orders')} className="text-sm text-[#E8420A] hover:text-[#c93808] font-bold transition-all cursor-pointer flex items-center gap-1">
@@ -2942,7 +2942,7 @@ function OverviewSection({ banners, onDismiss, onNavigate }) {
 
       {/* Wishlist */}
       <div className="bg-white overflow-hidden"
-        style={{ border: '1.5px solid var(--cb)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+        style={{ border: '1px solid var(--b1)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(15,23,42,0.02)' }}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <h2 className="text-base font-bold text-gray-900">Sản phẩm yêu thích</h2>
           <button className="text-sm text-[#E8420A] hover:text-[#c93808] font-bold transition-all cursor-pointer flex items-center gap-1">
@@ -3131,8 +3131,8 @@ export default function UserProfilePage() {
               <div className="flex items-center gap-2 mb-1">
                 <p className="text-[10px] font-bold tracking-[0.18em] uppercase" style={{ color: 'var(--accent)' }}>Hồ sơ thành viên</p>
               </div>
-              <h1 className="text-2xl font-black leading-tight" style={{ color: 'var(--t1)', fontFamily: 'Syne, sans-serif' }}>Alex Johnson</h1>
-              <p className="text-sm mt-1" style={{ color: 'var(--t3)' }}>096·····35 · alex@example.com</p>
+              <h1 className="text-2xl font-black leading-tight" style={{ color: 'white', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Alex Johnson</h1>
+              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>096·····35 · alex@example.com</p>
               <div className="flex items-center gap-2 mt-2.5">
                 <span className="px-3 py-1 text-xs font-black rounded" style={{ backgroundColor: 'rgba(232,66,10,0.15)', color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.3)' }}>T-MEM</span>
                 <span className="px-3 py-1 text-xs font-black text-white rounded" style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>Elite</span>
@@ -3142,9 +3142,9 @@ export default function UserProfilePage() {
 
             {/* Edit button */}
             <button className="ml-auto flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded transition-colors shrink-0"
-              style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'var(--t2)', backgroundColor: 'rgba(255,255,255,0.06)' }}
+              style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'white', backgroundColor: 'rgba(255,255,255,0.06)' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'var(--t2)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'white' }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -3163,7 +3163,7 @@ export default function UserProfilePage() {
                 </svg>
               </div>
               <div>
-                <p className="text-3xl font-black leading-none" style={{ color: 'var(--accent)', fontFamily: 'Syne, sans-serif' }}>15</p>
+                <p className="text-3xl font-black leading-none" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>15</p>
                 <p className="text-xs font-medium mt-1" style={{ color: 'rgba(232,66,10,0.7)' }}>Tổng đơn hàng</p>
               </div>
             </div>
@@ -3176,7 +3176,7 @@ export default function UserProfilePage() {
                 </svg>
               </div>
               <div>
-                <p className="text-xl font-black leading-none" style={{ color: '#4ade80', fontFamily: 'Syne, sans-serif' }}>21.875.000đ</p>
+                <p className="text-xl font-black leading-none" style={{ color: '#4ade80', fontFamily: 'Be Vietnam Pro, sans-serif' }}>21.875.000đ</p>
                 <p className="text-xs font-medium mt-1" style={{ color: 'rgba(74,222,128,0.7)' }}>Tổng tiền tích lũy</p>
               </div>
             </div>
@@ -3189,8 +3189,8 @@ export default function UserProfilePage() {
                 </svg>
               </div>
               <div>
-                <p className="text-3xl font-black leading-none" style={{ color: 'var(--t1)', fontFamily: 'Syne, sans-serif' }}>1.250</p>
-                <p className="text-xs font-medium mt-1" style={{ color: 'var(--t3)' }}>Điểm thành viên</p>
+                <p className="text-3xl font-black leading-none" style={{ color: 'white', fontFamily: 'Be Vietnam Pro, sans-serif' }}>1.250</p>
+                <p className="text-xs font-medium mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Điểm thành viên</p>
               </div>
             </div>
 
@@ -3216,10 +3216,10 @@ export default function UserProfilePage() {
                 className="shrink-0 px-5 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap"
                 style={{
                   borderBottomColor: activeSection === tab.id ? 'var(--accent)' : 'transparent',
-                  color: activeSection === tab.id ? 'var(--accent)' : 'var(--t3)',
+                  color: activeSection === tab.id ? 'var(--accent)' : 'rgba(255,255,255,0.6)',
                 }}
-                onMouseEnter={e => { if (activeSection !== tab.id) { e.currentTarget.style.color = 'var(--t1)'; e.currentTarget.style.borderBottomColor = 'rgba(255,255,255,0.3)' } }}
-                onMouseLeave={e => { if (activeSection !== tab.id) { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.borderBottomColor = 'transparent' } }}
+                onMouseEnter={e => { if (activeSection !== tab.id) { e.currentTarget.style.color = 'white'; e.currentTarget.style.borderBottomColor = 'rgba(255,255,255,0.3)' } }}
+                onMouseLeave={e => { if (activeSection !== tab.id) { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.borderBottomColor = 'transparent' } }}
               >
                 {tab.label}
               </button>
@@ -3233,10 +3233,10 @@ export default function UserProfilePage() {
         <div className="grid grid-cols-[280px_1fr_300px] gap-6 items-start">
 
           {/* Left sidebar */}
-          <aside className="overflow-hidden sticky top-24" style={{ backgroundColor: 'var(--card)', border: '1.5px solid var(--cb)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+          <aside className="overflow-hidden sticky top-24" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(15,23,42,0.02)' }}>
             <ul className="py-3">
               {SIDEBAR_ITEMS.map((item, i) => {
-                if (!item) return <li key={i} className="my-2 mx-4" style={{ borderTop: '1px solid var(--cb)' }} />
+                if (!item) return <li key={i} className="my-2 mx-4" style={{ borderTop: '1px solid var(--b1)' }} />
                 const isActive = activeSection === item.id && !item.action
                 const isLogout = item.id === 'logout'
                 return (
@@ -3248,10 +3248,10 @@ export default function UserProfilePage() {
                         ? { backgroundColor: 'rgba(232,66,10,0.06)', color: 'var(--accent)', fontWeight: '700', borderLeft: '3px solid var(--accent)', paddingLeft: '17px', paddingRight: '20px', paddingTop: '12px', paddingBottom: '12px' }
                         : isLogout
                           ? { color: 'var(--err)', padding: '12px 20px' }
-                          : { color: 'var(--ct2)', padding: '12px 20px' }
+                          : { color: 'var(--t2)', padding: '12px 20px' }
                       }
-                      onMouseEnter={e => { if (!isActive && !isLogout) { e.currentTarget.style.backgroundColor = 'var(--page)'; e.currentTarget.style.color = 'var(--ct1)' } }}
-                      onMouseLeave={e => { if (!isActive && !isLogout) { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = 'var(--ct2)' } }}
+                      onMouseEnter={e => { if (!isActive && !isLogout) { e.currentTarget.style.backgroundColor = 'var(--page)'; e.currentTarget.style.color = 'var(--t1)' } }}
+                      onMouseLeave={e => { if (!isActive && !isLogout) { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = 'var(--t2)' } }}
                     >
                       <SvgIcon
                         name={item.icon}

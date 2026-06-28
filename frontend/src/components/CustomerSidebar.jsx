@@ -82,7 +82,7 @@ export default function CustomerSidebar({ allowedPages = null }) {
           </div>
           <span
             className="text-[15px] font-bold tracking-tight"
-            style={{ color: 'var(--t1)', fontFamily: 'Syne, sans-serif' }}
+            style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}
           >
             TechStore
           </span>

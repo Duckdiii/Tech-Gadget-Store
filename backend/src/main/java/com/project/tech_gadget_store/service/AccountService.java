@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -32,6 +33,35 @@ public class AccountService {
         this.accountRepository = accountRepository;
         this.loginLogRepository = loginLogRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    public List<AccountResponseDto> getAllAccounts() {
+        return accountRepository.findAll().stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    public AccountResponseDto blockAccountById(String id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+        account.setStatus(AccountStatus.BLOCKED);
+        accountRepository.save(account);
+        return toDto(account);
+    }
+
+    public AccountResponseDto unblockAccountById(String id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+        return toDto(account);
+    }
+
+    @Transactional
+    public void deleteAccountById(String id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+        deleteStaffAccount(account);
     }
 
     public LoginLogResponseDto viewLoginInfo(String email) {
@@ -57,15 +87,7 @@ public class AccountService {
         account.setStatus(AccountStatus.BLOCKED);
         accountRepository.save(account);
 
-        return AccountResponseDto.builder()
-                .id(account.getId())
-                .createdAt(account.getCreatedAt())
-                .updatedAt(account.getUpdatedAt())
-                .email(account.getEmail())
-                .status(account.getStatus())
-                .userId(account.getUser().getId())
-                .loginLogsIds(account.getLoginLogs().stream().map(log -> log.getId()).toList())
-                .build();
+        return toDto(account);
     }
 
     @Transactional
@@ -93,5 +115,17 @@ public class AccountService {
         log.info("Action: {} | accountId: {} | email: {}", AuditAction.DELETE_ACCOUNT, account.getId(),
                 account.getEmail());
         accountRepository.delete(account);
+    }
+
+    private AccountResponseDto toDto(Account account) {
+        return AccountResponseDto.builder()
+                .id(account.getId())
+                .createdAt(account.getCreatedAt())
+                .updatedAt(account.getUpdatedAt())
+                .email(account.getEmail())
+                .status(account.getStatus())
+                .userId(account.getUser().getId())
+                .loginLogsIds(account.getLoginLogs().stream().map(log -> log.getId()).toList())
+                .build();
     }
 }

@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { apiFetch } from '../services/api'
 
 /* ── Shared helpers ── */
 function fmt(n) {
@@ -7,23 +8,122 @@ function fmt(n) {
   return n.toLocaleString('vi-VN') + ' đ'
 }
 
+function parseDetails(detailsStr) {
+  if (!detailsStr) return { ram: '', storage: '', color: '' }
+  const parts = detailsStr.split('/').map(s => s.trim())
+  let ram = ''
+  let storage = ''
+  let color = ''
+  parts.forEach(p => {
+    if (p.toLowerCase().includes('ram')) {
+      ram = p.replace(/gb\s*ram/i, '').trim()
+    } else if (p.toLowerCase().includes('storage')) {
+      storage = p.replace(/gb\s*storage/i, '').trim()
+    } else {
+      color = p
+    }
+  })
+  return { ram, storage, color }
+}
+
+function groupLogs(logs, typeFilter) {
+  const filtered = logs.filter(l => l.type === typeFilter)
+  const groups = {}
+  filtered.forEach(item => {
+    if (!groups[item.logId]) {
+      const dt = new Date(item.createdTime)
+      const dateStr = dt.toLocaleDateString('vi-VN')
+      const timeStr = dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+      groups[item.logId] = {
+        id: item.logId,
+        date: dateStr,
+        time: timeStr,
+        supplier: typeFilter === 'IMPORT' ? (item.noteOrReason?.split(';')[0] || 'Nhà cung cấp') : undefined,
+        recipient: typeFilter === 'EXPORT' ? (item.noteOrReason?.split(';')[0] || 'Người nhận') : undefined,
+        staff: item.performedBy === 'user-stf-01' ? 'Trần Thị Bích' : item.performedBy === 'user-stf-02' ? 'Lê Hoàng Cường' : item.performedBy === 'user-mgr-01' ? 'Nguyễn Văn An' : item.performedBy,
+        status: item.status.toLowerCase(),
+        note: item.noteOrReason || '',
+        items: [],
+        total: 0,
+      }
+    }
+    groups[item.logId].items.push({
+      name: item.productName,
+      sku: item.productDetails || 'N/A',
+      qty: item.quantity,
+      unitPrice: item.price,
+    })
+    groups[item.logId].total += item.quantity * item.price
+  })
+  return Object.values(groups)
+}
+
+function buildInventoryProducts(products, logs) {
+  const exportedCounts = {}
+  logs.filter(l => l.type === 'EXPORT').forEach(log => {
+    const { ram, storage, color } = parseDetails(log.productDetails)
+    const key = `${log.productName}-${ram}-${storage}-${color}`.toLowerCase()
+    exportedCounts[key] = (exportedCounts[key] || 0) + log.quantity
+  })
+
+  const list = []
+  products.forEach(p => {
+    const configMap = {}
+    p.variants.forEach(v => {
+      const ramStr = v.ramGb ? `${v.ramGb}GB` : ''
+      const storageStr = v.storageGb ? `${v.storageGb}GB` : ''
+      const configKey = `${v.ramGb || ''}-${v.storageGb || ''}-${v.color || ''}`.toLowerCase()
+      if (!configMap[configKey]) {
+        configMap[configKey] = {
+          id: v.id,
+          name: `${p.name} ${ramStr} ${storageStr} ${v.color || ''}`.replace(/\s+/g, ' ').trim(),
+          sku: `${p.brandName ? p.brandName.slice(0,3).toUpperCase() : 'GEN'}-${v.id.slice(0,8).toUpperCase()}`,
+          category: p.categoryName || 'General',
+          price: v.price || 0,
+          totalUnits: 0,
+          ramGb: v.ramGb,
+          storageGb: v.storageGb,
+          color: v.color,
+          img: p.imageUrl || 'https://placehold.co/48x48/e0e7ff/4f46e5?text=TS',
+        }
+      }
+      configMap[configKey].totalUnits += 1
+    })
+
+    Object.values(configMap).forEach(cfg => {
+      const matchKey = `${p.name}-${cfg.ramGb || ''}-${cfg.storageGb || ''}-${cfg.color || ''}`.toLowerCase()
+      const exported = exportedCounts[matchKey] || 0
+      const stock = Math.max(0, cfg.totalUnits - exported)
+      const maxStock = Math.max(100, stock * 2)
+      let status = 'con_hang'
+      if (stock === 0) status = 'het_hang'
+      else if (stock <= 5) status = 'sap_het'
+
+      list.push({
+        id: cfg.id,
+        img: cfg.img,
+        name: cfg.name,
+        sku: cfg.sku,
+        category: cfg.category,
+        price: cfg.price,
+        stock,
+        maxStock,
+        status,
+        faded: stock === 0,
+      })
+    })
+  })
+  return list
+}
+
 /* ══════════════════════════════════════════════════
    INVENTORY (TAB 1)
-══════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════ */
 const STATUS_CONFIG = {
   sap_het:  { label: 'Sắp hết',   bg: 'bg-orange-100', text: 'text-orange-600', barColor: 'bg-red-500' },
   con_hang: { label: 'Còn hàng',  bg: 'bg-green-100',  text: 'text-green-700',  barColor: 'bg-green-500' },
   het_hang: { label: 'Hết hàng',  bg: 'bg-gray-200',   text: 'text-gray-500',   barColor: 'bg-gray-300' },
 }
-
-const PRODUCTS = [
-  { id: 1, img: 'https://placehold.co/48x48/e0e7ff/4f46e5?text=IP', name: 'iPhone 15 Pro Max 256GB',  sku: 'IP15PM-256-BLK', category: 'Smartphones', price: 32990000, stock: 15,  maxStock: 100, status: 'sap_het',  faded: false },
-  { id: 2, img: 'https://placehold.co/48x48/d1d5db/374151?text=MB', name: 'MacBook Air M3 8GB',        sku: 'MBA-M3-8-SLV',   category: 'Laptops',     price: 28990000, stock: 42,  maxStock: 50,  status: 'con_hang', faded: false },
-  { id: 3, img: 'https://placehold.co/48x48/d1d5db/9ca3af?text=AW', name: 'Apple Watch Series 9 45mm', sku: 'AWS9-45-MID',     category: 'Accessories', price: 11990000, stock: 0,   maxStock: 200, status: 'het_hang', faded: true  },
-  { id: 4, img: 'https://placehold.co/48x48/fef3c7/d97706?text=S2', name: 'Samsung Galaxy S24 Ultra',  sku: 'SGS24U-256-BLK', category: 'Smartphones', price: 27490000, stock: 88,  maxStock: 120, status: 'con_hang', faded: false },
-  { id: 5, img: 'https://placehold.co/48x48/ede9fe/7c3aed?text=AP', name: 'AirPods Pro 2nd Gen',       sku: 'APP2-WHT',        category: 'Accessories', price: 5990000,  stock: 6,   maxStock: 80,  status: 'sap_het',  faded: false },
-  { id: 6, img: 'https://placehold.co/48x48/dbeafe/1d4ed8?text=IP', name: 'iPad Pro 11" M4 Wi-Fi',     sku: 'IPP11-M4-256',   category: 'Tablets',     price: 21990000, stock: 24,  maxStock: 60,  status: 'con_hang', faded: false },
-]
 
 function StockBar({ stock, maxStock, barColor }) {
   const pct = maxStock > 0 ? Math.round((stock / maxStock) * 100) : 0
@@ -37,13 +137,13 @@ function StockBar({ stock, maxStock, barColor }) {
   )
 }
 
-function InventoryTab() {
+function InventoryTab({ productsList, loading }) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(1)
 
-  const filtered = PRODUCTS.filter((p) => {
+  const filtered = productsList.filter((p) => {
     const q = search.toLowerCase()
     return (
       (!q || p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)) &&
@@ -315,18 +415,18 @@ function ImportReceiptModal({ log, onClose }) {
   )
 }
 
-function ImportLogTab() {
+function ImportLogTab({ logsList }) {
   const [search, setSearch]       = useState('')
   const [supplier, setSupplier]   = useState('')
   const [status, setStatus]       = useState('')
   const [receipt, setReceipt]     = useState(null)
 
-  const suppliers = [...new Set(IMPORT_LOGS.map(l => l.supplier))]
+  const suppliers = [...new Set(logsList.map(l => l.supplier).filter(Boolean))]
 
-  const filtered = IMPORT_LOGS.filter(l => {
+  const filtered = logsList.filter(l => {
     const q = search.toLowerCase()
     return (
-      (!q || l.id.toLowerCase().includes(q) || l.supplier.toLowerCase().includes(q) || l.items.some(it => it.name.toLowerCase().includes(q))) &&
+      (!q || l.id.toLowerCase().includes(q) || l.supplier?.toLowerCase().includes(q) || l.items.some(it => it.name.toLowerCase().includes(q))) &&
       (!supplier || l.supplier === supplier) &&
       (!status || l.status === status)
     )
@@ -607,16 +707,16 @@ function ExportReceiptModal({ log, onClose }) {
   )
 }
 
-function ExportLogTab() {
+function ExportLogTab({ logsList }) {
   const [search, setSearch]   = useState('')
   const [typeFilter, setType] = useState('')
   const [status, setStatus]   = useState('')
   const [receipt, setReceipt] = useState(null)
 
-  const filtered = EXPORT_LOGS.filter(l => {
+  const filtered = logsList.filter(l => {
     const q = search.toLowerCase()
     return (
-      (!q || l.id.toLowerCase().includes(q) || l.recipient.toLowerCase().includes(q) || l.items.some(it => it.name.toLowerCase().includes(q))) &&
+      (!q || l.id.toLowerCase().includes(q) || l.recipient?.toLowerCase().includes(q) || l.items.some(it => it.name.toLowerCase().includes(q))) &&
       (!typeFilter || l.type === typeFilter) &&
       (!status || l.status === status)
     )
@@ -772,6 +872,52 @@ const TABS = [
 
 export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState('inventory')
+  const [productsList, setProductsList] = useState([])
+  const [importLogs, setImportLogs] = useState([])
+  const [exportLogs, setExportLogs] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    async function loadData() {
+      try {
+        setLoading(true)
+        const rawProducts = await apiFetch('/api/products')
+        const detailed = await Promise.all(
+          rawProducts.map(async (p) => {
+            try {
+              return await apiFetch(`/api/products/${p.id}`)
+            } catch {
+              return { ...p, variants: [] }
+            }
+          })
+        )
+
+        let logs = []
+        try {
+          logs = await apiFetch('/api/manager/warehouse-logs')
+        } catch (e) {
+          console.warn("Failed to load warehouse logs", e)
+        }
+
+        if (!active) return
+
+        const imports = groupLogs(logs, 'IMPORT')
+        const exports = groupLogs(logs, 'EXPORT')
+        const liveProducts = buildInventoryProducts(detailed, logs)
+
+        setProductsList(liveProducts)
+        setImportLogs(imports)
+        setExportLogs(exports)
+      } catch (err) {
+        console.error("Failed to load inventory", err)
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+    loadData()
+    return () => { active = false }
+  }, [])
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
@@ -818,9 +964,20 @@ export default function InventoryPage() {
 
       {/* Content */}
       <div className="flex-1 px-8 py-7">
-        {activeTab === 'inventory' && <InventoryTab />}
-        {activeTab === 'import'    && <ImportLogTab />}
-        {activeTab === 'export'    && <ExportLogTab />}
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <svg className="w-8 h-8 text-[#E8420A] animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          </div>
+        ) : (
+          <>
+            {activeTab === 'inventory' && <InventoryTab productsList={productsList} />}
+            {activeTab === 'import'    && <ImportLogTab logsList={importLogs} />}
+            {activeTab === 'export'    && <ExportLogTab logsList={exportLogs} />}
+          </>
+        )}
       </div>
     </div>
   )

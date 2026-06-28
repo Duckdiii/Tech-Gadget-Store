@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, ROLE_LANDING } from '../context/AuthContext'
-import logo from '../assets/logo.png'
 
 const DEMO_ACCOUNTS = [
   { role: 'customer', label: 'Khách hàng', desc: 'Mua sắm & đơn hàng' },
@@ -61,10 +60,10 @@ export default function LoginPage() {
           <div className="w-7 h-7 flex items-center justify-center" style={{ backgroundColor: 'var(--accent)', borderRadius: '8px' }}>
             <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
           </div>
-          <span className="text-[15px] font-bold text-gray-900" style={{ fontFamily: 'Syne, sans-serif' }}>TechStore</span>
+          <span className="text-[15px] font-bold text-gray-900" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>TechStore</span>
         </div>
 
-        <h2 className="text-[24px] font-bold text-center text-gray-900 mb-1" style={{ fontFamily: 'Syne, sans-serif' }}>
+        <h2 className="text-[24px] font-bold text-center text-gray-900 mb-1" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
           Đăng nhập
         </h2>
         <p className="text-[13px] text-center text-gray-500 mb-8">

@@ -27,17 +27,17 @@ function fmt(price) { return price.toLocaleString('vi-VN') + ' đ' }
 
 function QuantityControl({ qty, onIncrease, onDecrease }) {
   return (
-    <div className="flex items-center" style={{ border: '1.5px solid var(--cb)', borderRadius: '8px', overflow: 'hidden' }}>
+    <div className="flex items-center" style={{ border: '1px solid var(--b1)', borderRadius: '8px', overflow: 'hidden' }}>
       <button onClick={onDecrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer"
-        style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', borderRight: '1.5px solid var(--cb)' }}
-        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--cb)'}
-        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--page)'}
+        style={{ backgroundColor: 'var(--s1)', color: 'var(--t2)', borderRight: '1px solid var(--b1)' }}
+        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--b1)'}
+        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--s1)'}
       >−</button>
-      <span className="w-11 h-9 flex items-center justify-center text-sm font-extrabold" style={{ backgroundColor: 'var(--card)', color: 'var(--ct1)' }}>{qty}</span>
+      <span className="w-11 h-9 flex items-center justify-center text-sm font-extrabold" style={{ backgroundColor: 'var(--card)', color: 'var(--t1)' }}>{qty}</span>
       <button onClick={onIncrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer"
-        style={{ backgroundColor: 'var(--page)', color: 'var(--ct2)', borderLeft: '1.5px solid var(--cb)' }}
-        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--cb)'}
-        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--page)'}
+        style={{ backgroundColor: 'var(--s1)', color: 'var(--t2)', borderLeft: '1px solid var(--b1)' }}
+        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--b1)'}
+        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--s1)'}
       >+</button>
     </div>
   )
@@ -50,37 +50,37 @@ function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove })
 
   return (
     <div
-      className={`overflow-hidden transition-opacity duration-200 ${!item.checked ? 'opacity-60' : ''}`}
+      className={`overflow-hidden transition-opacity duration-200 ${!item.checked ? 'opacity-65' : ''}`}
       style={{
         backgroundColor: 'var(--card)',
-        borderTop: '1.5px solid var(--cb)',
-        borderRight: '1.5px solid var(--cb)',
-        borderBottom: '1.5px solid var(--cb)',
-        borderLeft: item.checked ? '4.5px solid var(--accent)' : '1.5px solid var(--cb)',
+        borderTop: '1px solid var(--b1)',
+        borderRight: '1px solid var(--b1)',
+        borderBottom: '1px solid var(--b1)',
+        borderLeft: item.checked ? '4.5px solid var(--accent)' : '1px solid var(--b1)',
         borderRadius: '16px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+        boxShadow: '0 4px 20px rgba(15,23,42,0.02)',
       }}
     >
       {/* Main row */}
       <div className="flex gap-4 p-5">
         <div className="flex items-center shrink-0">
-          <input type="checkbox" checked={item.checked} onChange={() => onToggleItem(item.id)} className="w-5 h-5 cursor-pointer" />
+          <input type="checkbox" checked={item.checked} onChange={() => onToggleItem(item.id)} className="w-5 h-5 cursor-pointer accent-[var(--accent)]" />
         </div>
-        <div className="w-28 h-24 shrink-0 flex items-center justify-center" style={{ backgroundColor: 'var(--page)', border: '1px solid var(--cb)', borderRadius: '10px' }}>
+        <div className="w-28 h-24 shrink-0 flex items-center justify-center" style={{ backgroundColor: 'var(--s1)', border: '1px solid var(--b1)', borderRadius: '10px' }}>
           <img src={item.image} alt={item.name} className="w-full h-full object-contain p-2" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>{item.brand}</span>
-              <h3 className="text-[15px] font-bold leading-snug mt-0.5" style={{ color: 'var(--ct1)' }}>{item.name}</h3>
-              <p className="text-[13px] mt-1" style={{ color: 'var(--ct3)' }}>{item.variant}</p>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>{item.brand}</span>
+              <h3 className="text-[15px] font-bold leading-snug mt-0.5" style={{ color: 'var(--t1)' }}>{item.name}</h3>
+              <p className="text-[12.5px] mt-1" style={{ color: 'var(--t3)' }}>{item.variant}</p>
             </div>
             <button onClick={() => onRemove(item.id)}
               className="shrink-0 w-8 h-8 flex items-center justify-center transition-colors cursor-pointer"
-              style={{ color: 'var(--ct3)' }}
+              style={{ color: 'var(--t3)' }}
               onMouseEnter={e => { e.currentTarget.style.color = 'var(--err)'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.06)'; e.currentTarget.style.borderRadius = '8px' }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'var(--ct3)'; e.currentTarget.style.backgroundColor = 'transparent' }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.backgroundColor = 'transparent' }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -90,10 +90,10 @@ function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove })
           <div className="flex items-end justify-between mt-4">
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-xl font-extrabold" style={{ color: 'var(--accent)', fontFamily: 'Syne, sans-serif' }}>{fmt(item.price)}</span>
-                {item.originalPrice && <span className="text-sm line-through" style={{ color: 'var(--ct3)' }}>{fmt(item.originalPrice)}</span>}
+                <span className="text-xl font-extrabold" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{fmt(item.price)}</span>
+                {item.originalPrice && <span className="text-xs line-through" style={{ color: 'var(--t3)' }}>{fmt(item.originalPrice)}</span>}
               </div>
-              {lineSavings > 0 && <p className="text-[12px] font-semibold mt-0.5" style={{ color: 'var(--ok)' }}>Tiết kiệm {fmt(lineSavings)}</p>}
+              {lineSavings > 0 && <p className="text-[11px] font-bold mt-0.5" style={{ color: 'var(--ok)' }}>Tiết kiệm {fmt(lineSavings)}</p>}
             </div>
             <QuantityControl qty={item.qty} onIncrease={() => onQtyChange(item.id, item.qty + 1)} onDecrease={() => item.qty > 1 && onQtyChange(item.id, item.qty - 1)} />
           </div>
@@ -102,34 +102,34 @@ function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove })
 
       {/* Bundles */}
       {item.bundles.length > 0 && (
-        <div style={{ borderTop: '1px solid var(--cb)' }}>
-          <div className="px-5 py-2 flex items-center gap-1.5" style={{ backgroundColor: 'var(--page)' }}>
+        <div style={{ borderTop: '1px solid var(--b1)' }}>
+          <div className="px-5 py-2 flex items-center gap-1.5" style={{ backgroundColor: 'var(--s1)' }}>
             <svg className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>Dịch vụ kèm theo</span>
+            <span className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>Dịch vụ kèm theo mua kèm</span>
           </div>
           {item.bundles.slice(0, 2).map(bundle => (
             <label key={bundle.id}
               className="flex items-center justify-between gap-3 px-5 py-3 cursor-pointer transition-colors"
-              style={{ borderTop: '1px solid var(--cb)' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--page)'}
+              style={{ borderTop: '1px solid var(--b1)' }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--s1)'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               <div className="flex items-center gap-3">
-                <input type="checkbox" checked={bundle.checked} onChange={() => onToggleBundle(item.id, bundle.id)} className="w-4 h-4 cursor-pointer shrink-0" />
-                <span className="text-[13px] font-medium" style={{ color: bundle.checked ? 'var(--ct1)' : 'var(--ct3)' }}>{bundle.label}</span>
+                <input type="checkbox" checked={bundle.checked} onChange={() => onToggleBundle(item.id, bundle.id)} className="w-4 h-4 cursor-pointer shrink-0 accent-[var(--accent)]" />
+                <span className="text-[12.5px] font-medium" style={{ color: bundle.checked ? 'var(--t1)' : 'var(--t3)' }}>{bundle.label}</span>
               </div>
-              <span className="text-[13px] font-bold shrink-0" style={{ color: bundle.checked ? 'var(--accent)' : 'var(--ct3)' }}>+{fmt(bundle.price)}</span>
+              <span className="text-[12.5px] font-bold shrink-0" style={{ color: bundle.checked ? 'var(--accent)' : 'var(--t3)' }}>+{fmt(bundle.price)}</span>
             </label>
           ))}
         </div>
       )}
 
       {/* Line total */}
-      <div className="flex items-center justify-between px-5 py-3" style={{ borderTop: '1px solid var(--cb)', backgroundColor: 'var(--page)' }}>
-        <span className="text-[13px]" style={{ color: 'var(--ct3)' }}>Thành tiền ({item.qty} sp{bundleFee > 0 ? ' + dịch vụ' : ''})</span>
-        <span className="text-[15px] font-extrabold" style={{ color: 'var(--ct1)', fontFamily: 'Syne, sans-serif' }}>{fmt(lineTotal)}</span>
+      <div className="flex items-center justify-between px-5 py-3.5" style={{ borderTop: '1px solid var(--b1)', backgroundColor: 'var(--s1)' }}>
+        <span className="text-[12.5px]" style={{ color: 'var(--t3)' }}>Thành tiền ({item.qty} sp{bundleFee > 0 ? ' + dịch vụ' : ''})</span>
+        <span className="text-[15px] font-extrabold" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{fmt(lineTotal)}</span>
       </div>
     </div>
   )
@@ -147,49 +147,49 @@ function OrderSummary({ items }) {
   return (
     <div className="sticky top-6 overflow-hidden text-white" style={{ backgroundColor: 'var(--ink)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
       {/* Header */}
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="px-6 py-4.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="flex items-center gap-2">
-          <div className="w-[2px] h-5" style={{ backgroundColor: 'var(--accent)' }} />
-          <h2 className="text-[15px] font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>Tổng quan đơn hàng</h2>
+          <div className="w-[3px] h-5" style={{ backgroundColor: 'var(--accent)' }} />
+          <h2 className="text-[15px] font-extrabold uppercase tracking-wide" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>Tổng quan đơn hàng</h2>
         </div>
-        <p className="text-[12px] mt-1" style={{ color: 'var(--t3)' }}>{totalQty} sản phẩm được chọn</p>
+        <p className="text-[11px] mt-1" style={{ color: 'var(--t3)' }}>{totalQty} sản phẩm được chọn</p>
       </div>
 
-      <div className="p-6 space-y-3">
+      <div className="p-6 space-y-3.5">
         <div className="flex items-center justify-between">
-          <span className="text-[13px]" style={{ color: 'var(--t2)' }}>Giá sản phẩm</span>
-          <span className="text-[13px] font-semibold" style={{ color: 'var(--t1)' }}>{fmt(subtotal)}</span>
+          <span className="text-[12.5px]" style={{ color: 'var(--t2)' }}>Giá sản phẩm</span>
+          <span className="text-[12.5px] font-semibold" style={{ color: 'var(--t1)' }}>{fmt(subtotal)}</span>
         </div>
         {productSavings > 0 && (
           <div className="flex items-center justify-between">
-            <span className="text-[13px]" style={{ color: 'var(--ok)' }}>Tiết kiệm từ giảm giá</span>
-            <span className="text-[13px] font-bold" style={{ color: 'var(--ok)' }}>−{fmt(productSavings)}</span>
+            <span className="text-[12.5px]" style={{ color: 'var(--ok)' }}>Tiết kiệm từ giảm giá</span>
+            <span className="text-[12.5px] font-extrabold" style={{ color: 'var(--ok)' }}>−{fmt(productSavings)}</span>
           </div>
         )}
         {serviceFee > 0 && (
           <div className="flex items-center justify-between">
-            <span className="text-[13px]" style={{ color: 'var(--t2)' }}>Dịch vụ kèm theo</span>
-            <span className="text-[13px] font-semibold" style={{ color: 'var(--accent)' }}>+{fmt(serviceFee)}</span>
+            <span className="text-[12.5px]" style={{ color: 'var(--t2)' }}>Dịch vụ kèm theo</span>
+            <span className="text-[12.5px] font-semibold" style={{ color: 'var(--accent)' }}>+{fmt(serviceFee)}</span>
           </div>
         )}
         <div className="flex items-center justify-between">
-          <span className="text-[13px]" style={{ color: 'var(--t2)' }}>Phí vận chuyển</span>
-          <span className="text-[13px] font-bold" style={{ color: 'var(--ok)' }}>Miễn phí</span>
+          <span className="text-[12.5px]" style={{ color: 'var(--t2)' }}>Phí vận chuyển</span>
+          <span className="text-[12.5px] font-bold" style={{ color: 'var(--ok)' }}>Miễn phí</span>
         </div>
 
-        <div style={{ borderTop: '1px dashed var(--b2)', margin: '4px 0' }} />
+        <div style={{ borderTop: '1px dashed rgba(255,255,255,0.12)', margin: '6px 0' }} />
 
         <div>
-          <div className="flex items-center justify-between mb-0.5">
+          <div className="flex items-center justify-between mb-1">
             <span className="text-sm font-semibold" style={{ color: 'var(--t2)' }}>Tổng tạm tính</span>
             <span className="text-[11px]" style={{ color: 'var(--t3)' }}>(Chưa áp mã KM)</span>
           </div>
-          <p className="text-right text-[26px] font-black" style={{ color: 'var(--accent)', fontFamily: 'Syne, sans-serif' }}>{fmt(total)}</p>
+          <p className="text-right text-[26px] font-black" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{fmt(total)}</p>
           {productSavings > 0 && (
-            <p className="text-right text-[12px] font-semibold mt-0.5" style={{ color: 'var(--ok)' }}>Đã tiết kiệm {fmt(productSavings)}</p>
+            <p className="text-right text-[11px] font-bold mt-0.5" style={{ color: 'var(--ok)' }}>Đã tiết kiệm {fmt(productSavings)}</p>
           )}
         </div>
-        <p className="text-[11px] text-center pt-1" style={{ color: 'var(--t3)' }}>Mã khuyến mãi sẽ được nhập ở bước tiếp theo</p>
+        <p className="text-[11px] text-center pt-2" style={{ color: 'var(--t3)' }}>Mã khuyến mãi sẽ được nhập ở bước tiếp theo</p>
       </div>
     </div>
   )
@@ -221,51 +221,47 @@ export default function CartPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-7">
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--ct1)', fontFamily: 'Syne, sans-serif' }}>Giỏ hàng của bạn</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--ct3)' }}>Kiểm tra lại sản phẩm trước khi thanh toán</p>
+            <h1 className="text-2xl font-black" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Giỏ hàng của bạn</h1>
+            <p className="text-xs mt-1" style={{ color: 'var(--t3)' }}>Kiểm tra lại sản phẩm trước khi thanh toán</p>
           </div>
           <button
             onClick={() => onNavigate('list')}
-            className="flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: 'var(--ct2)' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--ct1)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--ct2)'}
+            className="flex items-center gap-1.5 text-xs font-bold transition-colors cursor-pointer hover:text-slate-950"
+            style={{ color: 'var(--t3)' }}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
             Tiếp tục mua sắm
           </button>
         </div>
 
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 text-center">
-            <svg className="w-20 h-20 mb-4" style={{ color: 'var(--cb)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-20 h-20 mb-4" style={{ color: 'var(--b1)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <p className="text-lg font-semibold" style={{ color: 'var(--ct2)' }}>Giỏ hàng của bạn đang trống</p>
+            <p className="text-base font-bold" style={{ color: 'var(--t2)' }}>Giỏ hàng của bạn đang trống</p>
             <button onClick={() => onNavigate('list')}
-              className="mt-4 text-white px-6 py-2.5 text-sm font-bold transition-all duration-200 cursor-pointer"
-              style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+              className="mt-4 text-white px-6 py-2.5 text-xs font-extrabold transition-all duration-200 cursor-pointer"
+              style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
             >Khám phá sản phẩm</button>
           </div>
         ) : (
           <div className="flex gap-7 items-start">
             <div className="flex-1 min-w-0">
               {/* Select all bar */}
-              <div className="flex items-center gap-3 px-5 py-4 mb-4" style={{ backgroundColor: 'var(--card)', border: '1.5px solid var(--cb)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-5 h-5 cursor-pointer" />
-                <span className="text-sm font-semibold" style={{ color: 'var(--ct1)' }}>Chọn tất cả ({items.length} sản phẩm)</span>
+              <div className="flex items-center gap-3 px-5 py-4 mb-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(15,23,42,0.02)' }}>
+                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-5 h-5 cursor-pointer accent-[var(--accent)]" />
+                <span className="text-sm font-bold" style={{ color: 'var(--t1)' }}>Chọn tất cả ({items.length} sản phẩm)</span>
                 {someChecked && (
                   <button onClick={() => setItems(prev => prev.filter(i => !i.checked))}
-                    className="ml-auto text-[13px] font-medium transition-colors"
+                    className="ml-auto text-[12.5px] font-bold transition-colors cursor-pointer"
                     style={{ color: 'var(--err)' }}
                     onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
                     onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                   >Xoá đã chọn</button>
                 )}
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {items.map(item => (
                   <CartItem key={item.id} item={item} onToggleItem={toggleItem} onToggleBundle={toggleBundle} onQtyChange={changeQty} onRemove={removeItem} />
                 ))}
@@ -281,31 +277,29 @@ export default function CartPage() {
 
       {/* Sticky checkout bar (dark) */}
       {totalQty > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-50" style={{ backgroundColor: 'var(--ink)', borderTop: '1px solid var(--b1)', boxShadow: '0 -4px 24px rgba(0,0,0,0.25)' }}>
-          <div className="max-w-screen-2xl mx-auto px-8 py-4 flex items-center justify-between gap-6">
+        <div className="fixed bottom-0 left-0 right-0 z-50" style={{ backgroundColor: 'var(--ink)', borderTop: '1px solid var(--b1)', boxShadow: '0 -4px 24px rgba(0,0,0,0.2)' }}>
+          <div className="max-w-screen-2xl mx-auto px-8 py-4.5 flex items-center justify-between gap-6">
             <div className="flex items-center gap-6">
               <div>
-                <p className="text-[12px]" style={{ color: 'var(--t3)' }}>{totalQty} sản phẩm được chọn</p>
+                <p className="text-[11px]" style={{ color: 'var(--t3)' }}>{totalQty} sản phẩm được chọn</p>
                 <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-[13px]" style={{ color: 'var(--t2)' }}>Tổng thanh toán:</span>
-                  <span className="text-2xl font-black" style={{ color: 'var(--accent)', fontFamily: 'Syne, sans-serif' }}>{grandTotal.toLocaleString('vi-VN')} đ</span>
+                  <span className="text-[12.5px]" style={{ color: 'var(--t2)' }}>Tổng thanh toán:</span>
+                  <span className="text-2xl font-black" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{grandTotal.toLocaleString('vi-VN')} đ</span>
                 </div>
               </div>
               {serviceFee > 0 && (
-                <div className="hidden md:block text-[12px] font-medium pl-6" style={{ borderLeft: '1px solid var(--b2)', color: 'var(--t3)' }}>
+                <div className="hidden md:block text-[11px] font-bold pl-6" style={{ borderLeft: '1px solid var(--b2)', color: 'var(--t3)' }}>
                   Bao gồm {serviceFee.toLocaleString('vi-VN')} đ dịch vụ
                 </div>
               )}
             </div>
             <button
               onClick={() => onNavigate('checkout')}
-              className="flex items-center gap-2.5 text-white font-bold text-[15px] px-10 py-3.5 transition-all duration-200 cursor-pointer"
-              style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+              className="flex items-center gap-2 text-white font-extrabold text-[14px] px-10 py-3.5 transition-all duration-200 cursor-pointer border-none"
+              style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
             >
               Đặt hàng ngay
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </button>
           </div>
         </div>

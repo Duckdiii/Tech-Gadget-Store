@@ -3,21 +3,36 @@ import { useLocation } from 'react-router-dom'
 import { useNav, ROUTE_MAP } from '../hooks/useNav'
 import { useAuth } from '../context/AuthContext'
 import { useAccessibility } from '../hooks/useAccessibility'
-import logo from '../assets/logo.png'
+
 
 const SAMPLE_NOTIFICATIONS = [
-  { id: 1, emoji: '📦', title: 'Đơn hàng đã giao thành công', body: 'Đơn #ORD-8492 (MacBook Pro 14") đã được giao.', time: '2 phút trước', unread: true },
-  { id: 2, emoji: '⚡', title: 'Flash Sale sắp kết thúc!', body: 'Ưu đãi giảm đến 40% chỉ còn 3 giờ nữa.', time: '1 giờ trước', unread: true },
-  { id: 3, emoji: '🎁', title: 'Điểm thưởng sắp hết hạn', body: '500 điểm của bạn hết hạn vào ngày 15/06.', time: '1 ngày trước', unread: false },
-  { id: 4, emoji: '✅', title: 'Thanh toán thành công', body: 'Đơn hàng #ORD-8491 đã được xác nhận.', time: '2 ngày trước', unread: false },
+  { id: 1, type: 'delivery', title: 'Đơn hàng đã giao thành công', body: 'Đơn #ORD-8492 (MacBook Pro 14") đã được giao.', time: '2 phút trước', unread: true },
+  { id: 2, type: 'sale', title: 'Flash Sale sắp kết thúc!', body: 'Ưu đãi giảm đến 40% chỉ còn 3 giờ nữa.', time: '1 giờ trước', unread: true },
+  { id: 3, type: 'gift', title: 'Điểm thưởng sắp hết hạn', body: '500 điểm của bạn hết hạn vào ngày 15/06.', time: '1 ngày trước', unread: false },
+  { id: 4, type: 'payment', title: 'Thanh toán thành công', body: 'Đơn hàng #ORD-8491 đã được xác nhận.', time: '2 ngày trước', unread: false },
 ]
 
 const TICKER_ITEMS = [
-  { text: 'iPhone 15 Pro Max giảm 12% — chỉ hôm nay', icon: '⚡' },
-  { text: 'Miễn phí vận chuyển toàn quốc đơn từ 500.000₫', icon: '→' },
-  { text: 'Mua kèm tai nghe chính hãng — tiết kiệm đến 30%', icon: '⚡' },
-  { text: 'Samsung Galaxy S24 Ultra mới về — trả góp 0%', icon: '→' },
+  { text: 'iPhone 15 Pro Max giảm 12% — chỉ hôm nay' },
+  { text: 'Miễn phí vận chuyển toàn quốc đơn từ 500.000₫' },
+  { text: 'Mua kèm tai nghe chính hãng — tiết kiệm đến 30%' },
+  { text: 'Samsung Galaxy S24 Ultra mới về — trả góp 0%' },
 ]
+
+function renderNotificationIcon(type) {
+  switch (type) {
+    case 'delivery':
+      return <svg className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>;
+    case 'sale':
+      return <svg className="w-5 h-5 text-orange-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>;
+    case 'gift':
+      return <svg className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 0h4m-4 0H8m12 0a2 2 0 10-2-2v2m0 0h2m-4 0a2 2 0 102 2v-2m0 0h-2M8 8a2 2 0 112-2v2m0 0H8m2 0a2 2 0 11-2 2v-2m0 0h2" /></svg>;
+    case 'payment':
+      return <svg className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+    default:
+      return <svg className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>;
+  }
+}
 
 const NAV_LINKS = [
   { label: 'Trang chủ', page: 'home' },
@@ -25,16 +40,15 @@ const NAV_LINKS = [
   { label: 'Khuyến mãi', page: 'home' },
 ]
 
-function useDropdown() {
+function useDropdown(ref) {
   const [open, setOpen] = useState(false)
-  const ref = useRef(null)
   useEffect(() => {
     if (!open) return
     const handle = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
     document.addEventListener('mousedown', handle)
     return () => document.removeEventListener('mousedown', handle)
-  }, [open])
-  return { open, setOpen, ref }
+  }, [open, ref])
+  return { open, setOpen }
 }
 
 function AnnouncementBar() {
@@ -64,7 +78,7 @@ function AnnouncementBar() {
           className="text-[11px] font-semibold transition-opacity duration-300 text-center absolute left-1/2 -translate-x-1/2 text-white"
           style={{ opacity: visible ? 1 : 0 }}
         >
-          <span className="mr-1.5">⚡</span>
+          <svg className="w-3 h-3 inline-block mr-1.5 align-middle text-white/95 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
           <span>{item.text}</span>
           <span
             className="ml-3 cursor-pointer underline underline-offset-2 transition-opacity"
@@ -106,11 +120,14 @@ export default function StoreNavbar() {
   const [bellRing, setBellRing] = useState(false)
   const [notifications, setNotifications] = useState(SAMPLE_NOTIFICATIONS)
 
-  const bell = useDropdown()
-  const userMenu = useDropdown()
+  const bellRef = useRef(null)
+  const userMenuRef = useRef(null)
+  const bell = useDropdown(bellRef)
+  const userMenu = useDropdown(userMenuRef)
   const [subPanel, setSubPanel] = useState(null)
   const { dark, setDark, font, setFont, noMotion, setNoMotion } = useAccessibility()
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (!userMenu.open) setSubPanel(null) }, [userMenu.open])
 
   const unreadCount = notifications.filter(n => n.unread).length
@@ -150,13 +167,40 @@ export default function StoreNavbar() {
         <div className="max-w-screen-2xl mx-auto px-8 h-[72px] flex items-center gap-8">
 
           {/* Logo */}
-          <img
-            src={logo}
-            alt="TechStore"
+          <div
             onClick={() => onNavigate('home')}
-            className="h-12 w-auto shrink-0 cursor-pointer select-none"
-            style={{ filter: 'brightness(1.05)' }}
-          />
+            className="flex items-center gap-2.5 shrink-0 cursor-pointer select-none"
+          >
+            <div
+              style={{
+                width: '38px',
+                height: '38px',
+                background: 'linear-gradient(135deg, #F97316, #EA580C)',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 14px rgba(234, 88, 12, 0.35)',
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <path
+                  d="M11 2.5L4.5 6.2v6.8c0 3.8 2.8 7.4 6.5 8.4 3.7-1 6.5-4.6 6.5-8.4V6.2L11 2.5z"
+                  fill="rgba(255, 255, 255, 0.95)"
+                />
+                <path
+                  d="M7.5 10.5h7M7.5 13.5h5"
+                  stroke="#EA580C"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+            <div>
+              <span style={{ fontSize: '21px', fontWeight: 900, color: 'var(--t1)', letterSpacing: '-0.5px' }}>Tech</span>
+              <span style={{ fontSize: '21px', fontWeight: 900, color: '#EA580C', letterSpacing: '-0.5px' }}>Store</span>
+            </div>
+          </div>
 
           {/* Nav links */}
           <nav className="flex items-stretch h-full">
@@ -167,7 +211,7 @@ export default function StoreNavbar() {
                   key={label}
                   onClick={() => onNavigate(page)}
                   className="relative flex items-center px-4 text-[13px] font-medium tracking-wide transition-colors h-full"
-                  style={{ color: active ? 'var(--t1)' : 'var(--t3)', fontFamily: 'DM Sans, sans-serif' }}
+                  style={{ color: active ? 'var(--t1)' : 'var(--t3)', fontFamily: 'Be Vietnam Pro, sans-serif' }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'var(--t2)' }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'var(--t3)' }}
                 >
@@ -207,7 +251,7 @@ export default function StoreNavbar() {
                   borderRadius: '3px',
                   color: 'var(--t1)',
                   outline: 'none',
-                  fontFamily: 'DM Sans, sans-serif',
+                  fontFamily: 'Be Vietnam Pro, sans-serif',
                 }}
               />
               <button
@@ -246,7 +290,7 @@ export default function StoreNavbar() {
             </button>
 
             {/* Bell */}
-            <div className="relative" ref={bell.ref}>
+            <div className="relative" ref={bellRef}>
               <button
                 onClick={handleBell}
                 className="relative transition-colors"
@@ -280,7 +324,7 @@ export default function StoreNavbar() {
                     className="flex items-center justify-between px-4 py-2.5"
                     style={{ borderBottom: '1px solid var(--b1)' }}
                   >
-                    <span className="text-[12px] font-bold" style={{ color: 'var(--t1)', fontFamily: 'Syne, sans-serif' }}>
+                    <span className="text-[12px] font-bold" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
                       Thông báo
                       {unreadCount > 0 && (
                         <span
@@ -317,7 +361,7 @@ export default function StoreNavbar() {
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--s1)'}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = n.unread ? 'rgba(232,66,10,0.05)' : 'transparent'}
                       >
-                        <span className="text-lg shrink-0 mt-0.5">{n.emoji}</span>
+                        {renderNotificationIcon(n.type)}
                         <div className="flex-1 min-w-0">
                           <p className="text-[12px] leading-snug font-semibold" style={{ color: n.unread ? 'var(--t1)' : 'var(--t2)' }}>
                             {n.title}
@@ -347,7 +391,7 @@ export default function StoreNavbar() {
             </div>
 
             {/* User avatar */}
-            <div className="relative" ref={userMenu.ref}>
+            <div className="relative" ref={userMenuRef}>
               <button
                 onClick={handleUserMenu}
                 className="w-8 h-8 flex items-center justify-center text-white text-[12px] font-bold transition-all"
@@ -384,7 +428,7 @@ export default function StoreNavbar() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[13px] font-bold truncate" style={{ color: 'var(--t1)', fontFamily: 'Syne, sans-serif' }}>{displayName}</p>
+                        <p className="text-[13px] font-bold truncate" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{displayName}</p>
                         {user?.email && (
                           <p className="text-[11px] mt-0.5 truncate" style={{ color: 'var(--t3)' }}>{user.email}</p>
                         )}
@@ -435,7 +479,7 @@ export default function StoreNavbar() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                           </svg>
                         </button>
-                        <span className="text-[13px] font-bold" style={{ color: 'var(--t1)', fontFamily: 'Syne, sans-serif' }}>Màn hình & trợ năng</span>
+                        <span className="text-[13px] font-bold" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Màn hình & trợ năng</span>
                       </div>
 
                       <div className="p-4 space-y-1">

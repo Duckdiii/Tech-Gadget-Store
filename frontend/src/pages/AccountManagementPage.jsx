@@ -1,12 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { apiFetch } from '../services/api'
 
-const ROLE_OPTIONS = ['manager', 'staff', 'customer']
-const ROLE_LABEL   = { manager: 'Quản lý', staff: 'Nhân viên', customer: 'Khách hàng' }
-const ROLE_BADGE   = {
-  manager:  'bg-orange-50 text-[#C4350A]',
-  staff:    'bg-teal-100 text-teal-700',
-  customer: 'bg-purple-100 text-purple-700',
-}
 const STATUS_CFG = {
   active:   { label:'Hoạt động',  bg:'bg-green-100',  text:'text-green-700',  dot:'bg-green-500'  },
   blocked:  { label:'Bị khoá',    bg:'bg-red-100',    text:'text-red-600',    dot:'bg-red-500'    },
@@ -14,18 +8,20 @@ const STATUS_CFG = {
 }
 const BG_CYCLE = ['bg-[#E8420A]','bg-teal-500','bg-purple-500','bg-pink-500','bg-orange-500','bg-[#0D0F14]','bg-green-500','bg-red-400','bg-cyan-500','bg-yellow-500']
 
-const INIT_ACCOUNTS = [
-  { id:1,  username:'admin.tran',    email:'van.an@techstore.vn',      name:'Trần Văn An',     role:'manager',  status:'active',  createdAt:'12/01/2023', lastLogin:'2 giờ trước',     loginCount:284, initials:'TA', bg:'bg-[#E8420A]'   },
-  { id:2,  username:'staff.nguyen',  email:'thi.bich@techstore.vn',    name:'Nguyễn Thị Bích', role:'staff',    status:'active',  createdAt:'05/03/2023', lastLogin:'Hôm qua',          loginCount:156, initials:'NB', bg:'bg-teal-500'   },
-  { id:3,  username:'staff.le',      email:'hoang.dung@techstore.vn',  name:'Lê Hoàng Dũng',   role:'staff',    status:'active',  createdAt:'20/04/2023', lastLogin:'30 phút trước',    loginCount:211, initials:'LD', bg:'bg-purple-500' },
-  { id:4,  username:'staff.pham',    email:'minh.chau@techstore.vn',   name:'Phạm Minh Châu',  role:'staff',    status:'blocked', createdAt:'15/06/2023', lastLogin:'3 ngày trước',     loginCount:87,  initials:'PC', bg:'bg-pink-500'   },
-  { id:5,  username:'cust.nguyen1',  email:'nguyenvana@gmail.com',      name:'Nguyễn Văn A',    role:'customer', status:'active',  createdAt:'02/01/2024', lastLogin:'5 phút trước',     loginCount:32,  initials:'NA', bg:'bg-orange-500' },
-  { id:6,  username:'cust.tran2',    email:'tranthib@gmail.com',        name:'Trần Thị B',      role:'customer', status:'active',  createdAt:'10/02/2024', lastLogin:'1 tuần trước',     loginCount:14,  initials:'TB', bg:'bg-[#0D0F14]' },
-  { id:7,  username:'cust.le3',      email:'levanc@gmail.com',          name:'Lê Văn C',        role:'customer', status:'pending', createdAt:'01/06/2024', lastLogin:'Chưa đăng nhập',  loginCount:0,   initials:'LC', bg:'bg-green-500'  },
-  { id:8,  username:'staff.vu',      email:'quoc.hung@techstore.vn',   name:'Vũ Quốc Hùng',    role:'staff',    status:'active',  createdAt:'22/09/2023', lastLogin:'Vừa xong',         loginCount:175, initials:'VH', bg:'bg-cyan-500'   },
-  { id:9,  username:'cust.pham4',    email:'phamminhe@gmail.com',       name:'Phạm Minh E',     role:'customer', status:'blocked', createdAt:'15/03/2024', lastLogin:'1 tháng trước',    loginCount:7,   initials:'PE', bg:'bg-yellow-500' },
-  { id:10, username:'staff.bui',     email:'thanh.phong@techstore.vn', name:'Bùi Thanh Phong',  role:'staff',    status:'active',  createdAt:'03/01/2024', lastLogin:'4 giờ trước',      loginCount:120, initials:'BP', bg:'bg-red-400'    },
-]
+function normalizeAccount(dto, index) {
+  return {
+    id: dto.id,
+    email: dto.email,
+    name: dto.email,
+    username: dto.email.split('@')[0],
+    status: (dto.status || '').toLowerCase(),
+    createdAt: dto.createdAt ? new Date(dto.createdAt).toLocaleDateString('vi-VN') : '—',
+    lastLogin: '—',
+    loginCount: dto.loginLogsIds?.length ?? 0,
+    initials: dto.email[0].toUpperCase(),
+    bg: BG_CYCLE[index % BG_CYCLE.length],
+  }
+}
 
 function Avatar({ initials, bg, size='md' }) {
   const sz = size==='lg' ? 'w-14 h-14 text-lg' : size==='sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -48,7 +44,7 @@ function AccountDetailDrawer({ account, onClose, onBlock, onUnblock, onDelete, o
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [resetConfirm,  setResetConfirm]  = useState(false)
   const [resetDone,     setResetDone]     = useState(false)
-  const st = STATUS_CFG[account.status]
+  const st = STATUS_CFG[account.status] || STATUS_CFG.active
 
   function handleReset() {
     setResetConfirm(false)
@@ -67,10 +63,9 @@ function AccountDetailDrawer({ account, onClose, onBlock, onUnblock, onDelete, o
           <div className="flex items-center gap-4">
             <Avatar initials={account.initials} bg={account.bg} size="lg" />
             <div className="min-w-0">
-              <h2 className="text-lg font-bold text-white">{account.name}</h2>
+              <h2 className="text-lg font-bold text-white truncate">{account.email}</h2>
               <p className="text-sm text-white/60 mt-0.5">@{account.username}</p>
               <div className="flex items-center gap-2 mt-2">
-                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${ROLE_BADGE[account.role]}`}>{ROLE_LABEL[account.role]}</span>
                 <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${st.bg} ${st.text}`}>● {st.label}</span>
               </div>
             </div>
@@ -80,8 +75,6 @@ function AccountDetailDrawer({ account, onClose, onBlock, onUnblock, onDelete, o
         {/* Info */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           <InfoRow label="Email"              value={account.email} />
-          <InfoRow label="Tên tài khoản"      value={account.username} />
-          <InfoRow label="Vai trò"             value={ROLE_LABEL[account.role]} />
           <InfoRow label="Trạng thái"          value={st.label} />
           <InfoRow label="Ngày tạo"            value={account.createdAt} />
           <InfoRow label="Đăng nhập gần đây"   value={account.lastLogin} />
@@ -133,7 +126,7 @@ function AccountDetailDrawer({ account, onClose, onBlock, onUnblock, onDelete, o
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zM10 11V7a2 2 0 114 0v4" /></svg>
               </div>
               <h3 className="text-lg font-bold text-gray-900 text-center">Khoá tài khoản?</h3>
-              <p className="text-sm text-gray-500 text-center mt-2">Tài khoản <span className="font-semibold text-gray-800">@{account.username}</span> sẽ không thể đăng nhập.<br />Bạn có thể mở khoá sau.</p>
+              <p className="text-sm text-gray-500 text-center mt-2">Tài khoản <span className="font-semibold text-gray-800">{account.email}</span> sẽ không thể đăng nhập.<br />Bạn có thể mở khoá sau.</p>
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setBlockConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
                 <button onClick={() => { onBlock(account.id); setBlockConfirm(false); onClose() }} className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm font-semibold cursor-pointer transition-colors">Khoá tài khoản</button>
@@ -153,7 +146,7 @@ function AccountDetailDrawer({ account, onClose, onBlock, onUnblock, onDelete, o
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
               </div>
               <h3 className="text-lg font-bold text-gray-900 text-center">Xoá tài khoản?</h3>
-              <p className="text-sm text-gray-500 text-center mt-2">Tài khoản <span className="font-semibold text-gray-800">@{account.username}</span> sẽ bị xoá vĩnh viễn.<br />Hành động này không thể hoàn tác.</p>
+              <p className="text-sm text-gray-500 text-center mt-2">Tài khoản <span className="font-semibold text-gray-800">{account.email}</span> sẽ bị xoá vĩnh viễn.<br />Hành động này không thể hoàn tác.</p>
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setDeleteConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ bỏ</button>
                 <button onClick={() => { onDelete(account.id); setDeleteConfirm(false); onClose() }} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-semibold cursor-pointer transition-colors">Xác nhận xoá</button>
@@ -190,43 +183,61 @@ function AccountDetailDrawer({ account, onClose, onBlock, onUnblock, onDelete, o
    ROOT PAGE
 ══════════════════════════════════════ */
 export default function AccountManagementPage() {
-  const [accounts, setAccounts]       = useState(INIT_ACCOUNTS)
-  const [search, setSearch]           = useState('')
-  const [roleFilter, setRoleFilter]   = useState('')
+  const [accounts, setAccounts]         = useState([])
+  const [loading, setLoading]           = useState(true)
+  const [error, setError]               = useState(null)
+  const [search, setSearch]             = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [selected, setSelected]       = useState(null)
-  const [toast, setToast]             = useState(null)
+  const [selected, setSelected]         = useState(null)
+  const [toast, setToast]               = useState(null)
+
+  useEffect(() => {
+    apiFetch('/api/manager/accounts')
+      .then(data => setAccounts(data.map((d, i) => normalizeAccount(d, i))))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(null), 2800) }
 
   const total   = accounts.length
   const active  = accounts.filter(a => a.status === 'active').length
   const blocked = accounts.filter(a => a.status === 'blocked').length
-  const pending = accounts.filter(a => a.status === 'pending').length
 
   const filtered = accounts.filter(a => {
     const q = search.toLowerCase()
     return (
-      (!q || a.name.toLowerCase().includes(q) || a.username.toLowerCase().includes(q) || a.email.toLowerCase().includes(q)) &&
-      (!roleFilter   || a.role   === roleFilter) &&
+      (!q || a.email.toLowerCase().includes(q)) &&
       (!statusFilter || a.status === statusFilter)
     )
   })
 
-  function handleBlock(id) {
-    const a = accounts.find(x => x.id === id)
-    setAccounts(p => p.map(x => x.id === id ? { ...x, status: 'blocked' } : x))
-    showToast(`Đã khoá tài khoản @${a?.username}`)
+  async function handleBlock(id) {
+    try {
+      const data = await apiFetch(`/api/manager/accounts/${id}/block`, { method: 'PATCH' })
+      setAccounts(p => p.map(x => x.id === id ? { ...x, status: (data.status || '').toLowerCase() } : x))
+      showToast('Đã khoá tài khoản')
+    } catch (e) {
+      showToast(`Lỗi: ${e.message}`)
+    }
   }
-  function handleUnblock(id) {
-    const a = accounts.find(x => x.id === id)
-    setAccounts(p => p.map(x => x.id === id ? { ...x, status: 'active' } : x))
-    showToast(`Đã mở khoá tài khoản @${a?.username}`)
+  async function handleUnblock(id) {
+    try {
+      const data = await apiFetch(`/api/manager/accounts/${id}/unblock`, { method: 'PATCH' })
+      setAccounts(p => p.map(x => x.id === id ? { ...x, status: (data.status || '').toLowerCase() } : x))
+      showToast('Đã mở khoá tài khoản')
+    } catch (e) {
+      showToast(`Lỗi: ${e.message}`)
+    }
   }
-  function handleDelete(id) {
-    const a = accounts.find(x => x.id === id)
-    setAccounts(p => p.filter(x => x.id !== id))
-    showToast(`Đã xoá tài khoản @${a?.username}`)
+  async function handleDelete(id) {
+    try {
+      await apiFetch(`/api/manager/accounts/${id}`, { method: 'DELETE' })
+      setAccounts(p => p.filter(x => x.id !== id))
+      showToast('Đã xoá tài khoản')
+    } catch (e) {
+      showToast(`Lỗi: ${e.message}`)
+    }
   }
   function handleResetPwd(id) {
     const a = accounts.find(x => x.id === id)
@@ -262,14 +273,13 @@ export default function AccountManagementPage() {
         </div>
 
         {/* KPI */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           {[
             { label:'Tổng tài khoản',  value:total,   color:'blue',   icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> },
             { label:'Đang hoạt động', value:active,  color:'green',  icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
             { label:'Bị khoá',         value:blocked, color:'red',    icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zM10 11V7a2 2 0 114 0v4" /></svg> },
-            { label:'Chờ duyệt',       value:pending, color:'amber',  icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
           ].map((c,i) => {
-            const clr = { blue:['bg-[#E8420A]','text-[#E8420A]'], green:['bg-green-500','text-green-600'], red:['bg-red-500','text-red-600'], amber:['bg-amber-400','text-amber-600'] }[c.color]
+            const clr = { blue:['bg-[#E8420A]','text-[#E8420A]'], green:['bg-green-500','text-green-600'], red:['bg-red-500','text-red-600'] }[c.color]
             return (
               <div key={i} className="bg-white rounded border border-gray-200 p-5 flex items-center gap-4">
                 <span className={`w-12 h-12 ${clr[0]} rounded flex items-center justify-center text-white shrink-0`}>{c.icon}</span>
@@ -283,72 +293,72 @@ export default function AccountManagementPage() {
         <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên, username, email..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm kiếm theo email..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
-          <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
-            <option value="">Tất cả vai trò</option>
-            {ROLE_OPTIONS.map(r => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
-          </select>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
             <option value="">Tất cả trạng thái</option>
             <option value="active">Hoạt động</option>
             <option value="blocked">Bị khoá</option>
-            <option value="pending">Chờ duyệt</option>
           </select>
           <span className="ml-auto text-xs text-gray-400 shrink-0">{filtered.length} / {total} tài khoản</span>
         </div>
 
+        {/* Loading / Error */}
+        {loading && (
+          <div className="bg-white rounded border border-gray-200 py-16 text-center text-gray-400 text-sm">Đang tải dữ liệu...</div>
+        )}
+        {error && !loading && (
+          <div className="bg-red-50 border border-red-200 rounded px-5 py-4 text-red-600 text-sm">{error}</div>
+        )}
+
         {/* Table */}
-        <div className="bg-white rounded border border-gray-200 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                {['Tài khoản','Username','Vai trò','Ngày tạo','Đăng nhập gần đây','Số lần đăng nhập','Trạng thái',''].map((h,i) => (
-                  <th key={i} className="px-4 py-3.5 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filtered.length === 0
-                ? <tr><td colSpan={8} className="text-center py-12 text-gray-400">Không tìm thấy tài khoản nào</td></tr>
-                : filtered.map(acc => {
-                  const st = STATUS_CFG[acc.status]
-                  return (
-                    <tr key={acc.id} className="hover:bg-gray-50/70 transition-colors group">
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <Avatar initials={acc.initials} bg={acc.bg} size="sm" />
-                          <div>
-                            <p className="font-semibold text-gray-800 text-xs">{acc.name}</p>
-                            <p className="text-[11px] text-gray-400">{acc.email}</p>
+        {!loading && !error && (
+          <div className="bg-white rounded border border-gray-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>
+                  {['Tài khoản','Ngày tạo','Số lần đăng nhập','Trạng thái',''].map((h,i) => (
+                    <th key={i} className="px-4 py-3.5 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filtered.length === 0
+                  ? <tr><td colSpan={5} className="text-center py-12 text-gray-400">Không tìm thấy tài khoản nào</td></tr>
+                  : filtered.map(acc => {
+                    const st = STATUS_CFG[acc.status] || STATUS_CFG.active
+                    return (
+                      <tr key={acc.id} className="hover:bg-gray-50/70 transition-colors group">
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 ${acc.bg} rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0`}>{acc.initials}</div>
+                            <div>
+                              <p className="font-semibold text-gray-800 text-xs">{acc.email}</p>
+                              <p className="text-[11px] text-gray-400">@{acc.username}</p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 font-mono text-xs text-gray-600">@{acc.username}</td>
-                      <td className="px-4 py-4">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${ROLE_BADGE[acc.role]}`}>{ROLE_LABEL[acc.role]}</span>
-                      </td>
-                      <td className="px-4 py-4 text-xs text-gray-500">{acc.createdAt}</td>
-                      <td className="px-4 py-4 text-xs text-gray-500">{acc.lastLogin}</td>
-                      <td className="px-4 py-4 text-xs text-gray-600 font-medium">{acc.loginCount}</td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${st.bg} ${st.text}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
-                          {st.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <button onClick={() => setSelected(acc.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
-                          Chi tiết →
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })
-              }
-            </tbody>
-          </table>
-        </div>
+                        </td>
+                        <td className="px-4 py-4 text-xs text-gray-500">{acc.createdAt}</td>
+                        <td className="px-4 py-4 text-xs text-gray-600 font-medium">{acc.loginCount}</td>
+                        <td className="px-4 py-4">
+                          <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${st.bg} ${st.text}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                            {st.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <button onClick={() => setSelected(acc.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
+                            Chi tiết →
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })
+                }
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Drawer overlay */}

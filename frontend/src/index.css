@@ -1,5 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
 /* ── Design tokens ── */
 :root {
@@ -161,7 +161,7 @@
 /* ── Base ── */
 body {
   margin: 0;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Be Vietnam Pro', 'DM Sans', system-ui, sans-serif;
   background-color: var(--ink);
   color: var(--t1);
   -webkit-font-smoothing: antialiased;
@@ -169,7 +169,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Be Vietnam Pro', sans-serif;
 }
 
 input[type="checkbox"],
@@ -234,4 +234,264 @@ html.dark body { background-color: var(--ink); }
   max-width: 100%;
   margin: 0;
   text-align: left;
+}
+
+/* ── Redesign Home Page Custom Utility Classes & Animations ── */
+@keyframes glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes countPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #EA580C, #F97316, #FB923C);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.product-card {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s;
+  cursor: pointer;
+  background: #fff;
+}
+.product-card:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+}
+.product-card:hover .p-img {
+  transform: scale(1.06);
+}
+.product-card:hover .p-btn {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+.p-img {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.p-btn {
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.flash-card {
+  transition: transform 0.25s, box-shadow 0.25s;
+  cursor: pointer;
+}
+.flash-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12) !important;
+}
+
+.cat-pill {
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.cat-pill:hover {
+  border-color: #EA580C !important;
+  background: #FFF7ED !important;
+  transform: translateY(-3px);
+}
+.cat-pill:hover .cat-lbl {
+  color: #EA580C !important;
+}
+
+.btn-orange {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.btn-orange:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(234, 88, 12, 0.35) !important;
+  filter: brightness(1.05);
+}
+.btn-outline {
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.btn-outline:hover {
+  background: #FFF7ED !important;
+  border-color: #EA580C !important;
+  color: #EA580C !important;
+  transform: translateY(-2px);
+}
+
+.svc-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  background: #fff;
+}
+.svc-card:hover {
+  transform: translateY(-8px);
+  background: #FFF7ED !important;
+  border-color: rgba(234, 88, 12, 0.3) !important;
+  box-shadow: 0 16px 32px rgba(234, 88, 12, 0.1) !important;
+}
+.svc-card:hover .svc-icon {
+  background: #EA580C !important;
+  box-shadow: 0 8px 20px rgba(234, 88, 12, 0.35);
+}
+.svc-icon {
+  transition: all 0.3s;
+}
+
+.review-card {
+  transition: all 0.3s;
+  background: #fff;
+}
+.review-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(234, 88, 12, 0.3) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.blog-card {
+  transition: all 0.3s;
+  cursor: pointer;
+  background: #fff;
+}
+.blog-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1) !important;
+}
+.blog-card:hover .b-img {
+  transform: scale(1.06);
+}
+.b-img {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brand-logo {
+  transition: all 0.3s;
+  cursor: pointer;
+  filter: grayscale(1) opacity(0.4);
+  user-select: none;
+}
+.brand-logo:hover {
+  filter: grayscale(0) opacity(1);
+  transform: scale(1.1);
+}
+
+.nav-link {
+  transition: color 0.2s;
+  cursor: pointer;
+}
+.nav-link:hover {
+  color: #EA580C !important;
+}
+
+.mega-wrap {
+  position: relative;
+}
+.mega-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 680px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 16px;
+  padding: 24px;
+  z-index: 999;
+  box-shadow: 0 24px 56px rgba(0,0,0,.12);
+}
+.mega-wrap:hover .mega-menu {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.mega-item {
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.mega-item:hover {
+  background: #FFF7ED;
+}
+
+.footer-link {
+  transition: color 0.2s;
+  cursor: pointer;
+}
+.footer-link:hover {
+  color: #F97316 !important;
+}
+
+.promo-banner {
+  transition: transform 0.3s;
+  cursor: pointer;
+}
+.promo-banner:hover {
+  transform: scale(1.015);
+}
+
+.scroll-x {
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+.search-inp:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.25);
+  border-color: #EA580C !important;
+}
+.search-inp {
+  transition: all 0.2s;
+}
+
+.social-btn {
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.social-btn:hover {
+  background: rgba(234, 88, 12, 0.1) !important;
+  color: #EA580C !important;
+  transform: translateY(-3px);
+}
+
+.tab-btn {
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+.animate-float2 {
+  animation: float 5s 1s ease-in-out infinite;
+}
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+.fade1 {
+  animation: fadeUp 0.6s 0.1s ease both;
+  opacity: 0;
+}
+.fade2 {
+  animation: fadeUp 0.6s 0.25s ease both;
+  opacity: 0;
+}
+.fade3 {
+  animation: fadeUp 0.6s 0.4s ease both;
+  opacity: 0;
+}
+.fade4 {
+  animation: fadeUp 0.6s 0.55s ease both;
+  opacity: 0;
 }

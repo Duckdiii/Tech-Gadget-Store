@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Slf4j
 @Service
 public class StaffService {
@@ -27,6 +29,25 @@ public class StaffService {
         this.staffRepository = staffRepository;
         this.accountRepository = accountRepository;
         this.accountService = accountService;
+    }
+
+    public List<StaffResponseDto> getAllStaff() {
+        return staffRepository.findAll().stream()
+                .map(staff -> {
+                    Account account = staff.getAccount();
+                    return StaffResponseDto.builder()
+                            .id(staff.getId())
+                            .createdAt(staff.getCreatedAt())
+                            .updatedAt(staff.getUpdatedAt())
+                            .fullName(staff.getFullName())
+                            .phone(staff.getPhone())
+                            .staffCode(staff.getStaffCode())
+                            .hireDate(staff.getHireDate())
+                            .email(account != null ? account.getEmail() : null)
+                            .accountId(account != null ? account.getId() : null)
+                            .build();
+                })
+                .toList();
     }
 
     @Transactional

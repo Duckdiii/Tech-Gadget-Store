@@ -74,13 +74,13 @@ function OrderCard({ order, onNavigate }) {
       <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-4">
           <div>
-            <p className="text-sm font-bold" style={{ color: 'var(--ct1)', fontFamily: 'Syne, sans-serif' }}>{order.id}</p>
+            <p className="text-sm font-bold" style={{ color: 'var(--ct1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{order.id}</p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--ct3)' }}>{order.date}</p>
           </div>
           <StatusBadge status={order.status} />
         </div>
         <div className="flex items-center gap-4">
-          <p className="text-base font-bold" style={{ color: 'var(--accent)', fontFamily: 'Syne, sans-serif' }}>{fmt(order.total)}</p>
+          <p className="text-base font-bold" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{fmt(order.total)}</p>
           <button
             onClick={() => setExpanded(e => !e)}
             className="p-1.5 transition-colors"
@@ -169,7 +169,7 @@ export default function CustomerOrdersPage() {
       <div style={{ backgroundColor: 'var(--ink)', borderBottom: '1px solid var(--b1)' }} className="py-5">
         <div className="max-w-3xl mx-auto px-4">
           <p className="text-[10px] font-bold tracking-[0.18em] uppercase mb-0.5" style={{ color: 'var(--accent)' }}>Tài khoản</p>
-          <h1 className="text-[18px] font-bold" style={{ color: 'var(--t1)', fontFamily: 'Syne, sans-serif' }}>Đơn hàng của tôi</h1>
+          <h1 className="text-[18px] font-bold" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Đơn hàng của tôi</h1>
         </div>
       </div>
 
