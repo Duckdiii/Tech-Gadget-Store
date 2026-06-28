@@ -41,7 +41,7 @@ export function useNav() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
 
-  return (pageId) => {
+  return (pageId, options = {}) => {
     if (pageId === 'login') {
       logout()
       navigate('/login')
@@ -49,6 +49,12 @@ export function useNav() {
     }
     if (user && !ROLE_PAGES[user.role]?.has(pageId)) return
     const path = ROUTE_MAP[pageId]
-    if (path) navigate(path)
+    if (path) {
+      if (options.search) {
+        navigate(path + options.search, options.state ? { state: options.state } : undefined)
+      } else {
+        navigate(path, options)
+      }
+    }
   }
 }

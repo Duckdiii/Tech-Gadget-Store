@@ -41,7 +41,7 @@ function ProductCard({ product, onNavigate }) {
 
   return (
     <div
-      onClick={() => onNavigate('detail')}
+      onClick={() => onNavigate('detail', { search: '?id=' + product.id })}
       className="product-card group overflow-hidden flex flex-col cursor-pointer relative"
       style={{
         backgroundColor: 'var(--card)',

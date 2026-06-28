@@ -139,12 +139,21 @@ public class PaymentLogService {
 
     private PaymentLogResponseDto mapToResponseDto(PaymentLog paymentLog) {
         Order order = paymentLog.getOrder();
-        Customer customer = order.getCustomer();
         PaymentMethod pm = paymentLog.getPaymentMethod();
 
-        String customerName = customer.getFullName();
-        String customerPhone = customer.getPhone();
-        String customerEmail = (customer.getAccount() != null) ? customer.getAccount().getEmail() : null;
+        String orderId = order != null ? order.getId() : null;
+        String customerName = null;
+        String customerPhone = null;
+        String customerEmail = null;
+
+        if (order != null) {
+            Customer customer = order.getCustomer();
+            if (customer != null) {
+                customerName = customer.getFullName();
+                customerPhone = customer.getPhone();
+                customerEmail = (customer.getAccount() != null) ? customer.getAccount().getEmail() : null;
+            }
+        }
 
         Map<String, String> metadata = new LinkedHashMap<>();
         if (pm instanceof MomoPaymentMethod momo) {
@@ -165,7 +174,7 @@ public class PaymentLogService {
 
         return PaymentLogResponseDto.builder()
                 .id(paymentLog.getId())
-                .orderId(order.getId())
+                .orderId(orderId)
                 .customerName(customerName)
                 .customerPhone(customerPhone)
                 .customerEmail(customerEmail)

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNav } from '../hooks/useNav'
 import StoreNavbar from '../components/StoreNavbar'
+import { apiFetch } from '../services/api'
 
 const STATUS_CONFIG = {
   completed:  { label: 'Đã hoàn thành', dotColor: '#22C55E', bg: 'rgba(34,197,94,0.08)',  text: '#15803d',  border: 'rgba(34,197,94,0.25)'  },
@@ -11,34 +12,22 @@ const STATUS_CONFIG = {
   refunded:   { label: 'Đã hoàn tiền',  dotColor: '#A855F7', bg: 'rgba(168,85,247,0.08)', text: '#7e22ce',  border: 'rgba(168,85,247,0.25)'  },
 }
 
-const FILTER_TABS = [
-  { id: 'all',        label: 'Tất cả',       count: 6 },
-  { id: 'pending',    label: 'Chờ xác nhận', count: 1 },
-  { id: 'processing', label: 'Đang xử lý',   count: 1 },
-  { id: 'shipping',   label: 'Đang giao',    count: 1 },
-  { id: 'completed',  label: 'Đã hoàn thành',count: 2 },
-  { id: 'cancelled',  label: 'Đã hủy',       count: 1 },
-]
+const mapStatus = (backendStatus) => {
+  switch (backendStatus) {
+    case 'COMPLETED': return 'completed'
+    case 'SHIPPING': return 'shipping'
+    case 'PROCESSING': return 'processing'
+    case 'AWAITING_CONFIRMATION': return 'pending'
+    case 'CANCELLED': return 'cancelled'
+    case 'REFUNDED': return 'refunded'
+    default: return 'pending'
+  }
+}
 
-const ORDERS = [
-  { id: '#ORD-2023-8901', date: '28/10/2023', total: 24500000, status: 'completed',
-    items: [{ name: 'MacBook Pro 14" M3 Pro', qty: 1, price: 49990000 }, { name: 'Dán màn hình từ tính', qty: 1, price: 450000 }] },
-  { id: '#ORD-2023-8942', date: '30/10/2023', total: 12200000, status: 'shipping',
-    items: [{ name: 'iPhone 15 Pro Max 256GB', qty: 1, price: 29490000 }, { name: 'Bảo hành VIP', qty: 1, price: 1200000 }] },
-  { id: '#ORD-2023-8977', date: '31/10/2023', total: 5400000,  status: 'processing',
-    items: [{ name: 'AirPods Pro 2nd Gen', qty: 1, price: 6490000 }] },
-  { id: '#ORD-2023-8990', date: '31/10/2023', total: 1250000,  status: 'pending',
-    items: [{ name: 'Cáp USB-C 240W', qty: 2, price: 450000 }, { name: 'Dán kính cường lực', qty: 1, price: 350000 }] },
-  { id: '#ORD-2023-8750', date: '15/10/2023', total: 8900000,  status: 'cancelled',
-    items: [{ name: 'Samsung Galaxy S23 Ultra', qty: 1, price: 25990000 }] },
-  { id: '#ORD-2023-8700', date: '10/10/2023', total: 3200000,  status: 'completed',
-    items: [{ name: 'Apple Watch Series 9 41mm', qty: 1, price: 11990000 }] },
-]
-
-function fmt(n) { return n.toLocaleString('vi-VN') + 'đ' }
+function fmt(n) { return (n || 0).toLocaleString('vi-VN') + ' đ' }
 
 function StatusBadge({ status }) {
-  const c = STATUS_CONFIG[status]
+  const c = STATUS_CONFIG[status] || STATUS_CONFIG.pending
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold"
       style={{ backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}`, borderRadius: '20px' }}>
@@ -48,8 +37,10 @@ function StatusBadge({ status }) {
   )
 }
 
-function OrderCard({ order, onNavigate }) {
+function OrderCard({ order, onNavigate, onCancel }) {
   const [expanded, setExpanded] = useState(false)
+  const mappedStatus = mapStatus(order.orderStatus)
+  const items = order.items || []
 
   return (
     <div
@@ -58,7 +49,7 @@ function OrderCard({ order, onNavigate }) {
         backgroundColor: 'var(--card)',
         border: '1.5px solid var(--cb)',
         borderRadius: '16px',
-        borderLeft: order.status === 'shipping' || order.status === 'processing' ? '4.5px solid var(--accent)' : '1.5px solid var(--cb)',
+        borderLeft: mappedStatus === 'shipping' || mappedStatus === 'processing' ? '4.5px solid var(--accent)' : '1.5px solid var(--cb)',
         boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
       }}
       onMouseEnter={e => {
@@ -74,16 +65,16 @@ function OrderCard({ order, onNavigate }) {
       <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-4">
           <div>
-            <p className="text-sm font-bold" style={{ color: 'var(--ct1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{order.id}</p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--ct3)' }}>{order.date}</p>
+            <p className="text-sm font-bold" style={{ color: 'var(--ct1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{order.id.substring(0, 13).toUpperCase()}</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--ct3)' }}>{order.orderDate ? new Date(order.orderDate).toLocaleString('vi-VN') : 'N/A'}</p>
           </div>
-          <StatusBadge status={order.status} />
+          <StatusBadge status={mappedStatus} />
         </div>
         <div className="flex items-center gap-4">
           <p className="text-base font-bold" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{fmt(order.total)}</p>
           <button
             onClick={() => setExpanded(e => !e)}
-            className="p-1.5 transition-colors"
+            className="p-1.5 transition-colors border-none bg-transparent"
             style={{ borderRadius: '3px', color: 'var(--ct3)' }}
             onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--page)'; e.currentTarget.style.color = 'var(--ct1)' }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--ct3)' }}
@@ -97,9 +88,9 @@ function OrderCard({ order, onNavigate }) {
 
       {/* Items */}
       <div className="px-5 pb-4" style={{ borderTop: '1px solid var(--cb)' }}>
-        <p className="text-xs mt-3 mb-2" style={{ color: 'var(--ct3)' }}>{order.items.length} sản phẩm</p>
+        <p className="text-xs mt-3 mb-2" style={{ color: 'var(--ct3)' }}>{items.length} sản phẩm</p>
         <div className={`space-y-1.5 overflow-hidden transition-all ${expanded ? '' : 'max-h-[60px]'}`}>
-          {order.items.map((item, i) => (
+          {items.map((item, i) => (
             <div key={i} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--page)', border: '1px solid var(--cb)', borderRadius: '8px' }}>
@@ -107,10 +98,10 @@ function OrderCard({ order, onNavigate }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
                 </div>
-                <span className="text-sm font-semibold" style={{ color: 'var(--ct1)' }}>{item.name}</span>
-                <span className="text-xs" style={{ color: 'var(--ct3)' }}>x{item.qty}</span>
+                <span className="text-sm font-semibold text-left max-w-xs truncate" style={{ color: 'var(--ct1)' }}>{item.productName}</span>
+                <span className="text-xs" style={{ color: 'var(--ct3)' }}>x{item.quantity}</span>
               </div>
-              <span className="text-sm font-bold" style={{ color: 'var(--ct2)' }}>{fmt(item.price)}</span>
+              <span className="text-sm font-bold" style={{ color: 'var(--ct2)' }}>{fmt(item.totalPrice)}</span>
             </div>
           ))}
         </div>
@@ -118,28 +109,14 @@ function OrderCard({ order, onNavigate }) {
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-2.5 px-5 py-3" style={{ borderTop: '1px solid var(--cb)', backgroundColor: 'var(--page)' }}>
-        {order.status === 'shipping' && (
-          <button className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
-            style={{ color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.3)', backgroundColor: 'rgba(232,66,10,0.05)', borderRadius: '8px' }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(232,66,10,0.1)'}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(232,66,10,0.05)'}
-          >Theo dõi đơn hàng</button>
-        )}
-        {order.status === 'completed' && (
-          <button className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
-            style={{ color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.3)', backgroundColor: 'rgba(232,66,10,0.05)', borderRadius: '8px' }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(232,66,10,0.1)'}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(232,66,10,0.05)'}
-          >Mua lại</button>
-        )}
-        {order.status === 'pending' && (
-          <button className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
+        {mappedStatus === 'pending' && (
+          <button onClick={() => onCancel(order.id)} className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
             style={{ color: 'var(--err)', border: '1px solid rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.05)', borderRadius: '8px' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.05)'}
           >Hủy đơn</button>
         )}
-        <button onClick={() => onNavigate('invoice')}
+        <button onClick={() => onNavigate('invoice', { search: `?orderId=${order.id}` })}
           className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
           style={{ color: 'var(--ct2)', border: '1px solid var(--cb)', backgroundColor: 'var(--card)', borderRadius: '8px' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#c8d0e4'; e.currentTarget.style.color = 'var(--ct1)' }}
@@ -152,14 +129,60 @@ function OrderCard({ order, onNavigate }) {
 
 export default function CustomerOrdersPage() {
   const onNavigate = useNav()
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
 
-  const filtered = ORDERS.filter(o => {
-    const matchTab = activeTab === 'all' || o.status === activeTab
+  const fetchOrders = async () => {
+    try {
+      setLoading(true)
+      const data = await apiFetch('/api/customer/orders')
+      setOrders(data || [])
+    } catch (e) {
+      console.error("Lỗi tải lịch sử đơn hàng:", e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchOrders()
+  }, [])
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) return
+    try {
+      await apiFetch(`/api/customer/orders/${orderId}/cancel`, {
+        method: 'POST'
+      })
+      await fetchOrders()
+    } catch (e) {
+      alert("Hủy đơn hàng thất bại: " + e.message)
+    }
+  }
+
+  const filtered = orders.filter(o => {
+    const mapped = mapStatus(o.orderStatus)
+    const matchTab = activeTab === 'all' || mapped === activeTab
     const matchSearch = o.id.toLowerCase().includes(search.toLowerCase())
     return matchTab && matchSearch
   })
+
+  // Group filter tab config
+  const getTabCount = (tabId) => {
+    if (tabId === 'all') return orders.length
+    return orders.filter(o => mapStatus(o.orderStatus) === tabId).length
+  }
+
+  const filterTabs = [
+    { id: 'all',        label: 'Tất cả' },
+    { id: 'pending',    label: 'Chờ xác nhận' },
+    { id: 'processing', label: 'Đang xử lý' },
+    { id: 'shipping',   label: 'Đang giao' },
+    { id: 'completed',  label: 'Đã hoàn thành' },
+    { id: 'cancelled',  label: 'Đã hủy' },
+  ]
 
   return (
     <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
@@ -173,7 +196,7 @@ export default function CustomerOrdersPage() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto w-full px-4 py-6">
+      <div className="max-w-3xl mx-auto w-full px-4 py-6 text-gray-800">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm mb-5" style={{ color: 'var(--ct3)' }}>
           <span onClick={() => onNavigate('home')} className="cursor-pointer transition-colors"
@@ -202,15 +225,13 @@ export default function CustomerOrdersPage() {
 
         {/* Filter tabs */}
         <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
-          {FILTER_TABS.map(tab => (
+          {filterTabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold transition-all duration-200 cursor-pointer"
+              className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold transition-all duration-200 cursor-pointer border-none bg-transparent"
               style={activeTab === tab.id
                 ? { backgroundColor: 'var(--accent)', color: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }
                 : { backgroundColor: 'var(--card)', color: 'var(--ct2)', border: '1.5px solid var(--cb)', borderRadius: '8px' }
               }
-              onMouseEnter={e => { if (activeTab !== tab.id) { e.currentTarget.style.borderColor = '#c8d0e4'; e.currentTarget.style.color = 'var(--ct1)' } }}
-              onMouseLeave={e => { if (activeTab !== tab.id) { e.currentTarget.style.borderColor = 'var(--cb)'; e.currentTarget.style.color = 'var(--ct2)' } }}
             >
               {tab.label}
               <span className="text-[11px] font-bold px-2 py-0.5"
@@ -219,15 +240,19 @@ export default function CustomerOrdersPage() {
                   color: activeTab === tab.id ? 'white' : 'var(--ct3)',
                   borderRadius: '20px',
                 }}
-              >{tab.count}</span>
+              >{getTabCount(tab.id)}</span>
             </button>
           ))}
         </div>
 
         {/* Order list */}
-        {filtered.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="space-y-4">
-            {filtered.map(order => <OrderCard key={order.id} order={order} onNavigate={onNavigate} />)}
+            {filtered.map(order => <OrderCard key={order.id} order={order} onNavigate={onNavigate} onCancel={handleCancelOrder} />)}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -239,10 +264,8 @@ export default function CustomerOrdersPage() {
             <p className="font-bold" style={{ color: 'var(--ct2)' }}>Không có đơn hàng nào</p>
             <p className="text-sm mt-1" style={{ color: 'var(--ct3)' }}>Hãy thử thay đổi bộ lọc hoặc tìm kiếm khác</p>
             <button onClick={() => onNavigate('list')}
-              className="mt-5 text-white text-sm font-bold px-5 py-2.5 transition-all duration-200 cursor-pointer"
+              className="mt-5 text-white text-sm font-bold px-5 py-2.5 transition-all duration-200 cursor-pointer border-none"
               style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
             >Mua sắm ngay</button>
           </div>
         )}

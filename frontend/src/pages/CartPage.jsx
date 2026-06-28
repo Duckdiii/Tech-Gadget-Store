@@ -1,31 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNav } from '../hooks/useNav'
 import StoreNavbar from '../components/StoreNavbar'
+import { apiFetch } from '../services/api'
 
-const initialItems = [
-  {
-    id: 1, brand: 'Apple', name: 'MacBook Pro 14" M3 Pro 2023', variant: 'Space Black | 18GB RAM | 512GB SSD',
-    price: 49990000, originalPrice: 54990000, qty: 1,
-    image: 'https://placehold.co/120x100/EEF1F9/96A3BC?text=MacBook', checked: true,
-    bundles: [
-      { id: 'b1', label: 'Gói Bảo hành Mở rộng (1 năm)', price: 2490000, checked: false },
-      { id: 'b2', label: 'Dán màn hình từ tính', price: 450000, checked: true },
-    ],
-  },
-  {
-    id: 2, brand: 'Apple', name: 'iPhone 15 Pro Max', variant: 'Titan Tự Nhiên | 256GB',
-    price: 29490000, originalPrice: 32990000, qty: 2,
-    image: 'https://placehold.co/120x100/EEF1F9/96A3BC?text=iPhone', checked: true,
-    bundles: [
-      { id: 'b3', label: 'Bảo hành VIP (Lỗi đổi mới)', price: 1200000, checked: true },
-      { id: 'b4', label: 'Dán kính cường lực', price: 250000, checked: false },
-    ],
-  },
-]
+function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
 
-function fmt(price) { return price.toLocaleString('vi-VN') + ' đ' }
-
-function QuantityControl({ qty, onIncrease, onDecrease }) {
+function QuantityControl({ qty, onIncrease, onDecrease }) { // dùng để tăng giảm số lượng sản phẩm trong giỏ hàng
   return (
     <div className="flex items-center" style={{ border: '1px solid var(--b1)', borderRadius: '8px', overflow: 'hidden' }}>
       <button onClick={onDecrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer"
@@ -43,7 +23,7 @@ function QuantityControl({ qty, onIncrease, onDecrease }) {
   )
 }
 
-function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove }) {
+function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove }) { // hiển thị thông tin sản phẩm trong giỏ hàng
   const bundleFee = item.bundles.filter(b => b.checked).reduce((s, b) => s + b.price, 0)
   const lineTotal = (item.price + bundleFee) * item.qty
   const lineSavings = item.originalPrice ? (item.originalPrice - item.price) * item.qty : 0
@@ -101,7 +81,7 @@ function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove })
       </div>
 
       {/* Bundles */}
-      {item.bundles.length > 0 && (
+      {item.bundles && item.bundles.length > 0 && (
         <div style={{ borderTop: '1px solid var(--b1)' }}>
           <div className="px-5 py-2 flex items-center gap-1.5" style={{ backgroundColor: 'var(--s1)' }}>
             <svg className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +89,7 @@ function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove })
             </svg>
             <span className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>Dịch vụ kèm theo mua kèm</span>
           </div>
-          {item.bundles.slice(0, 2).map(bundle => (
+          {item.bundles.map(bundle => (
             <label key={bundle.id}
               className="flex items-center justify-between gap-3 px-5 py-3 cursor-pointer transition-colors"
               style={{ borderTop: '1px solid var(--b1)' }}
@@ -135,7 +115,7 @@ function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove })
   )
 }
 
-function OrderSummary({ items }) {
+function OrderSummary({ items }) { // hiển thị tổng quan đơn hàng
   const checkedItems = items.filter(i => i.checked)
   const totalQty = checkedItems.reduce((s, i) => s + i.qty, 0)
   const subtotal = checkedItems.reduce((s, i) => s + i.price * i.qty, 0)
@@ -195,9 +175,60 @@ function OrderSummary({ items }) {
   )
 }
 
-export default function CartPage() {
+export default function CartPage() { // hiển thị trang giỏ hàng
   const onNavigate = useNav()
-  const [items, setItems] = useState(initialItems)
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchCart = async () => {
+    try {
+      setLoading(true)
+      const cartData = await apiFetch('/api/customer/cart')
+      if (cartData && cartData.items) {
+        const itemsWithBundles = await Promise.all(cartData.items.map(async (item) => {
+          let availableBundles = []
+          try {
+            availableBundles = await apiFetch(`/api/customer/cart/items/${item.cartItemId}/bundle-services`)
+          } catch (e) {
+            console.warn(`Lỗi tải dịch vụ cho item ${item.cartItemId}:`, e)
+          }
+
+          const selectedBundleIds = new Set((item.bundleServices || []).map(b => b.id))
+          const bundles = (availableBundles || []).map(b => ({
+            id: b.id,
+            label: b.name,
+            price: b.price,
+            checked: selectedBundleIds.has(b.id)
+          }))
+
+          return {
+            id: item.cartItemId,
+            brand: 'TechStore',
+            name: item.productName,
+            variant: item.variantName,
+            price: item.unitPrice,
+            originalPrice: item.unitPrice * 1.12,
+            qty: item.quantity,
+            image: `https://placehold.co/120x100/EEF1F9/96A3BC?text=${encodeURIComponent(item.productName || 'Product')}`,
+            checked: true,
+            bundles: bundles,
+            rawItem: item
+          }
+        }))
+        setItems(itemsWithBundles)
+      } else {
+        setItems([])
+      }
+    } catch (err) {
+      console.error("Lỗi tải giỏ hàng:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchCart()
+  }, [])
 
   const allChecked = items.length > 0 && items.every(i => i.checked)
   const someChecked = items.some(i => i.checked)
@@ -209,9 +240,48 @@ export default function CartPage() {
 
   const toggleAll = () => setItems(prev => prev.map(i => ({ ...i, checked: !allChecked })))
   const toggleItem = id => setItems(prev => prev.map(i => i.id === id ? { ...i, checked: !i.checked } : i))
-  const toggleBundle = (itemId, bundleId) => setItems(prev => prev.map(i => i.id === itemId ? { ...i, bundles: i.bundles.map(b => b.id === bundleId ? { ...b, checked: !b.checked } : b) } : i))
-  const changeQty = (id, qty) => setItems(prev => prev.map(i => i.id === id ? { ...i, qty } : i))
-  const removeItem = id => setItems(prev => prev.filter(i => i.id !== id))
+
+  const toggleBundle = async (itemId, bundleId) => {
+    // Find the item and update checkbox state locally
+    const targetItem = items.find(i => i.id === itemId)
+    if (!targetItem) return
+
+    const updatedBundles = targetItem.bundles.map(b => b.id === bundleId ? { ...b, checked: !b.checked } : b)
+    const selectedBundleIds = updatedBundles.filter(b => b.checked).map(b => b.id)
+
+    try {
+      await apiFetch(`/api/customer/cart/items/${itemId}/bundle-services`, {
+        method: 'PUT',
+        body: JSON.stringify({ bundleServicesIds: selectedBundleIds })
+      })
+      await fetchCart() // Reload cart from API to reflect totals
+    } catch (e) {
+      console.error("Lỗi cập nhật dịch vụ:", e)
+    }
+  }
+
+  const changeQty = async (id, qty) => { // cập nhật số lượng sản phẩm trong giỏ hàng
+    try {
+      await apiFetch(`/api/customer/cart/items/${id}/quantity`, {
+        method: 'PUT',
+        body: JSON.stringify({ quantity: qty })
+      })
+      await fetchCart()
+    } catch (e) {
+      console.error("Lỗi cập nhật số lượng:", e)
+    }
+  }
+
+  const removeItem = async (id) => { // xóa sản phẩm khỏi giỏ hàng
+    try {
+      await apiFetch(`/api/customer/cart/items/${id}`, {
+        method: 'DELETE'
+      })
+      await fetchCart()
+    } catch (e) {
+      console.error("Lỗi xóa sản phẩm khỏi giỏ hàng:", e)
+    }
+  }
 
   return (
     <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
@@ -234,7 +304,11 @@ export default function CartPage() {
           </button>
         </div>
 
-        {items.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-32">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
+          </div>
+        ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 text-center">
             <svg className="w-20 h-20 mb-4" style={{ color: 'var(--b1)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -253,7 +327,12 @@ export default function CartPage() {
                 <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-5 h-5 cursor-pointer accent-[var(--accent)]" />
                 <span className="text-sm font-bold" style={{ color: 'var(--t1)' }}>Chọn tất cả ({items.length} sản phẩm)</span>
                 {someChecked && (
-                  <button onClick={() => setItems(prev => prev.filter(i => !i.checked))}
+                  <button onClick={() => {
+                    const checkedIds = checkedItems.map(i => i.id)
+                    Promise.all(checkedIds.map(id => apiFetch(`/api/customer/cart/items/${id}`, { method: 'DELETE' })))
+                      .then(fetchCart)
+                      .catch(e => console.error("Lỗi xóa các sản phẩm chọn:", e))
+                  }}
                     className="ml-auto text-[12.5px] font-bold transition-colors cursor-pointer"
                     style={{ color: 'var(--err)' }}
                     onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
@@ -276,7 +355,7 @@ export default function CartPage() {
       </div>
 
       {/* Sticky checkout bar (dark) */}
-      {totalQty > 0 && (
+      {!loading && totalQty > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-50" style={{ backgroundColor: 'var(--ink)', borderTop: '1px solid var(--b1)', boxShadow: '0 -4px 24px rgba(0,0,0,0.2)' }}>
           <div className="max-w-screen-2xl mx-auto px-8 py-4.5 flex items-center justify-between gap-6">
             <div className="flex items-center gap-6">
@@ -294,7 +373,7 @@ export default function CartPage() {
               )}
             </div>
             <button
-              onClick={() => onNavigate('checkout')}
+              onClick={() => onNavigate('checkout', { state: { cartItemIds: checkedItems.map(i => i.id) } })}
               className="flex items-center gap-2 text-white font-extrabold text-[14px] px-10 py-3.5 transition-all duration-200 cursor-pointer border-none"
               style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
             >

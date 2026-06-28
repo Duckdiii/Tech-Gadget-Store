@@ -24,6 +24,9 @@ public class InvoiceResponseDto {
     private BigDecimal finalAmount;
     private LocalDateTime issuedAt;
     private String paymentMethod;
+    private String customerName;
+    private String customerPhone;
+    private String shippingAddress;
     private List<InvoiceItemResponseDto> items;
 }
 

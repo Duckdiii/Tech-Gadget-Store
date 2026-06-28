@@ -3,19 +3,17 @@ package com.project.tech_gadget_store.controller;
 import com.project.tech_gadget_store.dto.request.MomoIpnCallbackDto;
 import com.project.tech_gadget_store.dto.request.PaymentCreateRequestDto;
 import com.project.tech_gadget_store.dto.response.MomoPaymentResponseDto;
-import com.project.tech_gadget_store.dto.response.PaymentVerifyResponseDto;
 import com.project.tech_gadget_store.dto.response.VNPayPaymentResponseDto;
+import com.project.tech_gadget_store.entity.PaymentLog;
+import com.project.tech_gadget_store.repository.PaymentLogRepository;
 import com.project.tech_gadget_store.service.MomoService;
 import com.project.tech_gadget_store.service.PaymentService;
 import com.project.tech_gadget_store.service.VNPayService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -26,13 +24,16 @@ public class PaymentController {
     private final MomoService momoService;
     private final VNPayService vnpayService;
     private final PaymentService paymentService;
+    private final PaymentLogRepository paymentLogRepository;
 
     public PaymentController(MomoService momoService,
-                             VNPayService vnpayService,
-                             PaymentService paymentService) {
+            VNPayService vnpayService,
+            PaymentService paymentService,
+            PaymentLogRepository paymentLogRepository) {
         this.momoService = momoService;
         this.vnpayService = vnpayService;
         this.paymentService = paymentService;
+        this.paymentLogRepository = paymentLogRepository;
     }
 
     /**
@@ -93,39 +94,58 @@ public class PaymentController {
     }
 
     /**
-     * Nhận redirect từ VNPay sau khi user thanh toán (trình duyệt user được redirect về đây).
-     * FE gọi endpoint này với toàn bộ query params từ VNPay, backend verify rồi trả JSON.
-     * Endpoint này phải public (không cần JWT).
+     * Nhận redirect từ VNPay sau khi user thanh toán.
+     * Redirect người dùng về trang Invoice của FE.
      */
     @GetMapping("/vnpay/return")
-    public ResponseEntity<PaymentVerifyResponseDto> handleVNPayReturn(
+    public ResponseEntity<Void> handleVNPayReturn(
             @RequestParam Map<String, String> params) {
-        if (!vnpayService.verifyReturnHash(params)) {
-            return ResponseEntity.ok(PaymentVerifyResponseDto.builder()
-                    .success(false)
-                    .message("Chữ ký không hợp lệ")
-                    .build());
-        }
-
-        String responseCode = params.get("vnp_ResponseCode");
-        String orderId = params.get("vnp_TxnRef");
+        String orderId = params.get("vnp_TxnRef"); // mapping to pendingLog.getId()
         String transactionId = params.get("vnp_TransactionNo");
+        String responseCode = params.get("vnp_ResponseCode");
 
-        if ("00".equals(responseCode)) {
+        if (vnpayService.verifyReturnHash(params) && "00".equals(responseCode)) {
             paymentService.markSuccess(orderId, transactionId);
-            return ResponseEntity.ok(PaymentVerifyResponseDto.builder()
-                    .success(true)
-                    .orderId(orderId)
-                    .transactionId(transactionId)
-                    .message("Thanh toán thành công")
-                    .build());
+            PaymentLog logRecord = paymentLogRepository.findById(orderId).orElse(null);
+            String targetOrderId = logRecord != null && logRecord.getOrder() != null ? logRecord.getOrder().getId()
+                    : "";
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION,
+                            "http://localhost:5173/invoice?orderId=" + targetOrderId + "&success=true")
+                    .build();
         }
 
         paymentService.markFailed(orderId, "VNPay responseCode=" + responseCode);
-        return ResponseEntity.ok(PaymentVerifyResponseDto.builder()
-                .success(false)
-                .orderId(orderId)
-                .message("Payment failed. Please try again or choose another payment method.")
-                .build());
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, "http://localhost:5173/checkout?error=PaymentFailed")
+                .build();
+    }
+
+    /**
+     * Nhận redirect từ MoMo sau khi user thanh toán.
+     * Redirect người dùng về trang Invoice của FE.
+     */
+    @GetMapping("/momo/return")
+    public ResponseEntity<Void> handleMomoReturn(
+            @RequestParam Map<String, String> params) {
+        String orderId = params.get("orderId"); // mapping to pendingLog.getId()
+        String transactionId = params.get("transId");
+        String resultCode = params.get("resultCode");
+
+        if ("0".equals(resultCode)) {
+            paymentService.markSuccess(orderId, transactionId);
+            PaymentLog logRecord = paymentLogRepository.findById(orderId).orElse(null);
+            String targetOrderId = logRecord != null && logRecord.getOrder() != null ? logRecord.getOrder().getId()
+                    : "";
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION,
+                            "http://localhost:5173/invoice?orderId=" + targetOrderId + "&success=true")
+                    .build();
+        }
+
+        paymentService.markFailed(orderId, "MoMo resultCode=" + resultCode);
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, "http://localhost:5173/checkout?error=PaymentFailed")
+                .build();
     }
 }

@@ -60,10 +60,11 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/products").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/payment/vnpay/return").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payment/vnpay/return", "/api/payment/momo/return").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payment/momo/ipn").permitAll()
                         .requestMatchers("/api/manager/warehouse-logs/**").hasAnyRole("STAFF", "MANAGER")
+                        .requestMatchers("/api/manager/orders/**").hasAnyRole("STAFF", "MANAGER")
                         .requestMatchers("/api/manager/**").hasRole("MANAGER")
                         .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/import-logs/**").hasAnyRole("STAFF", "MANAGER")
