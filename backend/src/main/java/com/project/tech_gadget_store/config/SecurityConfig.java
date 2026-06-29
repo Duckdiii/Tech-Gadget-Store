@@ -1,6 +1,7 @@
 package com.project.tech_gadget_store.config;
 
 import com.project.tech_gadget_store.security.JwtAuthFilter;
+import com.project.tech_gadget_store.security.LoginRateLimitFilter;
 import com.project.tech_gadget_store.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,10 +23,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final LoginRateLimitFilter loginRateLimitFilter;
     private final CustomUserDetailsService userDetailsService;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+                          LoginRateLimitFilter loginRateLimitFilter,
+                          CustomUserDetailsService userDetailsService) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.loginRateLimitFilter = loginRateLimitFilter;
         this.userDetailsService = userDetailsService;
     }
 
@@ -70,7 +75,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/import-logs/**").hasAnyRole("STAFF", "MANAGER")
                         .requestMatchers("/api/export-logs/**").hasAnyRole("STAFF", "MANAGER")
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter, LoginRateLimitFilter.class);
 
         return http.build();
     }
