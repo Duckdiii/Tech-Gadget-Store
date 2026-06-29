@@ -6,6 +6,8 @@ import com.project.tech_gadget_store.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductPageResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.entity.BundleService;
+import com.project.tech_gadget_store.entity.ExportLogItem;
+import com.project.tech_gadget_store.entity.OrderItem;
 import com.project.tech_gadget_store.entity.Product;
 import com.project.tech_gadget_store.entity.ProductVariant;
 import com.project.tech_gadget_store.entity.Promotion;
@@ -44,10 +46,22 @@ public class ProductService {
         this.productMapper = productMapper;
     }
 
-    public List<ProductResponseDto> findAll() {
-        return productRepository.findAll().stream()
-                .map(productMapper::toProductResponseDto)
-                .toList();
+    /** Max page size allowed for public product listing to prevent DoS / OOM. */
+    private static final int MAX_PAGE_SIZE = 100;
+
+    /**
+     * Returns a paginated product listing. Replaces the old unbounded {@code findAll()}
+     * to prevent OOM / DoS on the public endpoint.
+     *
+     * @param page 0-based page index (default 0)
+     * @param size items per page (default 20, max {@value #MAX_PAGE_SIZE})
+     */
+    public ProductPageResponseDto findAll(int page, int size) {
+        int cappedSize = Math.min(size, MAX_PAGE_SIZE);
+        ProductFilterRequestDto emptyFilter = new ProductFilterRequestDto();
+        emptyFilter.setPage(page);
+        emptyFilter.setSize(cappedSize);
+        return findProductsByFilter(emptyFilter);
     }
 
     public ProductDetailResponseDto viewDetailProduct(String id) {
@@ -73,7 +87,8 @@ public class ProductService {
         int page = filter.getPage() != null ? filter.getPage() : 0;
         int size = filter.getSize() != null ? filter.getSize() : 20;
 
-        Page<Product> productPage = productRepository.findAll(spec, PageRequest.of(page, size, sort));
+        int cappedSize = Math.min(size, MAX_PAGE_SIZE);
+        Page<Product> productPage = productRepository.findAll(spec, PageRequest.of(page, cappedSize, sort));
 
         List<ProductResponseDto> items = productPage.getContent().stream()
                 .map(productMapper::toProductResponseDto)
@@ -208,10 +223,21 @@ public class ProductService {
 
     private Predicate hasAvailableVariant(Root<Product> root, CriteriaQuery<?> query,
             CriteriaBuilder cb) {
+        Subquery<String> exportedSq = query.subquery(String.class);
+        Root<ExportLogItem> eli = exportedSq.from(ExportLogItem.class);
+        exportedSq.select(eli.get("productVariant").get("id"));
+
+        Subquery<String> orderedSq = query.subquery(String.class);
+        Root<OrderItem> oi = orderedSq.from(OrderItem.class);
+        orderedSq.select(oi.get("productVariant").get("id"));
+
         Subquery<String> sq = query.subquery(String.class);
         Root<ProductVariant> v = sq.from(ProductVariant.class);
         sq.select(v.get("id"));
-        sq.where(cb.equal(v.get("product"), root));
+        sq.where(
+                cb.equal(v.get("product"), root),
+                cb.not(v.get("id").in(exportedSq)),
+                cb.not(v.get("id").in(orderedSq)));
         return cb.exists(sq);
     }
 

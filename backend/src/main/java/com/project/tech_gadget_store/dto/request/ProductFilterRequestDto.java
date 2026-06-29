@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.dto.request;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,5 +57,6 @@ public class ProductFilterRequestDto {
     private Integer page;
 
     @Min(value = 1, message = "size must be at least 1")
+    @Max(value = 100, message = "size must not exceed 100")
     private Integer size;
 }
