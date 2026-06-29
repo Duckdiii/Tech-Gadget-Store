@@ -6,6 +6,7 @@ import com.project.tech_gadget_store.dto.response.BackupMetadata;
 import com.project.tech_gadget_store.entity.AuditLog;
 import com.project.tech_gadget_store.repository.AuditLogRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +28,9 @@ public class BackupAndRestoreService {
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
     private final AuditLogRepository auditLogRepository;
+    private final StringRedisTemplate redis;
 
-    private volatile boolean maintenanceMode = false;
+    private static final String MAINTENANCE_KEY = "maintenance:mode";
     private static final String APP_VERSION = "1.0.0";
     private final Path backupDirectory = Paths.get("backups");
 
@@ -62,10 +64,13 @@ public class BackupAndRestoreService {
         "payment_methods"
     );
 
-    public BackupAndRestoreService(JdbcTemplate jdbcTemplate, AuditLogRepository auditLogRepository) {
+    public BackupAndRestoreService(JdbcTemplate jdbcTemplate,
+                                   AuditLogRepository auditLogRepository,
+                                   StringRedisTemplate redis) {
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = new ObjectMapper().registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         this.auditLogRepository = auditLogRepository;
+        this.redis = redis;
         try {
             Files.createDirectories(backupDirectory);
         } catch (IOException e) {
@@ -74,11 +79,15 @@ public class BackupAndRestoreService {
     }
 
     public boolean isMaintenanceMode() {
-        return maintenanceMode;
+        return Boolean.TRUE.equals(redis.hasKey(MAINTENANCE_KEY));
     }
 
-    public void setMaintenanceMode(boolean maintenanceMode) {
-        this.maintenanceMode = maintenanceMode;
+    public void setMaintenanceMode(boolean enabled) {
+        if (enabled) {
+            redis.opsForValue().set(MAINTENANCE_KEY, "1");
+        } else {
+            redis.delete(MAINTENANCE_KEY);
+        }
     }
 
     public List<BackupMetadata> getActiveRecoveryPoints() {
@@ -132,12 +141,12 @@ public class BackupAndRestoreService {
             byte[] zipBytes = baos.toByteArray();
             Files.write(backupPath, zipBytes);
 
-            // Compute MD5 of the final zip file
-            String md5 = calculateMD5(backupPath);
-            
-            // Save MD5 to external file
-            Path md5Path = backupDirectory.resolve(backupName + ".md5");
-            Files.writeString(md5Path, md5);
+            // Compute SHA-256 of the final zip file
+            String checksum = calculateSHA256(backupPath);
+
+            // Save checksum to external file
+            Path checksumPath = backupDirectory.resolve(backupName + ".sha256");
+            Files.writeString(checksumPath, checksum);
 
             AuditLog logEntry = new AuditLog(performedBy, "BACKUP", "Created backup successfully: " + backupName + " (Reason: " + reason + ")");
             auditLogRepository.save(logEntry);
@@ -146,7 +155,7 @@ public class BackupAndRestoreService {
                     .backupName(backupName)
                     .timestamp(LocalDateTime.now())
                     .appVersion(APP_VERSION)
-                    .checksum(md5)
+                    .checksum(checksum)
                     .sizeBytes(backupPath.toFile().length())
                     .build();
 
@@ -163,19 +172,25 @@ public class BackupAndRestoreService {
 
         Path snapshotPath = null;
         try {
-            Path backupPath = backupDirectory.resolve(backupName);
+            Path backupPath = backupDirectory.resolve(backupName).normalize();
+            if (!backupPath.toAbsolutePath().normalize().startsWith(backupDirectory.toAbsolutePath().normalize())) {
+                throw new IllegalArgumentException("Invalid backup name");
+            }
             if (!Files.exists(backupPath)) {
                 throw new IllegalArgumentException("The selected backup file is missing or corrupted. Please choose another recovery point");
             }
 
-            // 1. Verify Backup Checksum using external .md5 file
-            Path md5Path = backupDirectory.resolve(backupName + ".md5");
-            if (!Files.exists(md5Path)) {
+            // 1. Verify Backup Checksum using external .sha256 file
+            Path checksumPath = backupDirectory.resolve(backupName + ".sha256").normalize();
+            if (!checksumPath.toAbsolutePath().normalize().startsWith(backupDirectory.toAbsolutePath().normalize())) {
+                throw new IllegalArgumentException("Invalid backup name");
+            }
+            if (!Files.exists(checksumPath)) {
                 throw new IllegalArgumentException("The selected backup file is missing or corrupted. Please choose another recovery point");
             }
-            String expectedMd5 = Files.readString(md5Path).trim();
-            String fileChecksum = calculateMD5(backupPath);
-            if (!fileChecksum.equalsIgnoreCase(expectedMd5)) {
+            String expectedChecksum = Files.readString(checksumPath).trim();
+            String fileChecksum = calculateSHA256(backupPath);
+            if (!fileChecksum.equalsIgnoreCase(expectedChecksum)) {
                 throw new IllegalArgumentException("The selected backup file is missing or corrupted. Please choose another recovery point");
             }
 
@@ -333,6 +348,9 @@ public class BackupAndRestoreService {
         List<Object> values = new ArrayList<>();
 
         for (Map.Entry<String, Object> entry : row.entrySet()) {
+            // Validate column name to prevent SQL injection via crafted backup files
+            validateIdentifier(entry.getKey());
+
             if (columns.length() > 0) {
                 columns.append(", ");
                 placeholders.append(", ");
@@ -344,6 +362,20 @@ public class BackupAndRestoreService {
 
         String sql = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
         jdbcTemplate.update(sql, values.toArray());
+    }
+
+    /**
+     * Validates that a SQL identifier (table or column name) contains only
+     * alphanumeric characters and underscores, preventing SQL injection via
+     * crafted backup files.
+     *
+     * @param name the identifier to validate
+     * @throws IllegalArgumentException if the identifier contains invalid characters
+     */
+    private void validateIdentifier(String name) {
+        if (name == null || !name.matches("[a-zA-Z0-9_]+")) {
+            throw new IllegalArgumentException("Invalid SQL identifier: " + name);
+        }
     }
 
     private Object convertValueIfNeeded(String columnName, Object value) {
@@ -360,6 +392,7 @@ public class BackupAndRestoreService {
 
     private boolean tableExists(String tableName) {
         try {
+            validateIdentifier(tableName);
             jdbcTemplate.execute("SELECT 1 FROM " + tableName + " LIMIT 1");
             return true;
         } catch (Exception e) {
@@ -392,9 +425,9 @@ public class BackupAndRestoreService {
         return null;
     }
 
-    private String calculateMD5(Path path) throws Exception {
+    private String calculateSHA256(Path path) throws Exception {
         byte[] data = Files.readAllBytes(path);
-        byte[] hash = MessageDigest.getInstance("MD5").digest(data);
+        byte[] hash = MessageDigest.getInstance("SHA-256").digest(data);
         StringBuilder sb = new StringBuilder();
         for (byte b : hash) {
             sb.append(String.format("%02x", b));

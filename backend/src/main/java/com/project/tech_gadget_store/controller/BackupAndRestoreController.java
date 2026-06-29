@@ -4,6 +4,7 @@ import com.project.tech_gadget_store.dto.request.RestoreRequestDto;
 import com.project.tech_gadget_store.dto.response.BackupMetadata;
 import com.project.tech_gadget_store.service.BackupAndRestoreService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.List;
@@ -35,7 +37,7 @@ public class BackupAndRestoreController {
     public ResponseEntity<BackupMetadata> createBackup(
             Principal principal,
             @RequestParam(defaultValue = "Manual Backup") String reason) {
-        String username = principal != null ? principal.getName() : "ManagerAdmin";
+        String username = resolveUsername(principal);
         BackupMetadata meta = backupAndRestoreService.createBackup(username, reason);
         return ResponseEntity.ok(meta);
     }
@@ -44,17 +46,24 @@ public class BackupAndRestoreController {
     public ResponseEntity<Map<String, String>> restoreBackup(
             Principal principal,
             @Valid @RequestBody RestoreRequestDto requestDto) {
-        String username = principal != null ? principal.getName() : "ManagerAdmin";
-        
+        String username = resolveUsername(principal);
+
         backupAndRestoreService.restoreBackup(
                 username,
                 requestDto.getBackupName(),
                 requestDto.getScope(),
                 requestDto.getModules()
         );
-        
+
         return ResponseEntity.ok(Map.of(
                 "message", "Restore operation completed successfully."
         ));
+    }
+
+    private String resolveUsername(Principal principal) {
+        if (principal == null || principal.getName() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
+        }
+        return principal.getName();
     }
 }

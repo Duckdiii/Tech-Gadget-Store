@@ -12,6 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.File;
@@ -43,6 +45,12 @@ class BackupAndRestoreServiceTest {
     @Mock
     private AuditLogRepository auditLogRepository;
 
+    @Mock
+    private StringRedisTemplate redis;
+
+    @Mock
+    private ValueOperations<String, String> valueOps;
+
     @InjectMocks
     private BackupAndRestoreService backupAndRestoreService;
 
@@ -51,6 +59,7 @@ class BackupAndRestoreServiceTest {
     @BeforeEach
     void setUp() throws IOException {
         Files.createDirectories(backupDirectory);
+        when(redis.opsForValue()).thenReturn(valueOps);
     }
 
     @AfterEach
@@ -85,9 +94,9 @@ class BackupAndRestoreServiceTest {
         Path backupPath = backupDirectory.resolve(backupName);
         createMockBackupFile(backupPath, "1.0.0");
 
-        // Calculate and save MD5
-        String correctMd5 = calculateMD5(backupPath);
-        Files.writeString(backupDirectory.resolve(backupName + ".md5"), correctMd5);
+        // Calculate and save SHA-256
+        String correctMd5 = calculateSHA256(backupPath);
+        Files.writeString(backupDirectory.resolve(backupName + ".sha256"), correctMd5);
 
         doAnswer(inv -> null).when(jdbcTemplate).execute(anyString());
         when(jdbcTemplate.update(anyString())).thenReturn(1);
@@ -115,9 +124,9 @@ class BackupAndRestoreServiceTest {
         Path backupPath = backupDirectory.resolve(backupName);
         createMockBackupFile(backupPath, "2.0.0");
 
-        // Calculate and save MD5
-        String correctMd5 = calculateMD5(backupPath);
-        Files.writeString(backupDirectory.resolve(backupName + ".md5"), correctMd5);
+        // Calculate and save SHA-256
+        String correctMd5 = calculateSHA256(backupPath);
+        Files.writeString(backupDirectory.resolve(backupName + ".sha256"), correctMd5);
 
         assertThrows(IllegalStateException.class, () ->
             backupAndRestoreService.restoreBackup("manager-1", backupName, "FULL", null)
@@ -133,8 +142,8 @@ class BackupAndRestoreServiceTest {
         Path backupPath = backupDirectory.resolve(backupName);
         createMockBackupFile(backupPath, "1.0.0");
 
-        // Save corrupted MD5
-        Files.writeString(backupDirectory.resolve(backupName + ".md5"), "wrong_checksum_here");
+        // Save corrupted checksum
+        Files.writeString(backupDirectory.resolve(backupName + ".sha256"), "wrong_checksum_here");
 
         assertThrows(IllegalArgumentException.class, () ->
             backupAndRestoreService.restoreBackup("manager-1", backupName, "FULL", null)
@@ -150,9 +159,9 @@ class BackupAndRestoreServiceTest {
         Path backupPath = backupDirectory.resolve(backupName);
         createMockBackupFile(backupPath, "1.0.0");
 
-        // Calculate and save MD5
-        String correctMd5 = calculateMD5(backupPath);
-        Files.writeString(backupDirectory.resolve(backupName + ".md5"), correctMd5);
+        // Calculate and save SHA-256
+        String correctMd5 = calculateSHA256(backupPath);
+        Files.writeString(backupDirectory.resolve(backupName + ".sha256"), correctMd5);
 
         doAnswer(inv -> null).when(jdbcTemplate).execute(anyString());
 
@@ -166,6 +175,81 @@ class BackupAndRestoreServiceTest {
         assertTrue(ex.getMessage().contains("The previous stable state has been recovered"));
         assertFalse(backupAndRestoreService.isMaintenanceMode());
         verify(auditLogRepository).save(any(AuditLog.class));
+    }
+
+    @Test
+    void restoreBackup_PathTraversal_ThrowsIllegalArgumentException() {
+        String unsafeBackupName = "../../../etc/passwd";
+        
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+            backupAndRestoreService.restoreBackup("manager-1", unsafeBackupName, "FULL", null)
+        );
+
+        assertEquals("Invalid backup name", ex.getMessage());
+        assertFalse(backupAndRestoreService.isMaintenanceMode());
+        verify(auditLogRepository).save(any(AuditLog.class));
+    }
+
+
+    // -------------------------------------------------------------------------
+    // SQL Injection via crafted column names in backup ZIP
+    // -------------------------------------------------------------------------
+
+    @Test
+    void restoreBackup_MaliciousColumnNameInZip_ThrowsIllegalArgumentException() throws Exception {
+        String backupName = "malicious_columns.zip";
+        Path backupPath = backupDirectory.resolve(backupName);
+        // Build a ZIP where the JSON row contains a column name with SQL injection payload
+        createMockBackupFileWithColumn(backupPath, "1.0.0", "id; DROP TABLE users; --", "1");
+
+        String correctMd5 = calculateSHA256(backupPath);
+        Files.writeString(backupDirectory.resolve(backupName + ".sha256"), correctMd5);
+
+        doAnswer(inv -> null).when(jdbcTemplate).execute(anyString());
+        // DELETE is called before INSERT — let it pass so we reach insertRow()
+        when(jdbcTemplate.update(anyString())).thenReturn(1);
+
+        assertThrows(IllegalArgumentException.class, () ->
+            backupAndRestoreService.restoreBackup("manager-1", backupName, "FULL", null)
+        );
+    }
+
+    @Test
+    void restoreBackup_ColumnNameWithSpace_ThrowsIllegalArgumentException() throws Exception {
+        String backupName = "space_in_column.zip";
+        Path backupPath = backupDirectory.resolve(backupName);
+        createMockBackupFileWithColumn(backupPath, "1.0.0", "column name", "value");
+
+        String correctMd5 = calculateSHA256(backupPath);
+        Files.writeString(backupDirectory.resolve(backupName + ".sha256"), correctMd5);
+
+        doAnswer(inv -> null).when(jdbcTemplate).execute(anyString());
+        when(jdbcTemplate.update(anyString())).thenReturn(1);
+
+        assertThrows(IllegalArgumentException.class, () ->
+            backupAndRestoreService.restoreBackup("manager-1", backupName, "FULL", null)
+        );
+    }
+
+    /** Creates a backup ZIP whose products.json row uses a custom (potentially malicious) column name. */
+    private void createMockBackupFileWithColumn(Path path, String version, String columnName, String columnValue) throws Exception {
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path.toFile()))) {
+            zos.putNextEntry(new ZipEntry("products.json"));
+            Map<String, Object> row = new java.util.LinkedHashMap<>();
+            row.put(columnName, columnValue);
+            zos.write(objectMapper.writeValueAsBytes(List.of(row)));
+            zos.closeEntry();
+
+            zos.putNextEntry(new ZipEntry("metadata.json"));
+            BackupMetadata meta = BackupMetadata.builder()
+                    .backupName(path.getFileName().toString())
+                    .timestamp(LocalDateTime.now())
+                    .appVersion(version)
+                    .checksum("")
+                    .build();
+            zos.write(objectMapper.writeValueAsBytes(meta));
+            zos.closeEntry();
+        }
     }
 
     private void createMockBackupFile(Path path, String version) throws Exception {
@@ -186,9 +270,9 @@ class BackupAndRestoreServiceTest {
         }
     }
 
-    private String calculateMD5(Path path) throws Exception {
+    private String calculateSHA256(Path path) throws Exception {
         byte[] data = Files.readAllBytes(path);
-        byte[] hash = java.security.MessageDigest.getInstance("MD5").digest(data);
+        byte[] hash = java.security.MessageDigest.getInstance("SHA-256").digest(data);
         StringBuilder sb = new StringBuilder();
         for (byte b : hash) {
             sb.append(String.format("%02x", b));
