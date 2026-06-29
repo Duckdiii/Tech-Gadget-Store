@@ -390,51 +390,43 @@ export default function StoreNavbar() {
               )}
             </div>
 
-            {/* User avatar */}
-            <div className="relative" ref={userMenuRef}>
-              <button
-                onClick={handleUserMenu}
-                className="w-8 h-8 flex items-center justify-center text-white text-[12px] font-bold transition-all"
-                style={{
-                  backgroundColor: userMenu.open ? 'var(--accent)' : 'var(--s3)',
-                  border: `1px solid ${userMenu.open ? 'var(--accent)' : 'var(--b2)'}`,
-                  borderRadius: '6px',
-                }}
-                aria-label="Tài khoản"
-              >
-                {user ? initials : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                )}
-              </button>
-
-              {userMenu.open && (
-                <div
-                  className="notif-in absolute right-0 top-full mt-2 w-72 overflow-hidden"
-                  style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
+            {/* User avatar or Login/Register Button */}
+            {user ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={handleUserMenu}
+                  className="w-8 h-8 flex items-center justify-center text-white text-[12px] font-bold transition-all"
+                  style={{
+                    backgroundColor: userMenu.open ? 'var(--accent)' : 'var(--s3)',
+                    border: `1px solid ${userMenu.open ? 'var(--accent)' : 'var(--b2)'}`,
+                    borderRadius: '6px',
+                  }}
+                  aria-label="Tài khoản"
                 >
-                  {/* User header */}
-                  <div className="px-4 pt-4 pb-3.5" style={{ borderBottom: '1px solid var(--b1)', backgroundColor: 'var(--s2)' }}>
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 flex items-center justify-center text-white font-bold text-[13px] shrink-0"
-                        style={{ backgroundColor: 'var(--accent)', borderRadius: '3px' }}
-                      >
-                        {user ? initials : (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        )}
+                  {initials}
+                </button>
+
+                {userMenu.open && (
+                  <div
+                    className="notif-in absolute right-0 top-full mt-2 w-72 overflow-hidden"
+                    style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
+                  >
+                    {/* User header */}
+                    <div className="px-4 pt-4 pb-3.5" style={{ borderBottom: '1px solid var(--b1)', backgroundColor: 'var(--s2)' }}>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 flex items-center justify-center text-white font-bold text-[13px] shrink-0"
+                          style={{ backgroundColor: 'var(--accent)', borderRadius: '3px' }}
+                        >
+                          {initials}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-bold truncate" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{displayName}</p>
+                          {user.email && (
+                            <p className="text-[11px] mt-0.5 truncate" style={{ color: 'var(--t3)' }}>{user.email}</p>
+                          )}
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-[13px] font-bold truncate" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{displayName}</p>
-                        {user?.email && (
-                          <p className="text-[11px] mt-0.5 truncate" style={{ color: 'var(--t3)' }}>{user.email}</p>
-                        )}
-                      </div>
-                    </div>
-                    {user && (
                       <div
                         className="mt-3 flex items-center justify-between px-3 py-1.5"
                         style={{ backgroundColor: 'var(--b1)', borderRadius: '3px' }}
@@ -444,118 +436,141 @@ export default function StoreNavbar() {
                         </span>
                         <span className="text-[11px] font-bold" style={{ color: 'var(--accent)' }}>1.250 điểm</span>
                       </div>
+                    </div>
+
+                    {subPanel === null ? (
+                      <>
+                        <div className="p-2" style={{ borderBottom: '1px solid var(--b1)' }}>
+                          <NavItem onClick={() => { onNavigate('userProfile'); userMenu.setOpen(false) }} icon={<UserIcon />} label="Trang cá nhân" sub="Xem và chỉnh sửa thông tin" />
+                          <NavItem onClick={() => { onNavigate('customerOrders'); userMenu.setOpen(false) }} icon={<OrderIcon />} label="Đơn hàng của tôi" badge="2" />
+                          <NavItem icon={<HeartIcon />} label="Sản phẩm yêu thích" />
+                          <NavItem icon={<CouponIcon />} label="Mã giảm giá của tôi" badge="5" />
+                        </div>
+                        <div className="p-2" style={{ borderBottom: '1px solid var(--b1)' }}>
+                          <NavItem onClick={() => setSubPanel('display')} icon={<DisplayIcon />} label="Màn hình & trợ năng" arrow />
+                        </div>
+                        <div className="p-2">
+                          <NavItem onClick={() => { userMenu.setOpen(false); onNavigate('login') }} icon={<LogoutIcon />} label="Đăng xuất" danger />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div
+                          className="flex items-center gap-3 px-3 py-2.5"
+                          style={{ borderBottom: '1px solid var(--b1)' }}
+                        >
+                          <button
+                            onClick={() => setSubPanel(null)}
+                            className="w-6 h-6 flex items-center justify-center transition-colors"
+                            style={{ backgroundColor: 'var(--s2)', borderRadius: '3px' }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--s3)'}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--s2)'}
+                          >
+                            <svg className="w-3 h-3" style={{ color: 'var(--t2)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <span className="text-[13px] font-bold" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Màn hình & trợ năng</span>
+                        </div>
+
+                        <div className="p-4 space-y-1">
+                          {/* Dark mode */}
+                          <div className="flex items-center justify-between gap-3 py-2">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 flex items-center justify-center" style={{ backgroundColor: 'var(--accent-dim)', borderRadius: '3px' }}>
+                                <svg className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-[12px] font-semibold" style={{ color: 'var(--t1)' }}>Chế độ tối</p>
+                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--t3)' }}>Bảo vệ mắt ban đêm</p>
+                              </div>
+                            </div>
+                            <Toggle on={dark} onChange={setDark} />
+                          </div>
+
+                          <div style={{ height: '1px', backgroundColor: 'var(--b1)', margin: '2px 0' }} />
+
+                          {/* Font size */}
+                          <div className="py-2">
+                            <div className="flex items-center gap-2.5 mb-3">
+                              <div className="w-7 h-7 flex items-center justify-center" style={{ backgroundColor: 'var(--accent-dim)', borderRadius: '3px' }}>
+                                <svg className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-[12px] font-semibold" style={{ color: 'var(--t1)' }}>Cỡ chữ</p>
+                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--t3)' }}>Điều chỉnh độ lớn văn bản</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              {[{ val: 'sm', label: 'Nhỏ', sz: 'text-xs' }, { val: 'md', label: 'Vừa', sz: 'text-sm' }, { val: 'lg', label: 'Lớn', sz: 'text-base' }].map(({ val, label, sz }) => (
+                                <button
+                                  key={val}
+                                  onClick={() => setFont(val)}
+                                  className={`flex-1 flex flex-col items-center py-2 transition-all ${sz}`}
+                                  style={
+                                    font === val
+                                      ? { backgroundColor: 'var(--accent)', borderRadius: '3px', border: '1px solid var(--accent)', color: 'white' }
+                                      : { backgroundColor: 'var(--s2)', borderRadius: '3px', border: '1px solid var(--b2)', color: 'var(--t2)' }
+                                  }
+                                >
+                                  <span className="font-bold">Aa</span>
+                                  <span className="text-[10px] mt-0.5 font-medium">{label}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div style={{ height: '1px', backgroundColor: 'var(--b1)', margin: '2px 0' }} />
+
+                          {/* Reduce motion */}
+                          <div className="flex items-center justify-between gap-3 py-2">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 flex items-center justify-center" style={{ backgroundColor: 'var(--accent-dim)', borderRadius: '3px' }}>
+                                <svg className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-[12px] font-semibold" style={{ color: 'var(--t1)' }}>Giảm chuyển động</p>
+                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--t3)' }}>Tắt hiệu ứng animation</p>
+                              </div>
+                            </div>
+                            <Toggle on={noMotion} onChange={setNoMotion} />
+                          </div>
+                        </div>
+                      </>
                     )}
                   </div>
-
-                  {subPanel === null ? (
-                    <>
-                      <div className="p-2" style={{ borderBottom: '1px solid var(--b1)' }}>
-                        <NavItem onClick={() => { onNavigate('userProfile'); userMenu.setOpen(false) }} icon={<UserIcon />} label="Trang cá nhân" sub="Xem và chỉnh sửa thông tin" />
-                        <NavItem onClick={() => { onNavigate('customerOrders'); userMenu.setOpen(false) }} icon={<OrderIcon />} label="Đơn hàng của tôi" badge="2" />
-                        <NavItem icon={<HeartIcon />} label="Sản phẩm yêu thích" />
-                        <NavItem icon={<CouponIcon />} label="Mã giảm giá của tôi" badge="5" />
-                      </div>
-                      <div className="p-2" style={{ borderBottom: '1px solid var(--b1)' }}>
-                        <NavItem onClick={() => setSubPanel('display')} icon={<DisplayIcon />} label="Màn hình & trợ năng" arrow />
-                      </div>
-                      <div className="p-2">
-                        <NavItem onClick={() => { userMenu.setOpen(false); onNavigate('login') }} icon={<LogoutIcon />} label="Đăng xuất" danger />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div
-                        className="flex items-center gap-3 px-3 py-2.5"
-                        style={{ borderBottom: '1px solid var(--b1)' }}
-                      >
-                        <button
-                          onClick={() => setSubPanel(null)}
-                          className="w-6 h-6 flex items-center justify-center transition-colors"
-                          style={{ backgroundColor: 'var(--s2)', borderRadius: '3px' }}
-                          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--s3)'}
-                          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--s2)'}
-                        >
-                          <svg className="w-3 h-3" style={{ color: 'var(--t2)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                          </svg>
-                        </button>
-                        <span className="text-[13px] font-bold" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Màn hình & trợ năng</span>
-                      </div>
-
-                      <div className="p-4 space-y-1">
-                        {/* Dark mode */}
-                        <div className="flex items-center justify-between gap-3 py-2">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 flex items-center justify-center" style={{ backgroundColor: 'var(--accent-dim)', borderRadius: '3px' }}>
-                              <svg className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <p className="text-[12px] font-semibold" style={{ color: 'var(--t1)' }}>Chế độ tối</p>
-                              <p className="text-[10px] mt-0.5" style={{ color: 'var(--t3)' }}>Bảo vệ mắt ban đêm</p>
-                            </div>
-                          </div>
-                          <Toggle on={dark} onChange={setDark} />
-                        </div>
-
-                        <div style={{ height: '1px', backgroundColor: 'var(--b1)', margin: '2px 0' }} />
-
-                        {/* Font size */}
-                        <div className="py-2">
-                          <div className="flex items-center gap-2.5 mb-3">
-                            <div className="w-7 h-7 flex items-center justify-center" style={{ backgroundColor: 'var(--accent-dim)', borderRadius: '3px' }}>
-                              <svg className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                              </svg>
-                            </div>
-                            <div>
-                              <p className="text-[12px] font-semibold" style={{ color: 'var(--t1)' }}>Cỡ chữ</p>
-                              <p className="text-[10px] mt-0.5" style={{ color: 'var(--t3)' }}>Điều chỉnh độ lớn văn bản</p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            {[{ val: 'sm', label: 'Nhỏ', sz: 'text-xs' }, { val: 'md', label: 'Vừa', sz: 'text-sm' }, { val: 'lg', label: 'Lớn', sz: 'text-base' }].map(({ val, label, sz }) => (
-                              <button
-                                key={val}
-                                onClick={() => setFont(val)}
-                                className={`flex-1 flex flex-col items-center py-2 transition-all ${sz}`}
-                                style={
-                                  font === val
-                                    ? { backgroundColor: 'var(--accent)', borderRadius: '3px', border: '1px solid var(--accent)', color: 'white' }
-                                    : { backgroundColor: 'var(--s2)', borderRadius: '3px', border: '1px solid var(--b2)', color: 'var(--t2)' }
-                                }
-                              >
-                                <span className="font-bold">Aa</span>
-                                <span className="text-[10px] mt-0.5 font-medium">{label}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div style={{ height: '1px', backgroundColor: 'var(--b1)', margin: '2px 0' }} />
-
-                        {/* Reduce motion */}
-                        <div className="flex items-center justify-between gap-3 py-2">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 flex items-center justify-center" style={{ backgroundColor: 'var(--accent-dim)', borderRadius: '3px' }}>
-                              <svg className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <p className="text-[12px] font-semibold" style={{ color: 'var(--t1)' }}>Giảm chuyển động</p>
-                              <p className="text-[10px] mt-0.5" style={{ color: 'var(--t3)' }}>Tắt hiệu ứng animation</p>
-                            </div>
-                          </div>
-                          <Toggle on={noMotion} onChange={setNoMotion} />
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => onNavigate('login')}
+                className="px-4 py-1.5 text-[12px] font-bold text-white transition-all duration-200"
+                style={{
+                  background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-h) 100%)',
+                  borderRadius: '6px',
+                  border: '1px solid var(--accent)',
+                  boxShadow: '0 2px 8px rgba(232, 66, 10, 0.2)',
+                  cursor: 'pointer',
+                  fontFamily: 'Be Vietnam Pro, sans-serif'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(232, 66, 10, 0.35)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(232, 66, 10, 0.2)'
+                }}
+              >
+                Đăng ký / Đăng nhập
+              </button>
+            )}
           </div>
         </div>
       </div>

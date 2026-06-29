@@ -28,6 +28,7 @@ export const ROUTE_MAP = {
   staffOrders:        '/staff/orders',
   staffProfile:       '/staff/profile',
   login:              '/login',
+  register:           '/register',
   forgotPassword:     '/forgot-password',
   emailSent:          '/email-sent',
   resetPassword:      '/reset-password',

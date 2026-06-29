@@ -26,7 +26,8 @@ export default function RegisterPage() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Email không hợp lệ.'
     if (!form.password) e.password = 'Vui lòng nhập mật khẩu.'
     else if (form.password.length < 6) e.password = 'Mật khẩu phải có ít nhất 6 ký tự.'
-    if (form.password !== form.confirm) e.confirm = 'Mật khẩu xác nhận không khớp.'
+    if (!form.confirm) e.confirm = 'Vui lòng xác nhận mật khẩu.'
+    else if (form.password !== form.confirm) e.confirm = 'Mật khẩu xác nhận không khớp.'
     return e
   }
 
@@ -46,7 +47,12 @@ export default function RegisterPage() {
         }),
       })
       if (!res.ok) {
-        setServerError(res.status === 409 ? 'Email này đã được sử dụng.' : `Đăng ký thất bại (${res.status}).`)
+        if (res.status === 409) {
+          setErrors(err => ({ ...err, email: 'Email này đã được sử dụng.' }))
+          setServerError('Email này đã được sử dụng.')
+        } else {
+          setServerError(`Đăng ký thất bại (${res.status}).`)
+        }
         return
       }
       const data = await res.json()

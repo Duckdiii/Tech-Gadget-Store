@@ -337,6 +337,9 @@ html.dark body { background-color: var(--ink); }
   background: #EA580C !important;
   box-shadow: 0 8px 20px rgba(234, 88, 12, 0.35);
 }
+.svc-card:hover .svc-icon svg {
+  color: #fff !important;
+}
 .svc-icon {
   transition: all 0.3s;
 }

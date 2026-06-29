@@ -644,15 +644,74 @@ export default function HomePage() {
             {/* Brand column */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                <div style={{ width: '34px', height: '34px', background: 'linear-gradient(135deg,#F97316,#EA580C)', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', fontSize: '17px' }}>🛡</div>
-                <span style={{ fontSize: '19px', fontWeight: 900, color: '#F9FAFB', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Tech<span style={{ color: '#F97316' }}>Store</span></span>
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    background: 'linear-gradient(135deg, #F97316, #EA580C)',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 14px rgba(234, 88, 12, 0.35)',
+                  }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <path
+                      d="M11 2.5L4.5 6.2v6.8c0 3.8 2.8 7.4 6.5 8.4 3.7-1 6.5-4.6 6.5-8.4V6.2L11 2.5z"
+                      fill="rgba(255, 255, 255, 0.95)"
+                    />
+                    <path
+                      d="M7.5 10.5h7M7.5 13.5h5"
+                      stroke="#EA580C"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  <span style={{ fontSize: '21px', fontWeight: 900, color: '#F9FAFB', letterSpacing: '-0.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Tech</span>
+                  <span style={{ fontSize: '21px', fontWeight: 900, color: '#EA580C', letterSpacing: '-0.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Store</span>
+                </div>
               </div>
               <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: '1.8', marginBottom: '20px' }}>Hệ thống bán lẻ điện thoại chính hãng hàng đầu Việt Nam. Cam kết giá tốt, chất lượng và dịch vụ tận tâm.</p>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-                <div className="social-btn" style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: '#6B7280' }}>f</div>
-                <div className="social-btn" style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#6B7280' }}>Zalo</div>
-                <div className="social-btn" style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#6B7280' }}>YT</div>
-                <div className="social-btn" style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#6B7280' }}>TT</div>
+                <div
+                  className="social-btn"
+                  style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}
+                  title="Facebook"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/>
+                  </svg>
+                </div>
+                <div
+                  className="social-btn"
+                  style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}
+                  title="Zalo"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 5.8 2 10.5c0 2.1 1 4 2.6 5.3L3.5 19.5c-.15.4.25.75.65.6l3.6-1.8c1.3.5 2.8.8 4.2.8 5.52 0 10-3.8 10-8.5S17.52 2 12 2zm3.3 11.5h-4.3l3-3.8h-2.8V8.5h4.1v1.2l-3 3.8h3v1z"/>
+                  </svg>
+                </div>
+                <div
+                  className="social-btn"
+                  style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}
+                  title="YouTube"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.163a3.003 3.003 0 00-2.11-2.11C19.518 3.5 12 3.5 12 3.5s-7.518 0-9.388.553a3.003 3.003 0 00-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 002.11 2.11C4.482 20.5 12 20.5 12 20.5s7.518 0 9.388-.553a3.003 3.003 0 002.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </div>
+                <div
+                  className="social-btn"
+                  style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}
+                  title="TikTok"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.02 1.59 4.18.97 1.13 2.37 1.83 3.84 2.02v3.9c-1.39-.03-2.74-.51-3.89-1.29-.69-.47-1.3-.1-1.3-.1v6.23c.04 4.38-3.08 8.12-7.46 8.57-4.83.67-9.31-2.73-9.91-7.53C-.38 10.82 3.19 6.2 8.08 5.76c1.17-.11 2.35.09 3.42.59v4.03c-.76-.46-1.64-.67-2.52-.61-2.32.1-4.22 1.94-4.38 4.26-.22 2.65 1.76 4.96 4.41 5.17 2.66.21 4.97-1.75 5.19-4.41.02-.27.02-.55.02-.82V0h-.3z"/>
+                  </svg>
+                </div>
               </div>
               <div>
                 <div style={{ fontSize: '10.5px', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: '8px' }}>Thanh toán</div>
@@ -714,21 +773,34 @@ export default function HomePage() {
               <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#F9FAFB', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Liên hệ</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <span style={{ color: '#F97316', flexShrink: 0, marginTop: '1px' }}>📞</span>
+                  <span style={{ color: '#F97316', flexShrink: 0, marginTop: '3px', display: 'flex', alignItems: 'center' }}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.806-5.122-4.103-6.927-6.927l1.293-.97a2.25 2.25 0 00.417-1.173L7.91 3.5c-.125-.501-.575-.852-1.091-.852H5.437a2.25 2.25 0 00-2.25 2.25v1.372z"/>
+                    </svg>
+                  </span>
                   <div>
                     <div style={{ fontSize: '14px', fontWeight: 700, color: '#F9FAFB' }}>1800 6678</div>
                     <div style={{ fontSize: '11px', color: '#6B7280' }}>Miễn phí · 8:00–22:00</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <span style={{ color: '#F97316', flexShrink: 0, marginTop: '1px' }}>✉️</span>
+                  <span style={{ color: '#F97316', flexShrink: 0, marginTop: '3px', display: 'flex', alignItems: 'center' }}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+                    </svg>
+                  </span>
                   <div>
                     <div style={{ fontSize: '13px', color: '#D1D5DB' }}>support@techstore.vn</div>
                     <div style={{ fontSize: '11px', color: '#6B7280' }}>Phản hồi trong 2 giờ</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <span style={{ color: '#F97316', flexShrink: 0, marginTop: '1px' }}>📍</span>
+                  <span style={{ color: '#F97316', flexShrink: 0, marginTop: '3px', display: 'flex', alignItems: 'center' }}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1115 0z"/>
+                    </svg>
+                  </span>
                   <div>
                     <div style={{ fontSize: '13px', color: '#D1D5DB' }}>123 Nguyễn Huệ, Q.1, TP.HCM</div>
                     <div style={{ fontSize: '11px', color: '#6B7280' }}>+ 49 chi nhánh khác</div>
