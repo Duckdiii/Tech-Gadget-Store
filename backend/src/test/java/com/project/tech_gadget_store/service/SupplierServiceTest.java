@@ -36,7 +36,6 @@ class SupplierServiceTest {
     private SupplierRequestDto validDto() {
         SupplierRequestDto dto = new SupplierRequestDto();
         dto.setName("Tech Corp");
-        dto.setContactPerson("Nguyen Van A");
         dto.setPhone("0901234567");
         dto.setEmail("contact@techcorp.com");
         dto.setAddress("123 Tech Street");
@@ -47,7 +46,7 @@ class SupplierServiceTest {
     void createSupplier_success() {
         SupplierRequestDto dto = validDto();
         when(supplierRepository.existsByNameIgnoreCase(dto.getName())).thenReturn(false);
-        Supplier saved = new Supplier("Tech Corp");
+        Supplier saved = new Supplier("Tech Corp", null, null, null);
         when(supplierRepository.save(any(Supplier.class))).thenReturn(saved);
         SupplierResponseDto responseDto = SupplierResponseDto.builder().name("Tech Corp").isActive(true).build();
         when(supplierMapper.toResponseDto(saved)).thenReturn(responseDto);
@@ -75,7 +74,7 @@ class SupplierServiceTest {
     void updateSupplier_success() {
         SupplierRequestDto dto = validDto();
         dto.setName("Updated Corp");
-        Supplier existing = new Supplier("Tech Corp");
+        Supplier existing = new Supplier("Tech Corp", null, null, null);
         when(supplierRepository.findByIdAndIsActiveTrue("sup-1")).thenReturn(Optional.of(existing));
         when(supplierRepository.existsByNameIgnoreCaseAndIdNot("Updated Corp", "sup-1")).thenReturn(false);
         when(supplierRepository.save(existing)).thenReturn(existing);
@@ -98,7 +97,7 @@ class SupplierServiceTest {
 
     @Test
     void removeSupplier_success() {
-        Supplier supplier = new Supplier("Tech Corp");
+        Supplier supplier = new Supplier("Tech Corp", null, null, null);
         when(supplierRepository.findByIdAndIsActiveTrue("sup-1")).thenReturn(Optional.of(supplier));
 
         supplierService.removeSupplier("sup-1");

@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.controller;
 
-import tools.jackson.databind.ObjectMapper;
 import com.project.tech_gadget_store.dto.request.PaymentConfirmRequestDto;
 import com.project.tech_gadget_store.dto.response.CheckoutItemResponseDto;
 import com.project.tech_gadget_store.dto.response.CheckoutSummaryResponseDto;
@@ -23,7 +22,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +40,6 @@ public class CustomerPaymentController {
     private final PaymentService paymentService;
     private final MomoService momoService;
     private final VNPayService vnpayService;
-    private final ObjectMapper objectMapper;
     private final ProductVariantRepository productVariantRepository;
 
     public CustomerPaymentController(CustomerRepository customerRepository,
@@ -55,7 +52,6 @@ public class CustomerPaymentController {
                                      PaymentService paymentService,
                                      MomoService momoService,
                                      VNPayService vnpayService,
-                                     ObjectMapper objectMapper,
                                      ProductVariantRepository productVariantRepository) {
         this.customerRepository = customerRepository;
         this.addressRepository = addressRepository;
@@ -67,7 +63,6 @@ public class CustomerPaymentController {
         this.paymentService = paymentService;
         this.momoService = momoService;
         this.vnpayService = vnpayService;
-        this.objectMapper = objectMapper;
         this.productVariantRepository = productVariantRepository;
     }
 
@@ -264,7 +259,7 @@ public class CustomerPaymentController {
                 savedOrder = orderRepository.save(order);
 
                 // Create pending payment log linked to order
-                PaymentLog logRecord = new PaymentLog(savedOrder, finalAmount, codMethod, PaymentLogStatus.PENDING);
+                PaymentLog logRecord = new PaymentLog(savedOrder, finalAmount, PaymentLogStatus.PENDING);
                 savedLog = paymentLogRepository.save(logRecord);
 
                 // Clear items from the customer's cart
@@ -291,22 +286,7 @@ public class CustomerPaymentController {
         String typeStr = momo != null ? "MOMO" : "VNPAY";
 
         try {
-            PaymentService.CheckoutDataJson checkoutData = new PaymentService.CheckoutDataJson();
-            checkoutData.customerId = customer.getId();
-            checkoutData.addressId = address.getId();
-            checkoutData.items = new ArrayList<>();
-            for (CartItem cartItem : matchedItems) {
-                PaymentService.CheckoutDataJson.CheckoutItemJson itemJson = new PaymentService.CheckoutDataJson.CheckoutItemJson();
-                itemJson.productVariantId = cartItem.getProductVariant().getId();
-                itemJson.quantity = cartItem.getQuantity();
-                itemJson.bundleServiceIds = cartItem.getBundleServices().stream()
-                        .map(BaseEntity::getId)
-                        .collect(Collectors.toList());
-                checkoutData.items.add(itemJson);
-            }
-
-            String serializedData = objectMapper.writeValueAsString(checkoutData);
-            PaymentLog pendingLog = paymentService.createPendingOnlineLog(finalAmount, activeOnlineMethod, serializedData);
+            PaymentLog pendingLog = paymentService.createPendingOnlineLog(finalAmount);
 
             String redirectUrl;
             if (momo != null) {

@@ -24,16 +24,9 @@ public class PaymentLog extends BaseEntity {
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "payment_method_id", nullable = false)
-    private PaymentMethod paymentMethod;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 40)
     private PaymentLogStatus status;
-
-    @Column(name = "transaction_id", length = 255)
-    private String transactionId;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
@@ -41,22 +34,15 @@ public class PaymentLog extends BaseEntity {
     @Column(name = "failure_reason", columnDefinition = "TEXT")
     private String failureReason;
 
-    @Column(name = "checkout_data", columnDefinition = "TEXT")
-    private String checkoutData;
-
-    public PaymentLog(Order order, BigDecimal amount, PaymentMethod paymentMethod, PaymentLogStatus status) {
+    public PaymentLog(Order order, BigDecimal amount, PaymentLogStatus status) {
         if (amount == null) {
             throw new IllegalArgumentException("amount must not be null");
-        }
-        if (paymentMethod == null) {
-            throw new IllegalArgumentException("paymentMethod must not be null");
         }
         if (status == null) {
             throw new IllegalArgumentException("status must not be null");
         }
         this.order = order;
         this.amount = amount;
-        this.paymentMethod = paymentMethod;
         this.status = status;
     }
 

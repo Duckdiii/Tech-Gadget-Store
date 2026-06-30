@@ -14,8 +14,6 @@ public class SupplierRequestDto {
     @NotBlank(message = "Name is required")
     private String name;
 
-    private String contactPerson;
-
     private String phone;
 
     @Email(message = "Email must be valid")

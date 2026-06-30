@@ -9,39 +9,39 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "purchase_order_items")
+@Table(name = "supply_order_items")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PurchaseOrderItem extends BaseEntity {
+public class SupplyOrderItem extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_variant_id", nullable = false)
-    private ProductVariant productVariant;
+    private ProductVariant product;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "unit_price", nullable = false)
+    @Column(name = "unit_price", nullable = false, precision = 19, scale = 2)
     private BigDecimal unitPrice;
 
-    public PurchaseOrderItem(PurchaseOrder purchaseOrder, ProductVariant productVariant, Integer quantity, BigDecimal unitPrice) {
-        if (purchaseOrder == null) {
-            throw new IllegalArgumentException("purchaseOrder must not be null");
+    public SupplyOrderItem(SupplyOrder supplyOrder, ProductVariant product, Integer quantity, BigDecimal unitPrice) {
+        if (supplyOrder == null) {
+            throw new IllegalArgumentException("supplyOrder must not be null");
         }
-        if (productVariant == null) {
-            throw new IllegalArgumentException("productVariant must not be null");
+        if (product == null) {
+            throw new IllegalArgumentException("product must not be null");
         }
         if (quantity == null || quantity <= 0) {
             throw new IllegalArgumentException("quantity must be positive");
         }
-        if (unitPrice == null) {
-            throw new IllegalArgumentException("unitPrice must not be null");
+        if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("unitPrice must not be null or negative");
         }
-        this.productVariant = productVariant;
+        this.product = product;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
-        purchaseOrder.addItem(this);
+        supplyOrder.addItem(this);
     }
 
     public BigDecimal calculateLineTotal() {

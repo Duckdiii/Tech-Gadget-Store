@@ -137,8 +137,8 @@ public class ExportLogService {
                             throw new RuntimeException("Simulated record failure");
                         }
 
-                        List<FavoriteProduct> subscriptions = favoriteProductRepository.findByProductIdAndStatus(
-                                product.getId(), SubscriptionStatus.SUBSCRIBED);
+                        List<FavoriteProduct> subscriptions = favoriteProductRepository
+                                .findByProductVariantProductIdAndStatus(product.getId(), SubscriptionStatus.SUBSCRIBED);
 
                         for (FavoriteProduct sub : subscriptions) {
                             Notification notification = new Notification(

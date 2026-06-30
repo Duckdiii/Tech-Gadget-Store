@@ -12,7 +12,6 @@ public class SupplierMapper {
         return SupplierResponseDto.builder()
                 .id(supplier.getId())
                 .name(supplier.getName())
-                .contactPerson(supplier.getContactPerson())
                 .phone(supplier.getPhone())
                 .email(supplier.getEmail())
                 .address(supplier.getAddress())

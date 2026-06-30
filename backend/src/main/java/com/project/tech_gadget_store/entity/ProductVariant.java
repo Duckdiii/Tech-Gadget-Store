@@ -33,13 +33,7 @@ public class ProductVariant extends BaseEntity {
     @Column(name = "price", precision = 15, scale = 2)
     private BigDecimal price;
 
-    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
-    private List<ImportLogItem> importLogItems = new ArrayList<>();
-
-    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
-    private List<ExportLogItem> exportLogItems = new ArrayList<>();
-
-    public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price) {
+public ProductVariant(Product product, Integer ramGb, Integer storageGb, String color, BigDecimal price) {
         if (product == null) {
             throw new IllegalArgumentException("product must not be null");
         }

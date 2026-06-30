@@ -16,10 +16,7 @@ public class Supplier extends BaseEntity {
     @Column(name = "name", nullable = false, unique = true, length = 150)
     private String name;
 
-    @Column(name = "contact_person", length = 120)
-    private String contactPerson;
-
-    @Column(name = "phone", length = 20)
+@Column(name = "phone", length = 20)
     private String phone;
 
     @Column(name = "email", length = 150)
@@ -31,11 +28,14 @@ public class Supplier extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    public Supplier(String name) {
+    public Supplier(String name, String phone, String email, String address) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Supplier name must not be blank");
         }
         this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.address = address;
         this.isActive = true;
     }
 

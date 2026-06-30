@@ -15,6 +15,7 @@ import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.mapper.ProductMapper;
 import com.project.tech_gadget_store.repository.BundleServiceRepository;
 import com.project.tech_gadget_store.repository.ProductRepository;
+import com.project.tech_gadget_store.repository.ProductVariantRepository;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,13 +38,16 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final BundleServiceRepository bundleServiceRepository;
     private final ProductMapper productMapper;
+    private final ProductVariantRepository productVariantRepository;
 
     public ProductService(ProductRepository productRepository,
             BundleServiceRepository bundleServiceRepository,
-            ProductMapper productMapper) {
+            ProductMapper productMapper,
+            ProductVariantRepository productVariantRepository) {
         this.productRepository = productRepository;
         this.bundleServiceRepository = bundleServiceRepository;
         this.productMapper = productMapper;
+        this.productVariantRepository = productVariantRepository;
     }
 
     /** Max page size allowed for public product listing to prevent DoS / OOM. */
@@ -67,17 +71,21 @@ public class ProductService {
     public ProductDetailResponseDto viewDetailProduct(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("This product is no longer available"));
+        List<ProductVariant> variants = productVariantRepository.findByProductId(id);
         List<BundleService> activeBundleServices = bundleServiceRepository.findByActiveTrue();
-        return productMapper.toProductDetailResponseDto(product, activeBundleServices);
+        return productMapper.toProductDetailResponseDto(product, variants, activeBundleServices);
     }
 
     public List<FlashSaleProductResponseDto> findTodayFlashSaleProducts() {
         LocalDateTime now = LocalDateTime.now();
         return productRepository.findTodayFlashSaleProducts(now).stream()
-                .map(product -> productMapper.toFlashSaleProductResponseDto(
-                        product,
-                        findBestActivePromotion(product, now),
-                        findCheapestVariant(product)))
+                .map(product -> {
+                    List<ProductVariant> variants = productVariantRepository.findByProductId(product.getId());
+                    return productMapper.toFlashSaleProductResponseDto(
+                            product,
+                            findBestActivePromotion(product, now),
+                            findCheapestVariant(variants));
+                })
                 .toList();
     }
 
@@ -91,7 +99,9 @@ public class ProductService {
         Page<Product> productPage = productRepository.findAll(spec, PageRequest.of(page, cappedSize, sort));
 
         List<ProductResponseDto> items = productPage.getContent().stream()
-                .map(productMapper::toProductResponseDto)
+                .map(product -> productMapper.toProductResponseDto(
+                        product,
+                        productVariantRepository.findByProductId(product.getId())))
                 .toList();
 
         return ProductPageResponseDto.builder()
@@ -283,8 +293,8 @@ public class ProductService {
                         () -> new IllegalStateException("No active promotion found for product: " + product.getId()));
     }
 
-    private ProductVariant findCheapestVariant(Product product) {
-        return product.getVariants().stream()
+    private ProductVariant findCheapestVariant(List<ProductVariant> variants) {
+        return variants.stream()
                 .filter(v -> v.getPrice() != null)
                 .min(Comparator.comparing(ProductVariant::getPrice))
                 .orElse(null);

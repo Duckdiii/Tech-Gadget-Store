@@ -41,6 +41,9 @@ public class Promotion extends BaseEntity {
         @Column(name = "active", nullable = false)
         private Boolean active = true;
 
+        @Column(name = "usage_limit", nullable = false)
+        private int usageLimit;
+
         public Promotion(String code, String name, Double discountPercent, LocalDateTime startAt, LocalDateTime endAt,
                         Boolean active, Product product) {
                 if (code == null || code.isBlank()) {

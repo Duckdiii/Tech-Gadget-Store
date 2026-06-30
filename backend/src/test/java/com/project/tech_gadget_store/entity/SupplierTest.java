@@ -9,7 +9,7 @@ class SupplierTest {
 
     @Test
     void deactivate_setsIsActiveFalse() {
-        Supplier supplier = new Supplier("Tech Corp");
+        Supplier supplier = new Supplier("Tech Corp", null, null, null);
         assertThat(supplier.getIsActive()).isTrue();
 
         supplier.deactivate();
@@ -19,13 +19,13 @@ class SupplierTest {
 
     @Test
     void constructor_nullName_throwsIllegalArgumentException() {
-        assertThatThrownBy(() -> new Supplier(null))
+        assertThatThrownBy(() -> new Supplier(null, null, null, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void constructor_blankName_throwsIllegalArgumentException() {
-        assertThatThrownBy(() -> new Supplier("   "))
+        assertThatThrownBy(() -> new Supplier("   ", null, null, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

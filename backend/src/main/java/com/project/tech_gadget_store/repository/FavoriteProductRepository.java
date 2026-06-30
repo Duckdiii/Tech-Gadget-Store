@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FavoriteProductRepository extends JpaRepository<FavoriteProduct, String> {
@@ -14,10 +15,13 @@ public interface FavoriteProductRepository extends JpaRepository<FavoriteProduct
     @Query("SELECT f FROM FavoriteProduct f WHERE f.customer.id = :customerId AND f.status = :status")
     Page<FavoriteProduct> findByCustomerIdAndStatus(String customerId, SubscriptionStatus status, Pageable pageable);
 
-    @Query("SELECT f FROM FavoriteProduct f WHERE f.customer.id = :customerId AND f.product.id = :productId")
-    Optional<FavoriteProduct> findByCustomerIdAndProductId(String customerId, String productId);
+    @Query("SELECT f FROM FavoriteProduct f WHERE f.customer.id = :customerId AND f.productVariant.id = :productVariantId")
+    Optional<FavoriteProduct> findByCustomerIdAndProductVariantId(String customerId, String productVariantId);
 
-    boolean existsByCustomerIdAndProductIdAndStatus(String customerId, String productId, SubscriptionStatus status);
+    boolean existsByCustomerIdAndProductVariantIdAndStatus(String customerId, String productVariantId, SubscriptionStatus status);
 
-    java.util.List<FavoriteProduct> findByProductIdAndStatus(String productId, SubscriptionStatus status);
+    List<FavoriteProduct> findByProductVariantIdAndStatus(String productVariantId, SubscriptionStatus status);
+
+    @Query("SELECT f FROM FavoriteProduct f WHERE f.productVariant.product.id = :productId AND f.status = :status")
+    List<FavoriteProduct> findByProductVariantProductIdAndStatus(String productId, SubscriptionStatus status);
 }

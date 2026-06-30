@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PurchaseOrderItemRequestDto {
+public class SupplyOrderItemRequestDto {
 
     @NotBlank(message = "productVariantId is required")
     private String productVariantId;

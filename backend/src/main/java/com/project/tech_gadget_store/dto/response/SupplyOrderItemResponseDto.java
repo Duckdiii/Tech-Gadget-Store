@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Builder
-public class PurchaseOrderItemResponseDto {
+public class SupplyOrderItemResponseDto {
 
     private String id;
     private String productVariantId;

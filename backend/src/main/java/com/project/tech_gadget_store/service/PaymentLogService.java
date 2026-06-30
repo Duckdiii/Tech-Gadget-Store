@@ -2,7 +2,10 @@ package com.project.tech_gadget_store.service;
 
 import com.project.tech_gadget_store.dto.request.PaymentLogFilterRequestDto;
 import com.project.tech_gadget_store.dto.response.PaymentLogResponseDto;
-import com.project.tech_gadget_store.entity.*;
+import com.project.tech_gadget_store.entity.BaseEntity;
+import com.project.tech_gadget_store.entity.Customer;
+import com.project.tech_gadget_store.entity.Order;
+import com.project.tech_gadget_store.entity.PaymentLog;
 import com.project.tech_gadget_store.entity.enums.PaymentLogStatus;
 import com.project.tech_gadget_store.exception.PaymentLogLoadException;
 import com.project.tech_gadget_store.exception.ResourceNotFoundException;
@@ -12,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -109,37 +114,11 @@ public class PaymentLogService {
             }
         }
 
-        // Filter by Payment Method
-        if (filter.getPaymentMethod() != null && !filter.getPaymentMethod().isBlank()) {
-            String filterMethod = filter.getPaymentMethod().trim();
-            String methodType = getPaymentMethodType(log.getPaymentMethod());
-            String methodName = log.getPaymentMethod().getName();
-
-            boolean typeMatches = methodType.equalsIgnoreCase(filterMethod);
-            boolean nameMatches = methodName != null && methodName.toLowerCase().contains(filterMethod.toLowerCase());
-
-            if (!typeMatches && !nameMatches) {
-                return false;
-            }
-        }
-
         return true;
-    }
-
-    private String getPaymentMethodType(PaymentMethod pm) {
-        if (pm instanceof MomoPaymentMethod) {
-            return "MOMO";
-        } else if (pm instanceof VNPayPaymentMethod) {
-            return "VNPAY";
-        } else if (pm instanceof CODPaymentMethod) {
-            return "COD";
-        }
-        return "UNKNOWN";
     }
 
     private PaymentLogResponseDto mapToResponseDto(PaymentLog paymentLog) {
         Order order = paymentLog.getOrder();
-        PaymentMethod pm = paymentLog.getPaymentMethod();
 
         String orderId = order != null ? order.getId() : null;
         String customerName = null;
@@ -155,23 +134,6 @@ public class PaymentLogService {
             }
         }
 
-        Map<String, String> metadata = new LinkedHashMap<>();
-        if (pm instanceof MomoPaymentMethod momo) {
-            metadata.put("partnerCode", momo.getPartnerCode());
-            metadata.put("merchantId", momo.getMerchantId());
-            metadata.put("endpointUrl", momo.getEndpointUrl());
-        } else if (pm instanceof VNPayPaymentMethod vnpay) {
-            metadata.put("terminalCode", vnpay.getTerminalCode());
-            metadata.put("endpointUrl", vnpay.getEndpointUrl());
-        } else if (pm instanceof CODPaymentMethod cod) {
-            if (cod.getMaxAmount() != null) {
-                metadata.put("maxAmount", cod.getMaxAmount().toString());
-            }
-            if (cod.getServiceFee() != null) {
-                metadata.put("serviceFee", cod.getServiceFee().toString());
-            }
-        }
-
         return PaymentLogResponseDto.builder()
                 .id(paymentLog.getId())
                 .orderId(orderId)
@@ -179,13 +141,10 @@ public class PaymentLogService {
                 .customerPhone(customerPhone)
                 .customerEmail(customerEmail)
                 .amount(paymentLog.getAmount())
-                .paymentMethod(pm.getName())
-                .paymentMethodType(getPaymentMethodType(pm))
                 .status(paymentLog.getStatus().name())
                 .timestamp(paymentLog.getCreatedAt())
                 .paidTime(paymentLog.getPaidAt())
                 .failureReason(paymentLog.getFailureReason())
-                .metadata(metadata.isEmpty() ? null : metadata)
                 .build();
     }
 }

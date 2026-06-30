@@ -43,7 +43,7 @@ public class Invoice extends BaseEntity {
     }
 
     public Invoice(Order order, BigDecimal originalAmount, BigDecimal vatAmount,
-                   BigDecimal discountAmount, BigDecimal finalAmount) {
+            BigDecimal discountAmount, BigDecimal finalAmount) {
         if (order == null) {
             throw new IllegalArgumentException("order must not be null");
         }

@@ -4,6 +4,8 @@ import com.project.tech_gadget_store.dto.response.CustomerResponseDto;
 import com.project.tech_gadget_store.entity.Customer;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class CustomerMapper {
 
@@ -16,7 +18,7 @@ public class CustomerMapper {
                 .phone(c.getPhone())
                 .membershipId(c.getMembership() != null ? c.getMembership().getId() : null)
                 .cartId(c.getCart() != null ? c.getCart().getId() : null)
-                .ordersIds(c.getOrders().stream().map(o -> o.getId()).toList())
+                .ordersIds(List.of())
                 .addressesIds(c.getAddresses().stream().map(a -> a.getId()).toList())
                 .build();
     }

@@ -566,7 +566,7 @@ export default function ProductsPage() {
   useEffect(() => {
     fetch('/api/products')
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json() })
-      .then(data => setProducts(data.map(mapApiProduct)))
+      .then(data => setProducts((data.items ?? []).map(mapApiProduct)))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }, [])

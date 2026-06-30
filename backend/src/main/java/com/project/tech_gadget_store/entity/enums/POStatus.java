@@ -1,8 +1,9 @@
 package com.project.tech_gadget_store.entity.enums;
 
-public enum PurchaseOrderStatus {
+public enum POStatus {
     PENDING,
-    APPROVED,
-    RECEIVED,
+    CONFIRMED,
+    SHIPPING,
+    DELIVERED,
     CANCELLED
 }

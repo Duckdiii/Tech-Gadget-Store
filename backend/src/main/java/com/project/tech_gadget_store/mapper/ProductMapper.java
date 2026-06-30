@@ -19,8 +19,7 @@ import java.util.Objects;
 @Component
 public class ProductMapper {
 
-        public ProductResponseDto toProductResponseDto(Product product) {
-                List<ProductVariant> variants = product.getVariants();
+        public ProductResponseDto toProductResponseDto(Product product, List<ProductVariant> variants) {
                 ProductVariant first = variants.isEmpty() ? null : variants.get(0);
 
                 BigDecimal minPrice = variants.stream()
@@ -46,12 +45,12 @@ public class ProductMapper {
                                 .build();
         }
 
-        public ProductDetailResponseDto toProductDetailResponseDto(Product product, List<BundleService> bundleServices) {
+        public ProductDetailResponseDto toProductDetailResponseDto(Product product, List<ProductVariant> variants, List<BundleService> bundleServices) {
                 List<String> imageUrls = product.getImages().stream()
                                 .map(ProductImage::getImageUrl)
                                 .toList();
 
-                List<ProductVariant> productVariants = product.getVariants();
+                List<ProductVariant> productVariants = variants;
 
                 BigDecimal minPrice = productVariants.stream()
                                 .map(ProductVariant::getPrice)

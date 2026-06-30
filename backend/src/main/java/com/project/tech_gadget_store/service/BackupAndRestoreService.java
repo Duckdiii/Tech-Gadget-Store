@@ -6,13 +6,13 @@ import com.project.tech_gadget_store.dto.response.BackupMetadata;
 import com.project.tech_gadget_store.entity.AuditLog;
 import com.project.tech_gadget_store.repository.AuditLogRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.nio.file.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,9 +28,8 @@ public class BackupAndRestoreService {
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
     private final AuditLogRepository auditLogRepository;
-    private final StringRedisTemplate redis;
+    private final AtomicBoolean maintenanceMode = new AtomicBoolean(false);
 
-    private static final String MAINTENANCE_KEY = "maintenance:mode";
     private static final String APP_VERSION = "1.0.0";
     private final Path backupDirectory = Paths.get("backups");
 
@@ -65,12 +64,10 @@ public class BackupAndRestoreService {
     );
 
     public BackupAndRestoreService(JdbcTemplate jdbcTemplate,
-                                   AuditLogRepository auditLogRepository,
-                                   StringRedisTemplate redis) {
+                                   AuditLogRepository auditLogRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = new ObjectMapper().registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         this.auditLogRepository = auditLogRepository;
-        this.redis = redis;
         try {
             Files.createDirectories(backupDirectory);
         } catch (IOException e) {
@@ -79,15 +76,11 @@ public class BackupAndRestoreService {
     }
 
     public boolean isMaintenanceMode() {
-        return Boolean.TRUE.equals(redis.hasKey(MAINTENANCE_KEY));
+        return maintenanceMode.get();
     }
 
     public void setMaintenanceMode(boolean enabled) {
-        if (enabled) {
-            redis.opsForValue().set(MAINTENANCE_KEY, "1");
-        } else {
-            redis.delete(MAINTENANCE_KEY);
-        }
+        maintenanceMode.set(enabled);
     }
 
     public List<BackupMetadata> getActiveRecoveryPoints() {

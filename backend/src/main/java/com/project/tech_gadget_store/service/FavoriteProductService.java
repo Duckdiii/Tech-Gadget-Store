@@ -3,12 +3,12 @@ package com.project.tech_gadget_store.service;
 import com.project.tech_gadget_store.dto.response.SubscriptionResponseDto;
 import com.project.tech_gadget_store.entity.Customer;
 import com.project.tech_gadget_store.entity.FavoriteProduct;
-import com.project.tech_gadget_store.entity.Product;
+import com.project.tech_gadget_store.entity.ProductVariant;
 import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.repository.CustomerRepository;
 import com.project.tech_gadget_store.repository.FavoriteProductRepository;
-import com.project.tech_gadget_store.repository.ProductRepository;
+import com.project.tech_gadget_store.repository.ProductVariantRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -23,14 +23,14 @@ public class FavoriteProductService {
 
     private final FavoriteProductRepository favoriteProductRepository;
     private final CustomerRepository customerRepository;
-    private final ProductRepository productRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     public FavoriteProductService(FavoriteProductRepository favoriteProductRepository,
             CustomerRepository customerRepository,
-            ProductRepository productRepository) {
+            ProductVariantRepository productVariantRepository) {
         this.favoriteProductRepository = favoriteProductRepository;
         this.customerRepository = customerRepository;
-        this.productRepository = productRepository;
+        this.productVariantRepository = productVariantRepository;
     }
 
     public Page<FavoriteProduct> getFavoriteProducts(String customerId, int page, int size) {
@@ -38,14 +38,14 @@ public class FavoriteProductService {
                 customerId, SubscriptionStatus.SUBSCRIBED, PageRequest.of(page, size));
     }
 
-    public boolean isFavorited(String customerId, String productId) {
+    public boolean isFavorited(String customerId, String productVariantId) {
         return favoriteProductRepository
-                .existsByCustomerIdAndProductIdAndStatus(customerId, productId, SubscriptionStatus.SUBSCRIBED);
+                .existsByCustomerIdAndProductVariantIdAndStatus(customerId, productVariantId, SubscriptionStatus.SUBSCRIBED);
     }
 
     @Transactional
-    public void unsubscribe(String customerId, String productId) {
-        favoriteProductRepository.findByCustomerIdAndProductId(customerId, productId)
+    public void unsubscribe(String customerId, String productVariantId) {
+        favoriteProductRepository.findByCustomerIdAndProductVariantId(customerId, productVariantId)
                 .ifPresent(f -> {
                     f.setStatus(SubscriptionStatus.UNSUBSCRIBED);
                     f.setUnsubscribedAt(LocalDateTime.now());
@@ -53,21 +53,23 @@ public class FavoriteProductService {
     }
 
     @Transactional
-    public SubscriptionResponseDto toggleSubscription(String email, String productId) {
+    public SubscriptionResponseDto toggleSubscription(String email, String productVariantId) {
         Customer customer = customerRepository.findByAccountEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("This product is no longer available for subscription."));
+        ProductVariant productVariant = productVariantRepository.findById(productVariantId)
+                .orElseThrow(() -> new ResourceNotFoundException("This product variant is no longer available for subscription."));
 
         Optional<FavoriteProduct> existing = favoriteProductRepository
-                .findByCustomerIdAndProductId(customer.getId(), productId);
+                .findByCustomerIdAndProductVariantId(customer.getId(), productVariantId);
+
+        String productName = productVariant.getProduct() != null ? productVariant.getProduct().getName() : productVariantId;
 
         if (existing.isEmpty()) {
-            new FavoriteProduct(product, customer, SubscriptionStatus.SUBSCRIBED);
+            new FavoriteProduct(productVariant, customer, SubscriptionStatus.SUBSCRIBED);
             return SubscriptionResponseDto.builder()
-                    .productId(productId)
-                    .productName(product.getName())
+                    .productId(productVariantId)
+                    .productName(productName)
                     .status(SubscriptionStatus.SUBSCRIBED)
                     .message("You have successfully subscribed to product updates.")
                     .build();
@@ -78,8 +80,8 @@ public class FavoriteProductService {
             fp.setStatus(SubscriptionStatus.UNSUBSCRIBED);
             fp.setUnsubscribedAt(LocalDateTime.now());
             return SubscriptionResponseDto.builder()
-                    .productId(productId)
-                    .productName(product.getName())
+                    .productId(productVariantId)
+                    .productName(productName)
                     .status(SubscriptionStatus.UNSUBSCRIBED)
                     .message("You have successfully unsubscribed from product updates.")
                     .build();
@@ -87,8 +89,8 @@ public class FavoriteProductService {
             fp.setStatus(SubscriptionStatus.SUBSCRIBED);
             fp.setUnsubscribedAt(null);
             return SubscriptionResponseDto.builder()
-                    .productId(productId)
-                    .productName(product.getName())
+                    .productId(productVariantId)
+                    .productName(productName)
                     .status(SubscriptionStatus.SUBSCRIBED)
                     .message("You have successfully subscribed to product updates.")
                     .build();

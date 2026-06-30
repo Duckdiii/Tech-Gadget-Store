@@ -12,10 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -34,20 +37,25 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto req) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
-        AccountUserDetails details = (AccountUserDetails) auth.getPrincipal();
-        String token = jwtService.generateToken(details);
-        return ResponseEntity.ok(new LoginResponseDto(
-                token,
-                details.getUsername(),
-                details.getFullName(),
-                details.getRole()));
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDto req) {
+        try {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
+            AccountUserDetails details = (AccountUserDetails) auth.getPrincipal();
+            String token = jwtService.generateToken(details);
+            return ResponseEntity.ok(new LoginResponseDto(
+                    token,
+                    details.getUsername(),
+                    details.getFullName(),
+                    details.getRole()));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Sai email hoặc mật khẩu."));
+        }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<LoginResponseDto> register(@Valid @RequestBody RegisterRequestDto req) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDto req) {
         LoginResponseDto response = authService.register(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

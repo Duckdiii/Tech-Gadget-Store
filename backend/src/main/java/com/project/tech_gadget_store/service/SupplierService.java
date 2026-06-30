@@ -26,11 +26,7 @@ public class SupplierService {
         if (supplierRepository.existsByNameIgnoreCase(dto.getName())) {
             throw new DuplicateResourceException("Supplier with name '" + dto.getName() + "' already exists");
         }
-        Supplier supplier = new Supplier(dto.getName());
-        supplier.setContactPerson(dto.getContactPerson());
-        supplier.setPhone(dto.getPhone());
-        supplier.setEmail(dto.getEmail());
-        supplier.setAddress(dto.getAddress());
+        Supplier supplier = new Supplier(dto.getName(), dto.getPhone(), dto.getEmail(), dto.getAddress());
         return supplierMapper.toResponseDto(supplierRepository.save(supplier));
     }
 
@@ -42,7 +38,6 @@ public class SupplierService {
             throw new DuplicateResourceException("Supplier with name '" + dto.getName() + "' already exists");
         }
         supplier.setName(dto.getName());
-        supplier.setContactPerson(dto.getContactPerson());
         supplier.setPhone(dto.getPhone());
         supplier.setEmail(dto.getEmail());
         supplier.setAddress(dto.getAddress());

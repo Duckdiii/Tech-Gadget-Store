@@ -5,36 +5,31 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Blocks brute-force attacks on POST /api/auth/login.
  * Allows MAX_ATTEMPTS per IP within the WINDOW. On breach, returns 429.
- * Uses Redis INCR + EXPIRE so the counter is atomic and survives restarts.
+ * Uses an in-memory ConcurrentHashMap; state resets on app restart.
  */
 @Component
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
     private static final String LOGIN_PATH = "/api/auth/login";
     private static final int MAX_ATTEMPTS = 5;
-    private static final Duration WINDOW = Duration.ofMinutes(15);
-    private static final String KEY_PREFIX = "rl:login:";
+    private static final long WINDOW_MS = 15 * 60 * 1000L;
 
-    private final StringRedisTemplate redis;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public LoginRateLimitFilter(StringRedisTemplate redis, ObjectMapper objectMapper) {
-        this.redis = redis;
-        this.objectMapper = objectMapper;
-    }
+    // ip -> [attemptCount, windowStartMs]
+    private final ConcurrentHashMap<String, long[]> attempts = new ConcurrentHashMap<>();
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -49,17 +44,17 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String ip = resolveClientIp(request);
-        String key = KEY_PREFIX + ip;
+        long now = System.currentTimeMillis();
 
-        Long attempts = redis.opsForValue().increment(key);
-        if (attempts == null) attempts = 1L;
+        long[] bucket = attempts.compute(ip, (k, v) -> {
+            if (v == null || now - v[1] >= WINDOW_MS) {
+                return new long[]{1, now};
+            }
+            v[0]++;
+            return v;
+        });
 
-        if (attempts == 1) {
-            // First attempt in window — set the expiry
-            redis.expire(key, WINDOW);
-        }
-
-        if (attempts > MAX_ATTEMPTS) {
+        if (bucket[0] > MAX_ATTEMPTS) {
             rejectRequest(response);
             return;
         }
@@ -78,15 +73,9 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         response.getWriter().write(body);
     }
 
-    /**
-     * Extracts the real client IP.
-     * Trusts X-Forwarded-For only for the first (leftmost) value, which is the
-     * original client IP when the app sits behind a reverse proxy.
-     */
     private String resolveClientIp(HttpServletRequest request) {
         String forwarded = request.getHeader("X-Forwarded-For");
         if (forwarded != null && !forwarded.isBlank()) {
-            // Take only the first IP to prevent header injection
             String first = forwarded.split(",")[0].trim();
             if (!first.isEmpty()) return first;
         }

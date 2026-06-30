@@ -12,17 +12,14 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PurchaseOrderRequestDto {
+public class SupplyOrderRequestDto {
 
     @NotBlank(message = "supplierId is required")
     private String supplierId;
 
-    @NotBlank(message = "orderedBy is required")
-    private String orderedBy;
-
-    private String note;
+    private String notes;
 
     @NotEmpty(message = "items must not be empty")
     @Valid
-    private List<PurchaseOrderItemRequestDto> items;
+    private List<SupplyOrderItemRequestDto> items;
 }

@@ -70,13 +70,7 @@ public class Product extends BaseEntity {
     @JoinTable(name = "product_promotions", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "promotion_id"))
     private List<Promotion> promotions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    private List<ProductVariant> variants = new ArrayList<>();
-
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    private List<FavoriteProduct> favoriteProducts = new ArrayList<>();
-
-    public Product(String name, String description, Brand brand, Category category) {
+public Product(String name, String description, Brand brand, Category category) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("name must not be blank");
         }
