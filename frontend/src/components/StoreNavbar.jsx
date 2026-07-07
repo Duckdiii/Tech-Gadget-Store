@@ -3,14 +3,18 @@ import { useLocation } from 'react-router-dom'
 import { useNav, ROUTE_MAP } from '../hooks/useNav'
 import { useAuth } from '../context/AuthContext'
 import { useAccessibility } from '../hooks/useAccessibility'
+import { apiFetch } from '../services/api'
 
-
-const SAMPLE_NOTIFICATIONS = [
-  { id: 1, type: 'delivery', title: 'Đơn hàng đã giao thành công', body: 'Đơn #ORD-8492 (MacBook Pro 14") đã được giao.', time: '2 phút trước', unread: true },
-  { id: 2, type: 'sale', title: 'Flash Sale sắp kết thúc!', body: 'Ưu đãi giảm đến 40% chỉ còn 3 giờ nữa.', time: '1 giờ trước', unread: true },
-  { id: 3, type: 'gift', title: 'Điểm thưởng sắp hết hạn', body: '500 điểm của bạn hết hạn vào ngày 15/06.', time: '1 ngày trước', unread: false },
-  { id: 4, type: 'payment', title: 'Thanh toán thành công', body: 'Đơn hàng #ORD-8491 đã được xác nhận.', time: '2 ngày trước', unread: false },
-]
+function timeAgo(dateStr) {
+  const diffMs = Date.now() - new Date(dateStr).getTime()
+  const min = Math.floor(diffMs / 60000)
+  if (min < 1) return 'Vừa xong'
+  if (min < 60) return `${min} phút trước`
+  const hr = Math.floor(min / 60)
+  if (hr < 24) return `${hr} giờ trước`
+  const day = Math.floor(hr / 24)
+  return `${day} ngày trước`
+}
 
 const TICKER_ITEMS = [
   { text: 'iPhone 15 Pro Max giảm 12% — chỉ hôm nay' },
@@ -21,13 +25,13 @@ const TICKER_ITEMS = [
 
 function renderNotificationIcon(type) {
   switch (type) {
-    case 'delivery':
+    case 'RESTOCKED':
       return <svg className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>;
-    case 'sale':
+    case 'PROMOTION':
       return <svg className="w-5 h-5 text-orange-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>;
-    case 'gift':
-      return <svg className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 0h4m-4 0H8m12 0a2 2 0 10-2-2v2m0 0h2m-4 0a2 2 0 102 2v-2m0 0h-2M8 8a2 2 0 112-2v2m0 0H8m2 0a2 2 0 11-2 2v-2m0 0h2" /></svg>;
-    case 'payment':
+    case 'OUT_OF_STOCK':
+      return <svg className="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>;
+    case 'PRICE_UPDATE':
       return <svg className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
     default:
       return <svg className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>;
@@ -118,7 +122,7 @@ export default function StoreNavbar() {
   const [search, setSearch] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
   const [bellRing, setBellRing] = useState(false)
-  const [notifications, setNotifications] = useState(SAMPLE_NOTIFICATIONS)
+  const [notifications, setNotifications] = useState([])
 
   const bellRef = useRef(null)
   const userMenuRef = useRef(null)
@@ -130,7 +134,12 @@ export default function StoreNavbar() {
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (!userMenu.open) setSubPanel(null) }, [userMenu.open])
 
-  const unreadCount = notifications.filter(n => n.unread).length
+  useEffect(() => {
+    if (!user || user.role !== 'customer') { setNotifications([]); return }
+    apiFetch('/api/customer/notifications').then(setNotifications).catch(() => {})
+  }, [user])
+
+  const unreadCount = notifications.filter(n => !n.readAt).length
 
   const handleBell = () => {
     setBellRing(true)
@@ -149,8 +158,14 @@ export default function StoreNavbar() {
     return () => clearTimeout(t)
   }, [bellRing])
 
-  const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, unread: false })))
-  const markRead = (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n))
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, readAt: n.readAt || new Date().toISOString() })))
+    apiFetch('/api/customer/notifications/read-all', { method: 'PATCH' }).catch(() => {})
+  }
+  const markRead = (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, readAt: n.readAt || new Date().toISOString() } : n))
+    apiFetch(`/api/customer/notifications/${id}/read`, { method: 'PATCH' }).catch(() => {})
+  }
 
   const handleSearch = (e) => { e.preventDefault(); onNavigate('list') }
 
@@ -349,31 +364,39 @@ export default function StoreNavbar() {
                   </div>
 
                   <ul className="max-h-72 overflow-y-auto" style={{ borderBottom: '1px solid var(--b1)' }}>
-                    {notifications.map(n => (
+                    {notifications.length === 0 && (
+                      <li className="px-4 py-8 text-center text-[12px]" style={{ color: 'var(--t3)' }}>
+                        Không có thông báo nào
+                      </li>
+                    )}
+                    {notifications.map(n => {
+                      const unread = !n.readAt
+                      return (
                       <li
                         key={n.id}
-                        onClick={() => markRead(n.id)}
+                        onClick={() => unread && markRead(n.id)}
                         className="flex gap-3 px-4 py-3 cursor-pointer transition-colors"
                         style={{
                           borderBottom: '1px solid var(--b1)',
-                          backgroundColor: n.unread ? 'rgba(232,66,10,0.05)' : 'transparent',
+                          backgroundColor: unread ? 'rgba(232,66,10,0.05)' : 'transparent',
                         }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--s1)'}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = n.unread ? 'rgba(232,66,10,0.05)' : 'transparent'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = unread ? 'rgba(232,66,10,0.05)' : 'transparent'}
                       >
                         {renderNotificationIcon(n.type)}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[12px] leading-snug font-semibold" style={{ color: n.unread ? 'var(--t1)' : 'var(--t2)' }}>
+                          <p className="text-[12px] leading-snug font-semibold" style={{ color: unread ? 'var(--t1)' : 'var(--t2)' }}>
                             {n.title}
                           </p>
-                          <p className="text-[11px] mt-0.5 line-clamp-2" style={{ color: 'var(--t3)' }}>{n.body}</p>
-                          <p className="text-[10px] mt-1" style={{ color: 'var(--t3)' }}>{n.time}</p>
+                          <p className="text-[11px] mt-0.5 line-clamp-2" style={{ color: 'var(--t3)' }}>{n.message}</p>
+                          <p className="text-[10px] mt-1" style={{ color: 'var(--t3)' }}>{timeAgo(n.createdAt)}</p>
                         </div>
-                        {n.unread && (
+                        {unread && (
                           <span className="w-1.5 h-1.5 mt-1.5 shrink-0 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />
                         )}
                       </li>
-                    ))}
+                      )
+                    })}
                   </ul>
 
                   <div className="px-4 py-2.5 text-center">
