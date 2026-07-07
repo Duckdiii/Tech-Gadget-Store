@@ -17,6 +17,7 @@ export const ROUTE_MAP = {
   staffManagement:    '/staff-management',
   productManagement: '/products-management',
   brandCategoryManagement: '/brands-categories',
+  bundleServiceManagement: '/bundle-services',
   supplierManagement: '/suppliers',
   supplyOrders:       '/supply-orders',
   recoverRestore:     '/recover',

@@ -45,6 +45,7 @@ const PATH_SIDEBAR = {
     '/staff-management':  'techAdmin',
     '/products-management': 'techAdmin',
     '/brands-categories':  'techAdmin',
+    '/bundle-services':    'techAdmin',
     '/suppliers':         'techAdmin',
     '/supply-orders':     'techAdmin',
     '/recover':           'techAdmin',
