@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNav } from '../hooks/useNav'
 import StoreNavbar from '../components/StoreNavbar'
+import { apiFetch } from '../services/api'
 
 /* ── Static data ─────────────────────────────────────────────── */
 
@@ -274,31 +275,18 @@ const QUICK_TABS = [
   { id: 'payment',    label: 'Thanh toán' },
 ]
 
-const MEMBERSHIP_TIERS = [
-  { id: 'member',  label: 'Thành viên', min: 0,          max: 5000000,   color: 'bg-gray-400',   ring: 'ring-gray-300',   text: 'text-gray-600'   },
-  { id: 'silver',  label: 'Bạc',        min: 5000000,    max: 20000000,  color: 'bg-slate-400',  ring: 'ring-slate-300',  text: 'text-slate-600'  },
-  { id: 'gold',    label: 'Vàng',       min: 20000000,   max: 50000000,  color: 'bg-amber-400',  ring: 'ring-amber-300',  text: 'text-amber-600'  },
-  { id: 'elite',   label: 'Elite',      min: 50000000,   max: 100000000, color: 'bg-[#E8420A]',  ring: 'ring-orange-300', text: 'text-[#E8420A]'  },
-  { id: 'eliteplus',label: 'Elite+',    min: 100000000,  max: null,      color: 'bg-purple-600', ring: 'ring-purple-300', text: 'text-purple-700' },
-]
-
-const TIER_BENEFITS = {
-  member:   ['Tích điểm 1x trên mỗi đơn hàng', 'Nhận thông báo khuyến mãi sớm', 'Hỗ trợ khách hàng ưu tiên'],
-  silver:   ['Tích điểm 1.5x trên mỗi đơn hàng', 'Miễn phí vận chuyển đơn từ 500k', 'Giảm thêm 3% sinh nhật', 'Đổi điểm lấy voucher'],
-  gold:     ['Tích điểm 2x trên mỗi đơn hàng', 'Miễn phí vận chuyển mọi đơn hàng', 'Giảm thêm 5% sinh nhật', 'Ưu tiên xử lý đổi trả', 'Quà tặng hàng quý'],
-  elite:    ['Tích điểm 3x trên mỗi đơn hàng', 'Miễn phí vận chuyển hoả tốc', 'Giảm thêm 10% sinh nhật', 'Đường dây hỗ trợ VIP 24/7', 'Quà tặng hàng tháng', 'Early access sản phẩm mới'],
-  eliteplus:['Tích điểm 5x trên mỗi đơn hàng', 'Miễn phí mọi dịch vụ vận chuyển', 'Sinh nhật: quà tặng + giảm 15%', 'Quản lý tài khoản riêng', 'Sự kiện ra mắt sản phẩm độc quyền', 'Bảo hành ưu tiên tại nhà', 'Hoàn tiền 2% mỗi đơn hàng'],
+const TIER_DISPLAY = {
+  STANDARD: { label: 'Thành viên', color: 'bg-gray-400',   ring: 'ring-gray-300',   text: 'text-gray-600'   },
+  BRONZE:   { label: 'Đồng',       color: 'bg-amber-700',  ring: 'ring-amber-400',  text: 'text-amber-800'  },
+  SILVER:   { label: 'Bạc',        color: 'bg-slate-400',  ring: 'ring-slate-300',  text: 'text-slate-600'  },
+  GOLD:     { label: 'Vàng',       color: 'bg-amber-400',  ring: 'ring-amber-300',  text: 'text-amber-600'  },
+  DIAMOND:  { label: 'Kim Cương',  color: 'bg-purple-600', ring: 'ring-purple-300', text: 'text-purple-700' },
 }
 
-const POINTS_HISTORY = [
-  { id: 1, desc: 'Mua hàng #ORD-2603001988', date: '28/03/2026', points: +245, type: 'earn'  },
-  { id: 2, desc: 'Đổi điểm lấy voucher ELITE10', date: '15/03/2026', points: -200, type: 'redeem'},
-  { id: 3, desc: 'Mua hàng #ORD-2507001033', date: '15/07/2025', points: +295, type: 'earn'  },
-  { id: 4, desc: 'Thưởng điểm sinh nhật', date: '01/06/2025', points: +100, type: 'bonus' },
-  { id: 5, desc: 'Mua hàng #ORD-2506000871', date: '02/06/2025', points: +65,  type: 'earn'  },
-  { id: 6, desc: 'Đổi điểm lấy voucher FREESHIP', date: '10/05/2025', points: -100, type: 'redeem'},
-  { id: 7, desc: 'Mua hàng #ORD-2502000087', date: '20/02/2025', points: +120, type: 'earn'  },
-]
+function formatVnd(value) {
+  if (value === null || value === undefined) return '—'
+  return new Intl.NumberFormat('vi-VN').format(value) + 'đ'
+}
 
 const COUPONS_DATA = [
   {
@@ -2291,16 +2279,34 @@ function AccountSection() {
 }
 
 function MembershipSection() {
-  const currentTier = MEMBERSHIP_TIERS[3]           // Elite
-  const nextTier    = MEMBERSHIP_TIERS[4]           // Elite+
-  const spend       = 21875000
-  const nextTarget  = nextTier.min                  // 100 000 000
-  const pct         = Math.round((spend / nextTarget) * 100)
-  const remaining   = nextTarget - spend
-  const [histTab, setHistTab] = useState('all')
+  const [data, setData]       = useState(null)
+  const [tiers, setTiers]     = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState(null)
 
-  const filteredHist = histTab === 'all' ? POINTS_HISTORY
-    : POINTS_HISTORY.filter(h => h.type === histTab)
+  useEffect(() => {
+    Promise.all([
+      apiFetch('/api/customer/membership'),
+      apiFetch('/api/customer/membership/tiers'),
+    ])
+      .then(([membership, tierList]) => { setData(membership); setTiers(tierList) })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return <div className="bg-white rounded border border-gray-200 py-16 text-center text-gray-400 text-sm">Đang tải dữ liệu...</div>
+  }
+  if (error || !data) {
+    return <div className="bg-red-50 border border-red-200 rounded px-5 py-4 text-red-600 text-sm">{error || 'Không thể tải thông tin hạng thành viên'}</div>
+  }
+
+  const display = TIER_DISPLAY[data.tier] || TIER_DISPLAY.STANDARD
+  const nextDisplay = data.nextTier ? (TIER_DISPLAY[data.nextTier] || TIER_DISPLAY.STANDARD) : null
+  const pct = data.nextTierMinSpending
+    ? Math.min(100, Math.round((data.totalSpent / data.nextTierMinSpending) * 100))
+    : 100
+  const currentIndex = tiers.findIndex(t => t.tier === data.tier)
 
   return (
     <div className="space-y-5">
@@ -2312,14 +2318,9 @@ function MembershipSection() {
             <div>
               <p className="text-sm font-semibold text-white/70 mb-1">Hạng thành viên hiện tại</p>
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-4xl font-black text-white">Elite</span>
-                <span className="px-3 py-1 bg-white/20 border border-white/30 text-white text-xs font-black rounded-full">T-MEM</span>
+                <span className="text-4xl font-black text-white">{display.label}</span>
               </div>
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-5xl font-black text-white">1.250</span>
-                <span className="text-lg font-semibold text-white/70">điểm</span>
-              </div>
-              <p className="text-sm text-white/60 mt-1">Tổng chi tiêu tích lũy: <span className="font-bold text-white">21.875.000đ</span></p>
+              <p className="text-sm text-white/60 mt-1">Tổng chi tiêu tích lũy: <span className="font-bold text-white">{formatVnd(data.totalSpent)}</span></p>
             </div>
             <div className="text-right">
               <div className="w-20 h-20 rounded-full bg-white/20 border-4 border-white/40 flex items-center justify-center">
@@ -2331,33 +2332,36 @@ function MembershipSection() {
           </div>
 
           {/* Progress to next tier */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-white/80">Tiến trình lên hạng <span className="text-white font-black">Elite+</span></p>
-              <span className="text-sm font-black text-white">{pct}%</span>
+          {nextDisplay ? (
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-semibold text-white/80">Tiến trình lên hạng <span className="text-white font-black">{nextDisplay.label}</span></p>
+                <span className="text-sm font-black text-white">{pct}%</span>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-3">
+                <div className="bg-white h-3 rounded-full transition-all" style={{ width: `${pct}%` }} />
+              </div>
+              <p className="text-xs text-white/60 mt-2">
+                Cần thêm <span className="font-black text-white">{formatVnd(data.amountToNextTier)}</span> chi tiêu để lên hạng {nextDisplay.label}
+              </p>
             </div>
-            <div className="w-full bg-white/20 rounded-full h-3">
-              <div className="bg-white h-3 rounded-full transition-all" style={{ width: `${pct}%` }} />
-            </div>
-            <p className="text-xs text-white/60 mt-2">
-              Cần thêm <span className="font-black text-white">{remaining.toLocaleString('vi-VN')}đ</span> chi tiêu để lên hạng Elite+
-            </p>
-          </div>
+          ) : (
+            <p className="mt-6 text-sm text-white/70">Bạn đang ở hạng thành viên cao nhất 🎉</p>
+          )}
         </div>
 
         {/* Benefits summary strip */}
-        <div className="bg-white px-8 py-4 flex items-center gap-6 border-t border-gray-200">
-          {[
-            { icon: '3x', label: 'Nhân điểm' },
-            { icon: '🚀', label: 'Giao hỏa tốc' },
-            { icon: 'VIP', label: 'Hỗ trợ 24/7' },
-            { icon: '🎁', label: 'Quà tháng' },
-          ].map((b, i) => (
-            <div key={i} className="flex items-center gap-2 text-sm text-[#E8420A] font-semibold">
-              <span className="w-9 h-9 rounded bg-orange-50 border border-orange-100 flex items-center justify-center text-xs font-black">{b.icon}</span>
-              {b.label}
+        <div className="bg-white px-8 py-4 flex flex-wrap items-center gap-6 border-t border-gray-200">
+          <div className="flex items-center gap-2 text-sm text-[#E8420A] font-semibold">
+            <span className="w-9 h-9 rounded bg-orange-50 border border-orange-100 flex items-center justify-center text-xs font-black">{data.discountPercentage}%</span>
+            Giảm giá mỗi đơn
+          </div>
+          {data.freeShipping && (
+            <div className="flex items-center gap-2 text-sm text-[#E8420A] font-semibold">
+              <span className="w-9 h-9 rounded bg-orange-50 border border-orange-100 flex items-center justify-center text-xs font-black">🚀</span>
+              Miễn phí vận chuyển
             </div>
-          ))}
+          )}
         </div>
       </div>
 
@@ -2368,15 +2372,15 @@ function MembershipSection() {
           {/* Connector line */}
           <div className="absolute top-5 left-5 right-5 h-0.5 bg-gray-200 z-0" />
           <div className="flex items-start justify-between relative z-10">
-            {MEMBERSHIP_TIERS.map((tier, i) => {
-              const isActive  = tier.id === 'elite'
-              const isPast    = i < 3
-              const isFuture  = i > 3
+            {tiers.map((tier, i) => {
+              const tDisplay = TIER_DISPLAY[tier.tier] || TIER_DISPLAY.STANDARD
+              const isActive = tier.tier === data.tier
+              const isPast   = currentIndex >= 0 && i < currentIndex
               return (
-                <div key={tier.id} className="flex flex-col items-center gap-2 w-1/5">
+                <div key={tier.tier} className="flex flex-col items-center gap-2 w-1/5">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black border-2
-                    ${isActive ? `${tier.color} text-white border-transparent ring-4 ${tier.ring} shadow-md`
-                      : isPast  ? `${tier.color} text-white border-transparent opacity-80`
+                    ${isActive ? `${tDisplay.color} text-white border-transparent ring-4 ${tDisplay.ring} shadow-md`
+                      : isPast  ? `${tDisplay.color} text-white border-transparent opacity-80`
                       : 'bg-white border-gray-300 text-gray-400'}`}
                   >
                     {isPast || isActive ? (
@@ -2387,12 +2391,12 @@ function MembershipSection() {
                       <span>{i + 1}</span>
                     )}
                   </div>
-                  <span className={`text-xs font-bold text-center ${isActive ? tier.text : isPast ? 'text-gray-500' : 'text-gray-400'}`}>
-                    {tier.label}
+                  <span className={`text-xs font-bold text-center ${isActive ? tDisplay.text : isPast ? 'text-gray-500' : 'text-gray-400'}`}>
+                    {tDisplay.label}
                   </span>
-                  {tier.min > 0 && (
+                  {tier.minSpending > 0 && (
                     <span className="text-[10px] text-gray-400 text-center leading-tight">
-                      {(tier.min / 1000000).toFixed(0)}tr đ
+                      {(tier.minSpending / 1000000).toFixed(0)}tr đ
                     </span>
                   )}
                   {isActive && <span className="text-[10px] font-black text-[#E8420A] bg-orange-50 px-1.5 py-0.5 rounded">Của bạn</span>}
@@ -2403,90 +2407,35 @@ function MembershipSection() {
         </div>
       </div>
 
-      {/* ── Benefits grid for current tier ───────────────────── */}
+      {/* ── Benefits detail for current tier ─────────────────── */}
       <div className="bg-white rounded border border-gray-200 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-base font-bold text-gray-900">Quyền lợi hạng Elite</h3>
-          <span className="text-xs font-bold px-3 py-1 bg-orange-100 text-[#E8420A] rounded">6 quyền lợi</span>
-        </div>
+        <h3 className="text-base font-bold text-gray-900 mb-5">Quyền lợi hạng {display.label}</h3>
         <div className="grid grid-cols-2 gap-3">
-          {TIER_BENEFITS.elite.map((benefit, i) => (
-            <div key={i} className="flex items-start gap-3 p-3.5 rounded bg-orange-50/50 border border-orange-100">
+          <div className="flex items-start gap-3 p-3.5 rounded bg-orange-50/50 border border-orange-100">
+            <div className="w-6 h-6 rounded-full bg-[#E8420A] flex items-center justify-center shrink-0 mt-0.5">
+              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-gray-800 leading-snug">Giảm {data.discountPercentage}% giá trị mỗi đơn hàng</p>
+          </div>
+          {data.freeShipping && (
+            <div className="flex items-start gap-3 p-3.5 rounded bg-orange-50/50 border border-orange-100">
               <div className="w-6 h-6 rounded-full bg-[#E8420A] flex items-center justify-center shrink-0 mt-0.5">
                 <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-gray-800 leading-snug">{benefit}</p>
+              <p className="text-sm font-medium text-gray-800 leading-snug">Miễn phí vận chuyển mọi đơn hàng</p>
             </div>
-          ))}
+          )}
         </div>
 
-        {/* Elite+ preview */}
-        <div className="mt-4 p-4 rounded bg-gray-50 border border-gray-200">
-          <p className="text-xs font-bold text-gray-700 mb-2">Thêm quyền lợi khi lên hạng Elite+ ✨</p>
-          <div className="flex flex-wrap gap-2">
-            {TIER_BENEFITS.eliteplus.slice(4).map((b, i) => (
-              <span key={i} className="text-xs bg-white border border-gray-300 text-gray-700 font-semibold px-2.5 py-1 rounded">{b}</span>
-            ))}
+        {data.description && (
+          <div className="mt-4 p-4 rounded bg-gray-50 border border-gray-200">
+            <p className="text-sm text-gray-700">{data.description}</p>
           </div>
-        </div>
-      </div>
-
-      {/* ── Points history ───────────────────────────────────── */}
-      <div className="bg-white rounded border border-gray-200 overflow-hidden shadow-sm">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <h3 className="text-base font-bold text-gray-900">Lịch sử điểm thưởng</h3>
-          <div className="flex items-center gap-1 bg-gray-100 rounded p-1">
-            {[
-              { id: 'all', label: 'Tất cả' },
-              { id: 'earn', label: 'Tích điểm' },
-              { id: 'redeem', label: 'Đổi điểm' },
-              { id: 'bonus', label: 'Thưởng' },
-            ].map(t => (
-              <button
-                key={t.id}
-                onClick={() => setHistTab(t.id)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
-                  histTab === t.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="divide-y divide-gray-100">
-          {filteredHist.map(h => (
-            <div key={h.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors">
-              <div className={`w-10 h-10 rounded flex items-center justify-center shrink-0 ${
-                h.type === 'earn'   ? 'bg-green-100' :
-                h.type === 'redeem' ? 'bg-orange-100' : 'bg-purple-100'
-              }`}>
-                {h.type === 'earn' ? (
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                ) : h.type === 'redeem' ? (
-                  <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                  </svg>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900">{h.desc}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{h.date}</p>
-              </div>
-              <span className={`text-base font-black ${h.points > 0 ? 'text-green-600' : 'text-orange-500'}`}>
-                {h.points > 0 ? '+' : ''}{h.points} điểm
-              </span>
-            </div>
-          ))}
-        </div>
+        )}
       </div>
     </div>
   )

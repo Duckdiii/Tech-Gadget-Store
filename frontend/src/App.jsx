@@ -16,6 +16,7 @@ import StaffManagementPage from './pages/StaffManagementPage'
 import ProductManagementPage from './pages/ProductManagementPage'
 import BrandCategoryManagementPage from './pages/BrandCategoryManagementPage'
 import BundleServiceManagementPage from './pages/BundleServiceManagementPage'
+import MembershipManagementPage from './pages/MembershipManagementPage'
 import SupplierManagementPage from './pages/SupplierManagementPage'
 import SupplyOrderPage from './pages/SupplyOrderPage'
 import RecoverRestorePage from './pages/RecoverRestorePage'
@@ -71,6 +72,7 @@ export default function App() {
             <Route path="/products-management" element={<ProductManagementPage />} />
             <Route path="/brands-categories"   element={<BrandCategoryManagementPage />} />
             <Route path="/bundle-services"     element={<BundleServiceManagementPage />} />
+            <Route path="/memberships"         element={<MembershipManagementPage />} />
             <Route path="/suppliers"           element={<SupplierManagementPage />} />
             <Route path="/supply-orders"       element={<SupplyOrderPage />} />
             <Route path="/recover"             element={<RecoverRestorePage />} />

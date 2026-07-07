@@ -20,12 +20,11 @@ public class MembershipRequestDto {
 
     @NotNull(message = "tier must not be null")
     private MembershipTier tier;
-    @NotBlank(message = "benefitId must not be blank")
-    private String benefitId;
-    @NotNull(message = "minSpending must not be null")
+    @NotNull(message = "benefit must not be null")
+    @Valid
+    private MembershipBenefitRequestDto benefit;
     @DecimalMin(value = "0.00", message = "minSpending must not be negative")
     private BigDecimal minSpending;
-    @NotNull(message = "maxSpending must not be null")
     @DecimalMin(value = "0.00", message = "maxSpending must not be negative")
     private BigDecimal maxSpending;
 }

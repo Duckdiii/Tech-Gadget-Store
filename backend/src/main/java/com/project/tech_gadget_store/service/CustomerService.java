@@ -2,11 +2,15 @@ package com.project.tech_gadget_store.service;
 
 import com.project.tech_gadget_store.dto.request.AddressRequestDto;
 import com.project.tech_gadget_store.dto.response.AddressResponseDto;
+import com.project.tech_gadget_store.dto.response.CustomerMembershipResponseDto;
 import com.project.tech_gadget_store.dto.response.CustomerResponseDto;
 import com.project.tech_gadget_store.dto.response.MembershipResponseDto;
+import com.project.tech_gadget_store.dto.response.MembershipTierResponseDto;
 import com.project.tech_gadget_store.entity.Address;
 import com.project.tech_gadget_store.entity.Customer;
+import com.project.tech_gadget_store.entity.Membership;
 import com.project.tech_gadget_store.entity.enums.OrderStatus;
+import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.mapper.AddressMapper;
 import com.project.tech_gadget_store.mapper.CustomerMapper;
 import com.project.tech_gadget_store.mapper.MembershipMapper;
@@ -19,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -61,6 +67,45 @@ public class CustomerService {
         return customerRepository.findById(id)
                 .map(customer -> membershipMapper.toMembershipResponseDto(customer.getMembership()))
                 .orElseThrow(() -> new RuntimeException(CUSTOMER_NOT_FOUND + id));
+    }
+
+    public CustomerMembershipResponseDto getMyMembership(String email) {
+        Customer customer = customerRepository.findByAccountEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with email: " + email));
+
+        BigDecimal totalSpent = orderRepository.sumSpentByCustomerIdAndStatus(customer.getId(), OrderStatus.COMPLETED);
+        if (totalSpent == null) {
+            totalSpent = BigDecimal.ZERO;
+        }
+
+        Membership current = customer.getMembership();
+        BigDecimal currentMin = current.getMinSpending() == null ? BigDecimal.ZERO : current.getMinSpending();
+
+        Membership next = membershipRepository.findAll().stream()
+                .filter(m -> (m.getMinSpending() == null ? BigDecimal.ZERO : m.getMinSpending()).compareTo(currentMin) > 0)
+                .min(Comparator.comparing(m -> m.getMinSpending() == null ? BigDecimal.ZERO : m.getMinSpending()))
+                .orElse(null);
+
+        BigDecimal finalTotalSpent = totalSpent;
+        return CustomerMembershipResponseDto.builder()
+                .tier(current.getTier())
+                .minSpending(current.getMinSpending())
+                .maxSpending(current.getMaxSpending())
+                .discountPercentage(current.getBenefit().getDiscountPercentage())
+                .freeShipping(current.getBenefit().getFreeShipping())
+                .description(current.getBenefit().getDescription())
+                .totalSpent(totalSpent)
+                .nextTier(next != null ? next.getTier() : null)
+                .nextTierMinSpending(next != null ? next.getMinSpending() : null)
+                .amountToNextTier(next != null ? next.getMinSpending().subtract(finalTotalSpent).max(BigDecimal.ZERO) : null)
+                .build();
+    }
+
+    public List<MembershipTierResponseDto> getMembershipTiers() {
+        return membershipRepository.findAll().stream()
+                .sorted(Comparator.comparing(m -> m.getMinSpending() == null ? BigDecimal.ZERO : m.getMinSpending()))
+                .map(membershipMapper::toTierResponseDto)
+                .toList();
     }
 
     @Transactional

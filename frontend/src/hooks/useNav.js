@@ -18,6 +18,7 @@ export const ROUTE_MAP = {
   productManagement: '/products-management',
   brandCategoryManagement: '/brands-categories',
   bundleServiceManagement: '/bundle-services',
+  membershipManagement: '/memberships',
   supplierManagement: '/suppliers',
   supplyOrders:       '/supply-orders',
   recoverRestore:     '/recover',
