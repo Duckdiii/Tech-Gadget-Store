@@ -18,6 +18,7 @@ public class AccountUserDetails implements UserDetails {
     private final String fullName;
     private final String role;
     private final boolean active;
+    private final String userId;
 
     public AccountUserDetails(Account account) {
         this.email = account.getEmail();
@@ -27,6 +28,7 @@ public class AccountUserDetails implements UserDetails {
         User user = account.getUser();
         this.fullName = user.getFullName();
         this.role = resolveRole(user);
+        this.userId = user.getId();
     }
 
     private static String resolveRole(User user) {
@@ -37,6 +39,7 @@ public class AccountUserDetails implements UserDetails {
 
     public String getFullName() { return fullName; }
     public String getRole()     { return role; }
+    public String getUserId()   { return userId; }
 
     @Override public String getUsername()               { return email; }
     @Override public String getPassword()               { return password; }

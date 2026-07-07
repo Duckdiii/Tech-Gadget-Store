@@ -62,6 +62,9 @@ public class Product extends BaseEntity {
     @Formula("(SELECT MIN(pv.price) FROM product_variants pv WHERE pv.product_id = id)")
     private BigDecimal minPrice;
 
+    @Column(name = "is_active", nullable = false, columnDefinition = "boolean not null default true")
+    private Boolean isActive = true;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private List<ProductImage> images = new ArrayList<>();
@@ -105,5 +108,9 @@ public Product(String name, String description, Brand brand, Category category) 
         }
         this.name = name;
         this.description = description;
+    }
+
+    public void discontinue() {
+        this.isActive = false;
     }
 }

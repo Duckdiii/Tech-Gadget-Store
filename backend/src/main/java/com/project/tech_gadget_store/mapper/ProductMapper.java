@@ -3,6 +3,7 @@ package com.project.tech_gadget_store.mapper;
 import com.project.tech_gadget_store.dto.response.BundleServiceResponseDto;
 import com.project.tech_gadget_store.dto.response.FlashSaleProductResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductDetailResponseDto;
+import com.project.tech_gadget_store.dto.response.ProductImageResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductVariantResponseDto;
 import com.project.tech_gadget_store.entity.BundleService;
@@ -59,16 +60,11 @@ public class ProductMapper {
                                 .orElse(null);
 
                 List<ProductVariantResponseDto> variantDtos = productVariants.stream()
-                                .map(v -> ProductVariantResponseDto.builder()
-                                                .id(v.getId())
-                                                .createdAt(v.getCreatedAt())
-                                                .updatedAt(v.getUpdatedAt())
-                                                .productId(product.getId())
-                                                .ramGb(v.getRamGb())
-                                                .storageGb(v.getStorageGb())
-                                                .color(v.getColor())
-                                                .price(v.getPrice())
-                                                .build())
+                                .map(this::toVariantResponseDto)
+                                .toList();
+
+                List<ProductImageResponseDto> imageDtos = product.getImages().stream()
+                                .map(img -> toImageResponseDto(img, product.getId()))
                                 .toList();
 
                 List<BundleServiceResponseDto> bundleServiceDtos = bundleServices.stream()
@@ -89,12 +85,16 @@ public class ProductMapper {
                                 .id(product.getId())
                                 .name(product.getName())
                                 .description(product.getDescription())
+                                .brandId(product.getBrand().getId())
                                 .brandName(product.getBrand().getName())
                                 .brandLogoUrl(product.getBrand().getLogoUrl())
+                                .categoryId(product.getCategory().getId())
                                 .categoryName(product.getCategory().getName())
                                 .minPrice(minPrice)
                                 .hasVariants(!productVariants.isEmpty())
+                                .isActive(product.getIsActive())
                                 .imageUrls(imageUrls)
+                                .images(imageDtos)
                                 .variants(variantDtos)
                                 .bundleServices(bundleServiceDtos)
                                 .screenSize(product.getScreenSize())
@@ -140,6 +140,30 @@ public class ProductMapper {
                                 .promotionName(promotion.getName())
                                 .saleStartAt(promotion.getStartAt())
                                 .saleEndAt(promotion.getEndAt())
+                                .build();
+        }
+
+        public ProductVariantResponseDto toVariantResponseDto(ProductVariant variant) {
+                return ProductVariantResponseDto.builder()
+                                .id(variant.getId())
+                                .createdAt(variant.getCreatedAt())
+                                .updatedAt(variant.getUpdatedAt())
+                                .productId(variant.getProduct().getId())
+                                .ramGb(variant.getRamGb())
+                                .storageGb(variant.getStorageGb())
+                                .color(variant.getColor())
+                                .price(variant.getPrice())
+                                .build();
+        }
+
+        public ProductImageResponseDto toImageResponseDto(ProductImage image, String productId) {
+                return ProductImageResponseDto.builder()
+                                .id(image.getId())
+                                .createdAt(image.getCreatedAt())
+                                .updatedAt(image.getUpdatedAt())
+                                .name(image.getName())
+                                .imageUrl(image.getImageUrl())
+                                .productId(productId)
                                 .build();
         }
 }

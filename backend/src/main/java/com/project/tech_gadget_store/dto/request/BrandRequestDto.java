@@ -18,6 +18,8 @@ public class BrandRequestDto {
 
     @NotBlank(message = "name must not be blank")
     private String name;
+    @NotBlank(message = "logoUrl must not be blank")
     private String logoUrl;
+    @NotBlank(message = "description must not be blank")
     private String description;
 }

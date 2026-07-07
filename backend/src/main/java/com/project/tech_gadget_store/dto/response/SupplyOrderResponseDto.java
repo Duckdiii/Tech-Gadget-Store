@@ -18,6 +18,7 @@ public class SupplyOrderResponseDto {
     private String supplierName;
     private POStatus status;
     private LocalDate orderDate;
+    private LocalDate expectedDeliveryDate;
     private String notes;
     private List<SupplyOrderItemResponseDto> items;
     private BigDecimal totalValue;

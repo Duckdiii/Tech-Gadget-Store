@@ -50,6 +50,26 @@ const NAV_GROUPS = [
         ),
       },
       {
+        id: 'productManagement',
+        path: '/products-management',
+        label: 'Sản phẩm',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L3.53 10.53a2.25 2.25 0 00-.03.418v6.302c0 1.242 1.008 2.25 2.25 2.25h12.5c1.242 0 2.25-1.008 2.25-2.25v-6.302c0-.142-.01-.283-.03-.418L19.238 5.338a2.25 2.25 0 00-2.15-1.588H15M9 3.75V3a1.5 1.5 0 011.5-1.5h3A1.5 1.5 0 0115 3v.75M9 3.75h6M3.5 10.5h17" />
+          </svg>
+        ),
+      },
+      {
+        id: 'brandCategoryManagement',
+        path: '/brands-categories',
+        label: 'Thương hiệu & Danh mục',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+        ),
+      },
+      {
         id: 'inventory',
         path: '/inventory',
         label: 'Kho hàng',
@@ -66,6 +86,26 @@ const NAV_GROUPS = [
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+        ),
+      },
+      {
+        id: 'supplierManagement',
+        path: '/suppliers',
+        label: 'Nhà cung cấp',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 7l3-4h12l3 4M3 7v12a1 1 0 001 1h16a1 1 0 001-1V7M3 7h18M9 12h6" />
+          </svg>
+        ),
+      },
+      {
+        id: 'supplyOrders',
+        path: '/supply-orders',
+        label: 'Đơn nhập hàng',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
           </svg>
         ),
       },

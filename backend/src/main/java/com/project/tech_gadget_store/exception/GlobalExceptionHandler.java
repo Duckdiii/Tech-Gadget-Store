@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -42,6 +43,68 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<Map<String, Object>> handleDuplicateResource(DuplicateResourceException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(MissingRequiredFieldException.class)
+    public ResponseEntity<Map<String, Object>> handleMissingRequiredField(MissingRequiredFieldException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(SupplierEditRestrictedException.class)
+    public ResponseEntity<Map<String, Object>> handleSupplierEditRestricted(SupplierEditRestrictedException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(SupplierRemovalRestrictedException.class)
+    public ResponseEntity<Map<String, Object>> handleSupplierRemovalRestricted(SupplierRemovalRestrictedException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(NoOrderItemsException.class)
+    public ResponseEntity<Map<String, Object>> handleNoOrderItems(NoOrderItemsException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(InvalidOrderItemException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidOrderItem(InvalidOrderItemException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(InvalidDeliveryDateException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidDeliveryDate(InvalidDeliveryDateException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(InvalidStatusTransitionException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidStatusTransition(InvalidStatusTransitionException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(SupplyOrderFinalizedException.class)
+    public ResponseEntity<Map<String, Object>> handleSupplyOrderFinalized(SupplyOrderFinalizedException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(ProductVariantEditRestrictedException.class)
+    public ResponseEntity<Map<String, Object>> handleProductVariantEditRestricted(ProductVariantEditRestrictedException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(ProductVariantInUseException.class)
+    public ResponseEntity<Map<String, Object>> handleProductVariantInUse(ProductVariantInUseException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(ResourceInUseException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceInUse(ResourceInUseException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<Map<String, Object>> handleDataAccessException(DataAccessException ex) {
+        log.error("Database connection error", ex);
+        return buildResponse(HttpStatus.SERVICE_UNAVAILABLE,
+                "Unable to connect to the system. Please try again later.", null);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

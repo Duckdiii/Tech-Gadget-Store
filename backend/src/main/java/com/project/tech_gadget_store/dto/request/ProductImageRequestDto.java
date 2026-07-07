@@ -16,10 +16,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProductImageRequestDto {
 
-    @NotBlank(message = "name must not be blank")
     private String name;
     @NotBlank(message = "imageUrl must not be blank")
     private String imageUrl;
-    @NotBlank(message = "productId must not be blank")
-    private String productId;
 }

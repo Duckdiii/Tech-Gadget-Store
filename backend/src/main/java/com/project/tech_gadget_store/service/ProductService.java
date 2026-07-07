@@ -69,7 +69,7 @@ public class ProductService {
     }
 
     public ProductDetailResponseDto viewDetailProduct(String id) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("This product is no longer available"));
         List<ProductVariant> variants = productVariantRepository.findByProductId(id);
         List<BundleService> activeBundleServices = bundleServiceRepository.findByActiveTrue();
@@ -120,6 +120,7 @@ public class ProductService {
     private Specification<Product> buildSpecification(ProductFilterRequestDto f) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.isTrue(root.get("isActive")));
 
             if (hasText(f.getKeyword())) {
                 predicates.add(cb.like(cb.lower(root.get("name")),

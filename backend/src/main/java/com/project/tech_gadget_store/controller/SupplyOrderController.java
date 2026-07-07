@@ -21,7 +21,7 @@ public class SupplyOrderController {
     private final SupplyOrderService supplyOrderService;
 
     @PostMapping
-    public ResponseEntity<SupplyOrderResponseDto> createSupplyOrder(@Valid @RequestBody SupplyOrderRequestDto dto) {
+    public ResponseEntity<SupplyOrderResponseDto> createSupplyOrder(@RequestBody SupplyOrderRequestDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(supplyOrderService.createSupplyOrder(dto));
     }
 

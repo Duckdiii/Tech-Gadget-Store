@@ -18,14 +18,18 @@ public class ProductDetailResponseDto {
     private String name;
     private String description;
 
+    private String brandId;
     private String brandName;
     private String brandLogoUrl;
+    private String categoryId;
     private String categoryName;
 
     private BigDecimal minPrice;
     private boolean hasVariants;
+    private Boolean isActive;
 
     private List<String> imageUrls;
+    private List<ProductImageResponseDto> images;
     private List<ProductVariantResponseDto> variants;
     private List<BundleServiceResponseDto> bundleServices;
 

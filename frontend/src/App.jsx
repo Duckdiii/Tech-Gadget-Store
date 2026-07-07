@@ -13,6 +13,10 @@ import InventoryPage from './pages/InventoryPage'
 import RevenueReportPage from './pages/RevenueReportPage'
 import ManagerDashboardPage from './pages/ManagerDashboardPage'
 import StaffManagementPage from './pages/StaffManagementPage'
+import ProductManagementPage from './pages/ProductManagementPage'
+import BrandCategoryManagementPage from './pages/BrandCategoryManagementPage'
+import SupplierManagementPage from './pages/SupplierManagementPage'
+import SupplyOrderPage from './pages/SupplyOrderPage'
 import RecoverRestorePage from './pages/RecoverRestorePage'
 import CustomerManagementPage from './pages/CustomerManagementPage'
 import CustomerDetailPage from './pages/CustomerDetailPage'
@@ -63,6 +67,10 @@ export default function App() {
             <Route path="/revenue"             element={<RevenueReportPage />} />
             <Route path="/dashboard"            element={<ManagerDashboardPage />} />
             <Route path="/staff-management"    element={<StaffManagementPage />} />
+            <Route path="/products-management" element={<ProductManagementPage />} />
+            <Route path="/brands-categories"   element={<BrandCategoryManagementPage />} />
+            <Route path="/suppliers"           element={<SupplierManagementPage />} />
+            <Route path="/supply-orders"       element={<SupplyOrderPage />} />
             <Route path="/recover"             element={<RecoverRestorePage />} />
             <Route path="/customers"           element={<CustomerManagementPage />} />
             <Route path="/customers/detail"    element={<CustomerDetailPage />} />

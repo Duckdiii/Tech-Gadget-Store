@@ -15,6 +15,7 @@ public class SupplierResponseDto {
     private String email;
     private String address;
     private Boolean isActive;
+    private Boolean hasActiveSupplyOrders;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

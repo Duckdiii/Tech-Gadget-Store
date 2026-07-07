@@ -43,6 +43,10 @@ const PATH_SIDEBAR = {
   manager: {
     '/dashboard':         'techAdmin',
     '/staff-management':  'techAdmin',
+    '/products-management': 'techAdmin',
+    '/brands-categories':  'techAdmin',
+    '/suppliers':         'techAdmin',
+    '/supply-orders':     'techAdmin',
     '/recover':           'techAdmin',
     '/customers':         'techAdmin',
     '/customers/detail':  'techAdmin',
@@ -62,6 +66,7 @@ const PATH_SIDEBAR = {
     '/staff/history': 'staffPanel',
     '/staff/orders':  'staffPanel',
     '/staff/profile': 'staffPanel',
+    '/supply-orders': 'staffPanel',
   },
 }
 

@@ -12,11 +12,11 @@ export const ROLE_PAGES = {
   ]),
   manager: new Set([
     'home', 'managerDashboard', 'customerManagement', 'customerDetail', 'promotionSettings',
-    'systemConfig', 'staffManagement', 'recoverRestore', 'revenueReport', 'accountManagement',
+    'systemConfig', 'staffManagement', 'productManagement', 'brandCategoryManagement', 'supplierManagement', 'supplyOrders', 'recoverRestore', 'revenueReport', 'accountManagement',
     'orderHistory', 'invoice', 'inventory', 'importStock',
   ]),
   staff: new Set([
-    'home', 'staffDashboard', 'staffImport', 'staffExport', 'staffHistory', 'staffOrders', 'staffProfile',
+    'home', 'staffDashboard', 'staffImport', 'staffExport', 'staffHistory', 'staffOrders', 'staffProfile', 'supplyOrders',
   ]),
 }
 

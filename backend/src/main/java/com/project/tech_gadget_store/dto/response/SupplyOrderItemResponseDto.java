@@ -11,6 +11,8 @@ public class SupplyOrderItemResponseDto {
 
     private String id;
     private String productVariantId;
+    private String productName;
+    private String variantLabel;
     private Integer quantity;
     private BigDecimal unitPrice;
     private BigDecimal lineTotal;

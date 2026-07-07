@@ -13,8 +13,6 @@ public interface PaymentLogRepository extends JpaRepository<PaymentLog, String> 
     @Query("SELECT p FROM PaymentLog p WHERE p.order.id = :orderId ORDER BY p.createdAt DESC")
     List<PaymentLog> findByOrderIdOrderByCreatedAtDesc(String orderId);
 
-    Optional<PaymentLog> findByTransactionId(String transactionId);
-
     @Query("SELECT p FROM PaymentLog p WHERE p.order.id = :orderId AND p.status = :status ORDER BY p.createdAt DESC")
     Optional<PaymentLog> findFirstByOrderIdAndStatus(String orderId, PaymentLogStatus status);
 }

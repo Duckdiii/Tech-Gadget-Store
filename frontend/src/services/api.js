@@ -11,8 +11,15 @@ export async function apiFetch(path, options = {}) {
     },
   })
   if (!res.ok) {
-    const err = await res.text().catch(() => `HTTP ${res.status}`)
-    throw new Error(err)
+    const text = await res.text().catch(() => '')
+    let message = text || `HTTP ${res.status}`
+    try {
+      const parsed = JSON.parse(text)
+      if (parsed && parsed.message) message = parsed.message
+    } catch {
+      // response body wasn't JSON — fall back to raw text
+    }
+    throw new Error(message)
   }
   if (res.status === 204) return null
   return res.json()

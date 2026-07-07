@@ -33,6 +33,9 @@ public class SupplyOrder extends BaseEntity {
     @Column(name = "order_date", nullable = false)
     private LocalDate orderDate;
 
+    @Column(name = "expected_delivery_date")
+    private LocalDate expectedDeliveryDate;
+
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 

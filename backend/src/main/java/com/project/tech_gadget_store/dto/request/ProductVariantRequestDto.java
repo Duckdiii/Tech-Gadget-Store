@@ -17,8 +17,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProductVariantRequestDto {
 
-    @NotBlank(message = "productId must not be blank")
-    private String productId;
     @NotNull(message = "ramGb must not be null")
     @Positive(message = "ramGb must be positive")
     private Integer ramGb;

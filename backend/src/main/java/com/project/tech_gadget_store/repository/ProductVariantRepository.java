@@ -6,13 +6,31 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductVariantRepository extends JpaRepository<ProductVariant, String> {
 
         List<ProductVariant> findByProductId(String productId);
 
+        Optional<ProductVariant> findByIdAndProductId(String id, String productId);
+
         boolean existsByProductIdAndRamGbAndStorageGbAndColorIgnoreCase(
                         String productId, Integer ramGb, Integer storageGb, String color);
+
+        boolean existsByProductIdAndRamGbAndStorageGbAndColorIgnoreCaseAndIdNot(
+                        String productId, Integer ramGb, Integer storageGb, String color, String id);
+
+        @Query("SELECT CASE WHEN COUNT(oi) > 0 THEN true ELSE false END FROM OrderItem oi WHERE oi.productVariant.id = :variantId")
+        boolean existsInOrderItems(@Param("variantId") String variantId);
+
+        @Query("SELECT CASE WHEN COUNT(eli) > 0 THEN true ELSE false END FROM ExportLogItem eli WHERE eli.productVariant.id = :variantId")
+        boolean existsInExportLogItems(@Param("variantId") String variantId);
+
+        @Query("SELECT CASE WHEN COUNT(ili) > 0 THEN true ELSE false END FROM ImportLogItem ili WHERE ili.productVariant.id = :variantId")
+        boolean existsInImportLogItems(@Param("variantId") String variantId);
+
+        @Query("SELECT CASE WHEN COUNT(soi) > 0 THEN true ELSE false END FROM SupplyOrderItem soi WHERE soi.product.id = :variantId")
+        boolean existsInSupplyOrderItems(@Param("variantId") String variantId);
 
         @Query("SELECT pv FROM ProductVariant pv " +
                         "WHERE pv.product.id = :productId " +

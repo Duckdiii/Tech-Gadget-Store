@@ -23,4 +23,14 @@ public class ProductRequestDto {
     private String brandId;
     @NotBlank(message = "categoryId must not be blank")
     private String categoryId;
+
+    private Double screenSize;
+    private String rearCamera;
+    private String frontCamera;
+    private String chipset;
+    private Boolean nfcSupported;
+    private Integer batteryCapacity;
+    private String simType;
+    private String operatingSystem;
+    private String screenResolution;
 }
