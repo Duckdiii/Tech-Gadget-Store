@@ -1,5 +1,7 @@
 package com.project.tech_gadget_store.service;
 
+import com.project.tech_gadget_store.entity.InvalidatedToken;
+import com.project.tech_gadget_store.repository.InvalidatedTokenRepository;
 import com.project.tech_gadget_store.security.AccountUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -7,8 +9,11 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKey;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Service
@@ -16,12 +21,15 @@ public class JwtService {
 
     private final SecretKey key;
     private final long expirationMs;
+    private final InvalidatedTokenRepository invalidatedTokenRepository;
 
     public JwtService(
             @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.expiration-ms}") long expirationMs) {
+            @Value("${app.jwt.expiration-ms}") long expirationMs,
+            InvalidatedTokenRepository invalidatedTokenRepository) {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.expirationMs = expirationMs;
+        this.invalidatedTokenRepository = invalidatedTokenRepository;
     }
 
     public String generateToken(AccountUserDetails details) {
@@ -43,11 +51,40 @@ public class JwtService {
         return parseClaims(token).get("role", String.class);
     }
 
+    public Date extractExpiration(String token) {
+        return parseClaims(token).getExpiration();
+    }
+
     public boolean isTokenValid(String token) {
         try {
+            if (invalidatedTokenRepository.existsByToken(token)) {
+                return false;
+            }
             return parseClaims(token).getExpiration().after(new Date());
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    @Transactional
+    public void invalidateToken(String token) {
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        try {
+            Date expiry = extractExpiration(token);
+            LocalDateTime expiryTime = expiry.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+
+            if (!invalidatedTokenRepository.existsByToken(token)) {
+                InvalidatedToken invalidatedToken = new InvalidatedToken(token, expiryTime);
+                invalidatedTokenRepository.save(invalidatedToken);
+            }
+        } catch (Exception e) {
+            LocalDateTime defaultExpiry = LocalDateTime.now().plusHours(24);
+            InvalidatedToken invalidatedToken = new InvalidatedToken(token, defaultExpiry);
+            invalidatedTokenRepository.save(invalidatedToken);
         }
     }
 

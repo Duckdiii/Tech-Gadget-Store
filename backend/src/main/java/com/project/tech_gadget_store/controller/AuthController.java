@@ -73,4 +73,14 @@ public class AuthController {
         authService.resetPassword(req);
         return ResponseEntity.ok(Map.of("message", "Mật khẩu đã được cập nhật thành công."));
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(jakarta.servlet.http.HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            jwtService.invalidateToken(token);
+        }
+        return ResponseEntity.ok(Map.of("message", "Đã đăng xuất thành công."));
+    }
 }

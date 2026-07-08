@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo, useState } from 'react'
+import { apiFetch } from '../services/api'
 
 const AuthContext = createContext(null)
 
@@ -45,6 +46,10 @@ export function AuthProvider({ children }) {
   }
 
   const logout = () => {
+    const token = localStorage.getItem(TOKEN_KEY)
+    if (token) {
+      apiFetch('/api/auth/logout', { method: 'POST' }).catch(err => console.error('Logout error:', err))
+    }
     setUser(null)
     localStorage.removeItem(USER_KEY)
     localStorage.removeItem(TOKEN_KEY)
