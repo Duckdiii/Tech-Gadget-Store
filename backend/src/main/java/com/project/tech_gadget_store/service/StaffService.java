@@ -1,6 +1,7 @@
 package com.project.tech_gadget_store.service;
 
 import com.project.tech_gadget_store.dto.request.StaffRequestDto;
+import com.project.tech_gadget_store.dto.request.UpdateStaffRequestDto;
 import com.project.tech_gadget_store.dto.response.StaffResponseDto;
 import com.project.tech_gadget_store.entity.Account;
 import com.project.tech_gadget_store.entity.Staff;
@@ -10,6 +11,7 @@ import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.repository.AccountRepository;
 import com.project.tech_gadget_store.repository.StaffRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +24,16 @@ public class StaffService {
     private final StaffRepository staffRepository;
     private final AccountRepository accountRepository;
     private final AccountService accountService;
+    private final PasswordEncoder passwordEncoder;
 
     public StaffService(StaffRepository staffRepository,
             AccountRepository accountRepository,
-            AccountService accountService) {
+            AccountService accountService,
+            PasswordEncoder passwordEncoder) {
         this.staffRepository = staffRepository;
         this.accountRepository = accountRepository;
         this.accountService = accountService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<StaffResponseDto> getAllStaff() {
@@ -90,5 +95,48 @@ public class StaffService {
 
         log.info("Action: {} | staffId: {} | staffCode: {}", AuditAction.DELETE_STAFF, staffId, staff.getStaffCode());
         staffRepository.delete(staff);
+     }
+
+    @Transactional
+    public StaffResponseDto updateStaff(String staffId, UpdateStaffRequestDto dto) {
+        Staff staff = staffRepository.findById(staffId)
+                .orElseThrow(() -> new ResourceNotFoundException("Staff not found"));
+
+        if (!staff.getStaffCode().equals(dto.getStaffCode()) && staffRepository.existsByStaffCode(dto.getStaffCode())) {
+            throw new DuplicateResourceException("Staff code already exists");
+        }
+
+        Account account = staff.getAccount();
+        if (account != null) {
+            if (!account.getEmail().equalsIgnoreCase(dto.getEmail()) && accountRepository.existsByEmail(dto.getEmail())) {
+                throw new DuplicateResourceException("Email already exists");
+            }
+            account.setEmail(dto.getEmail());
+            if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+                if (dto.getPassword().length() < 6) {
+                    throw new IllegalArgumentException("Password must be at least 6 characters");
+                }
+                account.setPassword(passwordEncoder.encode(dto.getPassword()));
+            }
+            accountRepository.save(account);
+        }
+
+        staff.setFullName(dto.getFullName());
+        staff.setPhone(dto.getPhone());
+        staff.setStaffCode(dto.getStaffCode());
+        staff.setHireDate(dto.getHireDate());
+        staffRepository.save(staff);
+
+        return StaffResponseDto.builder()
+                .id(staff.getId())
+                .createdAt(staff.getCreatedAt())
+                .updatedAt(staff.getUpdatedAt())
+                .fullName(staff.getFullName())
+                .phone(staff.getPhone())
+                .staffCode(staff.getStaffCode())
+                .hireDate(staff.getHireDate())
+                .email(account != null ? account.getEmail() : null)
+                .accountId(account != null ? account.getId() : null)
+                .build();
     }
 }

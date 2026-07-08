@@ -1,6 +1,7 @@
 package com.project.tech_gadget_store.controller;
 
 import com.project.tech_gadget_store.dto.request.StaffRequestDto;
+import com.project.tech_gadget_store.dto.request.UpdateStaffRequestDto;
 import com.project.tech_gadget_store.dto.response.StaffResponseDto;
 import com.project.tech_gadget_store.service.StaffService;
 import jakarta.validation.Valid;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,5 +42,12 @@ public class StaffController {
     public ResponseEntity<Void> deleteStaff(@PathVariable String staffId) {
         staffService.deleteStaff(staffId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{staffId}")
+    public ResponseEntity<StaffResponseDto> updateStaff(
+            @PathVariable String staffId,
+            @Valid @RequestBody UpdateStaffRequestDto dto) {
+        return ResponseEntity.ok(staffService.updateStaff(staffId, dto));
     }
 }

@@ -18,6 +18,7 @@ function normalizeStaff(dto, index) {
     email:      dto.email || '—',
     phone:      dto.phone || '—',
     staffCode:  dto.staffCode || '—',
+    hireDate:   dto.hireDate || '',
     joinDate:   dto.hireDate ? new Date(dto.hireDate).toLocaleDateString('vi-VN') : '—',
     lastLogin:  '—',
     status:     'active',
@@ -66,6 +67,7 @@ function StaffListTab() {
   const [form, setForm]                 = useState(EMPTY_FORM)
   const [formErrors, setFormErrors]     = useState({})
   const [toast, setToast]               = useState(null)
+  const [isEditing, setIsEditing]       = useState(false)
 
   useEffect(() => {
     apiFetch('/api/manager/staff')
@@ -85,8 +87,8 @@ function StaffListTab() {
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(null), 2800) }
   function openAdd()      { setForm(EMPTY_FORM); setFormErrors({}); setPanel('add') }
-  function openDetail(id) { setPanel(id) }
-  function closePanel()   { setPanel(null) }
+  function openDetail(id) { setPanel(id); setIsEditing(false) }
+  function closePanel()   { setPanel(null); setIsEditing(false) }
 
   async function handleAdd() {
     const e = {}
@@ -113,6 +115,56 @@ function StaffListTab() {
       setStaff(p => [newEntry, ...p])
       closePanel()
       showToast(`Đã thêm nhân viên ${form.name.trim()}`)
+    } catch (err) {
+      showToast(`Lỗi: ${err.message}`)
+    }
+  }
+
+  function openEdit() {
+    if (!selectedStaff) return
+    setForm({
+      name: selectedStaff.name,
+      email: selectedStaff.email,
+      phone: selectedStaff.phone,
+      staffCode: selectedStaff.staffCode,
+      hireDate: selectedStaff.hireDate,
+      password: ''
+    })
+    setFormErrors({})
+    setIsEditing(true)
+  }
+
+  async function handleUpdate(id) {
+    const e = {}
+    if (!form.name.trim())       e.name      = 'Vui lòng nhập họ tên'
+    if (!form.email.trim())      e.email     = 'Vui lòng nhập email'
+    if (!form.phone.trim())      e.phone     = 'Vui lòng nhập số điện thoại'
+    if (!form.staffCode.trim())  e.staffCode = 'Vui lòng nhập mã nhân viên'
+    if (!form.hireDate)          e.hireDate  = 'Vui lòng chọn ngày vào làm'
+    if (form.password.trim() && form.password.trim().length < 6) {
+      e.password = 'Mật khẩu phải từ 6 ký tự trở lên'
+    }
+    if (Object.keys(e).length) { setFormErrors(e); return }
+
+    const payload = {
+      fullName:  form.name.trim(),
+      email:     form.email.trim(),
+      phone:     form.phone.replace(/\s/g, ''),
+      staffCode: form.staffCode.trim(),
+      hireDate:  form.hireDate,
+      password:  form.password.trim() || null,
+    }
+
+    try {
+      const dto = await apiFetch(`/api/manager/staff/${id}`, { 
+        method: 'PUT', 
+        body: JSON.stringify(payload) 
+      })
+      const index = staff.findIndex(s => s.id === id)
+      const updatedEntry = normalizeStaff(dto, index >= 0 ? index : 0)
+      setStaff(p => p.map(s => s.id === id ? updatedEntry : s))
+      setIsEditing(false)
+      showToast(`Đã cập nhật nhân viên ${form.name.trim()}`)
     } catch (err) {
       showToast(`Lỗi: ${err.message}`)
     }
@@ -259,18 +311,46 @@ function StaffListTab() {
               </div>
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto px-6 py-5">
-            <InfoRow label="Số điện thoại"  value={selectedStaff.phone} />
-            <InfoRow label="Mã nhân viên"    value={selectedStaff.staffCode} />
-            <InfoRow label="Ngày vào làm"    value={selectedStaff.joinDate} />
-            <InfoRow label="Đăng nhập gần đây" value={selectedStaff.lastLogin} />
-          </div>
-          <div className="px-6 py-4 border-t border-gray-100 flex gap-2">
-            <button onClick={() => setDeleteId(selectedStaff.id)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-red-200 rounded text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              Xoá nhân viên
-            </button>
-          </div>
+          
+          {isEditing ? (
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+              <Field label="Họ và tên *" error={formErrors.name}><input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="Nguyễn Văn A" className={inp} /></Field>
+              <Field label="Email *" error={formErrors.email}><input value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} placeholder="email@techstore.vn" type="email" className={inp} /></Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Số điện thoại *" error={formErrors.phone}><input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} placeholder="0912345678" className={inp} /></Field>
+                <Field label="Mã nhân viên *" error={formErrors.staffCode}><input value={form.staffCode} onChange={e => setForm(f=>({...f,staffCode:e.target.value}))} placeholder="NV001" className={inp} /></Field>
+              </div>
+              <Field label="Ngày vào làm *" error={formErrors.hireDate}><input type="date" value={form.hireDate} onChange={e => setForm(f=>({...f,hireDate:e.target.value}))} className={inp} /></Field>
+              <Field label="Mật khẩu (để trống nếu không đổi)" error={formErrors.password}>
+                <input value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))} placeholder="••••••••" type="text" className={inp} />
+              </Field>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <InfoRow label="Số điện thoại"  value={selectedStaff.phone} />
+              <InfoRow label="Mã nhân viên"    value={selectedStaff.staffCode} />
+              <InfoRow label="Ngày vào làm"    value={selectedStaff.joinDate} />
+              <InfoRow label="Đăng nhập gần đây" value={selectedStaff.lastLogin} />
+            </div>
+          )}
+
+          {isEditing ? (
+            <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
+              <button onClick={() => setIsEditing(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
+              <button onClick={() => handleUpdate(selectedStaff.id)} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors">Lưu thay đổi</button>
+            </div>
+          ) : (
+            <div className="px-6 py-4 border-t border-gray-100 flex gap-2">
+              <button onClick={openEdit} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                Chỉnh sửa
+              </button>
+              <button onClick={() => setDeleteId(selectedStaff.id)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-red-200 rounded text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                Xoá nhân viên
+              </button>
+            </div>
+          )}
         </div>
       )}
 
