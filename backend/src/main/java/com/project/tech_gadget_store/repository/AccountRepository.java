@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, String> {
     Optional<Account> findByEmail(String email);
 
+    Optional<Account> findByResetToken(String resetToken);
+
     boolean existsByEmail(String email);
 
     @Query("SELECT a FROM Account a WHERE TYPE(a.user) IN (Manager, Staff) AND a.status = :status")

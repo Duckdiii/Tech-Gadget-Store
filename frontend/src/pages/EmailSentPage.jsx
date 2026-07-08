@@ -1,7 +1,37 @@
+import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useNav } from '../hooks/useNav'
 
 export default function EmailSentPage() {
   const onNavigate = useNav()
+  const location = useLocation()
+  const email = location.state?.email || 'email của bạn'
+
+  const [resending, setResending] = useState(false)
+  const [resendMessage, setResendMessage] = useState('')
+
+  const handleResend = async () => {
+    if (!email || email === 'email của bạn') return
+    setResending(true)
+    setResendMessage('')
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.toLowerCase() }),
+      })
+      if (res.ok) {
+        setResendMessage('Đã gửi lại email thành công!')
+      } else {
+        setResendMessage('Gửi lại thất bại. Vui lòng thử lại.')
+      }
+    } catch {
+      setResendMessage('Lỗi kết nối.')
+    } finally {
+      setResending(false)
+    }
+  }
+
   return (
     <div
       className="flex-1 flex flex-col items-center justify-center px-4 py-12"
@@ -33,7 +63,7 @@ export default function EmailSentPage() {
         {/* Description */}
         <p className="text-sm text-gray-500 text-center leading-relaxed mb-7 px-1">
           Chúng tôi đã gửi hướng dẫn khôi phục mật khẩu đến địa chỉ email{' '}
-          <strong className="text-gray-800 font-semibold">admin@techstore.com</strong>.
+          <strong className="text-gray-800 font-semibold">{email}</strong>.
           {' '}Vui lòng kiểm tra hộp thư đến (hoặc thư rác) và làm theo hướng dẫn.
         </p>
 
@@ -48,16 +78,26 @@ export default function EmailSentPage() {
         </button>
 
         {/* Resend */}
-        <p className="text-sm text-gray-500 text-center">
-          Bạn không nhận được email?{' '}
-          <button className="hover:underline font-bold cursor-pointer transition-colors"
-            style={{ color: 'var(--accent)' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-d)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--accent)'}
-          >
-            Gửi lại
-          </button>
-        </p>
+        <div className="text-center">
+          <p className="text-sm text-gray-500">
+            Bạn không nhận được email?{' '}
+            <button
+              onClick={handleResend}
+              disabled={resending}
+              className="hover:underline font-bold cursor-pointer transition-colors disabled:opacity-50"
+              style={{ color: 'var(--accent)' }}
+              onMouseEnter={e => !resending && (e.currentTarget.style.color = 'var(--accent-d)')}
+              onMouseLeave={e => !resending && (e.currentTarget.style.color = 'var(--accent)')}
+            >
+              {resending ? 'Đang gửi...' : 'Gửi lại'}
+            </button>
+          </p>
+          {resendMessage && (
+            <p className="text-xs mt-2 text-gray-600 font-medium">
+              {resendMessage}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* ── Footer links ── */}

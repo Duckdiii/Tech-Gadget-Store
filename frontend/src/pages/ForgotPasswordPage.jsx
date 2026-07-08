@@ -4,6 +4,40 @@ import { useNav } from '../hooks/useNav'
 export default function ForgotPasswordPage() {
   const onNavigate = useNav()
   const [email, setEmail] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!email.trim()) {
+      setError('Vui lòng nhập email.')
+      return
+    }
+    setError('')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.message || `Lỗi server (${res.status}).`)
+        return
+      }
+      onNavigate('emailSent', { state: { email: email.trim() } })
+    } catch {
+      setError('Không kết nối được server. Vui lòng thử lại.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSubmit()
+    }
+  }
 
   return (
     <div
@@ -37,6 +71,13 @@ export default function ForgotPasswordPage() {
           liên kết khôi phục mật khẩu.
         </p>
 
+        {/* Error message */}
+        {error && (
+          <div className="text-red-500 text-sm text-center mb-4 font-medium bg-red-50 p-2.5 rounded-xl border border-red-100">
+            {error}
+          </div>
+        )}
+
         {/* Email field */}
         <div className="mb-5">
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
@@ -51,20 +92,24 @@ export default function ForgotPasswordPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={loading}
               placeholder="admin@techstore.com"
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition disabled:opacity-50"
             />
           </div>
         </div>
 
         {/* Submit button */}
-        <button onClick={() => onNavigate('emailSent')}
-          className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer mb-5 tracking-wide"
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer mb-5 tracking-wide disabled:opacity-50"
           style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+          onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = 'var(--accent-d)')}
+          onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = 'var(--accent)')}
         >
-          Gửi yêu cầu khôi phục
+          {loading ? 'Đang gửi...' : 'Gửi yêu cầu khôi phục'}
         </button>
 
         {/* Back to login */}

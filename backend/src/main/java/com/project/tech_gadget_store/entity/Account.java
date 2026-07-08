@@ -30,6 +30,12 @@ public class Account extends BaseEntity {
         @Column(name = "status", nullable = false, length = 30)
         private AccountStatus status = AccountStatus.ACTIVE;
 
+        @Column(name = "reset_token", length = 255)
+        private String resetToken;
+
+        @Column(name = "reset_token_expiry")
+        private java.time.LocalDateTime resetTokenExpiry;
+
         @OneToOne(fetch = FetchType.LAZY, optional = false)
         @JoinColumn(name = "user_id", nullable = false, unique = true)
         private User user;

@@ -1,7 +1,9 @@
 package com.project.tech_gadget_store.controller;
 
+import com.project.tech_gadget_store.dto.request.ForgotPasswordRequestDto;
 import com.project.tech_gadget_store.dto.request.LoginRequestDto;
 import com.project.tech_gadget_store.dto.request.RegisterRequestDto;
+import com.project.tech_gadget_store.dto.request.ResetPasswordRequestDto;
 import com.project.tech_gadget_store.dto.response.LoginResponseDto;
 import com.project.tech_gadget_store.security.AccountUserDetails;
 import com.project.tech_gadget_store.service.AuthService;
@@ -58,5 +60,17 @@ public class AuthController {
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDto req) {
         LoginResponseDto response = authService.register(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDto req) {
+        authService.forgotPassword(req);
+        return ResponseEntity.ok(Map.of("message", "Đã gửi liên kết khôi phục mật khẩu đến email của bạn."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequestDto req) {
+        authService.resetPassword(req);
+        return ResponseEntity.ok(Map.of("message", "Mật khẩu đã được cập nhật thành công."));
     }
 }
