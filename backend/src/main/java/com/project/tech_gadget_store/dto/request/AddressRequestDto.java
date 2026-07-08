@@ -23,6 +23,11 @@ public class AddressRequestDto {
     private String district;
     @NotBlank(message = "province must not be blank")
     private String province;
-    @NotBlank(message = "userId must not be blank")
+
     private String userId;
+
+    private String name;
+    private String phone;
+    private String type;
+    private Boolean isDefault;
 }

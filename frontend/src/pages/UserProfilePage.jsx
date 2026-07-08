@@ -1554,50 +1554,112 @@ function AddressModal({ initial, onClose, onSave }) {
   )
 }
 
-function AddressSection() {
-  const [addresses, setAddresses]   = useState(ADDRESSES_INIT)
+function AddressSection({ profile }) {
+  const [addresses, setAddresses]   = useState([])
   const [modal, setModal]           = useState(null)   // null | 'add' | { editId }
   const [deletingId, setDeletingId] = useState(null)
   const [toast, setToast]           = useState('')
+  const [loading, setLoading]       = useState(true)
 
   const showToast = (msg) => {
     setToast(msg)
     setTimeout(() => setToast(''), 2200)
   }
 
-  const handleSave = (form) => {
-    if (modal === 'add') {
-      const newAddr = { ...form, id: Date.now(), isDefault: form.isDefault || addresses.length === 0 }
-      setAddresses(prev => {
-        const list = form.isDefault ? prev.map(a => ({ ...a, isDefault: false })) : prev
-        return [...list, newAddr]
+  const fetchAddresses = () => {
+    setLoading(true)
+    apiFetch('/api/customer/addresses')
+      .then(data => {
+        const mapped = data.map(addr => ({
+          id: addr.id,
+          name: addr.name || profile?.fullName || '',
+          phone: addr.phone || profile?.phone || '',
+          province: addr.province,
+          district: addr.district,
+          ward: addr.ward,
+          detail: addr.street,
+          type: addr.type || 'home',
+          isDefault: addr.isDefault,
+        }))
+        setAddresses(mapped)
       })
-      showToast('Thêm địa chỉ thành công!')
-    } else {
-      setAddresses(prev => {
-        let list = form.isDefault ? prev.map(a => ({ ...a, isDefault: false })) : prev
-        return list.map(a => a.id === modal.editId ? { ...form, id: a.id } : a)
-      })
-      showToast('Cập nhật địa chỉ thành công!')
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchAddresses()
+  }, [profile])
+
+  const handleSave = async (form) => {
+    const payload = {
+      street: form.detail,
+      ward: form.ward,
+      district: form.district,
+      province: form.province,
+      name: form.name,
+      phone: form.phone,
+      type: form.type,
+      isDefault: form.isDefault,
     }
-    setModal(null)
-  }
 
-  const handleDelete = (id) => {
-    setAddresses(prev => {
-      const remaining = prev.filter(a => a.id !== id)
-      if (remaining.length > 0 && !remaining.some(a => a.isDefault)) {
-        remaining[0].isDefault = true
+    try {
+      if (modal === 'add') {
+        await apiFetch('/api/customer/addresses', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        })
+        showToast('Thêm địa chỉ thành công!')
+      } else {
+        await apiFetch(`/api/customer/addresses/${modal.editId}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        })
+        showToast('Cập nhật địa chỉ thành công!')
       }
-      return remaining
-    })
-    setDeletingId(null)
-    showToast('Đã xoá địa chỉ.')
+      fetchAddresses()
+      setModal(null)
+    } catch (err) {
+      alert(err.message || 'Không thể lưu địa chỉ')
+    }
   }
 
-  const handleSetDefault = (id) => {
-    setAddresses(prev => prev.map(a => ({ ...a, isDefault: a.id === id })))
-    showToast('Đã đặt làm địa chỉ mặc định!')
+  const handleDelete = async (id) => {
+    try {
+      await apiFetch(`/api/customer/addresses/${id}`, {
+        method: 'DELETE',
+      })
+      showToast('Đã xoá địa chỉ.')
+      fetchAddresses()
+    } catch (err) {
+      alert(err.message || 'Không thể xoá địa chỉ')
+    }
+    setDeletingId(null)
+  }
+
+  const handleSetDefault = async (id) => {
+    const target = addresses.find(a => a.id === id)
+    if (!target) return
+    const payload = {
+      street: target.detail,
+      ward: target.ward,
+      district: target.district,
+      province: target.province,
+      name: target.name,
+      phone: target.phone,
+      type: target.type,
+      isDefault: true,
+    }
+    try {
+      await apiFetch(`/api/customer/addresses/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      })
+      showToast('Đã đặt làm địa chỉ mặc định!')
+      fetchAddresses()
+    } catch (err) {
+      alert(err.message || 'Không thể đặt địa chỉ mặc định')
+    }
   }
 
   const typeInfo = {
@@ -1785,16 +1847,16 @@ function Field({ label, value, editing, children, verified }) {
   )
 }
 
-function AccountSection() {
+function AccountSection({ profile, onProfileUpdate }) {
   const fileRef = useRef(null)
   const [avatarSrc, setAvatarSrc] = useState(null)
 
   /* ── Personal info state ──────────────────────────────────── */
   const INIT = {
-    firstName: 'Alex',
-    lastName:  'Johnson',
-    phone:     '0961234535',
-    email:     'alex@example.com',
+    firstName: '',
+    lastName:  '',
+    phone:     '',
+    email:     '',
     dob:       '1998-06-01',
     gender:    'male',
     bio:       '',
@@ -1804,11 +1866,40 @@ function AccountSection() {
   const [editing, setEditing] = useState(false)
   const [saved, setSaved]     = useState(false)
 
-  const handleSave = () => {
-    setInfo(draft)
-    setEditing(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
+  useEffect(() => {
+    if (profile) {
+      const parts = (profile.fullName || '').trim().split(/\s+/)
+      const lastName = parts.pop() || ''
+      const firstName = parts.join(' ')
+      const newInit = {
+        firstName,
+        lastName,
+        phone: profile.phone || '',
+        email: profile.email || '',
+        dob: '1998-06-01',
+        gender: 'male',
+        bio: '',
+      }
+      setInfo(newInit)
+      setDraft(newInit)
+    }
+  }, [profile])
+
+  const handleSave = async () => {
+    const fullName = `${draft.firstName} ${draft.lastName}`.trim()
+    try {
+      const res = await apiFetch('/api/customer/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ fullName, phone: draft.phone }),
+      })
+      setInfo(draft)
+      setEditing(false)
+      setSaved(true)
+      if (onProfileUpdate) onProfileUpdate()
+      setTimeout(() => setSaved(false), 2500)
+    } catch (err) {
+      alert(err.message || 'Không thể lưu thông tin cá nhân')
+    }
   }
   const handleCancel = () => {
     setDraft(info)
@@ -2622,7 +2713,8 @@ function ProductThumb({ category }) {
 }
 
 function WishlistSection() {
-  const [items, setItems] = useState(() => WISHLIST_DATA)
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
   const [sort, setSort] = useState('newest')
   const [view, setView] = useState('grid')
   const [toast, setToast] = useState('')
@@ -2632,26 +2724,63 @@ function WishlistSection() {
   const fmt = (n) => n.toLocaleString('vi-VN') + '₫'
   const getDiscount = (item) => item.original ? Math.round((1 - item.price / item.original) * 100) : 0
 
-  const removeItem = (id) => {
-    setRemoving(id)
-    setTimeout(() => {
-      setItems(prev => prev.filter(p => p.id !== id))
-      setRemoving(null)
-      showToast('Đã xóa khỏi danh sách yêu thích')
-    }, 280)
+  const fetchFavorites = () => {
+    setLoading(true)
+    apiFetch('/api/customer/favorites')
+      .then(data => {
+        setItems(data.items || [])
+      })
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false))
   }
 
-  const sorted = [...items].sort((a, b) => {
+  useEffect(() => {
+    fetchFavorites()
+  }, [])
+
+  const removeItem = async (productId) => {
+    setRemoving(productId)
+    try {
+      await apiFetch(`/api/customer/products/${productId}/favorite`, {
+        method: 'POST',
+      })
+      showToast('Đã xóa khỏi danh sách yêu thích')
+      fetchFavorites()
+    } catch (err) {
+      alert(err.message || 'Không thể xóa sản phẩm yêu thích')
+    }
+    setRemoving(null)
+  }
+
+  const mappedItems = items.map(item => ({
+    id: item.productId,
+    productId: item.productId,
+    name: `${item.productName} ${item.ramGb ? `(${item.ramGb}GB RAM / ${item.storageGb}GB)` : ''}`,
+    brand: 'TechGadget',
+    category: 'Sản phẩm',
+    price: item.price || 0,
+    original: (item.price || 0) * 1.15,
+    stock: 'in_stock',
+    rating: 4.8,
+    reviews: 124,
+    imageUrl: item.imageUrl,
+  }))
+
+  const sorted = [...mappedItems].sort((a, b) => {
     if (sort === 'price_asc')  return a.price - b.price
     if (sort === 'price_desc') return b.price - a.price
     if (sort === 'discount')   return getDiscount(b) - getDiscount(a)
-    return b.id - a.id
+    return 1
   })
 
   const StockBadge = ({ stock }) => {
     const map = { in_stock: ['bg-green-500', 'text-green-600', 'Còn hàng'], low: ['bg-orange-400', 'text-orange-600', 'Sắp hết'], out: ['bg-red-400', 'text-red-600', 'Hết hàng'] }
     const [dot, text, label] = map[stock] || map.in_stock
     return <span className="flex items-center gap-1"><span className={`w-1.5 h-1.5 rounded-full ${dot}`} /><span className={`text-[11px] font-medium ${text}`}>{label}</span></span>
+  }
+
+  if (loading) {
+    return <div className="bg-white rounded border border-gray-200 py-16 text-center text-gray-400 text-sm">Đang tải danh sách yêu thích...</div>
   }
 
   return (
@@ -2720,7 +2849,11 @@ function WishlistSection() {
                     className={`border border-gray-100 rounded overflow-hidden hover:border-[#E8420A]/30 hover:shadow-md transition-all duration-300 ${removing === item.id ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
                     {/* Thumb */}
                     <div className="relative aspect-[4/3]">
-                      <ProductThumb category={item.category} />
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <ProductThumb category={item.category} />
+                      )}
                       {disc > 0 && (
                         <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">-{disc}%</span>
                       )}
@@ -2765,7 +2898,11 @@ function WishlistSection() {
                     className={`flex gap-4 border border-gray-100 rounded p-4 hover:border-[#E8420A]/30 hover:shadow-sm transition-all duration-300 ${removing === item.id ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0'}`}>
                     {/* Thumb */}
                     <div className="w-24 h-24 rounded overflow-hidden shrink-0 relative">
-                      <ProductThumb category={item.category} />
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <ProductThumb category={item.category} />
+                      )}
                       {disc > 0 && <span className="absolute top-1 left-1 bg-red-500 text-white text-[9px] font-bold px-1 py-0.5 rounded">-{disc}%</span>}
                     </div>
                     {/* Info */}
@@ -2920,13 +3057,15 @@ function OverviewSection({ banners, onDismiss, onNavigate }) {
   )
 }
 
-function OrdersSection({ onNavigate }) {
+function OrdersSection({ orders = [], onNavigate }) {
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
 
-  const filtered = ALL_ORDERS.filter(o => {
-    const matchTab = activeTab === 'all' || o.status === activeTab
-    const matchSearch = o.id.toLowerCase().includes(search.toLowerCase()) || o.product.toLowerCase().includes(search.toLowerCase())
+  const filtered = orders.filter(o => {
+    const statusLower = o.orderStatus ? o.orderStatus.toLowerCase() : 'pending'
+    const matchTab = activeTab === 'all' || statusLower === activeTab
+    const firstItemName = o.items && o.items.length > 0 ? o.items[0].productName : ''
+    const matchSearch = o.id.toLowerCase().includes(search.toLowerCase()) || firstItemName.toLowerCase().includes(search.toLowerCase())
     return matchTab && matchSearch
   })
 
@@ -2952,16 +3091,6 @@ function OrdersSection({ onNavigate }) {
       {/* Search & date bar */}
       <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100 bg-gray-50/60">
         <span className="text-sm font-semibold text-gray-700 shrink-0">Lịch sử mua hàng</span>
-        <div className="flex items-center gap-2 border border-gray-300 rounded px-3 py-2 bg-white text-sm text-gray-600 shadow-sm">
-          <span>01/01/2025</span>
-          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
-          <span>09/06/2026</span>
-          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </div>
         <div className="flex-1 relative">
           <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -2980,15 +3109,23 @@ function OrdersSection({ onNavigate }) {
       {filtered.length > 0 ? (
         <div className="divide-y divide-gray-100">
           {filtered.map(order => {
-            const st = ORDER_STATUS[order.status]
+            const statusLower = order.orderStatus ? order.orderStatus.toLowerCase() : 'pending'
+            const st = ORDER_STATUS[statusLower] || ORDER_STATUS.pending
+            const firstItem = order.items && order.items.length > 0 ? order.items[0] : null
+            const dateStr = order.orderDate ? new Date(order.orderDate).toLocaleDateString('vi-VN') : '—'
+            const productText = firstItem ? `${firstItem.productName} (${firstItem.variantName})` : 'Sản phẩm'
+            const priceVal = firstItem ? firstItem.unitPrice : 0
+            const extraText = order.items && order.items.length > 1 ? `Cùng ${order.items.length - 1} sản phẩm khác` : null
+            const imgLabel = firstItem ? firstItem.productName.slice(0, 4) : 'SP'
+
             return (
               <div key={order.id} className="px-6 py-5 hover:bg-gray-50/50 transition-colors">
                 {/* Order header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="font-bold text-gray-900">{order.id}</span>
+                    <span className="font-bold text-gray-900">#{order.id.slice(0, 10)}</span>
                     <span className="text-gray-300">·</span>
-                    <span className="text-gray-500">{order.date}</span>
+                    <span className="text-gray-500">{dateStr}</span>
                   </div>
                   <span className={`text-xs font-bold px-3 py-1 rounded-full border ${st.text} ${st.bg}`}>
                     <span className={`inline-block w-1.5 h-1.5 rounded-full ${st.dot} mr-1.5 align-middle`} />
@@ -2999,12 +3136,12 @@ function OrdersSection({ onNavigate }) {
                 {/* Product row */}
                 <div className="flex items-center gap-5">
                   <div className="w-20 h-20 rounded bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shrink-0 text-xs font-bold text-gray-500 border border-gray-200">
-                    {order.img}
+                    {imgLabel}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 leading-snug">{order.product}</p>
-                    <p className="text-sm text-gray-500 mt-1">{fmt(order.price)}</p>
-                    {order.extra && <p className="text-xs text-gray-400 mt-1">{order.extra}</p>}
+                    <p className="text-sm font-semibold text-gray-900 leading-snug">{productText}</p>
+                    <p className="text-sm text-gray-500 mt-1">{fmt(priceVal)}</p>
+                    {extraText && <p className="text-xs text-gray-400 mt-1">{extraText}</p>}
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-xs text-gray-500 mb-1">Tổng thanh toán</p>
@@ -3048,6 +3185,38 @@ export default function UserProfilePage() {
   const onNavigate = useNav()
   const [activeSection, setActiveSection] = useState('overview')
   const [banners, setBanners] = useState(BANNERS_INIT)
+  const [profile, setProfile] = useState(null)
+  const [membership, setMembership] = useState(null)
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchProfileAndData = () => {
+    Promise.all([
+      apiFetch('/api/customer/profile').catch(() => null),
+      apiFetch('/api/customer/membership').catch(() => null),
+      apiFetch('/api/customer/orders').catch(() => null),
+    ])
+      .then(([prof, memb, ords]) => {
+        if (prof) setProfile(prof)
+        if (memb) setMembership(memb)
+        if (ords) setOrders(ords)
+      })
+      .catch(err => console.error('Error fetching user profile info:', err))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchProfileAndData()
+  }, [])
+
+  const getInitials = (name) => {
+    if (!name) return 'U'
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    }
+    return name.slice(0, 2).toUpperCase()
+  }
 
   const handleSidebarClick = (item) => {
     if (item.action) onNavigate(item.action)
@@ -3055,6 +3224,17 @@ export default function UserProfilePage() {
   }
 
   const handleViewAllOrders = (sectionId) => setActiveSection(sectionId)
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
+        <StoreNavbar />
+        <div className="flex-1 flex items-center justify-center py-20 text-center text-gray-400 text-sm">
+          Đang tải dữ liệu hồ sơ cá nhân...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
@@ -3070,7 +3250,7 @@ export default function UserProfilePage() {
             {/* Avatar */}
             <div className="relative shrink-0">
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#E8420A] to-[#c93808] flex items-center justify-center text-white text-3xl font-black ring-4 shadow-lg" style={{ ringColor: 'rgba(255,255,255,0.15)' }}>
-                AJ
+                {getInitials(profile?.fullName)}
               </div>
               <span className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-sm" />
             </div>
@@ -3080,17 +3260,25 @@ export default function UserProfilePage() {
               <div className="flex items-center gap-2 mb-1">
                 <p className="text-[10px] font-bold tracking-[0.18em] uppercase" style={{ color: 'var(--accent)' }}>Hồ sơ thành viên</p>
               </div>
-              <h1 className="text-2xl font-black leading-tight" style={{ color: 'white', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Alex Johnson</h1>
-              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>096·····35 · alex@example.com</p>
+              <h1 className="text-2xl font-black leading-tight" style={{ color: 'white', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                {profile?.fullName || 'Đang tải...'}
+              </h1>
+              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                {profile?.phone ? profile.phone.replace(/^(\d{3})\d{4}(\d{2})$/, '$1·····$2') : '—'} · {profile?.email || '—'}
+              </p>
               <div className="flex items-center gap-2 mt-2.5">
                 <span className="px-3 py-1 text-xs font-black rounded" style={{ backgroundColor: 'rgba(232,66,10,0.15)', color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.3)' }}>T-MEM</span>
-                <span className="px-3 py-1 text-xs font-black text-white rounded" style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>Elite</span>
+                <span className="px-3 py-1 text-xs font-black text-white rounded" style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                  {membership?.tier || 'STANDARD'}
+                </span>
                 <span className="px-3 py-1 text-xs font-semibold rounded" style={{ backgroundColor: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.25)' }}>Đã xác minh</span>
               </div>
             </div>
 
             {/* Edit button */}
-            <button className="ml-auto flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded transition-colors shrink-0"
+            <button 
+              onClick={() => setActiveSection('account')}
+              className="ml-auto flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded transition-colors shrink-0"
               style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'white', backgroundColor: 'rgba(255,255,255,0.06)' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'white' }}
@@ -3112,7 +3300,9 @@ export default function UserProfilePage() {
                 </svg>
               </div>
               <div>
-                <p className="text-3xl font-black leading-none" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>15</p>
+                <p className="text-3xl font-black leading-none" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                  {orders.length}
+                </p>
                 <p className="text-xs font-medium mt-1" style={{ color: 'rgba(232,66,10,0.7)' }}>Tổng đơn hàng</p>
               </div>
             </div>
@@ -3125,7 +3315,9 @@ export default function UserProfilePage() {
                 </svg>
               </div>
               <div>
-                <p className="text-xl font-black leading-none" style={{ color: '#4ade80', fontFamily: 'Be Vietnam Pro, sans-serif' }}>21.875.000đ</p>
+                <p className="text-xl font-black leading-none" style={{ color: '#4ade80', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                  {formatVnd(membership?.totalSpent || 0)}
+                </p>
                 <p className="text-xs font-medium mt-1" style={{ color: 'rgba(74,222,128,0.7)' }}>Tổng tiền tích lũy</p>
               </div>
             </div>
@@ -3138,7 +3330,9 @@ export default function UserProfilePage() {
                 </svg>
               </div>
               <div>
-                <p className="text-3xl font-black leading-none" style={{ color: 'white', fontFamily: 'Be Vietnam Pro, sans-serif' }}>1.250</p>
+                <p className="text-3xl font-black leading-none" style={{ color: 'white', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                  {membership ? Math.floor(membership.totalSpent / 100000) : 0}
+                </p>
                 <p className="text-xs font-medium mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Điểm thành viên</p>
               </div>
             </div>
@@ -3146,13 +3340,30 @@ export default function UserProfilePage() {
             {/* Level progress */}
             <div className="rounded px-5 py-4" style={{ backgroundColor: 'rgba(232,66,10,0.1)', border: '1px solid rgba(232,66,10,0.2)' }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold" style={{ color: 'var(--accent)' }}>Tiến trình lên hạng Elite+</span>
-                <span className="text-xs font-black" style={{ color: 'var(--accent)' }}>43.75%</span>
+                <span className="text-xs font-bold" style={{ color: 'var(--accent)' }}>
+                  Tiến trình lên hạng {membership?.nextTier || 'Cao nhất'}
+                </span>
+                <span className="text-xs font-black" style={{ color: 'var(--accent)' }}>
+                  {membership?.nextTierMinSpending
+                    ? `${Math.min(100, Math.round((membership.totalSpent / membership.nextTierMinSpending) * 100))}%`
+                    : '100%'}
+                </span>
               </div>
               <div className="w-full rounded-full h-2.5 mb-2" style={{ backgroundColor: 'rgba(232,66,10,0.2)' }}>
-                <div className="h-2.5 rounded-full" style={{ width: '43.75%', backgroundColor: 'var(--accent)' }} />
+                <div className="h-2.5 rounded-full" style={{ 
+                  width: membership?.nextTierMinSpending
+                    ? `${Math.min(100, Math.round((membership.totalSpent / membership.nextTierMinSpending) * 100))}%`
+                    : '100%',
+                  backgroundColor: 'var(--accent)' 
+                }} />
               </div>
-              <p className="text-xs" style={{ color: 'rgba(232,66,10,0.8)' }}>Cần thêm <span className="font-black">28.125.000đ</span> để lên hạng tiếp</p>
+              <p className="text-xs" style={{ color: 'rgba(232,66,10,0.8)' }}>
+                {membership?.nextTierMinSpending && membership.nextTierMinSpending > membership.totalSpent ? (
+                  <>Cần thêm <span className="font-black">{formatVnd(membership.nextTierMinSpending - membership.totalSpent)}</span> để lên hạng tiếp</>
+                ) : (
+                  <span>Đã đạt hạng cao nhất</span>
+                )}
+              </p>
             </div>
           </div>
 
@@ -3222,7 +3433,7 @@ export default function UserProfilePage() {
           {/* Center content */}
           <div className={`min-w-0 ${['orders','wishlist','membership','coupons','account','address','payment','support'].includes(activeSection) ? 'col-span-2' : ''}`}>
             {activeSection === 'orders' ? (
-              <OrdersSection onNavigate={onNavigate} />
+              <OrdersSection orders={orders} onNavigate={onNavigate} />
             ) : activeSection === 'wishlist' ? (
               <WishlistSection />
             ) : activeSection === 'membership' ? (
@@ -3230,9 +3441,9 @@ export default function UserProfilePage() {
             ) : activeSection === 'coupons' ? (
               <CouponsSection />
             ) : activeSection === 'account' ? (
-              <AccountSection />
+              <AccountSection profile={profile} onProfileUpdate={fetchProfileAndData} />
             ) : activeSection === 'address' ? (
-              <AddressSection />
+              <AddressSection profile={profile} />
             ) : activeSection === 'payment' ? (
               <PaymentSection />
             ) : activeSection === 'support' ? (

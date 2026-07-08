@@ -16,6 +16,7 @@ public class CustomerMapper {
                 .updatedAt(c.getUpdatedAt())
                 .fullName(c.getFullName())
                 .phone(c.getPhone())
+                .email(c.getAccount() != null ? c.getAccount().getEmail() : null)
                 .membershipId(c.getMembership() != null ? c.getMembership().getId() : null)
                 .cartId(c.getCart() != null ? c.getCart().getId() : null)
                 .ordersIds(List.of())

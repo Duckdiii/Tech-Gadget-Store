@@ -20,4 +20,8 @@ public class AddressResponseDto {
     private String district;
     private String province;
     private String userId;
+    private String name;
+    private String phone;
+    private String type;
+    private boolean isDefault;
 }

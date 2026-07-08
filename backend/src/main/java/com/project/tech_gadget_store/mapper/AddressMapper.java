@@ -17,6 +17,10 @@ public class AddressMapper {
                 .district(address.getDistrict())
                 .province(address.getProvince())
                 .userId(userId)
+                .name(address.getName())
+                .phone(address.getPhone())
+                .type(address.getType())
+                .isDefault(address.getIsDefault() != null && address.getIsDefault())
                 .build();
     }
 }

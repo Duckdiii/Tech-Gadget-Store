@@ -1,6 +1,7 @@
 package com.project.tech_gadget_store.service;
 
 import com.project.tech_gadget_store.dto.request.AddressRequestDto;
+import com.project.tech_gadget_store.dto.request.UpdateProfileRequestDto;
 import com.project.tech_gadget_store.dto.response.AddressResponseDto;
 import com.project.tech_gadget_store.dto.response.CustomerMembershipResponseDto;
 import com.project.tech_gadget_store.dto.response.CustomerResponseDto;
@@ -14,6 +15,7 @@ import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.mapper.AddressMapper;
 import com.project.tech_gadget_store.mapper.CustomerMapper;
 import com.project.tech_gadget_store.mapper.MembershipMapper;
+import com.project.tech_gadget_store.repository.AddressRepository;
 import com.project.tech_gadget_store.repository.CustomerRepository;
 import com.project.tech_gadget_store.repository.MembershipRepository;
 import com.project.tech_gadget_store.repository.OrderRepository;
@@ -38,19 +40,22 @@ public class CustomerService {
     private final CustomerMapper customerMapper;
     private final MembershipMapper membershipMapper;
     private final AddressMapper addressMapper;
+    private final AddressRepository addressRepository;
 
     public CustomerService(CustomerRepository customerRepository,
             MembershipRepository membershipRepository,
             OrderRepository orderRepository,
             CustomerMapper customerMapper,
             MembershipMapper membershipMapper,
-            AddressMapper addressMapper) {
+            AddressMapper addressMapper,
+            AddressRepository addressRepository) {
         this.customerRepository = customerRepository;
         this.membershipRepository = membershipRepository;
         this.orderRepository = orderRepository;
         this.customerMapper = customerMapper;
         this.membershipMapper = membershipMapper;
         this.addressMapper = addressMapper;
+        this.addressRepository = addressRepository;
     }
 
     public void deleteCustomerById(String id) {
@@ -114,9 +119,80 @@ public class CustomerService {
                 .orElseThrow(() -> new RuntimeException(CUSTOMER_NOT_FOUND + request.getUserId()));
         Address address = new Address(request.getStreet(), request.getWard(),
                 request.getDistrict(), request.getProvince());
+        address.setName(request.getName());
+        address.setPhone(request.getPhone());
+        address.setType(request.getType());
+        address.setIsDefault(request.getIsDefault() != null && request.getIsDefault());
+
+        if (Boolean.TRUE.equals(request.getIsDefault())) {
+            for (Address addr : customer.getAddresses()) {
+                addr.setIsDefault(false);
+            }
+        } else if (customer.getAddresses().isEmpty()) {
+            address.setIsDefault(true);
+        }
+
         customer.getAddresses().add(address);
         customerRepository.save(customer);
         return addressMapper.toAddressResponseDto(address, customer.getId());
+    }
+
+    @Transactional
+    public AddressResponseDto updateAddress(String addressId, AddressRequestDto request) {
+        var customer = customerRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CUSTOMER_NOT_FOUND + request.getUserId()));
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ"));
+        
+        if (!customer.getAddresses().contains(address)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Địa chỉ không thuộc về khách hàng này");
+        }
+
+        address.setStreet(request.getStreet());
+        address.setWard(request.getWard());
+        address.setDistrict(request.getDistrict());
+        address.setProvince(request.getProvince());
+        address.setName(request.getName());
+        address.setPhone(request.getPhone());
+        address.setType(request.getType());
+
+        boolean isDefaultChanged = request.getIsDefault() != null && request.getIsDefault();
+        if (isDefaultChanged) {
+            for (Address addr : customer.getAddresses()) {
+                addr.setIsDefault(false);
+            }
+            address.setIsDefault(true);
+        } else {
+            address.setIsDefault(request.getIsDefault() != null && request.getIsDefault());
+        }
+
+        addressRepository.save(address);
+        return addressMapper.toAddressResponseDto(address, customer.getId());
+    }
+
+    @Transactional
+    public void deleteAddress(String email, String addressId) {
+        Customer customer = customerRepository.findByAccountEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ"));
+        
+        if (!customer.getAddresses().contains(address)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Địa chỉ không thuộc về khách hàng này");
+        }
+
+        customer.getAddresses().remove(address);
+        customerRepository.save(customer);
+    }
+
+    @Transactional
+    public CustomerResponseDto updateProfile(String email, UpdateProfileRequestDto request) {
+        Customer customer = customerRepository.findByAccountEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+        customer.setFullName(request.getFullName());
+        customer.setPhone(request.getPhone());
+        customerRepository.save(customer);
+        return customerMapper.toCustomerResponseDto(customer);
     }
 
     /**

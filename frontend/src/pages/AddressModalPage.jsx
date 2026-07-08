@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNav } from '../hooks/useNav'
+import { apiFetch } from '../services/api'
 
 function SelectField({ label, required, value, onChange, placeholder, options }) {
   return (
@@ -72,6 +73,38 @@ export default function AddressModalPage() {
   const [addrType,    setAddrType]    = useState('home')
   const [isDefault,   setIsDefault]   = useState(false)
 
+  const handleSave = async () => {
+    if (!name || !phone || !province || !district || !ward || !detail) {
+      alert('Vui lòng nhập đầy đủ thông tin bắt buộc')
+      return
+    }
+
+    const provinceLabel = PROVINCES.find(p => p.value === province)?.label || province
+    const districtLabel = DISTRICTS.find(d => d.value === district)?.label || district
+    const wardLabel = WARDS.find(w => w.value === ward)?.label || ward
+
+    const payload = {
+      street: detail,
+      ward: wardLabel,
+      district: districtLabel,
+      province: provinceLabel,
+      name,
+      phone,
+      type: addrType,
+      isDefault,
+    }
+
+    try {
+      await apiFetch('/api/customer/addresses', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
+      onNavigate('userProfile')
+    } catch (err) {
+      alert(err.message || 'Không thể thêm địa chỉ')
+    }
+  }
+
   return (
     /* Overlay background simulating blurred app behind */
     <div
@@ -84,7 +117,7 @@ export default function AddressModalPage() {
         {/* Header */}
         <div className="px-7 pt-6 pb-5 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900">Thêm địa chỉ mới</h2>
-          <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 cursor-pointer transition-colors text-xl leading-none font-light">
+          <button onClick={() => onNavigate('userProfile')} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 cursor-pointer transition-colors text-xl leading-none font-light">
             ×
           </button>
         </div>
@@ -200,7 +233,7 @@ export default function AddressModalPage() {
           <button onClick={() => onNavigate('userProfile')} className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors cursor-pointer">
             Hủy
           </button>
-          <button onClick={() => onNavigate('userProfile')} className="text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all duration-200 cursor-pointer"
+          <button onClick={handleSave} className="text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all duration-200 cursor-pointer"
             style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}

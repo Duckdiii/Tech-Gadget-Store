@@ -27,6 +27,18 @@ public class Address extends BaseEntity {
     @Column(name = "province", length = 100)
     private String province;
 
+    @Column(name = "name", length = 100)
+    private String name;
+
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Column(name = "type", length = 30)
+    private String type;
+
+    @Column(name = "is_default", nullable = false, columnDefinition = "boolean default false")
+    private Boolean isDefault = false;
+
     public Address(String street, String ward, String district, String province) {
         if (street == null || street.isBlank()) {
             throw new IllegalArgumentException("street must not be blank");
