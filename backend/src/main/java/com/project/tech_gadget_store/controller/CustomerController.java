@@ -1,17 +1,15 @@
 package com.project.tech_gadget_store.controller;
 
 import com.project.tech_gadget_store.dto.response.CustomerMembershipResponseDto;
+import com.project.tech_gadget_store.dto.response.FavoriteProductPageResponseDto;
+import com.project.tech_gadget_store.dto.response.FavoriteResponseDto;
 import com.project.tech_gadget_store.dto.response.MembershipTierResponseDto;
 import com.project.tech_gadget_store.dto.response.SubscriptionResponseDto;
 import com.project.tech_gadget_store.service.CustomerService;
 import com.project.tech_gadget_store.service.FavoriteProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,6 +31,23 @@ public class CustomerController {
             Authentication authentication) {
         String email = authentication.getName();
         return ResponseEntity.ok(favoriteProductService.toggleSubscription(email, productId));
+    }
+
+    @PostMapping("/products/{productId}/favorite")
+    public ResponseEntity<FavoriteResponseDto> toggleFavorite(
+            @PathVariable String productId,
+            Authentication authentication) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(favoriteProductService.toggleFavorite(email, productId));
+    }
+
+    @GetMapping("/favorites")
+    public ResponseEntity<FavoriteProductPageResponseDto> getMyFavorites(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            Authentication authentication) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(favoriteProductService.getFavoriteProductsPage(email, page, size));
     }
 
     @GetMapping("/membership")

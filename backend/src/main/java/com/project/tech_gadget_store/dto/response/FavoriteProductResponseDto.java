@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.dto.response;
 
 import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,4 +22,13 @@ public class FavoriteProductResponseDto {
     private SubscriptionStatus status;
     private LocalDateTime subscribedAt;
     private LocalDateTime unsubscribedAt;
+    private boolean isFavorite;
+
+    // Variant details
+    private String productName;
+    private BigDecimal price;
+    private Integer ramGb;
+    private Integer storageGb;
+    private String color;
+    private String imageUrl;
 }

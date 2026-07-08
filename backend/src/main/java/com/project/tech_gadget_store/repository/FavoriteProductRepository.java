@@ -15,10 +15,15 @@ public interface FavoriteProductRepository extends JpaRepository<FavoriteProduct
     @Query("SELECT f FROM FavoriteProduct f WHERE f.customer.id = :customerId AND f.status = :status")
     Page<FavoriteProduct> findByCustomerIdAndStatus(String customerId, SubscriptionStatus status, Pageable pageable);
 
+    @Query("SELECT f FROM FavoriteProduct f WHERE f.customer.id = :customerId AND f.isFavorite = true")
+    Page<FavoriteProduct> findByCustomerIdAndIsFavoriteTrue(String customerId, Pageable pageable);
+
     @Query("SELECT f FROM FavoriteProduct f WHERE f.customer.id = :customerId AND f.productVariant.id = :productVariantId")
     Optional<FavoriteProduct> findByCustomerIdAndProductVariantId(String customerId, String productVariantId);
 
     boolean existsByCustomerIdAndProductVariantIdAndStatus(String customerId, String productVariantId, SubscriptionStatus status);
+
+    boolean existsByCustomerIdAndProductVariantIdAndIsFavoriteTrue(String customerId, String productVariantId);
 
     List<FavoriteProduct> findByProductVariantIdAndStatus(String productVariantId, SubscriptionStatus status);
 

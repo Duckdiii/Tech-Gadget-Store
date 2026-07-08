@@ -1,9 +1,10 @@
 package com.project.tech_gadget_store.service;
 
+import com.project.tech_gadget_store.dto.response.FavoriteProductPageResponseDto;
+import com.project.tech_gadget_store.dto.response.FavoriteProductResponseDto;
+import com.project.tech_gadget_store.dto.response.FavoriteResponseDto;
 import com.project.tech_gadget_store.dto.response.SubscriptionResponseDto;
-import com.project.tech_gadget_store.entity.Customer;
-import com.project.tech_gadget_store.entity.FavoriteProduct;
-import com.project.tech_gadget_store.entity.ProductVariant;
+import com.project.tech_gadget_store.entity.*;
 import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.repository.CustomerRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,14 +35,34 @@ public class FavoriteProductService {
         this.productVariantRepository = productVariantRepository;
     }
 
+    public FavoriteProductPageResponseDto getFavoriteProductsPage(String email, int page, int size) {
+        Customer customer = customerRepository.findByAccountEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        Page<FavoriteProduct> fpPage = favoriteProductRepository.findByCustomerIdAndIsFavoriteTrue(
+                customer.getId(), PageRequest.of(page, size));
+
+        List<FavoriteProductResponseDto> items = fpPage.getContent().stream()
+                .map(this::toResponseDto)
+                .toList();
+
+        return FavoriteProductPageResponseDto.builder()
+                .items(items)
+                .page(fpPage.getNumber())
+                .size(fpPage.getSize())
+                .totalItems(fpPage.getTotalElements())
+                .totalPages(fpPage.getTotalPages())
+                .build();
+    }
+
     public Page<FavoriteProduct> getFavoriteProducts(String customerId, int page, int size) {
-        return favoriteProductRepository.findByCustomerIdAndStatus(
-                customerId, SubscriptionStatus.SUBSCRIBED, PageRequest.of(page, size));
+        return favoriteProductRepository.findByCustomerIdAndIsFavoriteTrue(
+                customerId, PageRequest.of(page, size));
     }
 
     public boolean isFavorited(String customerId, String productVariantId) {
         return favoriteProductRepository
-                .existsByCustomerIdAndProductVariantIdAndStatus(customerId, productVariantId, SubscriptionStatus.SUBSCRIBED);
+                .existsByCustomerIdAndProductVariantIdAndIsFavoriteTrue(customerId, productVariantId);
     }
 
     @Transactional
@@ -50,6 +72,51 @@ public class FavoriteProductService {
                     f.setStatus(SubscriptionStatus.UNSUBSCRIBED);
                     f.setUnsubscribedAt(LocalDateTime.now());
                 });
+    }
+
+    @Transactional
+    public FavoriteResponseDto toggleFavorite(String email, String productVariantId) {
+        Customer customer = customerRepository.findByAccountEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        ProductVariant productVariant = productVariantRepository.findById(productVariantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product variant not found"));
+
+        Optional<FavoriteProduct> existing = favoriteProductRepository
+                .findByCustomerIdAndProductVariantId(customer.getId(), productVariantId);
+
+        String productName = productVariant.getProduct() != null ? productVariant.getProduct().getName() : productVariantId;
+
+        if (existing.isEmpty()) {
+            FavoriteProduct fp = new FavoriteProduct(productVariant, customer, SubscriptionStatus.UNSUBSCRIBED);
+            fp.setIsFavorite(true);
+            favoriteProductRepository.save(fp);
+            return FavoriteResponseDto.builder()
+                    .productId(productVariantId)
+                    .productName(productName)
+                    .isFavorite(true)
+                    .message("Added to favorites.")
+                    .build();
+        }
+
+        FavoriteProduct fp = existing.get();
+        if (fp.getIsFavorite() == null || !fp.getIsFavorite()) {
+            fp.setIsFavorite(true);
+            return FavoriteResponseDto.builder()
+                    .productId(productVariantId)
+                    .productName(productName)
+                    .isFavorite(true)
+                    .message("Added to favorites.")
+                    .build();
+        } else {
+            fp.setIsFavorite(false);
+            return FavoriteResponseDto.builder()
+                    .productId(productVariantId)
+                    .productName(productName)
+                    .isFavorite(false)
+                    .message("Removed from favorites.")
+                    .build();
+        }
     }
 
     @Transactional
@@ -66,7 +133,9 @@ public class FavoriteProductService {
         String productName = productVariant.getProduct() != null ? productVariant.getProduct().getName() : productVariantId;
 
         if (existing.isEmpty()) {
-            new FavoriteProduct(productVariant, customer, SubscriptionStatus.SUBSCRIBED);
+            FavoriteProduct fp = new FavoriteProduct(productVariant, customer, SubscriptionStatus.SUBSCRIBED);
+            fp.setIsFavorite(false);
+            favoriteProductRepository.save(fp);
             return SubscriptionResponseDto.builder()
                     .productId(productVariantId)
                     .productName(productName)
@@ -95,5 +164,30 @@ public class FavoriteProductService {
                     .message("You have successfully subscribed to product updates.")
                     .build();
         }
+    }
+
+    private FavoriteProductResponseDto toResponseDto(FavoriteProduct fp) {
+        ProductVariant variant = fp.getProductVariant();
+        Product product = variant.getProduct();
+        List<ProductImage> images = product.getImages();
+        String imageUrl = images.isEmpty() ? null : images.get(0).getImageUrl();
+
+        return FavoriteProductResponseDto.builder()
+                .id(fp.getId())
+                .createdAt(fp.getCreatedAt())
+                .updatedAt(fp.getUpdatedAt())
+                .productId(product.getId())
+                .customerId(fp.getCustomer().getId())
+                .status(fp.getStatus())
+                .subscribedAt(fp.getSubscribedAt())
+                .unsubscribedAt(fp.getUnsubscribedAt())
+                .isFavorite(fp.getIsFavorite() != null && fp.getIsFavorite())
+                .productName(product.getName())
+                .price(variant.getPrice())
+                .ramGb(variant.getRamGb())
+                .storageGb(variant.getStorageGb())
+                .color(variant.getColor())
+                .imageUrl(imageUrl)
+                .build();
     }
 }

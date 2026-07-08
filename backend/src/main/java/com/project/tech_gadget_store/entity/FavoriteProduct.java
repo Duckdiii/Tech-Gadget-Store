@@ -32,6 +32,9 @@ public class FavoriteProduct extends BaseEntity {
     @Column(name = "status", nullable = false, length = 30)
     private SubscriptionStatus status = SubscriptionStatus.SUBSCRIBED;
 
+    @Column(name = "is_favorite", nullable = false, columnDefinition = "boolean default true")
+    private Boolean isFavorite = true;
+
     @Column(name = "subscribed_at", nullable = false)
     private LocalDateTime subscribedAt;
 
