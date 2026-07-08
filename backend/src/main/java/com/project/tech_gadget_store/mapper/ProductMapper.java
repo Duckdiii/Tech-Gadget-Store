@@ -11,6 +11,7 @@ import com.project.tech_gadget_store.entity.Product;
 import com.project.tech_gadget_store.entity.ProductImage;
 import com.project.tech_gadget_store.entity.ProductVariant;
 import com.project.tech_gadget_store.entity.Promotion;
+import com.project.tech_gadget_store.entity.*;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -81,6 +82,34 @@ public class ProductMapper {
                                                 .build())
                                 .toList();
 
+                Double screenSize = null;
+                String screenResolution = null;
+                String rearCamera = null;
+                String frontCamera = null;
+                String chipset = null;
+                Boolean nfcSupported = null;
+                Integer batteryCapacity = null;
+                String simType = null;
+                String operatingSystem = null;
+
+                if (product instanceof Phone phone) {
+                        screenSize = phone.getScreenSize();
+                        screenResolution = phone.getScreenResolution();
+                        rearCamera = phone.getRearCamera();
+                        frontCamera = phone.getFrontCamera();
+                        chipset = phone.getChipset();
+                        nfcSupported = phone.getNfcSupported();
+                        batteryCapacity = phone.getBatteryCapacity();
+                        simType = phone.getSimType();
+                        operatingSystem = phone.getOperatingSystem();
+                } else if (product instanceof Laptop laptop) {
+                        screenSize = laptop.getScreenSize();
+                        operatingSystem = laptop.getOperatingSystem();
+                } else if (product instanceof Monitor monitor) {
+                        screenSize = monitor.getScreenSize();
+                        screenResolution = monitor.getResolution();
+                }
+
                 return ProductDetailResponseDto.builder()
                                 .id(product.getId())
                                 .name(product.getName())
@@ -97,15 +126,15 @@ public class ProductMapper {
                                 .images(imageDtos)
                                 .variants(variantDtos)
                                 .bundleServices(bundleServiceDtos)
-                                .screenSize(product.getScreenSize())
-                                .screenResolution(product.getScreenResolution())
-                                .rearCamera(product.getRearCamera())
-                                .frontCamera(product.getFrontCamera())
-                                .chipset(product.getChipset())
-                                .nfcSupported(product.getNfcSupported())
-                                .batteryCapacity(product.getBatteryCapacity())
-                                .simType(product.getSimType())
-                                .operatingSystem(product.getOperatingSystem())
+                                .screenSize(screenSize)
+                                .screenResolution(screenResolution)
+                                .rearCamera(rearCamera)
+                                .frontCamera(frontCamera)
+                                .chipset(chipset)
+                                .nfcSupported(nfcSupported)
+                                .batteryCapacity(batteryCapacity)
+                                .simType(simType)
+                                .operatingSystem(operatingSystem)
                                 .build();
         }
 

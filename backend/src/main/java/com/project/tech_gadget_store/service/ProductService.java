@@ -152,35 +152,35 @@ public class ProductService {
             }
 
             if (hasText(f.getOperatingSystem())) {
-                predicates.add(cb.like(cb.lower(root.get("operatingSystem")),
+                predicates.add(cb.like(cb.lower(cb.treat(root, com.project.tech_gadget_store.entity.Phone.class).get("operatingSystem")),
                         "%" + f.getOperatingSystem().trim().toLowerCase() + "%"));
             }
 
             if (f.getMinScreenSize() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("screenSize"), f.getMinScreenSize()));
+                predicates.add(cb.greaterThanOrEqualTo(cb.treat(root, com.project.tech_gadget_store.entity.Phone.class).get("screenSize"), f.getMinScreenSize()));
             }
             if (f.getMaxScreenSize() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("screenSize"), f.getMaxScreenSize()));
+                predicates.add(cb.lessThanOrEqualTo(cb.treat(root, com.project.tech_gadget_store.entity.Phone.class).get("screenSize"), f.getMaxScreenSize()));
             }
 
             if (f.getMinBatteryCapacity() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("batteryCapacity"), f.getMinBatteryCapacity()));
+                predicates.add(cb.greaterThanOrEqualTo(cb.treat(root, com.project.tech_gadget_store.entity.Phone.class).get("batteryCapacity"), f.getMinBatteryCapacity()));
             }
             if (f.getMaxBatteryCapacity() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("batteryCapacity"), f.getMaxBatteryCapacity()));
+                predicates.add(cb.lessThanOrEqualTo(cb.treat(root, com.project.tech_gadget_store.entity.Phone.class).get("batteryCapacity"), f.getMaxBatteryCapacity()));
             }
 
             if (hasText(f.getChipset())) {
-                predicates.add(cb.like(cb.lower(root.get("chipset")),
+                predicates.add(cb.like(cb.lower(cb.treat(root, com.project.tech_gadget_store.entity.Phone.class).get("chipset")),
                         "%" + f.getChipset().trim().toLowerCase() + "%"));
             }
 
             if (f.getNfcSupported() != null) {
-                predicates.add(cb.equal(root.get("nfcSupported"), f.getNfcSupported()));
+                predicates.add(cb.equal(cb.treat(root, com.project.tech_gadget_store.entity.Phone.class).get("nfcSupported"), f.getNfcSupported()));
             }
 
             if (hasText(f.getSimType())) {
-                predicates.add(cb.like(cb.lower(root.get("simType")),
+                predicates.add(cb.like(cb.lower(cb.treat(root, com.project.tech_gadget_store.entity.Phone.class).get("simType")),
                         "%" + f.getSimType().trim().toLowerCase() + "%"));
             }
 

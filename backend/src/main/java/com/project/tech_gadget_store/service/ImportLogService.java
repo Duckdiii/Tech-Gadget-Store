@@ -98,7 +98,7 @@ public class ImportLogService {
                         .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
                 // Create and save product
-                Product product = new Product(newProductDto.getName(), newProductDto.getDescription(), brand, category);
+                Product product = ProductFactory.createProduct(category, newProductDto.getName(), newProductDto.getDescription(), brand);
                 productRepository.save(product);
 
                 for (int i = 0; i < qty; i++) {

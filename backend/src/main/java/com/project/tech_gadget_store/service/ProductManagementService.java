@@ -6,12 +6,7 @@ import com.project.tech_gadget_store.dto.request.ProductVariantRequestDto;
 import com.project.tech_gadget_store.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductImageResponseDto;
 import com.project.tech_gadget_store.dto.response.ProductVariantResponseDto;
-import com.project.tech_gadget_store.entity.Brand;
-import com.project.tech_gadget_store.entity.BundleService;
-import com.project.tech_gadget_store.entity.Category;
-import com.project.tech_gadget_store.entity.Product;
-import com.project.tech_gadget_store.entity.ProductImage;
-import com.project.tech_gadget_store.entity.ProductVariant;
+import com.project.tech_gadget_store.entity.*;
 import com.project.tech_gadget_store.exception.DuplicateResourceException;
 import com.project.tech_gadget_store.exception.ProductVariantEditRestrictedException;
 import com.project.tech_gadget_store.exception.ProductVariantInUseException;
@@ -53,7 +48,7 @@ public class ProductManagementService {
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + dto.getCategoryId()));
 
-        Product product = new Product(dto.getName(), dto.getDescription(), brand, category);
+        Product product = ProductFactory.createProduct(category, dto.getName(), dto.getDescription(), brand);
         applySpecFields(product, dto);
 
         Product saved = productRepository.save(product);
@@ -174,15 +169,24 @@ public class ProductManagementService {
     // -------------------------------------------------------------------------
 
     private void applySpecFields(Product product, ProductRequestDto dto) {
-        product.setScreenSize(dto.getScreenSize());
-        product.setRearCamera(dto.getRearCamera());
-        product.setFrontCamera(dto.getFrontCamera());
-        product.setChipset(dto.getChipset());
-        product.setNfcSupported(dto.getNfcSupported());
-        product.setBatteryCapacity(dto.getBatteryCapacity());
-        product.setSimType(dto.getSimType());
-        product.setOperatingSystem(dto.getOperatingSystem());
-        product.setScreenResolution(dto.getScreenResolution());
+        if (product instanceof Phone phone) {
+            phone.setScreenSize(dto.getScreenSize());
+            phone.setRearCamera(dto.getRearCamera());
+            phone.setFrontCamera(dto.getFrontCamera());
+            phone.setChipset(dto.getChipset());
+            phone.setNfcSupported(dto.getNfcSupported());
+            phone.setBatteryCapacity(dto.getBatteryCapacity());
+            phone.setSimType(dto.getSimType());
+            phone.setOperatingSystem(dto.getOperatingSystem());
+            phone.setScreenResolution(dto.getScreenResolution());
+        } else if (product instanceof Laptop laptop) {
+            laptop.setScreenSize(dto.getScreenSize());
+            laptop.setOperatingSystem(dto.getOperatingSystem());
+            // Other laptop-specific specs can be set here if present in DTO/future extensions
+        } else if (product instanceof Monitor monitor) {
+            monitor.setScreenSize(dto.getScreenSize());
+            monitor.setResolution(dto.getScreenResolution());
+        }
     }
 
     private boolean isVariantReferenced(String variantId) {
