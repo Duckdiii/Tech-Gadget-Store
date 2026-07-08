@@ -77,11 +77,9 @@ class PaymentServiceTest {
     void createPendingLog_createsNewAndCancelsOld() {
         String orderId = "order-1";
         Order order = mock(Order.class);
-        MomoPaymentMethod momoMethod = mock(MomoPaymentMethod.class);
         PaymentLog oldLog = mock(PaymentLog.class);
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(momoMethodRepository.findFirstByOrderByCreatedAtAsc()).thenReturn(Optional.of(momoMethod));
         when(paymentLogRepository.findFirstByOrderIdAndStatus(orderId, PaymentLogStatus.PENDING))
                 .thenReturn(Optional.of(oldLog));
         when(paymentLogRepository.save(any(PaymentLog.class))).thenAnswer(inv -> inv.getArgument(0));

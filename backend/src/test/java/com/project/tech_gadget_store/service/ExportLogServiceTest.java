@@ -42,7 +42,13 @@ class ExportLogServiceTest {
         @Mock
         private FavoriteProductRepository favoriteProductRepository;
         @Mock
+        private AccountRepository accountRepository;
+        @Mock
+        private EmailService emailService;
+        @Mock
         private ExportLogMapper exportLogMapper;
+        @Mock
+        private InventoryNotificationService inventoryNotificationService;
 
         @InjectMocks
         private ExportLogService exportLogService;
@@ -179,7 +185,6 @@ class ExportLogServiceTest {
                 when(productVariantRepository.findById("variant-id")).thenReturn(Optional.of(variant));
                 when(variant.getProduct()).thenReturn(product);
                 when(product.getId()).thenReturn("product-id");
-                when(product.getName()).thenReturn("iPhone 15");
                 when(variant.getRamGb()).thenReturn(8);
                 when(variant.getStorageGb()).thenReturn(256);
                 when(variant.getColor()).thenReturn("Silver");
@@ -202,14 +207,6 @@ class ExportLogServiceTest {
                 // Mock remaining qty = 0 (Out of stock case)
                 when(productVariantRepository.countAvailablePhysicalUnitsByProductId("product-id")).thenReturn(0L);
 
-                // Mock Subscribed customers
-                FavoriteProduct fav = mock(FavoriteProduct.class);
-                when(fav.getCustomer()).thenReturn(customer);
-                when(favoriteProductRepository.findByProductVariantProductIdAndStatus("product-id",
-                                com.project.tech_gadget_store.entity.enums.SubscriptionStatus.SUBSCRIBED))
-                                .thenReturn(List.of(fav));
-                when(customer.getNotifications()).thenReturn(new java.util.ArrayList<>());
-
                 // Mock Mapper
                 when(exportLogMapper.toExportLogResponseDto(any(ExportLog.class), eq("receipt-id"),
                                 eq("Products exported successfully.")))
@@ -228,8 +225,7 @@ class ExportLogServiceTest {
                 assertEquals("Products exported successfully.", response.getMessage());
 
                 verify(receiptRepository).save(any(Receipt.class));
-                verify(notificationRepository).save(any(Notification.class));
-                verify(favoriteProductRepository).findByProductVariantProductIdAndStatus(eq("product-id"), any());
+                verify(inventoryNotificationService).checkAndNotify(product);
         }
 
         @Test

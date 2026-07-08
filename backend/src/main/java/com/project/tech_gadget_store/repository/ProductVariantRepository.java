@@ -38,7 +38,7 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
                         "  AND (pv.storageGb = :storageGb OR (pv.storageGb IS NULL AND :storageGb IS NULL)) " +
                         "  AND (pv.color = :color OR (pv.color IS NULL AND :color IS NULL)) " +
                         "  AND pv.id NOT IN (SELECT eli.productVariant.id FROM ExportLogItem eli) " +
-                        "  AND pv.id NOT IN (SELECT oi.productVariant.id FROM OrderItem oi)")
+                        "  AND pv.id NOT IN (SELECT oi.productVariant.id FROM Order o JOIN o.items oi WHERE o.orderStatus <> com.project.tech_gadget_store.entity.enums.OrderStatus.CANCELLED)")
         List<ProductVariant> findAvailablePhysicalUnits(
                         @Param("productId") String productId, @Param("ramGb") Integer ramGb,
                         @Param("storageGb") Integer storageGb, @Param("color") String color);
@@ -46,7 +46,7 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
         @Query("SELECT COUNT(pv) FROM ProductVariant pv " +
                         "WHERE pv.product.id = :productId " +
                         "  AND pv.id NOT IN (SELECT eli.productVariant.id FROM ExportLogItem eli) " +
-                        "  AND pv.id NOT IN (SELECT oi.productVariant.id FROM OrderItem oi)")
+                        "  AND pv.id NOT IN (SELECT oi.productVariant.id FROM Order o JOIN o.items oi WHERE o.orderStatus <> com.project.tech_gadget_store.entity.enums.OrderStatus.CANCELLED)")
         long countAvailablePhysicalUnitsByProductId(
                         @Param("productId") String productId);
 }

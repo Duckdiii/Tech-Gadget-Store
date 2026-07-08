@@ -5,5 +5,6 @@ public enum NotificationType {
     OUT_OF_STOCK,
     RESTOCKED,
     PRICE_UPDATE,
-    PROMOTION
+    PROMOTION,
+    LOW_STOCK
 }

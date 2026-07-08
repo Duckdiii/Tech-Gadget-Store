@@ -43,6 +43,8 @@ class ImportLogServiceTest {
     private ProductRepository productRepository;
     @Mock
     private ImportLogMapper importLogMapper;
+    @Mock
+    private InventoryNotificationService inventoryNotificationService;
 
     @InjectMocks
     private ImportLogService importLogService;

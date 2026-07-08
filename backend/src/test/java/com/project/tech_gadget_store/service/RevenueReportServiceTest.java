@@ -116,8 +116,8 @@ class RevenueReportServiceTest {
         completedOrder1 = mock(Order.class);
         lenient().when(completedOrder1.getId()).thenReturn("order-1");
         lenient().when(completedOrder1.getOrderStatus()).thenReturn(OrderStatus.COMPLETED);
-        // Order date = current month, day 15, 10:00
-        LocalDateTime date1 = LocalDateTime.now().with(TemporalAdjusters.firstDayOfMonth()).withDayOfMonth(15).withHour(10).withMinute(0);
+        // Order date = current month, day 1, 10:00
+        LocalDateTime date1 = LocalDateTime.now().with(TemporalAdjusters.firstDayOfMonth()).withHour(10).withMinute(0);
         lenient().when(completedOrder1.getOrderDate()).thenReturn(date1);
         lenient().when(completedOrder1.getSelectedPaymentMethod()).thenReturn(momo);
         lenient().when(completedOrder1.getItems()).thenReturn(List.of(item1, item2));
@@ -125,8 +125,8 @@ class RevenueReportServiceTest {
         completedOrder2 = mock(Order.class);
         lenient().when(completedOrder2.getId()).thenReturn("order-2");
         lenient().when(completedOrder2.getOrderStatus()).thenReturn(OrderStatus.COMPLETED);
-        // Order date = current month, day 16, 14:00
-        LocalDateTime date2 = LocalDateTime.now().with(TemporalAdjusters.firstDayOfMonth()).withDayOfMonth(16).withHour(14).withMinute(0);
+        // Order date = current month, day 1, 14:00
+        LocalDateTime date2 = LocalDateTime.now().with(TemporalAdjusters.firstDayOfMonth()).withHour(14).withMinute(0);
         lenient().when(completedOrder2.getOrderDate()).thenReturn(date2);
         lenient().when(completedOrder2.getSelectedPaymentMethod()).thenReturn(vnpay);
         lenient().when(completedOrder2.getItems()).thenReturn(List.of(item3));
@@ -219,8 +219,8 @@ class RevenueReportServiceTest {
         setUpMocks();
         when(orderRepository.findAll()).thenReturn(List.of(completedOrder1, completedOrder2));
 
-        String startStr = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).plusDays(10).toString();
-        String endStr = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).plusDays(20).toString();
+        String startStr = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).toString();
+        String endStr = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).plusDays(2).toString();
 
         RevenueReportFilterRequestDto filter = RevenueReportFilterRequestDto.builder()
                 .period("CUSTOM")

@@ -29,6 +29,7 @@ public class ImportLogService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ImportLogMapper importLogMapper;
+    private final InventoryNotificationService inventoryNotificationService;
 
     public ImportLogService(ImportLogRepository importLogRepository,
                             ProductVariantRepository productVariantRepository,
@@ -36,7 +37,8 @@ public class ImportLogService {
                             BrandRepository brandRepository,
                             CategoryRepository categoryRepository,
                             ProductRepository productRepository,
-                            ImportLogMapper importLogMapper) {
+                            ImportLogMapper importLogMapper,
+                            InventoryNotificationService inventoryNotificationService) {
         this.importLogRepository = importLogRepository;
         this.productVariantRepository = productVariantRepository;
         this.userRepository = userRepository;
@@ -44,6 +46,7 @@ public class ImportLogService {
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.importLogMapper = importLogMapper;
+        this.inventoryNotificationService = inventoryNotificationService;
     }
 
     @Transactional
@@ -117,6 +120,16 @@ public class ImportLogService {
         }
 
         ImportLog savedLog = importLogRepository.save(importLog);
+
+        try {
+            savedLog.getItems().stream()
+                    .map(item -> item.getProductVariant().getProduct())
+                    .distinct()
+                    .forEach(inventoryNotificationService::checkAndNotifyRestock);
+        } catch (Exception e) {
+            log.error("Failed to trigger restock notifications: {}", e.getMessage(), e);
+        }
+
         return importLogMapper.toImportLogResponseDto(savedLog);
     }
 

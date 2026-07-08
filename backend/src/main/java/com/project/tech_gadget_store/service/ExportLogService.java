@@ -4,6 +4,7 @@ import com.project.tech_gadget_store.dto.request.ExportLogItemRequestDto;
 import com.project.tech_gadget_store.dto.request.ExportLogRequestDto;
 import com.project.tech_gadget_store.dto.response.ExportLogResponseDto;
 import com.project.tech_gadget_store.entity.*;
+import com.project.tech_gadget_store.entity.enums.AccountStatus;
 import com.project.tech_gadget_store.entity.enums.ImportAndExportStatus;
 import com.project.tech_gadget_store.entity.enums.NotificationChannel;
 import com.project.tech_gadget_store.entity.enums.NotificationType;
@@ -11,6 +12,7 @@ import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.mapper.ExportLogMapper;
 import com.project.tech_gadget_store.repository.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,13 @@ public class ExportLogService {
     private final NotificationRepository notificationRepository;
     private final CustomerRepository customerRepository;
     private final FavoriteProductRepository favoriteProductRepository;
+    private final AccountRepository accountRepository;
+    private final EmailService emailService;
     private final ExportLogMapper exportLogMapper;
+    private final InventoryNotificationService inventoryNotificationService;
+
+    @Value("${app.inventory.low-stock-threshold:5}")
+    private long lowStockThreshold;
 
     public ExportLogService(ExportLogRepository exportLogRepository,
             ProductVariantRepository productVariantRepository,
@@ -39,7 +47,10 @@ public class ExportLogService {
             NotificationRepository notificationRepository,
             CustomerRepository customerRepository,
             FavoriteProductRepository favoriteProductRepository,
-            ExportLogMapper exportLogMapper) {
+            AccountRepository accountRepository,
+            EmailService emailService,
+            ExportLogMapper exportLogMapper,
+            InventoryNotificationService inventoryNotificationService) {
         this.exportLogRepository = exportLogRepository;
         this.productVariantRepository = productVariantRepository;
         this.userRepository = userRepository;
@@ -47,7 +58,10 @@ public class ExportLogService {
         this.notificationRepository = notificationRepository;
         this.customerRepository = customerRepository;
         this.favoriteProductRepository = favoriteProductRepository;
+        this.accountRepository = accountRepository;
+        this.emailService = emailService;
         this.exportLogMapper = exportLogMapper;
+        this.inventoryNotificationService = inventoryNotificationService;
     }
 
     @Transactional
@@ -136,24 +150,13 @@ public class ExportLogService {
                                 || "FORCE_NOTIFICATION_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
                             throw new RuntimeException("Simulated record failure");
                         }
-
-                        List<FavoriteProduct> subscriptions = favoriteProductRepository
-                                .findByProductVariantProductIdAndStatus(product.getId(), SubscriptionStatus.SUBSCRIBED);
-
-                        for (FavoriteProduct sub : subscriptions) {
-                            Notification notification = new Notification(
-                                    sub.getCustomer(),
-                                    "Stock Out",
-                                    NotificationType.STOCK_CHANGE,
-                                    "Sản phẩm " + product.getName() + " đã hết hàng (Out of Stock).",
-                                    List.of(NotificationChannel.WEB));
-                            notification.markSent();
-                            notificationRepository.save(notification);
-                        }
+                        inventoryNotificationService.checkAndNotify(product);
                     } catch (Exception e) {
                         log.error("Failed to record inventory change status for product: {}", product.getId(), e);
                         throw new IllegalStateException("RECORD_ERROR");
                     }
+                } else if (remainingQty <= lowStockThreshold) {
+                    inventoryNotificationService.checkAndNotify(product);
                 }
             }
         } catch (Exception e) {

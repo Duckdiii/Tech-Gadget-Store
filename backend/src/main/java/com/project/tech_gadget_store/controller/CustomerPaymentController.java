@@ -24,7 +24,10 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import com.project.tech_gadget_store.service.InventoryNotificationService;
 
+@Slf4j
 @Validated
 @RestController
 @RequestMapping("/api/customer/payment")
@@ -41,6 +44,7 @@ public class CustomerPaymentController {
     private final MomoService momoService;
     private final VNPayService vnpayService;
     private final ProductVariantRepository productVariantRepository;
+    private final InventoryNotificationService inventoryNotificationService;
 
     public CustomerPaymentController(CustomerRepository customerRepository,
                                      AddressRepository addressRepository,
@@ -52,7 +56,8 @@ public class CustomerPaymentController {
                                      PaymentService paymentService,
                                      MomoService momoService,
                                      VNPayService vnpayService,
-                                     ProductVariantRepository productVariantRepository) {
+                                     ProductVariantRepository productVariantRepository,
+                                     InventoryNotificationService inventoryNotificationService) {
         this.customerRepository = customerRepository;
         this.addressRepository = addressRepository;
         this.orderRepository = orderRepository;
@@ -64,6 +69,7 @@ public class CustomerPaymentController {
         this.momoService = momoService;
         this.vnpayService = vnpayService;
         this.productVariantRepository = productVariantRepository;
+        this.inventoryNotificationService = inventoryNotificationService;
     }
 
 
@@ -272,6 +278,15 @@ public class CustomerPaymentController {
                         "Unable to complete your order. Please try again later.", e);
             }
 
+            try {
+                // Trigger low stock checks
+                for (CartItem cartItem : matchedItems) {
+                    inventoryNotificationService.checkAndNotify(cartItem.getProductVariant().getProduct());
+                }
+            } catch (Exception e) {
+                log.error("Failed to check or notify low stock for order: {}", savedOrder.getId(), e);
+            }
+
             return ResponseEntity.ok(PaymentConfirmResponseDto.builder()
                     .paymentMethod("COD")
                     .status("PENDING")
@@ -281,25 +296,87 @@ public class CustomerPaymentController {
                     .build());
         }
 
-        // Online payment (MoMo / VNPay): Setup PaymentLog without order
+        // Online payment (MoMo / VNPay): Setup Order first, then PaymentLog
         PaymentMethod activeOnlineMethod = momo != null ? momo : vnpay;
         String typeStr = momo != null ? "MOMO" : "VNPAY";
 
-        try {
-            PaymentLog pendingLog = paymentService.createPendingOnlineLog(finalAmount);
+        Order order = new Order(customer, address, activeOnlineMethod);
+        boolean inventoryUpdateFailed = false;
 
+        try {
+            for (CartItem cartItem : matchedItems) {
+                List<ProductVariant> availableUnits = productVariantRepository.findAvailablePhysicalUnits(
+                        cartItem.getProductVariant().getProduct().getId(),
+                        cartItem.getProductVariant().getRamGb(),
+                        cartItem.getProductVariant().getStorageGb(),
+                        cartItem.getProductVariant().getColor()
+                );
+                if (availableUnits.size() < cartItem.getQuantity()) {
+                    throw new IllegalStateException("Sản phẩm không đủ số lượng");
+                }
+                for (int i = 0; i < cartItem.getQuantity(); i++) {
+                    ProductVariant unit = availableUnits.get(i);
+                    OrderItem orderItem = new OrderItem(order, unit, 1, cartItem.getUnitPrice());
+                    for (BundleService service : cartItem.getBundleServices()) {
+                        orderItem.addBundleService(service);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            inventoryUpdateFailed = true;
+        }
+
+        if (inventoryUpdateFailed) {
+            try {
+                order.getItems().clear();
+                orderRepository.save(order);
+            } catch (Exception ex) {
+                // Ignore
+            }
+            throw new com.project.tech_gadget_store.exception.InventoryUpdateException(
+                    "Unable to update inventory information. Please contact support or try again later.");
+        }
+
+        Order savedOrder;
+        PaymentLog savedLog;
+        try {
+            savedOrder = orderRepository.save(order);
+
+            // Create pending payment log linked to order
+            savedLog = paymentService.createPendingLog(savedOrder.getId(), finalAmount, momo != null);
+
+            // Clear items from the customer's cart
+            for (CartItem cartItem : matchedItems) {
+                cart.removeItem(cartItem);
+            }
+            customerRepository.save(customer);
+        } catch (Exception e) {
+            throw new com.project.tech_gadget_store.exception.OrderSaveException(
+                    "Unable to complete your order. Please try again later.", e);
+        }
+
+        try {
+            // Trigger low stock checks
+            for (CartItem cartItem : matchedItems) {
+                inventoryNotificationService.checkAndNotify(cartItem.getProductVariant().getProduct());
+            }
+        } catch (Exception e) {
+            log.error("Failed to check or notify low stock for order: {}", savedOrder.getId(), e);
+        }
+
+        try {
             String redirectUrl;
             if (momo != null) {
-                redirectUrl = momoService.createPayment(pendingLog.getId(), finalAmount, req.getOrderInfo());
+                redirectUrl = momoService.createPayment(savedLog.getId(), finalAmount, req.getOrderInfo());
             } else {
-                redirectUrl = vnpayService.buildPaymentUrl(pendingLog.getId(), finalAmount, req.getClientIp(), req.getOrderInfo());
+                redirectUrl = vnpayService.buildPaymentUrl(savedLog.getId(), finalAmount, req.getClientIp(), req.getOrderInfo());
             }
 
             return ResponseEntity.ok(PaymentConfirmResponseDto.builder()
                     .paymentMethod(typeStr)
                     .status("PENDING")
                     .redirectUrl(redirectUrl)
-                    .paymentLogId(pendingLog.getId())
+                    .paymentLogId(savedLog.getId())
                     .message("Khởi tạo thanh toán online thành công, chuyển hướng người dùng")
                     .build());
 
