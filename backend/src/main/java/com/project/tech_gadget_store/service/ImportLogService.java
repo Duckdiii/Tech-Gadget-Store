@@ -194,4 +194,10 @@ public class ImportLogService {
                 .map(importLogMapper::toImportLogResponseDto)
                 .collect(Collectors.toList());
     }
+
+    public org.springframework.data.domain.Page<ImportLogResponseDto> getImportLogsPaginated(int page, int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return importLogRepository.findAllByOrderByImportedAtDesc(pageable)
+                .map(importLogMapper::toImportLogResponseDto);
+    }
 }

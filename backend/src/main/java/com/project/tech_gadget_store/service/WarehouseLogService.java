@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -54,11 +55,16 @@ public class WarehouseLogService {
             throw new IllegalArgumentException("Invalid filter input. Please check the selected conditions");
         }
 
+        LocalDateTime startDateTime = start != null ? start.atStartOfDay() : null;
+        LocalDateTime endDateTime = end != null ? end.atTime(23, 59, 59, 999999999) : null;
+
         List<WarehouseLogResponseDto> results = new ArrayList<>();
 
         // Fetch imports
         if (filter.getType() == null || filter.getType().isBlank() || "IMPORT".equalsIgnoreCase(filter.getType())) {
-            List<ImportLog> imports = importLogRepository.findAll();
+            List<ImportLog> imports = (startDateTime != null && endDateTime != null)
+                    ? importLogRepository.findByImportedAtBetween(startDateTime, endDateTime)
+                    : importLogRepository.findAll();
             for (ImportLog il : imports) {
                 for (ImportLogItem item : il.getItems()) {
                     WarehouseLogResponseDto dto = mapImportItem(il, item);
@@ -71,7 +77,9 @@ public class WarehouseLogService {
 
         // Fetch exports
         if (filter.getType() == null || filter.getType().isBlank() || "EXPORT".equalsIgnoreCase(filter.getType())) {
-            List<ExportLog> exports = exportLogRepository.findAll();
+            List<ExportLog> exports = (startDateTime != null && endDateTime != null)
+                    ? exportLogRepository.findByExportedAtBetween(startDateTime, endDateTime)
+                    : exportLogRepository.findAll();
             for (ExportLog el : exports) {
                 for (ExportLogItem item : el.getItems()) {
                     WarehouseLogResponseDto dto = mapExportItem(el, item);
@@ -139,8 +147,7 @@ public class WarehouseLogService {
         return sb.toString();
     }
 
-    // Kiểm tra xem một bản ghi WarehouseLogResponseDto có khớp với các điều kiện
-    // lọc hay không
+    // Kiểm tra xem một bản ghi WarehouseLogResponseDto có khớp với các điều kiện lọc hay không
     private boolean matchesFilter(WarehouseLogResponseDto dto, WarehouseLogFilterRequestDto filter, LocalDate start,
             LocalDate end) {
         if (filter.getKeyword() != null && !filter.getKeyword().isBlank()) {

@@ -159,6 +159,12 @@ public class SupplyOrderService {
                 .toList();
     }
 
+    public org.springframework.data.domain.Page<SupplyOrderResponseDto> getAllPaginated(int page, int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return supplyOrderRepository.findAll(pageable)
+                .map(supplyOrderMapper::toResponseDto);
+    }
+
     public SupplyOrderResponseDto getById(String id) {
         return supplyOrderRepository.findById(id)
                 .map(supplyOrderMapper::toResponseDto)

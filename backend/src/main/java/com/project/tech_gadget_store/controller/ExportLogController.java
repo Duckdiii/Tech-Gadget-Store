@@ -27,8 +27,10 @@ public class ExportLogController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ExportLogResponseDto>> getAll() {
-        List<ExportLogResponseDto> response = exportLogService.getAllExportLogs();
+    public ResponseEntity<org.springframework.data.domain.Page<ExportLogResponseDto>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        org.springframework.data.domain.Page<ExportLogResponseDto> response = exportLogService.getExportLogsPaginated(page, size);
         return ResponseEntity.ok(response);
     }
 }

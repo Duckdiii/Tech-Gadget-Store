@@ -19,9 +19,11 @@ public class PaymentLogController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PaymentLogResponseDto>> getPaymentLogs(
-            @ModelAttribute PaymentLogFilterRequestDto filter) {
-        return ResponseEntity.ok(paymentLogService.getPaymentLogs(filter));
+    public ResponseEntity<org.springframework.data.domain.Page<PaymentLogResponseDto>> getPaymentLogs(
+            @ModelAttribute PaymentLogFilterRequestDto filter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(paymentLogService.getPaymentLogs(filter, page, size));
     }
 
     @GetMapping("/{logId}")

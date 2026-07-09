@@ -26,8 +26,10 @@ public class SupplyOrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SupplyOrderResponseDto>> getAll() {
-        return ResponseEntity.ok(supplyOrderService.getAll());
+    public ResponseEntity<org.springframework.data.domain.Page<SupplyOrderResponseDto>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(supplyOrderService.getAllPaginated(page, size));
     }
 
     @GetMapping("/{id}")

@@ -11,10 +11,14 @@ import com.project.tech_gadget_store.exception.PaymentLogLoadException;
 import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.repository.PaymentLogRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -77,6 +81,59 @@ public class PaymentLogService {
         }
 
         return results;
+    }
+
+    public Page<PaymentLogResponseDto> getPaymentLogs(PaymentLogFilterRequestDto filter, int page, int size) {
+        PaymentLogStatus status = null;
+        if (filter.getStatus() != null && !filter.getStatus().isBlank()) {
+            try {
+                status = PaymentLogStatus.valueOf(filter.getStatus().toUpperCase().trim());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid status in search criteria");
+            }
+        }
+
+        LocalDate startLocalDate = null;
+        LocalDate endLocalDate = null;
+
+        if (filter.getStartDate() != null && !filter.getStartDate().isBlank()) {
+            try {
+                startLocalDate = LocalDate.parse(filter.getStartDate());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid filter input. Please check your search criteria");
+            }
+        }
+
+        if (filter.getEndDate() != null && !filter.getEndDate().isBlank()) {
+            try {
+                endLocalDate = LocalDate.parse(filter.getEndDate());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid filter input. Please check your search criteria");
+            }
+        }
+
+        if (startLocalDate != null && endLocalDate != null && startLocalDate.isAfter(endLocalDate)) {
+            throw new IllegalArgumentException("Invalid filter input. Please check your search criteria");
+        }
+
+        LocalDateTime startDateTime = startLocalDate != null ? startLocalDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = endLocalDate != null ? endLocalDate.atTime(23, 59, 59, 999999999) : null;
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<PaymentLog> logPage;
+        try {
+            logPage = paymentLogRepository.findFilteredPaymentLogs(
+                    status, startDateTime, endDateTime, pageable);
+        } catch (Exception e) {
+            log.error("Failed to load payment logs from database", e);
+            throw new PaymentLogLoadException("Unable to load payment logs. Please try again later", e);
+        }
+
+        if (logPage.isEmpty()) {
+            throw new java.util.NoSuchElementException("No payment records found");
+        }
+
+        return logPage.map(this::mapToResponseDto);
     }
 
     public PaymentLogResponseDto getPaymentLogDetails(String logId) {

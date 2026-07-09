@@ -207,4 +207,15 @@ public class ExportLogService {
                 })
                 .collect(Collectors.toList());
     }
+
+    public org.springframework.data.domain.Page<ExportLogResponseDto> getExportLogsPaginated(int page, int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return exportLogRepository.findAllByOrderByExportedAtDesc(pageable)
+                .map(log -> {
+                    String receiptId = receiptRepository.findByExportLogId(log.getId())
+                            .map(Receipt::getId)
+                            .orElse(null);
+                    return exportLogMapper.toExportLogResponseDto(log, receiptId, "Success");
+                });
+    }
 }

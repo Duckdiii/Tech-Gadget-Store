@@ -27,8 +27,10 @@ public class ImportLogController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ImportLogResponseDto>> getAll() {
-        List<ImportLogResponseDto> response = importLogService.getAllImportLogs();
+    public ResponseEntity<org.springframework.data.domain.Page<ImportLogResponseDto>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        org.springframework.data.domain.Page<ImportLogResponseDto> response = importLogService.getImportLogsPaginated(page, size);
         return ResponseEntity.ok(response);
     }
 }
