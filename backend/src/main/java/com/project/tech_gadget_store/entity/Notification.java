@@ -52,9 +52,9 @@ public class Notification extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    private User customer;
 
-    public Notification(Customer customer, String title, NotificationType type, String message, List<NotificationChannel> channels) {
+    public Notification(User customer, String title, NotificationType type, String message, List<NotificationChannel> channels) {
         if (customer == null) {
             throw new IllegalArgumentException("customer must not be null");
         }

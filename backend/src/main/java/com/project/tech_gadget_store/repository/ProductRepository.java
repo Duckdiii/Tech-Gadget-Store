@@ -16,6 +16,8 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
 
     boolean existsByNameIgnoreCase(String name);
 
+    Optional<Product> findByNameIgnoreCase(String name);
+
     boolean existsByNameIgnoreCaseAndIdNot(String name, String id);
 
     Optional<Product> findByIdAndIsActiveTrue(String id);

@@ -136,7 +136,7 @@ export default function StoreNavbar() {
 
   useEffect(() => {
     if (!user || user.role !== 'customer') { setNotifications([]); return }
-    apiFetch('/api/customer/notifications').then(setNotifications).catch(() => {})
+    apiFetch('/api/notifications').then(setNotifications).catch(() => {})
   }, [user])
 
   const unreadCount = notifications.filter(n => !n.readAt).length
@@ -160,11 +160,11 @@ export default function StoreNavbar() {
 
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, readAt: n.readAt || new Date().toISOString() })))
-    apiFetch('/api/customer/notifications/read-all', { method: 'PATCH' }).catch(() => {})
+    apiFetch('/api/notifications/read-all', { method: 'PATCH' }).catch(() => {})
   }
   const markRead = (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, readAt: n.readAt || new Date().toISOString() } : n))
-    apiFetch(`/api/customer/notifications/${id}/read`, { method: 'PATCH' }).catch(() => {})
+    apiFetch(`/api/notifications/${id}/read`, { method: 'PATCH' }).catch(() => {})
   }
 
   const handleSearch = (e) => { e.preventDefault(); onNavigate('list') }

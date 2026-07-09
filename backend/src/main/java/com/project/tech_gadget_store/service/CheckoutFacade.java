@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -37,7 +38,7 @@ public class CheckoutFacade {
     private final MomoService momoService;
     private final VNPayService vnpayService;
     private final ProductVariantRepository productVariantRepository;
-    private final InventoryNotificationService inventoryNotificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public CheckoutFacade(UserRepository userRepository,
                           CustomerRepository customerRepository,
@@ -51,7 +52,7 @@ public class CheckoutFacade {
                           MomoService momoService,
                           VNPayService vnpayService,
                           ProductVariantRepository productVariantRepository,
-                          InventoryNotificationService inventoryNotificationService) {
+                          ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
         this.addressRepository = addressRepository;
@@ -64,7 +65,7 @@ public class CheckoutFacade {
         this.momoService = momoService;
         this.vnpayService = vnpayService;
         this.productVariantRepository = productVariantRepository;
-        this.inventoryNotificationService = inventoryNotificationService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -96,6 +97,17 @@ public class CheckoutFacade {
             if (availableUnits.size() < item.getQuantity()) {
                 throw new IllegalArgumentException("Some items in your cart are no longer available. Please remove or update them to continue.");
             }
+        }
+
+        // Track initial stock values
+        List<Product> productsToNotify = matchedItems.stream()
+                .map(item -> item.getProductVariant().getProduct())
+                .distinct()
+                .collect(Collectors.toList());
+
+        java.util.Map<String, Long> oldStocks = new java.util.HashMap<>();
+        for (Product p : productsToNotify) {
+            oldStocks.put(p.getId(), productVariantRepository.countAvailablePhysicalUnitsByProductId(p.getId()));
         }
 
         Address address = addressRepository.findById(req.getAddressId())
@@ -192,13 +204,15 @@ public class CheckoutFacade {
                         "Unable to complete your order. Please try again later.", e);
             }
 
-            try {
-                // Trigger low stock checks
-                for (CartItem cartItem : matchedItems) {
-                    inventoryNotificationService.checkAndNotify(cartItem.getProductVariant().getProduct());
+            // Publish stock change events
+            for (Product p : productsToNotify) {
+                try {
+                    long oldStock = oldStocks.getOrDefault(p.getId(), 0L);
+                    long newStock = productVariantRepository.countAvailablePhysicalUnitsByProductId(p.getId());
+                    eventPublisher.publishEvent(new com.project.tech_gadget_store.event.ProductStockChangedEvent(p, oldStock, newStock));
+                } catch (Exception e) {
+                    log.error("Failed to publish ProductStockChangedEvent: {}", e.getMessage(), e);
                 }
-            } catch (Exception e) {
-                log.error("Failed to check or notify low stock for order: {}", savedOrder.getId(), e);
             }
 
             return PaymentConfirmResponseDto.builder()
@@ -274,13 +288,15 @@ public class CheckoutFacade {
                     "Unable to complete your order. Please try again later.", e);
         }
 
-        try {
-            // Trigger low stock checks
-            for (CartItem cartItem : matchedItems) {
-                inventoryNotificationService.checkAndNotify(cartItem.getProductVariant().getProduct());
+        // Publish stock change events
+        for (Product p : productsToNotify) {
+            try {
+                long oldStock = oldStocks.getOrDefault(p.getId(), 0L);
+                long newStock = productVariantRepository.countAvailablePhysicalUnitsByProductId(p.getId());
+                eventPublisher.publishEvent(new com.project.tech_gadget_store.event.ProductStockChangedEvent(p, oldStock, newStock));
+            } catch (Exception e) {
+                log.error("Failed to publish ProductStockChangedEvent: {}", e.getMessage(), e);
             }
-        } catch (Exception e) {
-            log.error("Failed to check or notify low stock for order: {}", savedOrder.getId(), e);
         }
 
         try {

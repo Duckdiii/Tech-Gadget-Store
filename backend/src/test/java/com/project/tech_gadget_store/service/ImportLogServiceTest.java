@@ -44,7 +44,7 @@ class ImportLogServiceTest {
     @Mock
     private ImportLogMapper importLogMapper;
     @Mock
-    private InventoryNotificationService inventoryNotificationService;
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private ImportLogService importLogService;

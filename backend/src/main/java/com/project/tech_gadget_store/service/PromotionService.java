@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 @Service
 @Transactional(readOnly = true)
 public class PromotionService {
@@ -27,13 +29,16 @@ public class PromotionService {
     private final PromotionRepository promotionRepository;
     private final ProductRepository productRepository;
     private final PromotionMapper promotionMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PromotionService(PromotionRepository promotionRepository,
                             ProductRepository productRepository,
-                            PromotionMapper promotionMapper) {
+                            PromotionMapper promotionMapper,
+                            ApplicationEventPublisher eventPublisher) {
         this.promotionRepository = promotionRepository;
         this.productRepository = productRepository;
         this.promotionMapper = promotionMapper;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<PromotionResponseDto> getAllPromotions() {
@@ -59,7 +64,9 @@ public class PromotionService {
                 dto.getCode(), dto.getName(), dto.getDiscountPercent(),
                 dto.getStartAt(), dto.getEndAt(), dto.getActive(), null);
         products.forEach(promotion::addProduct);
-        return promotionMapper.toResponseDto(promotionRepository.save(promotion));
+        Promotion savedPromotion = promotionRepository.save(promotion);
+        eventPublisher.publishEvent(new com.project.tech_gadget_store.event.ProductPromotionAppliedEvent(savedPromotion, products));
+        return promotionMapper.toResponseDto(savedPromotion);
     }
 
     @Transactional
@@ -84,7 +91,9 @@ public class PromotionService {
         promotion.setStartAt(dto.getStartAt());
         promotion.setEndAt(dto.getEndAt());
         promotion.setActive(dto.getActive());
-        return promotionMapper.toResponseDto(promotionRepository.save(promotion));
+        Promotion savedPromotion = promotionRepository.save(promotion);
+        eventPublisher.publishEvent(new com.project.tech_gadget_store.event.ProductPromotionAppliedEvent(savedPromotion, products));
+        return promotionMapper.toResponseDto(savedPromotion);
     }
 
     @Transactional

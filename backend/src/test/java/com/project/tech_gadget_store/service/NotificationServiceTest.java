@@ -1,15 +1,12 @@
 package com.project.tech_gadget_store.service;
 
 import com.project.tech_gadget_store.dto.response.NotificationResponseDto;
-import com.project.tech_gadget_store.entity.Customer;
-import com.project.tech_gadget_store.entity.Membership;
-import com.project.tech_gadget_store.entity.MembershipBenefit;
-import com.project.tech_gadget_store.entity.Notification;
+import com.project.tech_gadget_store.entity.*;
 import com.project.tech_gadget_store.entity.enums.MembershipTier;
 import com.project.tech_gadget_store.entity.enums.NotificationChannel;
 import com.project.tech_gadget_store.entity.enums.NotificationType;
 import com.project.tech_gadget_store.exception.ResourceNotFoundException;
-import com.project.tech_gadget_store.repository.CustomerRepository;
+import com.project.tech_gadget_store.repository.AccountRepository;
 import com.project.tech_gadget_store.repository.NotificationRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +29,7 @@ class NotificationServiceTest {
     private NotificationRepository notificationRepository;
 
     @Mock
-    private CustomerRepository customerRepository;
+    private AccountRepository accountRepository;
 
     @InjectMocks
     private NotificationService notificationService;
@@ -51,7 +48,9 @@ class NotificationServiceTest {
         Notification n = new Notification(customer, "Còn hàng trở lại", NotificationType.RESTOCKED,
                 "Sản phẩm bạn theo dõi đã có hàng", List.of(NotificationChannel.WEB));
 
-        when(customerRepository.findByAccountEmail("alice@test.com")).thenReturn(Optional.of(customer));
+        Account account = mock(Account.class);
+        when(accountRepository.findByEmail("alice@test.com")).thenReturn(Optional.of(account));
+        when(account.getUser()).thenReturn(customer);
         when(notificationRepository.findByCustomerIdOrderByCreatedAtDesc("cust-1")).thenReturn(List.of(n));
 
         List<NotificationResponseDto> result = notificationService.getMyNotifications("alice@test.com");
@@ -63,7 +62,7 @@ class NotificationServiceTest {
 
     @Test
     void getMyNotifications_customerNotFound_throwsResourceNotFoundException() {
-        when(customerRepository.findByAccountEmail("missing@test.com")).thenReturn(Optional.empty());
+        when(accountRepository.findByEmail("missing@test.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> notificationService.getMyNotifications("missing@test.com"))
                 .isInstanceOf(ResourceNotFoundException.class);
@@ -76,7 +75,9 @@ class NotificationServiceTest {
                 "msg", List.of(NotificationChannel.WEB));
         n.setId("notif-1");
 
-        when(customerRepository.findByAccountEmail("alice@test.com")).thenReturn(Optional.of(customer));
+        Account account = mock(Account.class);
+        when(accountRepository.findByEmail("alice@test.com")).thenReturn(Optional.of(account));
+        when(account.getUser()).thenReturn(customer);
         when(notificationRepository.findByIdAndCustomerId("notif-1", "cust-1")).thenReturn(Optional.of(n));
         when(notificationRepository.save(n)).thenReturn(n);
 
@@ -89,7 +90,9 @@ class NotificationServiceTest {
     @Test
     void markRead_notFound_throwsResourceNotFoundException() {
         Customer customer = customer();
-        when(customerRepository.findByAccountEmail("alice@test.com")).thenReturn(Optional.of(customer));
+        Account account = mock(Account.class);
+        when(accountRepository.findByEmail("alice@test.com")).thenReturn(Optional.of(account));
+        when(account.getUser()).thenReturn(customer);
         when(notificationRepository.findByIdAndCustomerId("missing", "cust-1")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> notificationService.markRead("alice@test.com", "missing"))
@@ -102,7 +105,9 @@ class NotificationServiceTest {
         Notification n1 = new Notification(customer, "A", NotificationType.PROMOTION, "m1", List.of(NotificationChannel.WEB));
         Notification n2 = new Notification(customer, "B", NotificationType.OUT_OF_STOCK, "m2", List.of(NotificationChannel.WEB));
 
-        when(customerRepository.findByAccountEmail("alice@test.com")).thenReturn(Optional.of(customer));
+        Account account = mock(Account.class);
+        when(accountRepository.findByEmail("alice@test.com")).thenReturn(Optional.of(account));
+        when(account.getUser()).thenReturn(customer);
         when(notificationRepository.findByCustomerIdAndReadAtIsNull("cust-1")).thenReturn(List.of(n1, n2));
 
         notificationService.markAllRead("alice@test.com");

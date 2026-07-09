@@ -4,18 +4,15 @@ import com.project.tech_gadget_store.dto.request.ExportLogItemRequestDto;
 import com.project.tech_gadget_store.dto.request.ExportLogRequestDto;
 import com.project.tech_gadget_store.dto.response.ExportLogResponseDto;
 import com.project.tech_gadget_store.entity.*;
-import com.project.tech_gadget_store.entity.enums.AccountStatus;
 import com.project.tech_gadget_store.entity.enums.ImportAndExportStatus;
-import com.project.tech_gadget_store.entity.enums.NotificationChannel;
-import com.project.tech_gadget_store.entity.enums.NotificationType;
 import com.project.tech_gadget_store.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.mapper.ExportLogMapper;
 import com.project.tech_gadget_store.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.project.tech_gadget_store.entity.enums.SubscriptionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,13 +26,8 @@ public class ExportLogService {
     private final ProductVariantRepository productVariantRepository;
     private final UserRepository userRepository;
     private final ReceiptRepository receiptRepository;
-    private final NotificationRepository notificationRepository;
-    private final CustomerRepository customerRepository;
-    private final FavoriteProductRepository favoriteProductRepository;
-    private final AccountRepository accountRepository;
-    private final EmailService emailService;
     private final ExportLogMapper exportLogMapper;
-    private final InventoryNotificationService inventoryNotificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${app.inventory.low-stock-threshold:5}")
     private long lowStockThreshold;
@@ -44,149 +36,165 @@ public class ExportLogService {
             ProductVariantRepository productVariantRepository,
             UserRepository userRepository,
             ReceiptRepository receiptRepository,
-            NotificationRepository notificationRepository,
-            CustomerRepository customerRepository,
-            FavoriteProductRepository favoriteProductRepository,
-            AccountRepository accountRepository,
-            EmailService emailService,
             ExportLogMapper exportLogMapper,
-            InventoryNotificationService inventoryNotificationService) {
+            ApplicationEventPublisher eventPublisher) {
         this.exportLogRepository = exportLogRepository;
         this.productVariantRepository = productVariantRepository;
         this.userRepository = userRepository;
         this.receiptRepository = receiptRepository;
-        this.notificationRepository = notificationRepository;
-        this.customerRepository = customerRepository;
-        this.favoriteProductRepository = favoriteProductRepository;
-        this.accountRepository = accountRepository;
-        this.emailService = emailService;
         this.exportLogMapper = exportLogMapper;
-        this.inventoryNotificationService = inventoryNotificationService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
     public ExportLogResponseDto exportProducts(ExportLogRequestDto requestDto) {
         // 1. Validate performedById exists
         if (!userRepository.existsById(requestDto.getPerformedById())) {
+            eventPublisher.publishEvent(new com.project.tech_gadget_store.event.ExportStockEvent(
+                    requestDto.getPerformedById(), false, "Performer not found"));
             throw new ResourceNotFoundException("Performer not found");
         }
 
-        ExportLog exportLog = ExportLog.builder()
-                .performedBy(requestDto.getPerformedById())
-                .reason(requestDto.getReason())
-                .status(ImportAndExportStatus.SUCCESS)
-                .exportedAt(java.time.LocalDateTime.now())
-                .build();
-
+        // Track initial stock values
+        List<Product> productsToNotify = new java.util.ArrayList<>();
+        java.util.Map<String, Long> oldStocks = new java.util.HashMap<>();
         for (ExportLogItemRequestDto itemDto : requestDto.getItems()) {
-            // Find reference variant to get specs
-            ProductVariant referenceVariant = productVariantRepository.findById(itemDto.getProductVariantId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product variant not found"));
-
-            // Trả về số lượng đơn vị vật lý có sẵn dựa trên các thông số kỹ thuật của biến
-            // thể sản phẩm tham chiếu
-            List<ProductVariant> availableUnits = productVariantRepository.findAvailablePhysicalUnits( // trả về danh
-                                                                                                       // sách các đơn
-                                                                                                       // vị vật lý có
-                                                                                                       // sẵn
-                    referenceVariant.getProduct().getId(),
-                    referenceVariant.getRamGb(),
-                    referenceVariant.getStorageGb(),
-                    referenceVariant.getColor());
-
-            if (availableUnits.size() < itemDto.getQuantity()) {
-                throw new IllegalArgumentException("Insufficient product quantity in inventory");
-            }
-
-            // Select quantity physical units and link to export log
-            for (int i = 0; i < itemDto.getQuantity(); i++) {
-                ProductVariant unitToExport = availableUnits.get(i);
-                new ExportLogItem(exportLog, unitToExport, 1);
+            ProductVariant pv = productVariantRepository.findById(itemDto.getProductVariantId()).orElse(null);
+            if (pv != null && pv.getProduct() != null) {
+                Product p = pv.getProduct();
+                if (!productsToNotify.contains(p)) {
+                    productsToNotify.add(p);
+                    oldStocks.put(p.getId(), productVariantRepository.countAvailablePhysicalUnitsByProductId(p.getId()));
+                }
             }
         }
 
-        // Save export log (CascadeType.ALL will save the export log items)
-        ExportLog savedLog = exportLogRepository.save(exportLog);
-
-        String receiptId = null;
-        boolean receiptFailed = false;
-        boolean notificationFailed = false;
-
-        // 2. Generate Receipt
         try {
-            if ("FORCE_RECEIPT_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
-                throw new RuntimeException("Simulated receipt generation failure");
-            }
-            Receipt receipt = new Receipt(savedLog, "/receipts/receipt_" + savedLog.getId() + ".pdf");
-            Receipt savedReceipt = receiptRepository.save(receipt);
-            receiptId = savedReceipt.getId();
-        } catch (Exception e) {
-            log.error("Failed to generate receipt: {}", e.getMessage(), e);
-            receiptFailed = true;
-        }
-
-        // 3. Notify Inventory Change Status
-        String notificationMessage = null;
-        try {
-            if ("FORCE_RETRIEVE_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
-                throw new RuntimeException("Simulated retrieve failure");
-            }
+            ExportLog exportLog = ExportLog.builder()
+                    .performedBy(requestDto.getPerformedById())
+                    .reason(requestDto.getReason())
+                    .status(ImportAndExportStatus.SUCCESS)
+                    .exportedAt(java.time.LocalDateTime.now())
+                    .build();
 
             for (ExportLogItemRequestDto itemDto : requestDto.getItems()) {
                 ProductVariant referenceVariant = productVariantRepository.findById(itemDto.getProductVariantId())
                         .orElseThrow(() -> new ResourceNotFoundException("Product variant not found"));
-                Product product = referenceVariant.getProduct();
 
-                // Retrieve updated quantity
-                long remainingQty;
-                try {
-                    remainingQty = productVariantRepository.countAvailablePhysicalUnitsByProductId(product.getId());
-                } catch (Exception e) {
-                    log.error("Failed to retrieve updated inventory quantity for product: {}", product.getId(), e);
-                    throw new IllegalStateException("RETRIEVE_ERROR");
+                List<ProductVariant> availableUnits = productVariantRepository.findAvailablePhysicalUnits(
+                        referenceVariant.getProduct().getId(),
+                        referenceVariant.getRamGb(),
+                        referenceVariant.getStorageGb(),
+                        referenceVariant.getColor());
+
+                if (availableUnits.size() < itemDto.getQuantity()) {
+                    throw new IllegalArgumentException("Insufficient product quantity in inventory");
                 }
 
-                // Determine inventory status & record inventory change status
-                if (remainingQty == 0) {
-                    try {
-                        if ("FORCE_RECORD_FAILURE".equalsIgnoreCase(requestDto.getReason())
-                                || "FORCE_NOTIFICATION_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
-                            throw new RuntimeException("Simulated record failure");
-                        }
-                        inventoryNotificationService.checkAndNotify(product);
-                    } catch (Exception e) {
-                        log.error("Failed to record inventory change status for product: {}", product.getId(), e);
-                        throw new IllegalStateException("RECORD_ERROR");
-                    }
-                } else if (remainingQty <= lowStockThreshold) {
-                    inventoryNotificationService.checkAndNotify(product);
+                for (int i = 0; i < itemDto.getQuantity(); i++) {
+                    ProductVariant unitToExport = availableUnits.get(i);
+                    new ExportLogItem(exportLog, unitToExport, 1);
                 }
             }
-        } catch (Exception e) {
-            if ("RETRIEVE_ERROR".equals(e.getMessage())) {
-                notificationMessage = "Unable to retrieve inventory status";
-            } else if ("RECORD_ERROR".equals(e.getMessage())) {
-                notificationMessage = "Unable to record inventory change status";
-            } else {
+
+            ExportLog savedLog = exportLogRepository.save(exportLog);
+
+            String receiptId = null;
+            boolean receiptFailed = false;
+            boolean notificationFailed = false;
+
+            // 2. Generate Receipt
+            try {
+                if ("FORCE_RECEIPT_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
+                    throw new RuntimeException("Simulated receipt generation failure");
+                }
+                Receipt receipt = new Receipt(savedLog, "/receipts/receipt_" + savedLog.getId() + ".pdf");
+                Receipt savedReceipt = receiptRepository.save(receipt);
+                receiptId = savedReceipt.getId();
+            } catch (Exception e) {
+                log.error("Failed to generate receipt: {}", e.getMessage(), e);
+                receiptFailed = true;
+            }
+
+            // 3. Notify Inventory Change Status (With simulated error handling for testing)
+            String notificationMessage = null;
+            try {
                 if ("FORCE_RETRIEVE_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
+                    throw new RuntimeException("Simulated retrieve failure");
+                }
+
+                for (ExportLogItemRequestDto itemDto : requestDto.getItems()) {
+                    ProductVariant referenceVariant = productVariantRepository.findById(itemDto.getProductVariantId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Product variant not found"));
+                    Product product = referenceVariant.getProduct();
+
+                    long remainingQty;
+                    try {
+                        remainingQty = productVariantRepository.countAvailablePhysicalUnitsByProductId(product.getId());
+                    } catch (Exception e) {
+                        log.error("Failed to retrieve updated inventory quantity for product: {}", product.getId(), e);
+                        throw new IllegalStateException("RETRIEVE_ERROR");
+                    }
+
+                    if (remainingQty == 0) {
+                        try {
+                            if ("FORCE_RECORD_FAILURE".equalsIgnoreCase(requestDto.getReason())
+                                    || "FORCE_NOTIFICATION_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
+                                throw new RuntimeException("Simulated record failure");
+                            }
+                        } catch (Exception e) {
+                            log.error("Failed to record inventory change status for product: {}", product.getId(), e);
+                            throw new IllegalStateException("RECORD_ERROR");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                if ("RETRIEVE_ERROR".equals(e.getMessage())) {
                     notificationMessage = "Unable to retrieve inventory status";
-                } else {
+                } else if ("RECORD_ERROR".equals(e.getMessage())) {
                     notificationMessage = "Unable to record inventory change status";
+                } else {
+                    if ("FORCE_RETRIEVE_FAILURE".equalsIgnoreCase(requestDto.getReason())) {
+                        notificationMessage = "Unable to retrieve inventory status";
+                    } else {
+                        notificationMessage = "Unable to record inventory change status";
+                    }
                 }
             }
-        }
 
-        // Determine message based on failures
-        String message;
-        if (receiptFailed) {
-            message = "Products were exported, but the receipt could not be generated";
-        } else if (notificationMessage != null) {
-            message = notificationMessage;
-        } else {
-            message = "Products exported successfully.";
-        }
+            // Publish ExportStockEvent success
+            eventPublisher.publishEvent(new com.project.tech_gadget_store.event.ExportStockEvent(
+                    requestDto.getPerformedById(), true, requestDto.getReason()));
 
-        return exportLogMapper.toExportLogResponseDto(savedLog, receiptId, message);
+            // Publish ProductStockChangedEvent
+            // Publish ProductStockChangedEvent
+            for (Product product : productsToNotify) {
+                try {
+                    long oldStock = oldStocks.getOrDefault(product.getId(), 0L);
+                    long newStock = productVariantRepository.countAvailablePhysicalUnitsByProductId(product.getId());
+                    eventPublisher.publishEvent(new com.project.tech_gadget_store.event.ProductStockChangedEvent(product, oldStock, newStock));
+                } catch (Exception e) {
+                    log.error("Failed to publish ProductStockChangedEvent: {}", e.getMessage(), e);
+                }
+            }
+
+            String message;
+            if (receiptFailed) {
+                message = "Products were exported, but the receipt could not be generated";
+            } else if (notificationMessage != null) {
+                message = notificationMessage;
+            } else {
+                message = "Products exported successfully.";
+            }
+
+            return exportLogMapper.toExportLogResponseDto(savedLog, receiptId, message);
+
+        } catch (Exception e) {
+            // Publish ExportStockEvent failure
+            eventPublisher.publishEvent(new com.project.tech_gadget_store.event.ExportStockEvent(
+                    requestDto.getPerformedById(), false, e.getMessage()));
+            throw e;
+        }
     }
 
     public List<ExportLogResponseDto> getAllExportLogs() {

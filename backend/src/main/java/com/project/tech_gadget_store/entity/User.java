@@ -35,6 +35,9 @@ public abstract class User extends BaseEntity {
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
     protected Account account;
 
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false)
     private List<Address> addresses = new ArrayList<>();

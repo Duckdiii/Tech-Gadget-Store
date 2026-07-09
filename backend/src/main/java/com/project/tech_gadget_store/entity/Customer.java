@@ -22,8 +22,7 @@ public class Customer extends User {
     @OneToOne(mappedBy = "customer", fetch = FetchType.LAZY)
     private Cart cart;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
-    private List<Notification> notifications = new ArrayList<>();
+
 
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     private List<FavoriteProduct> favoriteProducts = new ArrayList<>();

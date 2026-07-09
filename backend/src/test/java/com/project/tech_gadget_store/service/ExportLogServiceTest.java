@@ -48,7 +48,7 @@ class ExportLogServiceTest {
         @Mock
         private ExportLogMapper exportLogMapper;
         @Mock
-        private InventoryNotificationService inventoryNotificationService;
+        private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
         @InjectMocks
         private ExportLogService exportLogService;
@@ -225,7 +225,8 @@ class ExportLogServiceTest {
                 assertEquals("Products exported successfully.", response.getMessage());
 
                 verify(receiptRepository).save(any(Receipt.class));
-                verify(inventoryNotificationService).checkAndNotify(product);
+                verify(eventPublisher, atLeastOnce()).publishEvent(any(com.project.tech_gadget_store.event.ExportStockEvent.class));
+                verify(eventPublisher, atLeastOnce()).publishEvent(any(com.project.tech_gadget_store.event.ProductStockChangedEvent.class));
         }
 
         @Test
