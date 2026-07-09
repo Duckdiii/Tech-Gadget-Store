@@ -56,9 +56,12 @@ public class ImportLogService {
             throw new ResourceNotFoundException("Performer not found");
         }
 
-        // Create import log
-        ImportLog importLog = new ImportLog(requestDto.getPerformedById(), ImportAndExportStatus.SUCCESS);
-        importLog.setNote(requestDto.getNote());
+        ImportLog importLog = ImportLog.builder()
+                .performedBy(requestDto.getPerformedById())
+                .status(ImportAndExportStatus.SUCCESS)
+                .note(requestDto.getNote())
+                .importedAt(java.time.LocalDateTime.now())
+                .build();
 
         for (ImportLogItemRequestDto itemDto : requestDto.getItems()) {
             int qty = itemDto.getQuantity();

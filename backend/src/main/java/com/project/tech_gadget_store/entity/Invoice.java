@@ -1,9 +1,6 @@
 package com.project.tech_gadget_store.entity;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -13,7 +10,9 @@ import java.time.LocalDateTime;
 @Table(name = "invoices")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Invoice extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)

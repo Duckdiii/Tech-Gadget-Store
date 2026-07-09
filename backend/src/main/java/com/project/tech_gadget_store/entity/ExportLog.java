@@ -1,9 +1,6 @@
 package com.project.tech_gadget_store.entity;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import com.project.tech_gadget_store.entity.enums.ImportAndExportStatus;
 import jakarta.persistence.*;
 
@@ -15,9 +12,12 @@ import java.util.List;
 @Table(name = "export_logs")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ExportLog extends BaseEntity {
 
+    @Builder.Default
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "export_log_id", nullable = false)
     private List<ExportLogItem> items = new ArrayList<>();
@@ -31,6 +31,7 @@ public class ExportLog extends BaseEntity {
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private ImportAndExportStatus status = ImportAndExportStatus.PENDING;

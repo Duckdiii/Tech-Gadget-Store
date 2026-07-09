@@ -73,7 +73,14 @@ public class InvoiceService {
                             .setScale(2, RoundingMode.HALF_UP);
                     BigDecimal finalAmount = beforeVat.add(vatAmount);
 
-                    Invoice newInvoice = new Invoice(order, originalAmount, vatAmount, discountAmount, finalAmount);
+                    Invoice newInvoice = Invoice.builder()
+                            .order(order)
+                            .originalAmount(originalAmount)
+                            .vatAmount(vatAmount)
+                            .discountAmount(discountAmount)
+                            .finalAmount(finalAmount)
+                            .issuedAt(java.time.LocalDateTime.now())
+                            .build();
                     return invoiceRepository.save(newInvoice);
                 });
 

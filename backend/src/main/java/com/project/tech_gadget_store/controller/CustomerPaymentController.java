@@ -222,7 +222,12 @@ public class CustomerPaymentController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giá trị đơn hàng vượt quá giới hạn cho phép của COD");
             }
 
-            Order order = new Order(customer, address, codMethod);
+            Order order = Order.builder()
+                    .customer(customer)
+                    .address(address)
+                    .selectedPaymentMethod(codMethod)
+                    .orderDate(java.time.LocalDateTime.now())
+                    .build();
             boolean inventoryUpdateFailed = false;
 
             try {
@@ -300,7 +305,12 @@ public class CustomerPaymentController {
         PaymentMethod activeOnlineMethod = momo != null ? momo : vnpay;
         String typeStr = momo != null ? "MOMO" : "VNPAY";
 
-        Order order = new Order(customer, address, activeOnlineMethod);
+        Order order = Order.builder()
+                .customer(customer)
+                .address(address)
+                .selectedPaymentMethod(activeOnlineMethod)
+                .orderDate(java.time.LocalDateTime.now())
+                .build();
         boolean inventoryUpdateFailed = false;
 
         try {

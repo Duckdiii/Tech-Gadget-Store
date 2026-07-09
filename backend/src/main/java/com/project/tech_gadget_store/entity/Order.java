@@ -16,16 +16,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "orders")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Order extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -36,6 +35,7 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
+    @Builder.Default
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "order_id", nullable = false)
     private List<OrderItem> items = new ArrayList<>();
@@ -50,6 +50,7 @@ public class Order extends BaseEntity {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false, length = 40)
     private OrderStatus orderStatus = OrderStatus.AWAITING_CONFIRMATION;

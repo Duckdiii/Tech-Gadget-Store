@@ -71,9 +71,12 @@ public class ExportLogService {
             throw new ResourceNotFoundException("Performer not found");
         }
 
-        // Create export log
-        ExportLog exportLog = new ExportLog(requestDto.getPerformedById(), requestDto.getReason(),
-                ImportAndExportStatus.SUCCESS);
+        ExportLog exportLog = ExportLog.builder()
+                .performedBy(requestDto.getPerformedById())
+                .reason(requestDto.getReason())
+                .status(ImportAndExportStatus.SUCCESS)
+                .exportedAt(java.time.LocalDateTime.now())
+                .build();
 
         for (ExportLogItemRequestDto itemDto : requestDto.getItems()) {
             // Find reference variant to get specs
