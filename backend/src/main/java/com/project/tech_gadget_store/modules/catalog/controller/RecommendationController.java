@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.RequestParam;
+
 @RestController
 @RequestMapping("/api/products")
 public class RecommendationController {
@@ -23,5 +25,17 @@ public class RecommendationController {
     public ResponseEntity<List<ProductResponseDto>> getSimilarProducts(@PathVariable String productId) {
         List<ProductResponseDto> similarProducts = recommendationService.getSimilarProducts(productId);
         return ResponseEntity.ok(similarProducts);
+    }
+
+    @GetMapping("/{productId}/frequently-bought-together")
+    public ResponseEntity<List<ProductResponseDto>> getFrequentlyBoughtTogether(@PathVariable String productId) {
+        List<ProductResponseDto> recommendations = recommendationService.getFrequentlyBoughtTogether(productId);
+        return ResponseEntity.ok(recommendations);
+    }
+
+    @GetMapping("/cart-recommendations")
+    public ResponseEntity<List<ProductResponseDto>> getCartRecommendations(@RequestParam List<String> productIds) {
+        List<ProductResponseDto> recommendations = recommendationService.getCartRecommendations(productIds);
+        return ResponseEntity.ok(recommendations);
     }
 }

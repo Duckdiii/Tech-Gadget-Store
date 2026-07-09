@@ -139,6 +139,80 @@ public class RecommendationService {
                 .toList();
     }
 
+    /**
+     * Get a list of frequently bought together products (Co-occurrence) for a single product.
+     * Fallback to Content-Based if there are less than 6 recommendations.
+     */
+    public List<ProductResponseDto> getFrequentlyBoughtTogether(String productId) {
+        List<Product> boughtTogether = productRepository.findFrequentlyBoughtTogether(productId, 6);
+        List<ProductResponseDto> dtos = mapProductsToDtos(boughtTogether);
+
+        if (dtos.size() < 6) {
+            List<ProductResponseDto> similar = getSimilarProducts(productId);
+            for (ProductResponseDto s : similar) {
+                if (dtos.size() >= 6) {
+                    break;
+                }
+                boolean exists = dtos.stream().anyMatch(d -> d.getId().equals(s.getId()));
+                if (!exists) {
+                    dtos.add(s);
+                }
+            }
+        }
+
+        return dtos;
+    }
+
+    /**
+     * Get a list of frequently bought together products (Co-occurrence) for multiple products (Cart).
+     * Fallback to Content-Based of the first product if there are less than 6 recommendations.
+     */
+    public List<ProductResponseDto> getCartRecommendations(List<String> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Product> boughtTogether = productRepository.findFrequentlyBoughtTogetherForMultipleProducts(productIds, 6);
+        List<ProductResponseDto> dtos = mapProductsToDtos(boughtTogether);
+
+        if (dtos.size() < 6) {
+            String firstProductId = productIds.get(0);
+            List<ProductResponseDto> similar = getSimilarProducts(firstProductId);
+            for (ProductResponseDto s : similar) {
+                if (dtos.size() >= 6) {
+                    break;
+                }
+                // Exclude products already in the cart
+                if (productIds.contains(s.getId())) {
+                    continue;
+                }
+                boolean exists = dtos.stream().anyMatch(d -> d.getId().equals(s.getId()));
+                if (!exists) {
+                    dtos.add(s);
+                }
+            }
+        }
+
+        return dtos;
+    }
+
+    private List<ProductResponseDto> mapProductsToDtos(List<Product> products) {
+        if (products.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<String> productIds = products.stream().map(Product::getId).toList();
+        List<ProductVariant> variants = productVariantRepository.findVariantsForProductIds(productIds);
+        Map<String, List<ProductVariant>> variantsByProductId = variants.stream()
+                .collect(Collectors.groupingBy(pv -> pv.getProduct().getId()));
+
+        List<ProductResponseDto> result = new ArrayList<>();
+        for (Product p : products) {
+            List<ProductVariant> pVariants = variantsByProductId.getOrDefault(p.getId(), Collections.emptyList());
+            result.add(productMapper.toProductResponseDto(p, pVariants));
+        }
+        return result;
+    }
+
     private static class ScoredProduct {
         final Product product;
         final List<ProductVariant> variants;

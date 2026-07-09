@@ -10,6 +10,7 @@ import com.project.tech_gadget_store.modules.catalog.mapper.ProductMapper;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -146,5 +147,116 @@ class RecommendationServiceTest {
         assertThat(result.get(0).getId()).isEqualTo("E");
         assertThat(result.get(1).getId()).isEqualTo("C");
         assertThat(result.get(2).getId()).isEqualTo("B");
+    }
+
+    @Test
+    void getFrequentlyBoughtTogether_Success_FullFlow_WithoutFallback() {
+        List<Product> products = new ArrayList<>();
+        List<ProductVariant> variants = new ArrayList<>();
+        List<String> productIds = new ArrayList<>();
+        for (int i = 1; i <= 6; i++) {
+            Product p = new Product("P" + i, "Desc", brandApple, category);
+            p.setId("P" + i);
+            products.add(p);
+            ProductVariant v = new ProductVariant(p, 8, 128, "Black", BigDecimal.valueOf(1000.0));
+            v.setId("v" + i);
+            variants.add(v);
+            productIds.add("P" + i);
+        }
+
+        when(productRepository.findFrequentlyBoughtTogether("target-id", 6)).thenReturn(products);
+        when(productVariantRepository.findVariantsForProductIds(productIds)).thenReturn(variants);
+
+        for (int i = 0; i < 6; i++) {
+            ProductResponseDto dto = ProductResponseDto.builder().id("P" + (i + 1)).build();
+            when(productMapper.toProductResponseDto(eq(products.get(i)), anyList())).thenReturn(dto);
+        }
+
+        List<ProductResponseDto> result = recommendationService.getFrequentlyBoughtTogether("target-id");
+
+        assertThat(result).hasSize(6);
+        assertThat(result.get(0).getId()).isEqualTo("P1");
+        assertThat(result.get(5).getId()).isEqualTo("P6");
+    }
+
+    @Test
+    void getFrequentlyBoughtTogether_Success_WithHybridFallback() {
+        Product p1 = new Product("P1", "Desc", brandApple, category);
+        p1.setId("P1");
+        ProductVariant v1 = new ProductVariant(p1, 8, 128, "Black", BigDecimal.valueOf(1000.0));
+        v1.setId("v1");
+
+        // Co-occurrence returns P1
+        when(productRepository.findFrequentlyBoughtTogether("target-id", 6)).thenReturn(List.of(p1));
+        when(productVariantRepository.findVariantsForProductIds(List.of("P1"))).thenReturn(List.of(v1));
+
+        ProductResponseDto dto1 = ProductResponseDto.builder().id("P1").build();
+        when(productMapper.toProductResponseDto(eq(p1), anyList())).thenReturn(dto1);
+
+        // Fallback Content-Based setup
+        when(productRepository.findByIdAndIsActiveTrue("target-id")).thenReturn(Optional.of(targetProduct));
+        when(productVariantRepository.findByProductId("target-id")).thenReturn(List.of(targetVariant));
+
+        Product productC = new Product("iPhone 14", "Apple phone", brandApple, category);
+        productC.setId("C");
+        ProductVariant variantC = new ProductVariant(productC, 6, 64, "Black", BigDecimal.valueOf(900.0));
+        variantC.setId("v-c");
+
+        // Similar products candidate
+        when(productRepository.findCandidatesForRecommendation("cat-id", "target-id")).thenReturn(List.of(productC, p1));
+        when(productVariantRepository.findVariantsForProductIds(List.of("C", "P1"))).thenReturn(List.of(variantC, v1));
+
+        ProductResponseDto dtoC = ProductResponseDto.builder().id("C").build();
+        when(productMapper.toProductResponseDto(eq(productC), anyList())).thenReturn(dtoC);
+
+        List<ProductResponseDto> result = recommendationService.getFrequentlyBoughtTogether("target-id");
+
+        // Assert size is 2 (P1 from co-occurrence, C from content-based fallback, P1 fallback duplicate filtered out)
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getId()).isEqualTo("P1");
+        assertThat(result.get(1).getId()).isEqualTo("C");
+    }
+
+    @Test
+    void getCartRecommendations_EmptyCart_ReturnsEmptyList() {
+        List<ProductResponseDto> result = recommendationService.getCartRecommendations(Collections.emptyList());
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getCartRecommendations_Success_WithCartExclusionAndFallback() {
+        List<String> cartProductIds = List.of("target-id", "P2");
+
+        // Co-occurrence query for multiple returns empty (no purchase history)
+        when(productRepository.findFrequentlyBoughtTogetherForMultipleProducts(cartProductIds, 6)).thenReturn(Collections.emptyList());
+
+        // Fallback Content-Based setup for first product "target-id"
+        when(productRepository.findByIdAndIsActiveTrue("target-id")).thenReturn(Optional.of(targetProduct));
+        when(productVariantRepository.findByProductId("target-id")).thenReturn(List.of(targetVariant));
+
+        Product productC = new Product("iPhone 14", "Apple phone", brandApple, category);
+        productC.setId("C");
+        ProductVariant variantC = new ProductVariant(productC, 6, 64, "Black", BigDecimal.valueOf(900.0));
+        variantC.setId("v-c");
+
+        // Product already in cart (P2)
+        Product productP2 = new Product("P2", "Apple phone", brandApple, category);
+        productP2.setId("P2");
+        ProductVariant variantP2 = new ProductVariant(productP2, 8, 128, "Black", BigDecimal.valueOf(1000.0));
+        variantP2.setId("v-p2");
+
+        when(productRepository.findCandidatesForRecommendation("cat-id", "target-id")).thenReturn(List.of(productC, productP2));
+        when(productVariantRepository.findVariantsForProductIds(List.of("C", "P2"))).thenReturn(List.of(variantC, variantP2));
+
+        ProductResponseDto dtoC = ProductResponseDto.builder().id("C").build();
+        ProductResponseDto dtoP2 = ProductResponseDto.builder().id("P2").build();
+        when(productMapper.toProductResponseDto(eq(productC), anyList())).thenReturn(dtoC);
+        when(productMapper.toProductResponseDto(eq(productP2), anyList())).thenReturn(dtoP2);
+
+        List<ProductResponseDto> result = recommendationService.getCartRecommendations(cartProductIds);
+
+        // Assert size is 1 (P2 is excluded because it's in the cart, C is included)
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo("C");
     }
 }

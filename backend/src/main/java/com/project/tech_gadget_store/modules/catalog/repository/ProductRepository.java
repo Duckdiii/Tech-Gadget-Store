@@ -34,4 +34,42 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
             @Param("categoryId") String categoryId,
             @Param("productId") String productId
     );
+
+    @Query(value = "SELECT p.* FROM products p " +
+           "JOIN product_variants pv ON pv.product_id = p.id " +
+           "JOIN order_items oi ON oi.product_variant_id = pv.id " +
+           "WHERE p.id <> :productId AND p.is_active = true " +
+           "  AND oi.order_id IN (" +
+           "      SELECT DISTINCT oi2.order_id FROM order_items oi2 " +
+           "      JOIN product_variants pv2 ON oi2.product_variant_id = pv2.id " +
+           "      JOIN orders o ON oi2.order_id = o.id " +
+           "      WHERE pv2.product_id = :productId " +
+           "        AND o.status <> 'CANCELLED'" +
+           "  ) " +
+           "GROUP BY p.id " +
+           "ORDER BY COUNT(oi.id) DESC " +
+           "LIMIT :limit", nativeQuery = true)
+    List<Product> findFrequentlyBoughtTogether(
+            @Param("productId") String productId,
+            @Param("limit") int limit
+    );
+
+    @Query(value = "SELECT p.* FROM products p " +
+           "JOIN product_variants pv ON pv.product_id = p.id " +
+           "JOIN order_items oi ON oi.product_variant_id = pv.id " +
+           "WHERE p.id NOT IN :productIds AND p.is_active = true " +
+           "  AND oi.order_id IN (" +
+           "      SELECT DISTINCT oi2.order_id FROM order_items oi2 " +
+           "      JOIN product_variants pv2 ON oi2.product_variant_id = pv2.id " +
+           "      JOIN orders o ON oi2.order_id = o.id " +
+           "      WHERE pv2.product_id IN :productIds " +
+           "        AND o.status <> 'CANCELLED'" +
+           "  ) " +
+           "GROUP BY p.id " +
+           "ORDER BY COUNT(oi.id) DESC " +
+           "LIMIT :limit", nativeQuery = true)
+    List<Product> findFrequentlyBoughtTogetherForMultipleProducts(
+            @Param("productIds") List<String> productIds,
+            @Param("limit") int limit
+    );
 }
