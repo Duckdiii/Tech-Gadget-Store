@@ -1,0 +1,6 @@
+export { default as SystemConfigPage } from './pages/SystemConfigPage'
+export { default as RecoverRestorePage } from './pages/RecoverRestorePage'
+export { default as PromotionSettingsPage } from './pages/PromotionSettingsPage'
+export { default as BrandCategoryManagementPage } from './pages/BrandCategoryManagementPage'
+export { default as BundleServiceManagementPage } from './pages/BundleServiceManagementPage'
+export { default as MembershipManagementPage } from './pages/MembershipManagementPage'

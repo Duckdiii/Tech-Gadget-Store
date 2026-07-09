@@ -1,0 +1,5 @@
+export { default as InventoryPage } from './pages/InventoryPage'
+export { default as ImportStockPage } from './pages/ImportStockPage'
+export { default as SupplierManagementPage } from './pages/SupplierManagementPage'
+export { default as SupplyOrderPage } from './pages/SupplyOrderPage'
+export { default as ProductManagementPage } from './pages/ProductManagementPage'
