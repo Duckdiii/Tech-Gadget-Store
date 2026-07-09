@@ -54,4 +54,7 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
                         "  AND ps.status = com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus.IN_STOCK")
         long countAvailablePhysicalUnitsByProductId(
                         @Param("productId") String productId);
+
+        @Query("SELECT pv FROM ProductVariant pv WHERE pv.product.id IN :productIds")
+        List<ProductVariant> findVariantsForProductIds(@Param("productIds") List<String> productIds);
 }

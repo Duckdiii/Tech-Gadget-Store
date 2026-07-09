@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 
 
@@ -26,4 +27,11 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
     boolean existsByBrandId(String brandId);
 
     boolean existsByCategoryId(String categoryId);
+
+    @Query("SELECT DISTINCT p FROM Product p JOIN FETCH p.category JOIN FETCH p.brand " +
+           "WHERE p.category.id = :categoryId AND p.id <> :productId AND p.isActive = true")
+    List<Product> findCandidatesForRecommendation(
+            @Param("categoryId") String categoryId,
+            @Param("productId") String productId
+    );
 }
