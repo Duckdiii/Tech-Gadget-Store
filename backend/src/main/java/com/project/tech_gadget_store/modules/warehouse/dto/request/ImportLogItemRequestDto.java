@@ -38,4 +38,6 @@ public class ImportLogItemRequestDto {
     @NotNull(message = "importPrice must not be null")
     @DecimalMin(value = "0.00", message = "importPrice must not be negative")
     private BigDecimal importPrice;
+
+    private java.util.List<String> serialNumbers;
 }

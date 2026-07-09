@@ -10,6 +10,9 @@ import com.project.tech_gadget_store.modules.auth.repository.UserRepository;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
+import com.project.tech_gadget_store.modules.catalog.entity.ProductSerial;
+import com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus;
+import com.project.tech_gadget_store.modules.catalog.repository.ProductSerialRepository;
 import com.project.tech_gadget_store.modules.loyalty.entity.BundleService;
 import com.project.tech_gadget_store.modules.notification.event.ProductStockChangedEvent;
 import com.project.tech_gadget_store.modules.order.entity.Cart;
@@ -50,6 +53,7 @@ public class CheckoutFacade {
     private final PaymentLogRepository paymentLogRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final ProductSerialRepository productSerialRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final List<PaymentStrategy> paymentStrategies;
 
@@ -60,6 +64,7 @@ public class CheckoutFacade {
                           PaymentLogRepository paymentLogRepository,
                           PaymentMethodRepository paymentMethodRepository,
                           ProductVariantRepository productVariantRepository,
+                          ProductSerialRepository productSerialRepository,
                           ApplicationEventPublisher eventPublisher,
                           List<PaymentStrategy> paymentStrategies) {
         this.userRepository = userRepository;
@@ -69,6 +74,7 @@ public class CheckoutFacade {
         this.paymentLogRepository = paymentLogRepository;
         this.paymentMethodRepository = paymentMethodRepository;
         this.productVariantRepository = productVariantRepository;
+        this.productSerialRepository = productSerialRepository;
         this.eventPublisher = eventPublisher;
         this.paymentStrategies = paymentStrategies;
     }
@@ -162,12 +168,25 @@ public class CheckoutFacade {
                 if (availableUnits.size() < cartItem.getQuantity()) {
                     throw new IllegalStateException("Sản phẩm không đủ số lượng");
                 }
+                
+                List<ProductSerial> serials = productSerialRepository.findByProductVariantIdAndStatus(
+                        cartItem.getProductVariant().getId(),
+                        SerialStatus.IN_STOCK,
+                        org.springframework.data.domain.PageRequest.of(0, cartItem.getQuantity())
+                );
+
                 for (int i = 0; i < cartItem.getQuantity(); i++) {
                     ProductVariant unit = availableUnits.get(i);
                     OrderItem orderItem = new OrderItem(order, unit, 1, cartItem.getUnitPrice());
+                    orderItem.setId(java.util.UUID.randomUUID().toString());
                     for (BundleService service : cartItem.getBundleServices()) {
                         orderItem.addBundleService(service);
                     }
+                    
+                    ProductSerial serial = serials.get(i);
+                    serial.setStatus(SerialStatus.SOLD);
+                    serial.setInvoiceItemId(orderItem.getId());
+                    productSerialRepository.save(serial);
                 }
             }
         } catch (Exception e) {

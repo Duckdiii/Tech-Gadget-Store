@@ -7,8 +7,11 @@ import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
 import com.project.tech_gadget_store.modules.auth.repository.UserRepository;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
+import com.project.tech_gadget_store.modules.catalog.entity.ProductSerial;
+import com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus;
 import com.project.tech_gadget_store.modules.catalog.repository.FavoriteProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
+import com.project.tech_gadget_store.modules.catalog.repository.ProductSerialRepository;
 import com.project.tech_gadget_store.modules.notification.entity.Notification;
 import com.project.tech_gadget_store.modules.notification.event.ExportStockEvent;
 import com.project.tech_gadget_store.modules.notification.event.ProductStockChangedEvent;
@@ -48,6 +51,8 @@ class ExportLogServiceTest {
         @Mock
         private ProductVariantRepository productVariantRepository;
         @Mock
+        private ProductSerialRepository productSerialRepository;
+        @Mock
         private UserRepository userRepository;
         @Mock
         private ReceiptRepository receiptRepository;
@@ -78,6 +83,19 @@ class ExportLogServiceTest {
                 product = mock(Product.class);
                 variant = mock(ProductVariant.class);
                 customer = mock(Customer.class);
+
+                lenient().when(productSerialRepository.findByProductVariantIdAndStatus(any(), any(), any()))
+                        .thenAnswer(invocation -> {
+                            org.springframework.data.domain.Pageable pageable = invocation.getArgument(2);
+                            int limit = pageable.getPageSize();
+                            java.util.List<ProductSerial> list = new java.util.ArrayList<>();
+                            for (int i = 0; i < limit; i++) {
+                                ProductSerial ps = mock(ProductSerial.class);
+                                lenient().when(ps.getSerialNumber()).thenReturn("MOCK-SR-" + i);
+                                list.add(ps);
+                            }
+                            return list;
+                        });
         }
 
         @Test

@@ -12,6 +12,7 @@ import com.project.tech_gadget_store.modules.catalog.repository.BrandRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.CategoryRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
+import com.project.tech_gadget_store.modules.catalog.repository.ProductSerialRepository;
 import com.project.tech_gadget_store.modules.warehouse.dto.request.ImportLogItemRequestDto;
 import com.project.tech_gadget_store.modules.warehouse.dto.request.ImportLogRequestDto;
 import com.project.tech_gadget_store.modules.warehouse.dto.request.NewProductImportDto;
@@ -44,6 +45,8 @@ class ImportLogServiceTest {
     private ImportLogRepository importLogRepository;
     @Mock
     private ProductVariantRepository productVariantRepository;
+    @Mock
+    private ProductSerialRepository productSerialRepository;
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -104,12 +107,14 @@ class ImportLogServiceTest {
         when(productVariantRepository.findById("variant-id")).thenReturn(Optional.of(variant));
         
         when(variant.getProduct()).thenReturn(product);
-        when(variant.getRamGb()).thenReturn(8);
-        when(variant.getStorageGb()).thenReturn(128);
-        when(variant.getColor()).thenReturn("Black");
-        when(variant.getPrice()).thenReturn(BigDecimal.valueOf(150.0));
+        when(variant.getId()).thenReturn("variant-id");
+        lenient().when(variant.getRamGb()).thenReturn(8);
+        lenient().when(variant.getStorageGb()).thenReturn(128);
+        lenient().when(variant.getColor()).thenReturn("Black");
+        lenient().when(variant.getPrice()).thenReturn(BigDecimal.valueOf(150.0));
 
-        when(productVariantRepository.save(any(ProductVariant.class))).thenAnswer(invocation -> {
+        // No saving of variant since it exists
+        lenient().when(productVariantRepository.save(any(ProductVariant.class))).thenAnswer(invocation -> {
             ProductVariant pv = invocation.getArgument(0);
             pv.setId("physical-unit-id");
             return pv;
@@ -143,14 +148,14 @@ class ImportLogServiceTest {
         assertEquals("Import note", response.getNote());
         assertEquals(ImportAndExportStatus.SUCCESS, response.getStatus());
         assertEquals(2, response.getItems().size());
-        assertEquals("physical-unit-id", response.getItems().get(0).getProductVariantId());
+        assertEquals("variant-id", response.getItems().get(0).getProductVariantId());
         assertEquals(1, response.getItems().get(0).getQuantity());
-        assertEquals("physical-unit-id", response.getItems().get(1).getProductVariantId());
+        assertEquals("variant-id", response.getItems().get(1).getProductVariantId());
         assertEquals(1, response.getItems().get(1).getQuantity());
         assertEquals(2, response.getTotalQuantity());
         assertEquals(BigDecimal.valueOf(200.0), response.getTotalValue());
 
-        verify(productVariantRepository, times(2)).save(any(ProductVariant.class));
+        verify(productVariantRepository, never()).save(any(ProductVariant.class));
         verify(importLogRepository).save(any(ImportLog.class));
     }
 
@@ -255,7 +260,7 @@ class ImportLogServiceTest {
         assertEquals(BigDecimal.valueOf(800.0), response.getTotalValue());
         
         verify(productRepository).save(any(Product.class));
-        verify(productVariantRepository, times(2)).save(any(ProductVariant.class));
+        verify(productVariantRepository, times(1)).save(any(ProductVariant.class));
         verify(importLogRepository).save(any(ImportLog.class));
     }
 }

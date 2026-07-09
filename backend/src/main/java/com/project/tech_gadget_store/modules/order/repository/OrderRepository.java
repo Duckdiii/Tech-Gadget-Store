@@ -68,4 +68,6 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     BigDecimal sumSpentByCustomerIdAndStatusAndDateRange(String customerId, OrderStatus status,
             LocalDateTime from, LocalDateTime to);
 
+    @Query("SELECT o FROM Order o JOIN o.items i WHERE i.id = :orderItemId")
+    java.util.Optional<Order> findByOrderItemId(@Param("orderItemId") String orderItemId);
 }

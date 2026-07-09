@@ -39,21 +39,19 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
         @Query("SELECT CASE WHEN COUNT(soi) > 0 THEN true ELSE false END FROM SupplyOrderItem soi WHERE soi.product.id = :variantId")
         boolean existsInSupplyOrderItems(@Param("variantId") String variantId);
 
-        @Query("SELECT pv FROM ProductVariant pv " +
+        @Query("SELECT pv FROM ProductSerial ps JOIN ps.productVariant pv " +
                         "WHERE pv.product.id = :productId " +
                         "  AND (pv.ramGb = :ramGb OR (pv.ramGb IS NULL AND :ramGb IS NULL)) " +
                         "  AND (pv.storageGb = :storageGb OR (pv.storageGb IS NULL AND :storageGb IS NULL)) " +
                         "  AND (pv.color = :color OR (pv.color IS NULL AND :color IS NULL)) " +
-                        "  AND pv.id NOT IN (SELECT eli.productVariant.id FROM ExportLogItem eli) " +
-                        "  AND pv.id NOT IN (SELECT oi.productVariant.id FROM Order o JOIN o.items oi WHERE o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED)")
+                        "  AND ps.status = com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus.IN_STOCK")
         List<ProductVariant> findAvailablePhysicalUnits(
                         @Param("productId") String productId, @Param("ramGb") Integer ramGb,
                         @Param("storageGb") Integer storageGb, @Param("color") String color);
 
-        @Query("SELECT COUNT(pv) FROM ProductVariant pv " +
-                        "WHERE pv.product.id = :productId " +
-                        "  AND pv.id NOT IN (SELECT eli.productVariant.id FROM ExportLogItem eli) " +
-                        "  AND pv.id NOT IN (SELECT oi.productVariant.id FROM Order o JOIN o.items oi WHERE o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED)")
+        @Query("SELECT COUNT(ps) FROM ProductSerial ps " +
+                        "WHERE ps.productVariant.product.id = :productId " +
+                        "  AND ps.status = com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus.IN_STOCK")
         long countAvailablePhysicalUnitsByProductId(
                         @Param("productId") String productId);
 }

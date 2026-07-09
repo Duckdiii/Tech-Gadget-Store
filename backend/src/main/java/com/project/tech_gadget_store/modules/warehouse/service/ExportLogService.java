@@ -7,6 +7,9 @@ import com.project.tech_gadget_store.modules.auth.repository.UserRepository;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
+import com.project.tech_gadget_store.modules.catalog.entity.ProductSerial;
+import com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus;
+import com.project.tech_gadget_store.modules.catalog.repository.ProductSerialRepository;
 import com.project.tech_gadget_store.modules.notification.event.ExportStockEvent;
 import com.project.tech_gadget_store.modules.notification.event.ProductStockChangedEvent;
 import com.project.tech_gadget_store.modules.warehouse.dto.request.ExportLogItemRequestDto;
@@ -37,6 +40,7 @@ public class ExportLogService {
 
     private final ExportLogRepository exportLogRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final ProductSerialRepository productSerialRepository;
     private final UserRepository userRepository;
     private final ReceiptRepository receiptRepository;
     private final ExportLogMapper exportLogMapper;
@@ -47,12 +51,14 @@ public class ExportLogService {
 
     public ExportLogService(ExportLogRepository exportLogRepository,
             ProductVariantRepository productVariantRepository,
+            ProductSerialRepository productSerialRepository,
             UserRepository userRepository,
             ReceiptRepository receiptRepository,
             ExportLogMapper exportLogMapper,
             ApplicationEventPublisher eventPublisher) {
         this.exportLogRepository = exportLogRepository;
         this.productVariantRepository = productVariantRepository;
+        this.productSerialRepository = productSerialRepository;
         this.userRepository = userRepository;
         this.receiptRepository = receiptRepository;
         this.exportLogMapper = exportLogMapper;
@@ -104,9 +110,19 @@ public class ExportLogService {
                     throw new IllegalArgumentException("Insufficient product quantity in inventory");
                 }
 
+                List<ProductSerial> serials = productSerialRepository.findByProductVariantIdAndStatus(
+                        referenceVariant.getId(),
+                        SerialStatus.IN_STOCK,
+                        org.springframework.data.domain.PageRequest.of(0, itemDto.getQuantity())
+                );
                 for (int i = 0; i < itemDto.getQuantity(); i++) {
                     ProductVariant unitToExport = availableUnits.get(i);
-                    new ExportLogItem(exportLog, unitToExport, 1);
+                    ExportLogItem exportLogItem = new ExportLogItem(exportLog, unitToExport, 1);
+                    exportLogItem.setId(java.util.UUID.randomUUID().toString());
+
+                    ProductSerial serial = serials.get(i);
+                    serial.setStatus(SerialStatus.SOLD);
+                    productSerialRepository.save(serial);
                 }
             }
 

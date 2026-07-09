@@ -14,6 +14,9 @@ import com.project.tech_gadget_store.modules.catalog.repository.BrandRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.CategoryRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
+import com.project.tech_gadget_store.modules.catalog.entity.ProductSerial;
+import com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus;
+import com.project.tech_gadget_store.modules.catalog.repository.ProductSerialRepository;
 import com.project.tech_gadget_store.modules.notification.event.ImportStockEvent;
 import com.project.tech_gadget_store.modules.notification.event.ProductStockChangedEvent;
 import com.project.tech_gadget_store.modules.warehouse.dto.request.ImportLogItemRequestDto;
@@ -42,6 +45,7 @@ public class ImportLogService {
 
     private final ImportLogRepository importLogRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final ProductSerialRepository productSerialRepository;
     private final UserRepository userRepository;
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
@@ -51,6 +55,7 @@ public class ImportLogService {
 
     public ImportLogService(ImportLogRepository importLogRepository,
                             ProductVariantRepository productVariantRepository,
+                            ProductSerialRepository productSerialRepository,
                             UserRepository userRepository,
                             BrandRepository brandRepository,
                             CategoryRepository categoryRepository,
@@ -59,6 +64,7 @@ public class ImportLogService {
                             ApplicationEventPublisher eventPublisher) {
         this.importLogRepository = importLogRepository;
         this.productVariantRepository = productVariantRepository;
+        this.productSerialRepository = productSerialRepository;
         this.userRepository = userRepository;
         this.brandRepository = brandRepository;
         this.categoryRepository = categoryRepository;
@@ -112,17 +118,20 @@ public class ImportLogService {
                             .orElseThrow(() -> new ResourceNotFoundException("Product variant not found"));
 
                     for (int i = 0; i < qty; i++) {
-                        ProductVariant newVariant = new ProductVariant(
-                                referenceVariant.getProduct(),
-                                referenceVariant.getRamGb(),
-                                referenceVariant.getStorageGb(),
-                                referenceVariant.getColor(),
-                                referenceVariant.getPrice()
-                        );
-                        productVariantRepository.save(newVariant);
+                        ImportLogItem importLogItem = new ImportLogItem(importLog, referenceVariant, 1, itemDto.getImportPrice());
+                        importLogItem.setId(java.util.UUID.randomUUID().toString());
 
-                        // Create ImportLogItem pointing to the new physical unit (quantity is 1 per physical unit)
-                        new ImportLogItem(importLog, newVariant, 1, itemDto.getImportPrice());
+                        String serial = (itemDto.getSerialNumbers() != null && itemDto.getSerialNumbers().size() > i)
+                                ? itemDto.getSerialNumbers().get(i)
+                                : "SR-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                        
+                        ProductSerial productSerial = ProductSerial.builder()
+                                .productVariant(referenceVariant)
+                                .serialNumber(serial)
+                                .status(SerialStatus.IN_STOCK)
+                                .importItemId(importLogItem.getId())
+                                .build();
+                        productSerialRepository.save(productSerial);
                     }
                 } else if (itemDto.getNewProduct() != null) {
                     // Alternative Flow 5b: new product
@@ -143,18 +152,30 @@ public class ImportLogService {
                     Product product = ProductFactory.createProduct(category, newProductDto.getName(), newProductDto.getDescription(), brand);
                     productRepository.save(product);
 
-                    for (int i = 0; i < qty; i++) {
-                        ProductVariant newVariant = new ProductVariant(
-                                product,
-                                newProductDto.getRamGb(),
-                                newProductDto.getStorageGb(),
-                                newProductDto.getColor(),
-                                newProductDto.getPrice()
-                        );
-                        productVariantRepository.save(newVariant);
+                    ProductVariant newVariant = new ProductVariant(
+                            product,
+                            newProductDto.getRamGb(),
+                            newProductDto.getStorageGb(),
+                            newProductDto.getColor(),
+                            newProductDto.getPrice()
+                    );
+                    productVariantRepository.save(newVariant);
 
-                        // Create ImportLogItem pointing to the new physical unit (quantity is 1 per physical unit)
-                        new ImportLogItem(importLog, newVariant, 1, itemDto.getImportPrice());
+                    for (int i = 0; i < qty; i++) {
+                        ImportLogItem importLogItem = new ImportLogItem(importLog, newVariant, 1, itemDto.getImportPrice());
+                        importLogItem.setId(java.util.UUID.randomUUID().toString());
+
+                        String serial = (itemDto.getSerialNumbers() != null && itemDto.getSerialNumbers().size() > i)
+                                ? itemDto.getSerialNumbers().get(i)
+                                : "SR-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                        
+                        ProductSerial productSerial = ProductSerial.builder()
+                                .productVariant(newVariant)
+                                .serialNumber(serial)
+                                .status(SerialStatus.IN_STOCK)
+                                .importItemId(importLogItem.getId())
+                                .build();
+                        productSerialRepository.save(productSerial);
                     }
                 } else {
                     throw new IllegalArgumentException("Either productVariantId or newProduct must be provided");
