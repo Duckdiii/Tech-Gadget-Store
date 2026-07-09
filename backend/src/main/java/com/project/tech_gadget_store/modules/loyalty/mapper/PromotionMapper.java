@@ -28,6 +28,7 @@ public class PromotionMapper {
                 .endAt(promotion.getEndAt())
                 .active(promotion.getActive())
                 .productIds(productIds)
+                .imageUrl(promotion.getImageUrl())
                 .status(computeStatus(promotion))
                 .build();
     }

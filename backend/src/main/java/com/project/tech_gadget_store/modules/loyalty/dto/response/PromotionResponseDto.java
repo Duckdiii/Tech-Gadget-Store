@@ -24,5 +24,6 @@ public class PromotionResponseDto {
     private LocalDateTime endAt;
     private Boolean active;
     private List<String> productIds;
+    private String imageUrl;
     private String status;
 }

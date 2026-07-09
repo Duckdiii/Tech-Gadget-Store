@@ -47,6 +47,9 @@ public class Promotion extends BaseEntity {
         @Column(name = "usage_limit", nullable = false)
         private int usageLimit;
 
+        @Column(name = "image_url")
+        private String imageUrl;
+
         public Promotion(String code, String name, Double discountPercent, LocalDateTime startAt, LocalDateTime endAt,
                         Boolean active, Product product) {
                 if (code == null || code.isBlank()) {

@@ -38,6 +38,8 @@ public class PromotionRequestDto {
     @NotNull(message = "active must not be null")
     private Boolean active;
 
+    private String imageUrl;
+
     @NotEmpty(message = "productIds must not be empty")
     private List<String> productIds;
 }
