@@ -1,0 +1,50 @@
+package com.project.tech_gadget_store.strategy;
+
+import com.project.tech_gadget_store.dto.request.PaymentConfirmRequestDto;
+import com.project.tech_gadget_store.dto.response.PaymentConfirmResponseDto;
+import com.project.tech_gadget_store.entity.Order;
+import com.project.tech_gadget_store.entity.PaymentLog;
+import com.project.tech_gadget_store.repository.VNPayPaymentMethodRepository;
+import com.project.tech_gadget_store.service.VNPayService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.math.BigDecimal;
+
+@Component
+@RequiredArgsConstructor
+public class VNPayPaymentStrategy implements PaymentStrategy {
+
+    private final VNPayPaymentMethodRepository vnpayMethodRepository;
+    private final VNPayService vnpayService;
+
+    @Override
+    public boolean supports(String paymentMethodId) {
+        return vnpayMethodRepository.existsById(paymentMethodId);
+    }
+
+    @Override
+    public PaymentConfirmResponseDto initiatePayment(
+            Order order,
+            PaymentLog paymentLog,
+            BigDecimal amount,
+            PaymentConfirmRequestDto req,
+            String clientIp
+    ) {
+        try {
+            String redirectUrl = vnpayService.buildPaymentUrl(paymentLog.getId(), amount, clientIp, req.getOrderInfo());
+
+            return PaymentConfirmResponseDto.builder()
+                    .paymentMethod("VNPAY")
+                    .status("PENDING")
+                    .redirectUrl(redirectUrl)
+                    .paymentLogId(paymentLog.getId())
+                    .message("Khởi tạo thanh toán online thành công, chuyển hướng người dùng")
+                    .build();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khởi tạo thanh toán: " + e.getMessage(), e);
+        }
+    }
+}
