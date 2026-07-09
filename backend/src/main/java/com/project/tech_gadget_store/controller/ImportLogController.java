@@ -27,10 +27,10 @@ public class ImportLogController {
     }
 
     @GetMapping
-    public ResponseEntity<org.springframework.data.domain.Page<ImportLogResponseDto>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        org.springframework.data.domain.Page<ImportLogResponseDto> response = importLogService.getImportLogsPaginated(page, size);
+    public ResponseEntity<com.project.tech_gadget_store.dto.response.CursorPageResponseDto<ImportLogResponseDto>> getAll(
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "10") int limit) {
+        com.project.tech_gadget_store.dto.response.CursorPageResponseDto<ImportLogResponseDto> response = importLogService.getImportLogsCursor(cursor, limit);
         return ResponseEntity.ok(response);
     }
 }

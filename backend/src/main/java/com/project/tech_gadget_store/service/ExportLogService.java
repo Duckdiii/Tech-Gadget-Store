@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -217,5 +218,39 @@ public class ExportLogService {
                             .orElse(null);
                     return exportLogMapper.toExportLogResponseDto(log, receiptId, "Success");
                 });
+    }
+
+    public com.project.tech_gadget_store.dto.response.CursorPageResponseDto<ExportLogResponseDto> getExportLogsCursor(String cursor, int limit) {
+        LocalDateTime cursorTimestamp = null;
+        String cursorId = null;
+
+        com.project.tech_gadget_store.util.CursorUtil.DecodedCursor decoded = com.project.tech_gadget_store.util.CursorUtil.decodeCursor(cursor);
+        if (decoded != null) {
+            cursorTimestamp = decoded.getTimestamp();
+            cursorId = decoded.getId();
+        }
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit + 1);
+        List<ExportLog> logs = exportLogRepository.findExportLogsCursor(cursorTimestamp, cursorId, pageable);
+
+        boolean hasNext = logs.size() > limit;
+        List<ExportLog> resultLogs = hasNext ? logs.subList(0, limit) : logs;
+
+        List<ExportLogResponseDto> dtos = resultLogs.stream()
+                .map(log -> {
+                    String receiptId = receiptRepository.findByExportLogId(log.getId())
+                            .map(Receipt::getId)
+                            .orElse(null);
+                    return exportLogMapper.toExportLogResponseDto(log, receiptId, "Success");
+                })
+                .collect(Collectors.toList());
+
+        String nextCursor = null;
+        if (hasNext && !resultLogs.isEmpty()) {
+            ExportLog lastLog = resultLogs.get(resultLogs.size() - 1);
+            nextCursor = com.project.tech_gadget_store.util.CursorUtil.encodeCursor(lastLog.getExportedAt(), lastLog.getId());
+        }
+
+        return new com.project.tech_gadget_store.dto.response.CursorPageResponseDto<>(dtos, nextCursor, hasNext);
     }
 }

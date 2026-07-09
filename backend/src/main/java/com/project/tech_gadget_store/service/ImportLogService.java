@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -199,5 +200,34 @@ public class ImportLogService {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
         return importLogRepository.findAllByOrderByImportedAtDesc(pageable)
                 .map(importLogMapper::toImportLogResponseDto);
+    }
+
+    public com.project.tech_gadget_store.dto.response.CursorPageResponseDto<ImportLogResponseDto> getImportLogsCursor(String cursor, int limit) {
+        LocalDateTime cursorTimestamp = null;
+        String cursorId = null;
+
+        com.project.tech_gadget_store.util.CursorUtil.DecodedCursor decoded = com.project.tech_gadget_store.util.CursorUtil.decodeCursor(cursor);
+        if (decoded != null) {
+            cursorTimestamp = decoded.getTimestamp();
+            cursorId = decoded.getId();
+        }
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit + 1);
+        List<ImportLog> logs = importLogRepository.findImportLogsCursor(cursorTimestamp, cursorId, pageable);
+
+        boolean hasNext = logs.size() > limit;
+        List<ImportLog> resultLogs = hasNext ? logs.subList(0, limit) : logs;
+
+        List<ImportLogResponseDto> dtos = resultLogs.stream()
+                .map(importLogMapper::toImportLogResponseDto)
+                .collect(Collectors.toList());
+
+        String nextCursor = null;
+        if (hasNext && !resultLogs.isEmpty()) {
+            ImportLog lastLog = resultLogs.get(resultLogs.size() - 1);
+            nextCursor = com.project.tech_gadget_store.util.CursorUtil.encodeCursor(lastLog.getImportedAt(), lastLog.getId());
+        }
+
+        return new com.project.tech_gadget_store.dto.response.CursorPageResponseDto<>(dtos, nextCursor, hasNext);
     }
 }

@@ -30,8 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -163,6 +165,35 @@ public class SupplyOrderService {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
         return supplyOrderRepository.findAll(pageable)
                 .map(supplyOrderMapper::toResponseDto);
+    }
+
+    public com.project.tech_gadget_store.dto.response.CursorPageResponseDto<SupplyOrderResponseDto> getAllCursor(String cursor, int limit) {
+        LocalDateTime cursorTimestamp = null;
+        String cursorId = null;
+
+        com.project.tech_gadget_store.util.CursorUtil.DecodedCursor decoded = com.project.tech_gadget_store.util.CursorUtil.decodeCursor(cursor);
+        if (decoded != null) {
+            cursorTimestamp = decoded.getTimestamp();
+            cursorId = decoded.getId();
+        }
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit + 1);
+        List<com.project.tech_gadget_store.entity.SupplyOrder> orders = supplyOrderRepository.findSupplyOrdersCursor(cursorTimestamp, cursorId, pageable);
+
+        boolean hasNext = orders.size() > limit;
+        List<com.project.tech_gadget_store.entity.SupplyOrder> resultOrders = hasNext ? orders.subList(0, limit) : orders;
+
+        List<SupplyOrderResponseDto> dtos = resultOrders.stream()
+                .map(supplyOrderMapper::toResponseDto)
+                .collect(Collectors.toList());
+
+        String nextCursor = null;
+        if (hasNext && !resultOrders.isEmpty()) {
+            com.project.tech_gadget_store.entity.SupplyOrder lastOrder = resultOrders.get(resultOrders.size() - 1);
+            nextCursor = com.project.tech_gadget_store.util.CursorUtil.encodeCursor(lastOrder.getCreatedAt(), lastOrder.getId());
+        }
+
+        return new com.project.tech_gadget_store.dto.response.CursorPageResponseDto<>(dtos, nextCursor, hasNext);
     }
 
     public SupplyOrderResponseDto getById(String id) {

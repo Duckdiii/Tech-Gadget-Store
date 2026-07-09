@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -47,20 +48,39 @@ public class OrderController {
     }
 
     @GetMapping("/customer/orders")
-    public ResponseEntity<List<OrderHistoryResponseDto>> getCustomerOrders(Authentication authentication) {
+    public ResponseEntity<com.project.tech_gadget_store.dto.response.CursorPageResponseDto<OrderHistoryResponseDto>> getCustomerOrders(
+            Authentication authentication,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "10") int limit) {
         Customer customer = customerRepository.findByAccountEmail(authentication.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
 
-        List<Order> orders = orderRepository.findAll().stream()
-                .filter(o -> o.getCustomer() != null && o.getCustomer().getId().equals(customer.getId()))
-                .sorted((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()))
-                .collect(Collectors.toList());
+        LocalDateTime cursorTimestamp = null;
+        String cursorId = null;
 
-        List<OrderHistoryResponseDto> response = orders.stream()
+        com.project.tech_gadget_store.util.CursorUtil.DecodedCursor decoded = com.project.tech_gadget_store.util.CursorUtil.decodeCursor(cursor);
+        if (decoded != null) {
+            cursorTimestamp = decoded.getTimestamp();
+            cursorId = decoded.getId();
+        }
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit + 1);
+        List<Order> orders = orderRepository.findOrdersCursor(customer.getId(), null, cursorTimestamp, cursorId, pageable);
+
+        boolean hasNext = orders.size() > limit;
+        List<Order> resultOrders = hasNext ? orders.subList(0, limit) : orders;
+
+        List<OrderHistoryResponseDto> response = resultOrders.stream()
                 .map(this::mapToHistoryDto)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(response);
+        String nextCursor = null;
+        if (hasNext && !resultOrders.isEmpty()) {
+            Order lastOrder = resultOrders.get(resultOrders.size() - 1);
+            nextCursor = com.project.tech_gadget_store.util.CursorUtil.encodeCursor(lastOrder.getOrderDate(), lastOrder.getId());
+        }
+
+        return ResponseEntity.ok(new com.project.tech_gadget_store.dto.response.CursorPageResponseDto<>(response, nextCursor, hasNext));
     }
 
     @PostMapping("/customer/orders/{orderId}/cancel")
@@ -87,23 +107,45 @@ public class OrderController {
     }
 
     @GetMapping("/manager/orders")
-    public ResponseEntity<List<OrderHistoryResponseDto>> getManagerOrders(
-            @RequestParam(required = false) String status) {
-        List<Order> orders = orderRepository.findAll().stream()
-                .sorted((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()))
-                .collect(Collectors.toList());
-
+    public ResponseEntity<com.project.tech_gadget_store.dto.response.CursorPageResponseDto<OrderHistoryResponseDto>> getManagerOrders(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "10") int limit) {
+        OrderStatus orderStatus = null;
         if (status != null && !status.isBlank() && !status.equalsIgnoreCase("all")) {
-            orders = orders.stream()
-                    .filter(o -> o.getOrderStatus().name().equalsIgnoreCase(status.trim()))
-                    .collect(Collectors.toList());
+            try {
+                orderStatus = OrderStatus.valueOf(status.toUpperCase().trim());
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái đơn hàng không hợp lệ");
+            }
         }
 
-        List<OrderHistoryResponseDto> response = orders.stream()
+        LocalDateTime cursorTimestamp = null;
+        String cursorId = null;
+
+        com.project.tech_gadget_store.util.CursorUtil.DecodedCursor decoded = com.project.tech_gadget_store.util.CursorUtil.decodeCursor(cursor);
+        if (decoded != null) {
+            cursorTimestamp = decoded.getTimestamp();
+            cursorId = decoded.getId();
+        }
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit + 1);
+        List<Order> orders = orderRepository.findOrdersCursor(null, orderStatus, cursorTimestamp, cursorId, pageable);
+
+        boolean hasNext = orders.size() > limit;
+        List<Order> resultOrders = hasNext ? orders.subList(0, limit) : orders;
+
+        List<OrderHistoryResponseDto> response = resultOrders.stream()
                 .map(this::mapToHistoryDto)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(response);
+        String nextCursor = null;
+        if (hasNext && !resultOrders.isEmpty()) {
+            Order lastOrder = resultOrders.get(resultOrders.size() - 1);
+            nextCursor = com.project.tech_gadget_store.util.CursorUtil.encodeCursor(lastOrder.getOrderDate(), lastOrder.getId());
+        }
+
+        return ResponseEntity.ok(new com.project.tech_gadget_store.dto.response.CursorPageResponseDto<>(response, nextCursor, hasNext));
     }
 
     @PutMapping("/manager/orders/{orderId}/status")

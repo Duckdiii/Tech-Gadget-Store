@@ -21,9 +21,9 @@ public class LoginLogController {
     }
 
     @GetMapping
-    public ResponseEntity<org.springframework.data.domain.Page<LoginLogResponseDto>> getAllLoginLogs(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(loginLogService.getLoginLogsPaginated(page, size));
+    public ResponseEntity<com.project.tech_gadget_store.dto.response.CursorPageResponseDto<LoginLogResponseDto>> getAllLoginLogs(
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(loginLogService.getLoginLogsCursor(cursor, limit));
     }
 }

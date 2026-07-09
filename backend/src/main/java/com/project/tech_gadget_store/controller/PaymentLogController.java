@@ -19,11 +19,11 @@ public class PaymentLogController {
     }
 
     @GetMapping
-    public ResponseEntity<org.springframework.data.domain.Page<PaymentLogResponseDto>> getPaymentLogs(
+    public ResponseEntity<com.project.tech_gadget_store.dto.response.CursorPageResponseDto<PaymentLogResponseDto>> getPaymentLogs(
             @ModelAttribute PaymentLogFilterRequestDto filter,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(paymentLogService.getPaymentLogs(filter, page, size));
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(paymentLogService.getPaymentLogsCursor(filter, cursor, limit));
     }
 
     @GetMapping("/{logId}")

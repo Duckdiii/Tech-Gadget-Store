@@ -6,9 +6,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, String> {
 
@@ -16,6 +18,19 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     Page<Order> findRecentOrdersByCustomerId(String customerId, Pageable pageable);
 
     Page<Order> findOrdersByCustomerId(String customerId, Pageable pageable);
+
+    @Query("SELECT o FROM Order o WHERE " +
+           "(:customerId IS NULL OR o.customer.id = :customerId) AND " +
+           "(:status IS NULL OR o.orderStatus = :status) AND " +
+           "(:cursorTimestamp IS NULL OR o.orderDate < :cursorTimestamp OR " +
+           "(o.orderDate = :cursorTimestamp AND o.id < :cursorId)) " +
+           "ORDER BY o.orderDate DESC, o.id DESC")
+    List<Order> findOrdersCursor(
+            @Param("customerId") String customerId,
+            @Param("status") OrderStatus status,
+            @Param("cursorTimestamp") LocalDateTime cursorTimestamp,
+            @Param("cursorId") String cursorId,
+            Pageable pageable);
 
     @Query("SELECT o FROM Order o WHERE o.customer.id = :customerId " +
             "AND o.orderDate >= :from AND o.orderDate <= :to " +

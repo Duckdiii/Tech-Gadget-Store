@@ -30,4 +30,19 @@ public interface PaymentLogRepository extends JpaRepository<PaymentLog, String> 
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
             Pageable pageable);
+
+    @Query("SELECT p FROM PaymentLog p WHERE " +
+           "(:status IS NULL OR p.status = :status) AND " +
+           "(:start IS NULL OR p.createdAt >= :start) AND " +
+           "(:end IS NULL OR p.createdAt <= :end) AND " +
+           "(:cursorTimestamp IS NULL OR p.createdAt < :cursorTimestamp OR " +
+           "(p.createdAt = :cursorTimestamp AND p.id < :cursorId)) " +
+           "ORDER BY p.createdAt DESC, p.id DESC")
+    List<PaymentLog> findPaymentLogsCursor(
+            @Param("status") PaymentLogStatus status,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("cursorTimestamp") LocalDateTime cursorTimestamp,
+            @Param("cursorId") String cursorId,
+            Pageable pageable);
 }

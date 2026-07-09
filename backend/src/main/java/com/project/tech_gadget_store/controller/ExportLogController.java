@@ -27,10 +27,10 @@ public class ExportLogController {
     }
 
     @GetMapping
-    public ResponseEntity<org.springframework.data.domain.Page<ExportLogResponseDto>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        org.springframework.data.domain.Page<ExportLogResponseDto> response = exportLogService.getExportLogsPaginated(page, size);
+    public ResponseEntity<com.project.tech_gadget_store.dto.response.CursorPageResponseDto<ExportLogResponseDto>> getAll(
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "10") int limit) {
+        com.project.tech_gadget_store.dto.response.CursorPageResponseDto<ExportLogResponseDto> response = exportLogService.getExportLogsCursor(cursor, limit);
         return ResponseEntity.ok(response);
     }
 }
