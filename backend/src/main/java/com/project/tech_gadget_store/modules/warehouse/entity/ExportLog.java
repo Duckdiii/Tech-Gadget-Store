@@ -1,0 +1,104 @@
+package com.project.tech_gadget_store.modules.warehouse.entity;
+
+import com.project.tech_gadget_store.common.entity.BaseEntity;
+import com.project.tech_gadget_store.modules.warehouse.entity.enums.ImportAndExportStatus;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.*;
+
+
+
+@Entity
+@Table(name = "export_logs")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExportLog extends BaseEntity {
+
+    @Builder.Default
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "export_log_id", nullable = false)
+    private List<ExportLogItem> items = new ArrayList<>();
+
+    @Column(name = "exported_at", nullable = false)
+    private LocalDateTime exportedAt;
+
+    @Column(name = "performed_by", nullable = false, length = 120)
+    private String performedBy;
+
+    @Column(name = "reason", columnDefinition = "TEXT")
+    private String reason;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 30)
+    private ImportAndExportStatus status = ImportAndExportStatus.PENDING;
+
+    @PrePersist
+    protected void prePersistExportLog() {
+        if (exportedAt == null) {
+            exportedAt = LocalDateTime.now();
+        }
+    }
+
+    public ExportLog(String performedBy, String reason, ImportAndExportStatus status) {
+        if (performedBy == null || performedBy.isBlank()) {
+            throw new IllegalArgumentException("performedBy must not be blank");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
+        this.performedBy = performedBy;
+        this.reason = reason;
+        this.status = status;
+    }
+
+    public void addItem(ExportLogItem item) {
+        if (item == null) {
+            throw new IllegalArgumentException("item must not be null");
+        }
+        if (!items.contains(item)) {
+            items.add(item);
+        }
+    }
+
+    public void removeItem(ExportLogItem item) {
+        items.remove(item);
+    }
+
+    public void approve() {
+        status = ImportAndExportStatus.SUCCESS;
+    }
+
+    public void reject(String reason) {
+        status = ImportAndExportStatus.FAILURE;
+        this.reason = reason;
+    }
+
+    public void complete() {
+        status = ImportAndExportStatus.SUCCESS;
+    }
+
+    public boolean isCompleted() {
+        return ImportAndExportStatus.SUCCESS.equals(status);
+    }
+
+    public int calculateTotalQuantity() {
+        int totalQuantity = 0;
+        for (ExportLogItem item : items) {
+            if (item == null) {
+                throw new IllegalStateException("export log item must not be null");
+            }
+            if (item.getQuantity() == null) {
+                throw new IllegalStateException("export log item quantity must not be null");
+            }
+            totalQuantity += item.getQuantity();
+        }
+        return totalQuantity;
+    }
+
+}

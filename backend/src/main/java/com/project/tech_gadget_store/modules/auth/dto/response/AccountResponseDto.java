@@ -1,0 +1,25 @@
+package com.project.tech_gadget_store.modules.auth.dto.response;
+
+import com.project.tech_gadget_store.modules.auth.entity.enums.AccountStatus;
+import java.time.LocalDateTime;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AccountResponseDto {
+
+    private String id;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private String email;
+    private AccountStatus status;
+    private String userId;
+    private List<String> loginLogsIds;
+}
