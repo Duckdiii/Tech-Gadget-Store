@@ -120,7 +120,7 @@ public class OrderController {
 
         try {
             OrderStatus status = OrderStatus.valueOf(statusStr.toUpperCase());
-            order.setOrderStatus(status);
+            order.transitionTo(status);
             if (OrderStatus.COMPLETED.equals(status) && !order.isPaid()) {
                 order.markPaid();
             }

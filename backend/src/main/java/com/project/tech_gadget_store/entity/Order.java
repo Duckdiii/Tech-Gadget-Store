@@ -97,34 +97,46 @@ public class Order extends BaseEntity {
     }
 
     public void confirm() {
-        orderStatus = OrderStatus.PROCESSING;
+        this.orderStatus.confirm(this);
     }
 
     public void markPaid() {
-        paidAt = LocalDateTime.now();
-        if (OrderStatus.AWAITING_CONFIRMATION.equals(orderStatus)) {
-            confirm();
-        }
+        this.paidAt = LocalDateTime.now();
+        this.orderStatus.markPaid(this);
     }
 
     public void markShipping() {
-        orderStatus = OrderStatus.SHIPPING;
+        this.orderStatus.markShipping(this);
     }
 
     public void complete() {
-        orderStatus = OrderStatus.COMPLETED;
+        this.orderStatus.complete(this);
     }
 
     public void cancel() {
-        if (!canCancel()) {
-            throw new IllegalStateException("Order cannot be cancelled in current status");
-        }
-        orderStatus = OrderStatus.CANCELLED;
+        this.orderStatus.cancel(this);
     }
 
-    public boolean canCancel() { // chỉ cho phép hủy khi đang chờ xác nhận hoặc đang xử lý
-        return OrderStatus.AWAITING_CONFIRMATION.equals(orderStatus)
-                || OrderStatus.PROCESSING.equals(orderStatus);
+    public void refund() {
+        this.orderStatus.refund(this);
+    }
+
+    public boolean canCancel() {
+        return this.orderStatus.canCancel();
+    }
+
+    public void transitionTo(OrderStatus targetStatus) {
+        if (this.orderStatus == targetStatus) {
+            return;
+        }
+        switch (targetStatus) {
+            case PROCESSING -> confirm();
+            case SHIPPING -> markShipping();
+            case COMPLETED -> complete();
+            case CANCELLED -> cancel();
+            case REFUNDED -> refund();
+            default -> throw new IllegalStateException("Không thể chuyển tiếp sang trạng thái: " + targetStatus);
+        }
     }
 
     public boolean isPaid() {
