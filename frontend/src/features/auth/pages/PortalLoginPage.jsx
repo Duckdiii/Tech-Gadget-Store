@@ -1,8 +1,7 @@
-import { useNavigate } from 'react-router-dom'
+import React from 'react'
 import { useLogin } from '../hooks/useLogin'
 
-export default function LoginPage() {
-  const navigate = useNavigate()
+export default function PortalLoginPage() {
   const {
     email,
     setEmail,
@@ -14,7 +13,7 @@ export default function LoginPage() {
     showPass,
     setShowPass,
     handleLogin,
-  } = useLogin({ allowedRoles: ['customer'] })
+  } = useLogin({ allowedRoles: ['manager', 'staff'] })
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleLogin()
@@ -22,12 +21,12 @@ export default function LoginPage() {
 
   return (
     <div
-      className="flex-1 flex flex-col items-center justify-center px-4 py-12"
-      style={{ backgroundColor: 'var(--page)' }}
+      className="flex-1 flex flex-col items-center justify-center px-4 py-12 min-h-screen"
+      style={{ backgroundColor: 'var(--ink)' }}
     >
       <div
-        className="bg-white p-8 sm:p-10 w-full max-w-[440px] shadow-sm animate-slide-up"
-        style={{ border: '1.5px solid var(--cb)', borderRadius: '16px' }}
+        className="bg-white p-8 sm:p-10 w-full max-w-[440px] shadow-2xl animate-slide-up"
+        style={{ border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '16px' }}
       >
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-6">
@@ -36,28 +35,19 @@ export default function LoginPage() {
               <path d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <span className="text-[15px] font-bold text-gray-900" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>TechStore</span>
+          <span className="text-[15px] font-bold text-gray-900" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>TECHSTORE PORTAL</span>
         </div>
 
-        <h2 className="text-[24px] font-bold text-center text-gray-900 mb-1" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
-          Đăng nhập khách hàng
+        <h2 className="text-[22px] font-black text-center text-gray-900 mb-1" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+          Đăng nhập hệ thống
         </h2>
-        <p className="text-[13px] text-center text-gray-500 mb-8">
-          Chưa có tài khoản?{' '}
-          <button
-            onClick={() => navigate('/register')}
-            className="font-bold transition-colors cursor-pointer"
-            style={{ color: 'var(--accent)' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-d)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--accent)'}
-          >
-            Đăng ký ngay
-          </button>
+        <p className="text-[12.5px] text-center text-gray-400 mb-8">
+          Khu vực dành riêng cho nhân viên và quản lý
         </p>
 
         {/* Email */}
         <div className="mb-4">
-          <label className="block text-[12px] font-bold mb-1.5 text-gray-700">Email</label>
+          <label className="block text-[12px] font-bold mb-1.5 text-gray-700">Email công việc</label>
           <div className="relative">
             <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -67,14 +57,14 @@ export default function LoginPage() {
               value={email}
               onChange={e => { setEmail(e.target.value); setError('') }}
               onKeyDown={handleKeyDown}
-              placeholder="your@email.com"
+              placeholder="work@techstore.vn"
               className="field-light w-full pl-10 pr-4 py-3 text-[13px]"
             />
           </div>
         </div>
 
         {/* Password */}
-        <div className="mb-4">
+        <div className="mb-5">
           <label className="block text-[12px] font-bold mb-1.5 text-gray-700">Mật khẩu</label>
           <div className="relative">
             <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,7 +81,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPass(s => !s)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer border-none bg-transparent"
             >
               {showPass ? (
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,7 +100,7 @@ export default function LoginPage() {
         {/* Error */}
         {error && (
           <div
-            className="mb-4 flex items-center gap-2 px-3 py-2.5"
+            className="mb-5 flex items-center gap-2 px-3 py-2.5"
             style={{ backgroundColor: 'rgba(239,68,68,0.06)', border: '1.5px solid rgba(239,68,68,0.2)', borderRadius: '8px' }}
           >
             <svg className="w-4 h-4 shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,21 +110,11 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Forgot Password Link */}
-        <div className="flex justify-end mb-5">
-          <button
-            onClick={() => navigate('/forgot-password')}
-            className="text-[12px] font-bold text-gray-500 hover:text-[#E8420A] cursor-pointer transition-colors"
-          >
-            Quên mật khẩu?
-          </button>
-        </div>
-
         {/* Submit */}
         <button
           onClick={handleLogin}
           disabled={loading}
-          className="w-full text-white font-bold py-3.5 text-[13px] tracking-wide transition-all duration-200 cursor-pointer disabled:opacity-50"
+          className="w-full text-white font-extrabold py-3.5 text-[13px] tracking-wide transition-all duration-200 cursor-pointer disabled:opacity-50 border-none"
           style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
           onMouseEnter={e => { if (!loading) e.currentTarget.style.backgroundColor = 'var(--accent-d)' }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--accent)' }}
@@ -145,22 +125,15 @@ export default function LoginPage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Đang đăng nhập...
+              Đang xác thực...
             </span>
-          ) : 'Đăng nhập'}
+          ) : 'Đăng nhập hệ thống'}
         </button>
 
-        {/* Support */}
-        <div className="mt-6 flex justify-center">
-          <button
-            className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.7} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            Liên hệ hỗ trợ
-          </button>
-        </div>
+        {/* Info notice */}
+        <p className="text-center text-[11px] text-gray-400 mt-6 leading-relaxed">
+          Bằng việc đăng nhập, bạn đồng ý với các chính sách bảo mật nội bộ và quy định vận hành của TechStore.
+        </p>
       </div>
     </div>
   )

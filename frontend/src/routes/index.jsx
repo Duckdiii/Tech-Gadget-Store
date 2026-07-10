@@ -5,7 +5,7 @@ import CustomerLayout from '../layouts/CustomerLayout'
 import ManagerLayout from '../layouts/ManagerLayout'
 import StaffLayout from '../layouts/StaffLayout'
 import ProtectedRoute from './ProtectedRoute'
-import { LoginPage, RegisterPage, ForgotPasswordPage, EmailSentPage, ResetPasswordPage } from '../features/auth'
+import { LoginPage, PortalLoginPage, RegisterPage, ForgotPasswordPage, EmailSentPage, ResetPasswordPage } from '../features/auth'
 import { customerRoutes } from './customerRoutes'
 import { managerRoutes } from './managerRoutes'
 import { staffRoutes } from './staffRoutes'
@@ -16,6 +16,7 @@ export default function AppRoutes() {
       {/* Public / Auth Routes */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/portal/login" element={<PortalLoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/email-sent" element={<EmailSentPage />} />
@@ -25,7 +26,7 @@ export default function AppRoutes() {
       {/* Customer Protected Routes */}
       <Route
         element={
-          <ProtectedRoute allowedRoles={['customer']}>
+          <ProtectedRoute allowedRoles={['customer']} redirectTo="/login">
             <CustomerLayout />
           </ProtectedRoute>
         }
@@ -38,7 +39,7 @@ export default function AppRoutes() {
       {/* Manager Protected Routes */}
       <Route
         element={
-          <ProtectedRoute allowedRoles={['manager']}>
+          <ProtectedRoute allowedRoles={['manager']} redirectTo="/portal/login">
             <ManagerLayout />
           </ProtectedRoute>
         }
@@ -51,7 +52,7 @@ export default function AppRoutes() {
       {/* Staff Protected Routes */}
       <Route
         element={
-          <ProtectedRoute allowedRoles={['staff']}>
+          <ProtectedRoute allowedRoles={['staff']} redirectTo="/portal/login">
             <StaffLayout />
           </ProtectedRoute>
         }

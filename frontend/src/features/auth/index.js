@@ -3,3 +3,5 @@ export { default as RegisterPage } from './pages/RegisterPage'
 export { default as ForgotPasswordPage } from './pages/ForgotPasswordPage'
 export { default as EmailSentPage } from './pages/EmailSentPage'
 export { default as ResetPasswordPage } from './pages/ResetPasswordPage'
+export { default as PortalLoginPage } from './pages/PortalLoginPage'
+
