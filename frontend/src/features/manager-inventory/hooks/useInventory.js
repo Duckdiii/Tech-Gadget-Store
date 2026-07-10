@@ -108,6 +108,10 @@ function buildInventoryProducts(products, logs) {
 
       variant.inStock = variantImported - variantExported
       if (variant.inStock < 0) variant.inStock = 0
+      variant.stock = variant.inStock
+      variant.maxStock = Math.max(100, variant.stock * 2)
+      variant.status = variant.stock === 0 ? 'het_hang' : variant.stock <= 5 ? 'sap_het' : 'con_hang'
+      variant.faded = variant.stock === 0
       list.push(variant)
     })
   })
