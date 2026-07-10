@@ -104,5 +104,6 @@ export function useAccountManagement() {
     handleBlock,
     handleUnblock,
     handleDelete,
+    showToast,
   }
 }

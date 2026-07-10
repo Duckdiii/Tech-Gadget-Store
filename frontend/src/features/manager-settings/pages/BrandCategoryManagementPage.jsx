@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiFetch } from '../../../services/api'
+import Field from '../components/Field'
 
 function normalizeBrand(dto) {
   return { id: dto.id, name: dto.name || '', logoUrl: dto.logoUrl || '', description: dto.description || '' }
@@ -7,16 +8,6 @@ function normalizeBrand(dto) {
 
 function normalizeCategory(dto) {
   return { id: dto.id, name: dto.name || '', imageUrl: dto.imageUrl || '' }
-}
-
-function Field({ label, error, children }) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</label>
-      {children}
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-    </div>
-  )
 }
 
 const EMPTY_BRAND_FORM = { name: '', logoUrl: '', description: '' }

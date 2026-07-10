@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNav } from '../../../hooks/useNav'
+import StatCard from '../components/StatCard'
 
 const CUSTOMER = {
   name: 'Nguyễn Văn A',
@@ -30,17 +31,6 @@ const TRANSACTIONS = [
 
 const TABS = ['Transaction History', 'Purchased Products', 'Notes']
 
-function StatCard({ icon, label, value, valueClass = 'text-gray-900' }) {
-  return (
-    <div className="bg-white rounded border border-gray-200 px-4 py-4 flex-1">
-      <div className="flex items-center gap-1.5 mb-2">
-        <span className="text-gray-400">{icon}</span>
-        <span className="text-xs text-gray-400 font-medium">{label}</span>
-      </div>
-      <p className={`text-2xl font-black leading-tight ${valueClass}`}>{value}</p>
-    </div>
-  )
-}
 
 export default function CustomerDetailPage() {
   const onNavigate = useNav()

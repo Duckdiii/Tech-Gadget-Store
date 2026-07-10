@@ -9,6 +9,7 @@ import {
 import PromotionFormModal from '../../../components/PromotionFormModal'
 import PromotionDeleteModal from '../../../components/PromotionDeleteModal'
 import PromotionPerformanceModal from '../../../components/PromotionPerformanceModal'
+import Toggle from '../components/Toggle'
 
 /* ── Status config ── */
 const STATUS_CONFIG = {
@@ -50,21 +51,6 @@ function formatCurrency(val) {
   return Number(val).toLocaleString('vi-VN') + ' đ'
 }
 
-/* ── Toggle ── */
-function Toggle({ checked, onChange }) {
-  return (
-    <button
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer focus:outline-none ${
-        checked ? 'bg-[#E8420A]' : 'bg-gray-200'
-      }`}
-    >
-      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-        checked ? 'translate-x-6' : 'translate-x-1'
-      }`} />
-    </button>
-  )
-}
 
 /* ── Dropdown ── */
 function Dropdown({ label, options = [] }) {

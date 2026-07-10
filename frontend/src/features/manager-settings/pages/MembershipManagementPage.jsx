@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiFetch } from '../../../services/api'
+import Field from '../components/Field'
 
 const TIER_OPTIONS = ['STANDARD', 'BRONZE', 'SILVER', 'GOLD', 'DIAMOND']
 const TIER_LABELS = { STANDARD: 'Thành viên', BRONZE: 'Đồng', SILVER: 'Bạc', GOLD: 'Vàng', DIAMOND: 'Kim Cương' }
@@ -20,16 +21,6 @@ function normalizeMembership(dto) {
 function formatCurrency(value) {
   if (value === null || value === undefined) return '—'
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
-}
-
-function Field({ label, error, children }) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</label>
-      {children}
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-    </div>
-  )
 }
 
 const EMPTY_FORM = { tier: 'STANDARD', minSpending: '', maxSpending: '', discountPercentage: '', freeShipping: false, description: '' }

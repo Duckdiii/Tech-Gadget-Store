@@ -2,24 +2,8 @@ import { useState, useEffect } from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
 import { apiFetch } from '../../../services/api'
 
-function StatCard({ icon, label, value, sub, color }) {
-  const clr = {
-    blue:   ['bg-orange-50',  'bg-[#E8420A]',   'text-[#C4350A]'],
-    green:  ['bg-green-50', 'bg-green-500',  'text-green-700'],
-    purple: ['bg-purple-50','bg-purple-500', 'text-purple-700'],
-    amber:  ['bg-amber-50', 'bg-amber-500',  'text-amber-700'],
-  }[color]
-  return (
-    <div className={`${clr[0]} rounded p-5 flex items-center gap-4 text-gray-800`}>
-      <div className={`w-11 h-11 ${clr[1]} rounded flex items-center justify-center text-white shrink-0`}>{icon}</div>
-      <div>
-        <p className="text-xs text-gray-500 font-medium">{label}</p>
-        <p className={`text-xl font-bold ${clr[2]}`}>{value}</p>
-        {sub && <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>}
-      </div>
-    </div>
-  )
-}
+import StatCard from '../components/StatCard'
+import Toggle from '../components/Toggle'
 
 export default function RecoverRestorePage() {
   const [restoreTarget, setRestoreTarget] = useState(null)
@@ -283,12 +267,7 @@ export default function RecoverRestorePage() {
                     <p className="text-sm font-medium text-gray-700">Backup tự động</p>
                     <p className="text-xs text-gray-400 mt-0.5">Lên lịch sao lưu định kỳ</p>
                   </div>
-                  <button
-                    onClick={() => setSettings(s => ({ ...s, autoEnabled: !s.autoEnabled }))}
-                    className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer shrink-0 border-none ${settings.autoEnabled ? 'bg-[#E8420A]' : 'bg-gray-200'}`}
-                  >
-                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings.autoEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
-                  </button>
+                  <Toggle checked={settings.autoEnabled} onChange={val => setSettings(s => ({ ...s, autoEnabled: val }))} />
                 </div>
 
                 {settings.autoEnabled && (
@@ -332,12 +311,7 @@ export default function RecoverRestorePage() {
                         <p className="text-sm font-medium text-gray-700">Bao gồm media</p>
                         <p className="text-xs text-gray-400">Ảnh sản phẩm, tài liệu</p>
                       </div>
-                      <button
-                        onClick={() => setSettings(s => ({ ...s, includeMedia: !s.includeMedia }))}
-                        className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer shrink-0 border-none ${settings.includeMedia ? 'bg-[#E8420A]' : 'bg-gray-200'}`}
-                      >
-                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings.includeMedia ? 'translate-x-5' : 'translate-x-0'}`} />
-                      </button>
+                      <Toggle checked={settings.includeMedia} onChange={val => setSettings(s => ({ ...s, includeMedia: val }))} />
                     </div>
                   </>
                 )}

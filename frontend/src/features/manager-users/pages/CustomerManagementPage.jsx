@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNav } from '../../../hooks/useNav'
+import Avatar from '../components/Avatar'
+import StatCard from '../components/StatCard'
 
 const TIER_CONFIG = {
   VIP:              { bg: 'bg-amber-100',  text: 'text-amber-700'  },
@@ -99,18 +101,7 @@ const KPI_CARDS = [
   },
 ]
 
-function CustomerAvatar({ customer }) {
-  if (customer.avatarLetter) {
-    return (
-      <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${customer.avatarBg} ${customer.avatarColor}`}>
-        {customer.avatarLetter}
-      </div>
-    )
-  }
-  return (
-    <img src={customer.avatarImg} alt={customer.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
-  )
-}
+
 
 export default function CustomerManagementPage() {
   const onNavigate = useNav()
@@ -193,18 +184,16 @@ export default function CustomerManagementPage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-4 gap-4">
           {KPI_CARDS.map((card, i) => (
-            <div key={i} className="bg-white rounded border border-gray-200 px-5 py-5">
-              <div className="flex items-center gap-2 mb-3">
-                {card.icon}
-                <span className="text-xs font-bold text-gray-400 tracking-wider">{card.label}</span>
-              </div>
-              <p className={`text-3xl font-black leading-tight ${card.valueClass}`}>
-                {card.value}
-                {card.valueSuffix && (
-                  <span className={`text-base font-normal ${card.suffixClass}`}>{card.valueSuffix}</span>
-                )}
-              </p>
-            </div>
+            <StatCard
+              key={i}
+              icon={card.icon}
+              label={card.label}
+              value={card.value}
+              valueSuffix={card.valueSuffix}
+              valueClass={card.valueClass}
+              suffixClass={card.suffixClass}
+              padding="px-5 py-5"
+            />
           ))}
         </div>
 
@@ -276,7 +265,13 @@ export default function CustomerManagementPage() {
 
                   {/* Khách hàng */}
                   <div className="flex items-center gap-3">
-                    <CustomerAvatar customer={customer} />
+                    <Avatar
+                      size="xs"
+                      initials={customer.avatarLetter}
+                      bg={`${customer.avatarBg} ${customer.avatarColor}`}
+                      src={customer.avatarImg}
+                      alt={customer.name}
+                    />
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{customer.name}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{customer.email}</p>

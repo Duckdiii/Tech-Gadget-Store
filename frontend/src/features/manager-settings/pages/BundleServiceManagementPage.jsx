@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useBundleService } from '../hooks/useBundleService'
+import Field from '../components/Field'
 
 const TYPE_LABELS = { WARRANTY: 'Bảo hành', SCREEN_PROTECTION: 'Dán màn hình' }
 
@@ -8,16 +9,6 @@ const TYPE_LABELS = { WARRANTY: 'Bảo hành', SCREEN_PROTECTION: 'Dán màn hì
 function formatCurrency(value) {
   if (value === null || value === undefined) return '—'
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
-}
-
-function Field({ label, error, children }) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</label>
-      {children}
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-    </div>
-  )
 }
 
 

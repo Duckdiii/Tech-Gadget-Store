@@ -1,29 +1,8 @@
 import { useState } from 'react'
+import Toggle from '../components/Toggle'
+import FormLabel from '../components/FormLabel'
 
 const TABS = ['Thông tin chung', 'Thanh toán', 'Vận chuyển', 'Bảo mật']
-
-function Toggle({ checked, onChange }) {
-  return (
-    <button
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer focus:outline-none ${
-        checked ? 'bg-[#E8420A]' : 'bg-gray-300'
-      }`}
-    >
-      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-        checked ? 'translate-x-6' : 'translate-x-1'
-      }`} />
-    </button>
-  )
-}
-
-function FormLabel({ children, required }) {
-  return (
-    <label className="block text-xs font-bold text-gray-500 tracking-wider uppercase mb-1.5">
-      {children}{required && <span className="text-red-400 ml-0.5">*</span>}
-    </label>
-  )
-}
 
 export default function SystemConfigPage() {
   const [activeTab, setActiveTab] = useState('Thông tin chung')
