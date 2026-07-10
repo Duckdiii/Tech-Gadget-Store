@@ -45,10 +45,10 @@ export function useCustomerOrders() {
     }
   }
 
-  const filtered = orders.filter((o) => {
-    const mapped = mapStatus(o.orderStatus)
-    const matchTab = activeTab === 'all' || mapped === activeTab
-    const matchSearch = o.id.toLowerCase().includes(search.toLowerCase())
+  const filtered = orders.filter((o) => { // lọc đơn hàng dựa trên tab đang chọn và từ khóa tìm kiếm
+    const mapped = mapStatus(o.orderStatus) // chuyển trạng thái từ backend sang trạng thái hiển thị
+    const matchTab = activeTab === 'all' || mapped === activeTab // nếu tab là "all" thì hiển thị tất cả, nếu không thì chỉ hiển thị những đơn hàng có trạng thái trùng với tab
+    const matchSearch = o.id.toLowerCase().includes(search.toLowerCase())// kiểm tra xem id của đơn hàng có chứa từ khóa tìm kiếm hay không
     return matchTab && matchSearch
   })
 

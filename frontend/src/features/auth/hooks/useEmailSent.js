@@ -5,6 +5,7 @@ import { authService } from '../services/authService'
 export function useEmailSent() {
   const location = useLocation()
   const email = location.state?.email || 'email của bạn'
+  const isPortal = location.state?.isPortal || false
 
   const [resending, setResending] = useState(false)
   const [resendMessage, setResendMessage] = useState('')
@@ -25,6 +26,7 @@ export function useEmailSent() {
 
   return {
     email,
+    isPortal,
     resending,
     resendMessage,
     handleResend,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { orderService } from '../services/orderService'
+import { managerOrderService } from '../services/managerOrderService'
 
 export function useManagerOrders() {
   const [orders, setOrders] = useState([])
@@ -9,7 +9,7 @@ export function useManagerOrders() {
   const fetchOrders = async () => {
     try {
       setLoading(true)
-      const data = await orderService.getManagerOrders(activeFilter)
+      const data = await managerOrderService.getManagerOrders(activeFilter)
       setOrders(data || [])
     } catch (e) {
       console.error('Lỗi tải đơn hàng manager:', e)
@@ -24,7 +24,7 @@ export function useManagerOrders() {
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
-      await orderService.updateManagerOrderStatus(orderId, newStatus)
+      await managerOrderService.updateOrderStatus(orderId, newStatus)
       await fetchOrders()
     } catch (e) {
       alert('Cập nhật trạng thái thất bại: ' + e.message)

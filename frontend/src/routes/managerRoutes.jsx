@@ -3,6 +3,7 @@ import { ManagerDashboardPage, RevenueReportPage } from '../features/manager-ana
 import { InventoryPage, ImportStockPage, SupplierManagementPage, SupplyOrderPage, ProductManagementPage } from '../features/manager-inventory'
 import { CustomerManagementPage, CustomerDetailPage, StaffManagementPage, AccountManagementPage } from '../features/manager-users'
 import { SystemConfigPage, RecoverRestorePage, PromotionSettingsPage, BrandCategoryManagementPage, BundleServiceManagementPage, MembershipManagementPage } from '../features/manager-settings'
+import { OrderHistoryPage } from '../features/manager-orders'
 
 export const managerRoutes = [
   { path: '/dashboard', element: <ManagerDashboardPage /> },
@@ -22,4 +23,5 @@ export const managerRoutes = [
   { path: '/brands-categories', element: <BrandCategoryManagementPage /> },
   { path: '/bundle-services', element: <BundleServiceManagementPage /> },
   { path: '/memberships', element: <MembershipManagementPage /> },
+  { path: '/orders', element: <OrderHistoryPage /> },
 ]

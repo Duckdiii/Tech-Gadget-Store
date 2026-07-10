@@ -1,7 +1,9 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLogin } from '../hooks/useLogin'
 
 export default function PortalLoginPage() {
+  const navigate = useNavigate()
   const {
     email,
     setEmail,
@@ -109,6 +111,16 @@ export default function PortalLoginPage() {
             <span className="text-[12px] text-red-600 font-medium">{error}</span>
           </div>
         )}
+
+        {/* Forgot Password Link */}
+        <div className="flex justify-end mb-5">
+          <button
+            onClick={() => navigate('/forgot-password', { state: { isPortal: true } })}
+            className="text-[12px] font-bold text-gray-500 hover:text-[#E8420A] cursor-pointer transition-colors border-none bg-transparent"
+          >
+            Quên mật khẩu?
+          </button>
+        </div>
 
         {/* Submit */}
         <button

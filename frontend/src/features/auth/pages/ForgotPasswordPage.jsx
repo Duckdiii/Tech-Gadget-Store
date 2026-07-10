@@ -1,11 +1,13 @@
-import { useNav } from '../../../hooks/useNav'
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForgotPassword } from '../hooks/useForgotPassword'
 
 export default function ForgotPasswordPage() {
-  const onNavigate = useNav()
+  const navigate = useNavigate()
   const {
     email,
     setEmail,
+    isPortal,
     error,
     setError,
     loading,
@@ -93,8 +95,8 @@ export default function ForgotPasswordPage() {
 
         {/* Back to login */}
         <div className="flex justify-center">
-          <button onClick={() => onNavigate('login')}
-            className="flex items-center gap-1.5 text-sm font-bold cursor-pointer transition-colors"
+          <button onClick={() => navigate(isPortal ? '/portal/login' : '/login')}
+            className="flex items-center gap-1.5 text-sm font-bold cursor-pointer transition-colors border-none bg-transparent"
             style={{ color: 'var(--accent)' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-d)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--accent)'}
@@ -109,7 +111,7 @@ export default function ForgotPasswordPage() {
 
       {/* ── Footer ── */}
       <div className="mt-8">
-        <button className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition-colors">
+        <button className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition-colors border-none bg-transparent">
           Liên hệ hỗ trợ
         </button>
       </div>

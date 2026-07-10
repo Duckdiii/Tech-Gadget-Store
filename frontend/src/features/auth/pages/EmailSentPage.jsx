@@ -1,10 +1,12 @@
-import { useNav } from '../../../hooks/useNav'
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useEmailSent } from '../hooks/useEmailSent'
 
 export default function EmailSentPage() {
-  const onNavigate = useNav()
+  const navigate = useNavigate()
   const {
     email,
+    isPortal,
     resending,
     resendMessage,
     handleResend,
@@ -46,8 +48,8 @@ export default function EmailSentPage() {
         </p>
 
         {/* Back to login button */}
-        <button onClick={() => onNavigate('login')}
-          className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer mb-4 tracking-wide"
+        <button onClick={() => navigate(isPortal ? '/portal/login' : '/login')}
+          className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer mb-4 tracking-wide border-none"
           style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
           onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
           onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
@@ -62,7 +64,7 @@ export default function EmailSentPage() {
             <button
               onClick={handleResend}
               disabled={resending}
-              className="hover:underline font-bold cursor-pointer transition-colors disabled:opacity-50"
+              className="hover:underline font-bold cursor-pointer transition-colors disabled:opacity-50 border-none bg-transparent"
               style={{ color: 'var(--accent)' }}
               onMouseEnter={e => !resending && (e.currentTarget.style.color = 'var(--accent-d)')}
               onMouseLeave={e => !resending && (e.currentTarget.style.color = 'var(--accent)')}
@@ -81,9 +83,9 @@ export default function EmailSentPage() {
       {/* ── Footer links ── */}
       <div className="flex items-center gap-6 mt-8">
         {['Privacy Policy', 'Terms of Service', 'Help Center'].map((link) => (
-          <button key={link} className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition-colors">
-            {link}
-          </button>
+          <button key={link} className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition-colors border-none bg-transparent">
+            {link
+          }</button>
         ))}
       </div>
     </div>

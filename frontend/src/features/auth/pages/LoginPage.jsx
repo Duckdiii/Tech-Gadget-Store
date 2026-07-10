@@ -123,7 +123,7 @@ export default function LoginPage() {
         {/* Forgot Password Link */}
         <div className="flex justify-end mb-5">
           <button
-            onClick={() => navigate('/forgot-password')}
+            onClick={() => navigate('/forgot-password', { state: { isPortal: false } })}
             className="text-[12px] font-bold text-gray-500 hover:text-[#E8420A] cursor-pointer transition-colors"
           >
             Quên mật khẩu?

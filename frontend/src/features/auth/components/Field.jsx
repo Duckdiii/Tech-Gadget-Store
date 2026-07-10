@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Field({ label, error, children }) {
+export default function Field({ label, error, children }) {// vd: "Email", error: "Email không hợp lệ", children: <input ... />
   return (
     <div className="mb-4">
       {label && (

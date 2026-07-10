@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { orderService } from '../../customer-orders/services/orderService'
+import { managerOrderService } from '../../manager-orders/services/managerOrderService'
 
 export function useStaffOrders() {
   const [orders, setOrders] = useState([])
@@ -12,7 +12,7 @@ export function useStaffOrders() {
   const fetchOrders = async () => {
     try {
       setLoading(true)
-      const data = await orderService.getManagerOrders()
+      const data = await managerOrderService.getManagerOrders()
       setOrders(data || [])
     } catch (e) {
       console.error('Lỗi tải đơn hàng staff:', e)
@@ -40,7 +40,7 @@ export function useStaffOrders() {
 
   async function handleMarkDone(id) {
     try {
-      await orderService.updateOrderStatus(id, 'COMPLETED')
+      await managerOrderService.updateOrderStatus(id, 'COMPLETED')
       await fetchOrders()
       setSelected(null)
       showToast('Đã đánh dấu hoàn thành đơn hàng')

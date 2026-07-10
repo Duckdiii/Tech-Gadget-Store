@@ -1,9 +1,12 @@
 import { useState } from 'react'
-import { useNav } from '../../../hooks/useNav'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { authService } from '../services/authService'
 
 export function useForgotPassword() {
-  const onNavigate = useNav()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isPortal = location.state?.isPortal || false
+
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -17,7 +20,8 @@ export function useForgotPassword() {
     setLoading(true)
     try {
       await authService.forgotPassword(email.trim().toLowerCase())
-      onNavigate('emailSent', { state: { email: email.trim() } })
+      // Chuyển sang trang xác nhận email đã gửi kèm theo email và isPortal
+      navigate('/email-sent', { state: { email: email.trim(), isPortal } })
     } catch (err) {
       setError(err.message || 'Không kết nối được server. Vui lòng thử lại.')
     } finally {
@@ -28,6 +32,7 @@ export function useForgotPassword() {
   return {
     email,
     setEmail,
+    isPortal,
     error,
     setError,
     loading,

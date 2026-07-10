@@ -5,7 +5,7 @@ import { authService } from '../services/authService'
 
 export function useResetPassword() {
   const onNavigate = useNav()
-  const [searchParams] = useSearchParams()
+  const [searchParams] = useSearchParams() // lấy token từ query string trong URL, ví dụ: /reset-password?token=abc123
   const token = searchParams.get('token')
 
   const [newPwd, setNewPwd] = useState('')

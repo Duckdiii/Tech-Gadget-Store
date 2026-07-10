@@ -14,7 +14,7 @@ export function useRegister() {
   const [showPass, setShowPass] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
-  const set = (field) => (e) => {
+  const set = (field) => (e) => { // vd: set('email')(e) => setForm(f => ({ ...f, email: e.target.value }))
     setForm(f => ({ ...f, [field]: e.target.value }))
     setErrors(err => ({ ...err, [field]: '' }))
     setServerError('')
@@ -43,6 +43,7 @@ export function useRegister() {
     }
     setLoading(true)
     try {
+      // gọi hàm register từ authService để đăng ký tài khoản mới, truyền vào các thông tin đã được trim và chuyển email sang chữ thường
       const data = await authService.register(
         form.fullName.trim(),
         form.phone.trim() || null,
@@ -52,7 +53,7 @@ export function useRegister() {
       login({ role: 'customer', name: data.fullName, email: data.email }, data.token)
       navigate('/', { replace: true })
     } catch (err) {
-      // Check if duplicate email conflict (status code 409 is handled inside axiosClient as rejecting with message)
+      // nếu lỗi trả về có mã 409 (Conflict) thì hiển thị thông báo email đã được sử dụng, ngược lại hiển thị thông báo lỗi chung
       if (err.message && err.message.includes('409')) {
         setErrors(errs => ({ ...errs, email: 'Email này đã được sử dụng.' }))
         setServerError('Email này đã được sử dụng.')

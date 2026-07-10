@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { orderService } from '../services/orderService'
+import { managerOrderService } from '../services/managerOrderService'
 
 export function useManagerPaymentLogs() {
   const [logs, setLogs] = useState([])
@@ -10,7 +10,7 @@ export function useManagerPaymentLogs() {
   const fetchLogs = async () => {
     try {
       setLoading(true)
-      const data = await orderService.getManagerPaymentLogs()
+      const data = await managerOrderService.getManagerPaymentLogs()
       setLogs(data || [])
     } catch (e) {
       console.error('Lỗi tải payment logs manager:', e)
