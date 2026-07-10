@@ -1,4 +1,5 @@
 import { useNav } from '../../../hooks/useNav'
+import StatCard from '../components/StatCard'
 
 const fmt = n => n.toLocaleString('vi-VN')
 
@@ -63,28 +64,18 @@ export default function StaffDashboardPage() {
       <div className="flex-1 px-8 py-6 space-y-6">
         {/* KPI */}
         <div className="grid grid-cols-4 gap-4">
-          {KPI.map((c, i) => {
-            const cls = {
-              teal:  ['bg-teal-500',  'text-teal-600'  ],
-              blue:  ['bg-[#E8420A]',  'text-[#E8420A]'  ],
-              red:   ['bg-red-500',   'text-red-600'   ],
-              amber: ['bg-amber-400', 'text-amber-600' ],
-            }[c.color]
-            return (
-              <div
-                key={i}
-                onClick={() => c.action && onNavigate(c.action)}
-                className={`bg-white rounded border border-gray-200 p-5 flex items-center gap-4 ${c.action ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
-              >
-                <span className={`w-12 h-12 ${cls[0]} rounded flex items-center justify-center text-white shrink-0`}>{c.icon}</span>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium">{c.label}</p>
-                  <p className={`text-3xl font-bold ${cls[1]}`}>{c.value}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{c.sub}</p>
-                </div>
-              </div>
-            )
-          })}
+          {KPI.map((c, i) => (
+            <StatCard
+              key={i}
+              icon={c.icon}
+              label={c.label}
+              value={c.value}
+              sub={c.sub}
+              color={c.color}
+              action={c.action}
+              onClick={() => c.action && onNavigate(c.action)}
+            />
+          ))}
         </div>
 
         {/* Middle row */}

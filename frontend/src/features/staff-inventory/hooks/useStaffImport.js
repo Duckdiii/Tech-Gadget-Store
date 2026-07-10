@@ -1,18 +1,6 @@
 import { useState, useEffect } from 'react'
-import { managerInventoryService } from '../../manager-inventory/services/managerInventoryService'
-
-const WAREHOUSES = ['Kho trung tâm', 'Kho chi nhánh Q1', 'Kho chi nhánh Q7', 'Kho phụ B']
-
-const USER_EMAIL_TO_ID = {
-  'nguyenducduy@gmail.com': 'user-mgr-01',
-  'bich.tran@techstore.vn': 'user-stf-01',
-  'cuong.le@techstore.vn': 'user-stf-02',
-}
-
-function today() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
+import { staffInventoryService } from '../services/staffInventoryService'
+import { USER_EMAIL_TO_ID, WAREHOUSES, today } from '../utils/inventoryHelpers'
 
 const BLANK_ROW = () => ({
   isNewProduct: false,
@@ -50,11 +38,11 @@ export function useStaffImport(user) {
   const loadProducts = async () => {
     try {
       setLoading(true)
-      const raw = await managerInventoryService.getProducts()
+      const raw = await staffInventoryService.getProducts()
       const detailed = await Promise.all(
         raw.map(async (p) => {
           try {
-            return await managerInventoryService.getProductById(p.id)
+            return await staffInventoryService.getProductById(p.id)
           } catch {
             return { ...p, variants: [] }
           }
@@ -185,7 +173,7 @@ export function useStaffImport(user) {
         }),
       }
 
-      const res = await managerInventoryService.createImportLog(payload)
+      const res = await staffInventoryService.createImportLog(payload)
 
       setReceipt({
         id: res.id,

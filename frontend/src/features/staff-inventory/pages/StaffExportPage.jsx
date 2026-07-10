@@ -1,330 +1,32 @@
-import { useState, useEffect } from 'react'
 import { useAuth } from '../../../context/AuthContext'
-import { apiFetch } from '../../../services/api'
+import { useStaffExport } from '../hooks/useStaffExport'
+import ExportReceiptModal from '../components/ExportReceiptModal'
+import { EXPORT_TYPES } from '../utils/inventoryHelpers'
 
-const EXPORT_TYPES = [
-  { id: 'sale',     label: 'Xuất bán',           recipientLabel: 'Khách hàng',     color: 'blue'   },
-  { id: 'transfer', label: 'Xuất chuyển kho',    recipientLabel: 'Kho nhận',       color: 'purple' },
-  { id: 'damage',   label: 'Xuất hỏng / thanh lý', recipientLabel: 'Lý do',       color: 'red'    },
-  { id: 'return',   label: 'Xuất trả NCC',        recipientLabel: 'Nhà cung cấp',  color: 'amber'  },
-]
-
-const TYPE_BADGE = {
-  sale:     'bg-orange-50 text-[#C4350A]',
-  transfer: 'bg-purple-100 text-purple-700',
-  damage:   'bg-red-100 text-red-600',
-  return:   'bg-amber-100 text-amber-700',
-}
-
-const USER_EMAIL_TO_ID = {
-  'nguyenducduy@gmail.com': 'user-mgr-01',
-  'bich.tran@techstore.vn': 'user-stf-01',
-  'cuong.le@techstore.vn': 'user-stf-02',
-}
-
-const fmt = n => n.toLocaleString('vi-VN')
-
-function today() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-}
-
-function parseDetails(detailsStr) {
-  if (!detailsStr) return { ram: '', storage: '', color: '' }
-  const parts = detailsStr.split('/').map(s => s.trim())
-  let ram = ''
-  let storage = ''
-  let color = ''
-  parts.forEach(p => {
-    if (p.toLowerCase().includes('ram')) {
-      ram = p.replace(/gb\s*ram/i, '').trim()
-    } else if (p.toLowerCase().includes('storage')) {
-      storage = p.replace(/gb\s*storage/i, '').trim()
-    } else {
-      color = p
-    }
-  })
-  return { ram, storage, color }
-}
-
-const BLANK_ROW = () => ({ productId: '', productVariantId: '', qty: 1 })
-
-/* ── Export Receipt Modal ── */
-function ExportReceiptModal({ receipt, onClose }) {
-  const type = EXPORT_TYPES.find(t => t.id === receipt.exportType)
-  const isSale = receipt.exportType === 'sale'
-  const rows = receipt.rows
-  const sub = rows.reduce((s, r) => s + (Number(r.qty) || 0) * (r.unitPrice || 0), 0)
-  const vat = isSale ? Math.round(sub * 0.1) : 0
-  const total = sub + vat
-
-  return (
-    <>
-      <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-          {/* Header */}
-          <div className="bg-gray-900 px-6 py-5 text-white">
-            <p className="text-xs font-semibold opacity-70 uppercase tracking-widest">TechStore · Kho vận</p>
-            <h2 className="text-2xl font-black mt-1">PHIẾU XUẤT KHO</h2>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-sm opacity-80">Số phiếu: <span className="font-bold">{receipt.id}</span></span>
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${TYPE_BADGE[receipt.exportType]}`}>{type?.label}</span>
-            </div>
-            {receipt.receiptId && (
-              <p className="text-xs text-gray-400 mt-1">Mã hóa đơn/Biên lai: <span className="font-bold">{receipt.receiptId}</span></p>
-            )}
-            <p className="text-sm opacity-80 mt-1">Ngày: <span className="font-bold">{receipt.date}</span></p>
-          </div>
-
-          <div className="px-6 py-4 space-y-4">
-            {/* Meta */}
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="bg-gray-50 rounded p-3">
-                <p className="text-xs text-gray-400 font-medium mb-0.5">Loại xuất</p>
-                <p className="font-semibold text-gray-800">{type?.label}</p>
-              </div>
-              <div className="bg-gray-50 rounded p-3">
-                <p className="text-xs text-gray-400 font-medium mb-0.5">{type?.recipientLabel}</p>
-                <p className="font-semibold text-gray-800">{receipt.recipient || '—'}</p>
-              </div>
-            </div>
-
-            {/* Items */}
-            <div className="border border-gray-200 rounded overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-400 uppercase">#</th>
-                    <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-400 uppercase">Sản phẩm</th>
-                    <th className="px-3 py-2.5 text-center text-xs font-bold text-gray-400 uppercase">SL xuất</th>
-                    <th className="px-3 py-2.5 text-right text-xs font-bold text-gray-400 uppercase">Đơn giá</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {rows.map((r, i) => (
-                    <tr key={i}>
-                      <td className="px-3 py-2.5 text-gray-400 text-xs">{i+1}</td>
-                      <td className="px-3 py-2.5">
-                        <p className="text-xs font-semibold text-gray-800">{r.displayName}</p>
-                        <p className="text-[11px] text-gray-400">{r.specs}</p>
-                      </td>
-                      <td className="px-3 py-2.5 text-center text-sm font-bold text-red-600">{r.qty}</td>
-                      <td className="px-3 py-2.5 text-right text-xs text-gray-600">{fmt(r.unitPrice)}đ</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {(isSale || receipt.exportType === 'return') && (
-              <div className="bg-slate-50 rounded p-4 space-y-2 text-sm">
-                <div className="flex justify-between text-gray-500"><span>Tổng giá trị xuất</span><span className="font-semibold">{fmt(sub)}đ</span></div>
-                {isSale && <div className="flex justify-between text-gray-500"><span>VAT (10%)</span><span className="font-semibold">{fmt(vat)}đ</span></div>}
-                <div className="flex justify-between border-t border-slate-200 pt-2 font-bold text-slate-700 text-base"><span>TỔNG CỘNG</span><span>{fmt(total)}đ</span></div>
-              </div>
-            )}
-
-            {receipt.note && <p className="text-xs text-gray-500 italic">Ghi chú: {receipt.note}</p>}
-
-            {/* Signatures */}
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              {['Nhân viên xuất kho', type?.recipientLabel === 'Khách hàng' ? 'Người nhận hàng' : 'Người xác nhận'].map((label, i) => (
-                <div key={i} className="text-center">
-                  <p className="text-xs font-semibold text-gray-600">{label}</p>
-                  <p className="text-[11px] text-gray-400 mb-8">(Ký, ghi rõ họ tên)</p>
-                  {i === 0 && <p className="text-xs font-semibold text-gray-700 border-t border-dashed border-gray-300 pt-1">{receipt.staffName}</p>}
-                  {i !== 0 && <p className="text-xs text-gray-400 border-t border-dashed border-gray-300 pt-1">...</p>}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-3 px-6 pb-6">
-            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
-            <button onClick={() => window.print()} className="flex-1 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded text-sm font-semibold cursor-pointer transition-colors flex items-center justify-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-              In phiếu
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
-/* ── Main Page ── */
 export default function StaffExportPage() {
   const { user } = useAuth()
-  const [productsList, setProductsList] = useState([])
-  const [flatVariants, setFlatVariants] = useState([])
-  const [exportType, setExportType] = useState('sale')
-  const [recipient,  setRecipient]  = useState('')
-  const [date,       setDate]       = useState(today())
-  const [note,       setNote]       = useState('')
-  const [rows,       setRows]       = useState([BLANK_ROW()])
-  const [errors,     setErrors]     = useState({})
-  const [receipt,    setReceipt]    = useState(null)
-  const [loading,    setLoading]    = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-
-  const userPerfId = USER_EMAIL_TO_ID[user?.email] || 'user-stf-01'
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true)
-        const rawProducts = await apiFetch('/api/products')
-        const detailed = await Promise.all(
-          rawProducts.map(async (p) => {
-            try {
-              return await apiFetch(`/api/products/${p.id}`)
-            } catch {
-              return { ...p, variants: [] }
-            }
-          })
-        )
-
-        let logs = []
-        try {
-          logs = await apiFetch('/api/manager/warehouse-logs')
-        } catch (e) {
-          console.warn("Failed to load warehouse logs", e)
-        }
-
-        // Count exports
-        const exportedCounts = {}
-        logs.filter(l => l.type === 'EXPORT').forEach(log => {
-          const { ram, storage, color } = parseDetails(log.productDetails)
-          const key = `${log.productName}-${ram}-${storage}-${color}`.toLowerCase()
-          exportedCounts[key] = (exportedCounts[key] || 0) + log.quantity
-        })
-
-        // Build flat variants list with correct stock levels
-        const list = []
-        detailed.forEach(p => {
-          const configMap = {}
-          p.variants.forEach(v => {
-            const configKey = `${v.ramGb || ''}-${v.storageGb || ''}-${v.color || ''}`.toLowerCase()
-            if (!configMap[configKey]) {
-              configMap[configKey] = {
-                id: v.id,
-                productId: p.id,
-                productName: p.name,
-                ramGb: v.ramGb,
-                storageGb: v.storageGb,
-                color: v.color,
-                price: v.price || 0,
-                totalUnits: 0,
-              }
-            }
-            configMap[configKey].totalUnits += 1
-          })
-
-          Object.values(configMap).forEach(cfg => {
-            const matchKey = `${p.name}-${cfg.ramGb || ''}-${cfg.storageGb || ''}-${cfg.color || ''}`.toLowerCase()
-            const exported = exportedCounts[matchKey] || 0
-            const stock = Math.max(0, cfg.totalUnits - exported)
-
-            list.push({
-              ...cfg,
-              stock,
-            })
-          })
-        })
-
-        setProductsList(detailed)
-        setFlatVariants(list)
-      } catch (err) {
-        console.error("Failed to load export data", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadData()
-  }, [])
+  const {
+    productsList,
+    flatVariants,
+    exportType, setExportType,
+    recipient, setRecipient,
+    date, setDate,
+    note, setNote,
+    rows,
+    errors,
+    receipt, setReceipt,
+    loading,
+    submitting,
+    addRow,
+    removeRow,
+    updateRow,
+    stockAfter,
+    handleSubmit,
+    resetForm,
+  } = useStaffExport(user)
 
   const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400'
-  const sel = inp + ' cursor-pointer'
   const currentType = EXPORT_TYPES.find(t => t.id === exportType)
-
-  function addRow() { setRows(r => [...r, BLANK_ROW()]) }
-  function removeRow(i) { setRows(r => r.filter((_,idx) => idx !== i)) }
-  function updateRow(i, field, val) { setRows(r => r.map((row, idx) => idx === i ? { ...row, [field]: val } : row)) }
-
-  function getVariantDetails(row) {
-    return flatVariants.find(v => v.id === row.productVariantId)
-  }
-
-  function stockAfter(row) {
-    const v = getVariantDetails(row)
-    if (!v) return null
-    return v.stock - (Number(row.qty) || 0)
-  }
-
-  async function handleSubmit() {
-    const e = {}
-    if (!recipient.trim()) e.recipient = `Vui lòng nhập ${currentType?.recipientLabel}`
-    
-    const validRows = rows.filter(r => r.productVariantId && Number(r.qty) > 0)
-    if (validRows.length === 0) e.rows = 'Cần ít nhất 1 sản phẩm'
-    
-    validRows.forEach((r, i) => {
-      const after = stockAfter(r)
-      if (after !== null && after < 0) {
-        e[`row_${i}`] = 'Xuất quá số lượng tồn kho khả dụng'
-      }
-    })
-
-    if (Object.keys(e).length) { setErrors(e); return }
-    setErrors({})
-    setSubmitting(true)
-
-    try {
-      const payload = {
-        performedById: userPerfId,
-        reason: `${recipient}; ${note}`,
-        items: validRows.map(r => ({
-          productVariantId: r.productVariantId,
-          quantity: Number(r.qty) || 1,
-        }))
-      }
-
-      const res = await apiFetch('/api/export-logs', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      })
-
-      setReceipt({
-        id: res.id,
-        date: new Date(res.exportedAt || res.createdAt).toLocaleDateString('vi-VN'),
-        exportType,
-        recipient,
-        note,
-        receiptId: res.receiptId,
-        staffName: user?.name || 'Lê Hoàng Dũng',
-        rows: validRows.map(r => {
-          const v = getVariantDetails(r)
-          return {
-            ...r,
-            displayName: v?.productName,
-            specs: `${v?.ramGb ? v.ramGb + 'GB RAM / ' : ''}${v?.storageGb ? v.storageGb + 'GB Storage / ' : ''}${v?.color || ''}`,
-            unitPrice: v?.price || 0,
-          }
-        })
-      })
-    } catch (err) {
-      console.error(err)
-      setErrors({ submit: err.message || 'Lỗi hệ thống khi xuất kho' })
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  function resetForm() {
-    setExportType('sale'); setRecipient(''); setDate(today())
-    setNote(''); setRows([BLANK_ROW()]); setErrors({}); setReceipt(null)
-  }
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
@@ -417,7 +119,7 @@ export default function StaffExportPage() {
                 {rows.map((row, i) => {
                   const after = stockAfter(row)
                   const overstock = after !== null && after < 0
-                  
+
                   const selectedProduct = productsList.find(p => p.id === row.productId)
                   const variantOptions = []
                   if (selectedProduct) {
