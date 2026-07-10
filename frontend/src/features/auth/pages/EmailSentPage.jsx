@@ -1,36 +1,14 @@
-import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import { useNav } from '../../../hooks/useNav'
+import { useEmailSent } from '../hooks/useEmailSent'
 
 export default function EmailSentPage() {
   const onNavigate = useNav()
-  const location = useLocation()
-  const email = location.state?.email || 'email của bạn'
-
-  const [resending, setResending] = useState(false)
-  const [resendMessage, setResendMessage] = useState('')
-
-  const handleResend = async () => {
-    if (!email || email === 'email của bạn') return
-    setResending(true)
-    setResendMessage('')
-    try {
-      const res = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.toLowerCase() }),
-      })
-      if (res.ok) {
-        setResendMessage('Đã gửi lại email thành công!')
-      } else {
-        setResendMessage('Gửi lại thất bại. Vui lòng thử lại.')
-      }
-    } catch {
-      setResendMessage('Lỗi kết nối.')
-    } finally {
-      setResending(false)
-    }
-  }
+  const {
+    email,
+    resending,
+    resendMessage,
+    handleResend,
+  } = useEmailSent()
 
   return (
     <div

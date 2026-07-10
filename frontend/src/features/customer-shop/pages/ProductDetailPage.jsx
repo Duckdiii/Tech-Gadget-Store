@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { useNav } from '../../../hooks/useNav'
+import { useState } from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
-import { apiFetch } from '../../../services/api'
+import { useProductDetail } from '../hooks/useProductDetail'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
 
@@ -13,35 +11,24 @@ function ProductImages({ product }) {
     : ['https://placehold.co/300x360/EEF1F9/96A3BC?text=No+Image']
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="relative flex items-center justify-center transition-all duration-300"
-        style={{
-          height: '380px',
-          backgroundColor: 'var(--s1)',
-          border: '1px solid var(--b1)',
-          borderRadius: '16px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
-        }}
-      >
-        <img
-          src={images[selected]}
-          alt={product.name}
-          className="h-80 object-contain hover:scale-105 transition-transform duration-300"
-          style={{ filter: 'drop-shadow(0 8px 16px rgba(15,23,42,0.08))' }}
-        />
+    <div className="flex flex-col gap-3">
+      <div className="w-full h-[360px] overflow-hidden" style={{ border: '1.5px solid var(--b1)', borderRadius: '20px', backgroundColor: 'var(--card)' }}>
+        <img src={images[selected]} alt={product.name} className="w-full h-full object-contain p-4" />
       </div>
       {images.length > 1 && (
-        <div className="flex gap-3">
-          {images.map((src, i) => (
-            <button key={i} onClick={() => setSelected(i)} className="relative w-20 h-20 overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-200"
+        <div className="flex gap-2.5 overflow-x-auto py-1.5 scrollbar-thin">
+          {images.map((img, i) => (
+            <button
+              key={i}
+              onClick={() => setSelected(i)}
+              className="w-16 h-16 shrink-0 overflow-hidden cursor-pointer"
               style={{
-                backgroundColor: 'var(--s1)',
-                border: selected === i ? '2.5px solid var(--accent)' : '1px solid var(--b1)',
+                border: selected === i ? '2px solid var(--accent)' : '1.5px solid var(--b1)',
                 borderRadius: '10px',
-                transform: selected === i ? 'scale(1.05)' : 'scale(1)'
+                backgroundColor: 'var(--card)'
               }}
             >
-              <img src={src} alt={`thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+              <img src={img} alt="" className="w-full h-full object-cover p-1" />
             </button>
           ))}
         </div>
@@ -50,32 +37,22 @@ function ProductImages({ product }) {
   )
 }
 
-function ProductInfo({ product, selectedVariant, selectedRam, setSelectedRam, selectedStorage, setSelectedStorage, selectedColor, setSelectedColor, onNavigate }) {
-  const [adding, setAdding] = useState(false)
-
+function ProductInfo({
+  product,
+  selectedVariant,
+  selectedRam,
+  setSelectedRam,
+  selectedStorage,
+  setSelectedStorage,
+  selectedColor,
+  setSelectedColor,
+  adding,
+  handleAddToCart
+}) {
   // Extract option pools
   const rams = Array.from(new Set(product.variants.map(v => v.ramGb))).filter(Boolean).sort((a, b) => a - b)
   const storages = Array.from(new Set(product.variants.map(v => v.storageGb))).filter(Boolean).sort((a, b) => a - b)
   const colors = Array.from(new Set(product.variants.map(v => v.color))).filter(Boolean)
-
-  const handleAddToCart = async (buyNow = false) => {
-    if (!selectedVariant) return
-    setAdding(true)
-    try {
-      await apiFetch('/api/customer/cart/items', {
-        method: 'POST',
-        body: JSON.stringify({
-          productVariantId: selectedVariant.id,
-          quantity: 1
-        })
-      })
-      onNavigate('cart')
-    } catch (e) {
-      alert("Lỗi thêm vào giỏ hàng: " + e.message)
-    } finally {
-      setAdding(false)
-    }
-  }
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.minPrice
   const originalPrice = currentPrice * 1.12
@@ -166,7 +143,7 @@ function ProductInfo({ product, selectedVariant, selectedRam, setSelectedRam, se
       {/* CTAs */}
       <div className="flex flex-col gap-2.5 pt-1">
         <button
-          onClick={() => handleAddToCart(false)}
+          onClick={() => handleAddToCart()}
           disabled={adding || !selectedVariant}
           className="w-full flex items-center justify-center gap-2.5 text-white font-extrabold py-3.5 px-6 text-[14px] cursor-pointer transition-all duration-200 hover:shadow-lg disabled:opacity-50"
           style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '10px' }}
@@ -178,7 +155,7 @@ function ProductInfo({ product, selectedVariant, selectedRam, setSelectedRam, se
         </button>
         <div className="flex gap-3">
           <button
-            onClick={() => handleAddToCart(true)}
+            onClick={() => handleAddToCart()}
             disabled={adding || !selectedVariant}
             className="flex-1 text-white font-extrabold py-2.5 px-4 text-xs cursor-pointer transition-colors disabled:opacity-50"
             style={{ backgroundColor: 'var(--t1)', borderRadius: '10px' }}
@@ -193,8 +170,8 @@ function ProductInfo({ product, selectedVariant, selectedRam, setSelectedRam, se
       {/* Trust mini strip */}
       <div className="grid grid-cols-2 mt-1" style={{ borderTop: '1px solid var(--b1)' }}>
         {[
-          [<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>, 'Giao hàng miễn phí', 'Đơn từ 500.000đ'],
-          [<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>, 'Bảo hành 12 tháng', 'Chính hãng Apple VN'],
+          [<svg key="1" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>, 'Giao hàng miễn phí', 'Đơn từ 500.000đ'],
+          [<svg key="2" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>, 'Bảo hành 12 tháng', 'Chính hãng Apple VN'],
         ].map(([icon, title, sub], i) => (
           <div key={title} className="flex items-center gap-3 px-3 py-3" style={{ borderRight: i === 0 ? '1px solid var(--b1)' : 'none' }}>
             <div className="w-8 h-8 flex items-center justify-center shrink-0 text-white animate-none" style={{ backgroundColor: 'var(--accent)', borderRadius: '8px' }}>
@@ -305,56 +282,20 @@ function ProductTabs({ product }) {
 }
 
 export default function ProductDetailPage() {
-  const onNavigate = useNav()
-  const [searchParams] = useSearchParams()
-  const productId = searchParams.get('id')
-
-  const [product, setProduct] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  // Variant States
-  const [selectedRam, setSelectedRam] = useState(null)
-  const [selectedStorage, setSelectedStorage] = useState(null)
-  const [selectedColor, setSelectedColor] = useState(null)
-  const [selectedVariant, setSelectedVariant] = useState(null)
-
-  useEffect(() => {
-    const loadProduct = async () => {
-      if (!productId) return
-      try {
-        setLoading(true)
-        const data = await apiFetch(`/api/products/${productId}`)
-        setProduct(data)
-
-        // Initialize variant options
-        if (data.variants && data.variants.length > 0) {
-          const first = data.variants[0]
-          setSelectedRam(first.ramGb)
-          setSelectedStorage(first.storageGb)
-          setSelectedColor(first.color)
-          setSelectedVariant(first)
-        }
-      } catch (e) {
-        console.error("Lỗi tải thông tin sản phẩm:", e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadProduct()
-  }, [productId])
-
-  // Recalculate selected variant when selections change
-  useEffect(() => {
-    if (!product || !product.variants) return
-    const match = product.variants.find(v =>
-      (!selectedRam || v.ramGb === selectedRam) &&
-      (!selectedStorage || v.storageGb === selectedStorage) &&
-      (!selectedColor || v.color === selectedColor)
-    )
-    if (match) {
-      setSelectedVariant(match)
-    }
-  }, [selectedRam, selectedStorage, selectedColor, product])
+  const {
+    product,
+    loading,
+    selectedRam,
+    setSelectedRam,
+    selectedStorage,
+    setSelectedStorage,
+    selectedColor,
+    setSelectedColor,
+    selectedVariant,
+    adding,
+    handleAddToCart,
+    onNavigate,
+  } = useProductDetail()
 
   if (loading) {
     return (
@@ -405,7 +346,8 @@ export default function ProductDetailPage() {
               setSelectedStorage={setSelectedStorage}
               selectedColor={selectedColor}
               setSelectedColor={setSelectedColor}
-              onNavigate={onNavigate}
+              adding={adding}
+              handleAddToCart={handleAddToCart}
             />
           </div>
         </div>

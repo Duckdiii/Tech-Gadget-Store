@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNav } from '../../../hooks/useNav'
-import { apiFetch } from '../../../services/api'
+import { profileService } from '../services/profileService'
 
 function SelectField({ label, required, value, onChange, placeholder, options }) {
   return (
@@ -95,10 +95,7 @@ export default function AddressModalPage() {
     }
 
     try {
-      await apiFetch('/api/customer/addresses', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      })
+      await profileService.addAddress(payload)
       onNavigate('userProfile')
     } catch (err) {
       alert(err.message || 'Không thể thêm địa chỉ')

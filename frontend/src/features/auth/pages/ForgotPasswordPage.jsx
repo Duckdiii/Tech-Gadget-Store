@@ -1,37 +1,16 @@
-import { useState } from 'react'
 import { useNav } from '../../../hooks/useNav'
+import { useForgotPassword } from '../hooks/useForgotPassword'
 
 export default function ForgotPasswordPage() {
   const onNavigate = useNav()
-  const [email, setEmail] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async () => {
-    if (!email.trim()) {
-      setError('Vui lòng nhập email.')
-      return
-    }
-    setError('')
-    setLoading(true)
-    try {
-      const res = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(data.message || `Lỗi server (${res.status}).`)
-        return
-      }
-      onNavigate('emailSent', { state: { email: email.trim() } })
-    } catch {
-      setError('Không kết nối được server. Vui lòng thử lại.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const {
+    email,
+    setEmail,
+    error,
+    setError,
+    loading,
+    handleSubmit,
+  } = useForgotPassword()
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -91,7 +70,7 @@ export default function ForgotPasswordPage() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); setError('') }}
               onKeyDown={handleKeyDown}
               disabled={loading}
               placeholder="admin@techstore.com"

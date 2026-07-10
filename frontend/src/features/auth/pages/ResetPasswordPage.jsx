@@ -1,80 +1,21 @@
-import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { useNav } from '../../../hooks/useNav'
-
-function PasswordInput({ value, onChange, placeholder, disabled }) {
-  return (
-    <div className="relative">
-      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6}
-            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      </span>
-      <input
-        type="password"
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition disabled:opacity-50"
-      />
-    </div>
-  )
-}
+import { useResetPassword } from '../hooks/useResetPassword'
+import PasswordInput from '../components/PasswordInput'
 
 export default function ResetPasswordPage() {
   const onNavigate = useNav()
-  const [searchParams] = useSearchParams()
-  const token = searchParams.get('token')
-
-  const [newPwd, setNewPwd]     = useState('')
-  const [confirmPwd, setConfirmPwd] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async () => {
-    if (!token) {
-      setError('Mã khôi phục không tìm thấy hoặc không hợp lệ. Vui lòng kiểm tra lại liên kết trong email.')
-      return
-    }
-    if (!newPwd) {
-      setError('Vui lòng nhập mật khẩu mới.')
-      return
-    }
-    if (newPwd.length < 8) {
-      setError('Mật khẩu phải có ít nhất 8 ký tự.')
-      return
-    }
-    if (newPwd !== confirmPwd) {
-      setError('Mật khẩu xác nhận không khớp.')
-      return
-    }
-
-    setError('')
-    setLoading(true)
-    try {
-      const res = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password: newPwd }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(data.message || `Lỗi từ hệ thống (${res.status}).`)
-        return
-      }
-      setSuccess(true)
-      setTimeout(() => {
-        onNavigate('login')
-      }, 2000)
-    } catch {
-      setError('Không kết nối được server. Vui lòng thử lại.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const {
+    token,
+    newPwd,
+    setNewPwd,
+    confirmPwd,
+    setConfirmPwd,
+    error,
+    setError,
+    success,
+    loading,
+    handleSubmit,
+  } = useResetPassword()
 
   return (
     <div className="flex-1 flex flex-col" style={{ backgroundColor: '#eef0f8' }}>
@@ -119,7 +60,7 @@ export default function ResetPasswordPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Mật khẩu mới</label>
               <PasswordInput
                 value={newPwd}
-                onChange={(e) => setNewPwd(e.target.value)}
+                onChange={(e) => { setNewPwd(e.target.value); setError('') }}
                 disabled={loading || success}
                 placeholder="Nhập mật khẩu mới"
               />
@@ -130,7 +71,7 @@ export default function ResetPasswordPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Xác nhận mật khẩu mới</label>
               <PasswordInput
                 value={confirmPwd}
-                onChange={(e) => setConfirmPwd(e.target.value)}
+                onChange={(e) => { setConfirmPwd(e.target.value); setError('') }}
                 disabled={loading || success}
                 placeholder="Nhập lại mật khẩu mới"
               />

@@ -1,20 +1,19 @@
-import { useState, useEffect } from 'react'
-import { useNav } from '../../../hooks/useNav'
+import { useState } from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
-import { apiFetch } from '../../../services/api'
+import { useCart } from '../hooks/useCart'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
 
 function QuantityControl({ qty, onIncrease, onDecrease }) { // dùng để tăng giảm số lượng sản phẩm trong giỏ hàng
   return (
     <div className="flex items-center" style={{ border: '1px solid var(--b1)', borderRadius: '8px', overflow: 'hidden' }}>
-      <button onClick={onDecrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer"
+      <button onClick={onDecrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer border-none bg-transparent"
         style={{ backgroundColor: 'var(--s1)', color: 'var(--t2)', borderRight: '1px solid var(--b1)' }}
         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--b1)'}
         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--s1)'}
       >−</button>
       <span className="w-11 h-9 flex items-center justify-center text-sm font-extrabold" style={{ backgroundColor: 'var(--card)', color: 'var(--t1)' }}>{qty}</span>
-      <button onClick={onIncrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer"
+      <button onClick={onIncrease} className="w-9 h-9 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer border-none bg-transparent"
         style={{ backgroundColor: 'var(--s1)', color: 'var(--t2)', borderLeft: '1px solid var(--b1)' }}
         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--b1)'}
         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--s1)'}
@@ -57,7 +56,7 @@ function CartItem({ item, onToggleItem, onToggleBundle, onQtyChange, onRemove })
               <p className="text-[12.5px] mt-1" style={{ color: 'var(--t3)' }}>{item.variant}</p>
             </div>
             <button onClick={() => onRemove(item.id)}
-              className="shrink-0 w-8 h-8 flex items-center justify-center transition-colors cursor-pointer"
+              className="shrink-0 w-8 h-8 flex items-center justify-center transition-colors cursor-pointer border-none bg-transparent"
               style={{ color: 'var(--t3)' }}
               onMouseEnter={e => { e.currentTarget.style.color = 'var(--err)'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.06)'; e.currentTarget.style.borderRadius = '8px' }}
               onMouseLeave={e => { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.backgroundColor = 'transparent' }}
@@ -176,112 +175,23 @@ function OrderSummary({ items }) { // hiển thị tổng quan đơn hàng
 }
 
 export default function CartPage() { // hiển thị trang giỏ hàng
-  const onNavigate = useNav()
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  const fetchCart = async () => {
-    try {
-      setLoading(true)
-      const cartData = await apiFetch('/api/customer/cart')
-      if (cartData && cartData.items) {
-        const itemsWithBundles = await Promise.all(cartData.items.map(async (item) => {
-          let availableBundles = []
-          try {
-            availableBundles = await apiFetch(`/api/customer/cart/items/${item.cartItemId}/bundle-services`)
-          } catch (e) {
-            console.warn(`Lỗi tải dịch vụ cho item ${item.cartItemId}:`, e)
-          }
-
-          const selectedBundleIds = new Set((item.bundleServices || []).map(b => b.id))
-          const bundles = (availableBundles || []).map(b => ({
-            id: b.id,
-            label: b.name,
-            price: b.price,
-            checked: selectedBundleIds.has(b.id)
-          }))
-
-          return {
-            id: item.cartItemId,
-            brand: 'TechStore',
-            name: item.productName,
-            variant: item.variantName,
-            price: item.unitPrice,
-            originalPrice: item.unitPrice * 1.12,
-            qty: item.quantity,
-            image: `https://placehold.co/120x100/EEF1F9/96A3BC?text=${encodeURIComponent(item.productName || 'Product')}`,
-            checked: true,
-            bundles: bundles,
-            rawItem: item
-          }
-        }))
-        setItems(itemsWithBundles)
-      } else {
-        setItems([])
-      }
-    } catch (err) {
-      console.error("Lỗi tải giỏ hàng:", err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchCart()
-  }, [])
-
-  const allChecked = items.length > 0 && items.every(i => i.checked)
-  const someChecked = items.some(i => i.checked)
-  const checkedItems = items.filter(i => i.checked)
-  const totalQty = checkedItems.reduce((s, i) => s + i.qty, 0)
-  const subtotal = checkedItems.reduce((s, i) => s + i.price * i.qty, 0)
-  const serviceFee = checkedItems.reduce((s, i) => s + i.bundles.filter(b => b.checked).reduce((bs, b) => bs + b.price, 0) * i.qty, 0)
-  const grandTotal = subtotal + serviceFee
-
-  const toggleAll = () => setItems(prev => prev.map(i => ({ ...i, checked: !allChecked })))
-  const toggleItem = id => setItems(prev => prev.map(i => i.id === id ? { ...i, checked: !i.checked } : i))
-
-  const toggleBundle = async (itemId, bundleId) => {
-    // Find the item and update checkbox state locally
-    const targetItem = items.find(i => i.id === itemId)
-    if (!targetItem) return
-
-    const updatedBundles = targetItem.bundles.map(b => b.id === bundleId ? { ...b, checked: !b.checked } : b)
-    const selectedBundleIds = updatedBundles.filter(b => b.checked).map(b => b.id)
-
-    try {
-      await apiFetch(`/api/customer/cart/items/${itemId}/bundle-services`, {
-        method: 'PUT',
-        body: JSON.stringify({ bundleServicesIds: selectedBundleIds })
-      })
-      await fetchCart() // Reload cart from API to reflect totals
-    } catch (e) {
-      console.error("Lỗi cập nhật dịch vụ:", e)
-    }
-  }
-
-  const changeQty = async (id, qty) => { // cập nhật số lượng sản phẩm trong giỏ hàng
-    try {
-      await apiFetch(`/api/customer/cart/items/${id}/quantity`, {
-        method: 'PUT',
-        body: JSON.stringify({ quantity: qty })
-      })
-      await fetchCart()
-    } catch (e) {
-      console.error("Lỗi cập nhật số lượng:", e)
-    }
-  }
-
-  const removeItem = async (id) => { // xóa sản phẩm khỏi giỏ hàng
-    try {
-      await apiFetch(`/api/customer/cart/items/${id}`, {
-        method: 'DELETE'
-      })
-      await fetchCart()
-    } catch (e) {
-      console.error("Lỗi xóa sản phẩm khỏi giỏ hàng:", e)
-    }
-  }
+  const {
+    items,
+    loading,
+    allChecked,
+    someChecked,
+    checkedItems,
+    totalQty,
+    serviceFee,
+    grandTotal,
+    toggleAll,
+    toggleItem,
+    toggleBundle,
+    changeQty,
+    removeItem,
+    removeCheckedItems,
+    onNavigate,
+  } = useCart()
 
   return (
     <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
@@ -296,7 +206,7 @@ export default function CartPage() { // hiển thị trang giỏ hàng
           </div>
           <button
             onClick={() => onNavigate('list')}
-            className="flex items-center gap-1.5 text-xs font-bold transition-colors cursor-pointer hover:text-slate-950"
+            className="flex items-center gap-1.5 text-xs font-bold transition-colors cursor-pointer hover:text-slate-950 border-none bg-transparent"
             style={{ color: 'var(--t3)' }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
@@ -315,8 +225,8 @@ export default function CartPage() { // hiển thị trang giỏ hàng
             </svg>
             <p className="text-base font-bold" style={{ color: 'var(--t2)' }}>Giỏ hàng của bạn đang trống</p>
             <button onClick={() => onNavigate('list')}
-              className="mt-4 text-white px-6 py-2.5 text-xs font-extrabold transition-all duration-200 cursor-pointer"
-              style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
+              className="mt-4 text-white px-6 py-2.5 text-xs font-extrabold transition-all duration-200 cursor-pointer border-none"
+              style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
             >Khám phá sản phẩm</button>
           </div>
         ) : (
@@ -327,13 +237,8 @@ export default function CartPage() { // hiển thị trang giỏ hàng
                 <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-5 h-5 cursor-pointer accent-[var(--accent)]" />
                 <span className="text-sm font-bold" style={{ color: 'var(--t1)' }}>Chọn tất cả ({items.length} sản phẩm)</span>
                 {someChecked && (
-                  <button onClick={() => {
-                    const checkedIds = checkedItems.map(i => i.id)
-                    Promise.all(checkedIds.map(id => apiFetch(`/api/customer/cart/items/${id}`, { method: 'DELETE' })))
-                      .then(fetchCart)
-                      .catch(e => console.error("Lỗi xóa các sản phẩm chọn:", e))
-                  }}
-                    className="ml-auto text-[12.5px] font-bold transition-colors cursor-pointer"
+                  <button onClick={removeCheckedItems}
+                    className="ml-auto text-[12.5px] font-bold transition-colors cursor-pointer border-none bg-transparent"
                     style={{ color: 'var(--err)' }}
                     onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
                     onMouseLeave={e => e.currentTarget.style.opacity = '1'}

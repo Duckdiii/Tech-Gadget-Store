@@ -1,51 +1,28 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth, ROLE_LANDING } from '../../../context/AuthContext'
-
-const DEMO_ACCOUNTS = [
-  { role: 'customer', label: 'Khách hàng', desc: 'Mua sắm & đơn hàng' },
-  { role: 'manager',  label: 'Quản lý',    desc: 'Dashboard & báo cáo' },
-  { role: 'staff',    label: 'Nhân viên',  desc: 'Kho & vận hành' },
-]
+import { useLogin } from '../hooks/useLogin'
+import DemoAccountSelector from '../components/DemoAccountSelector'
 
 export default function LoginPage() {
-  const { login } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [selectedRole, setSelectedRole] = useState(null)
-  const [showPass, setShowPass] = useState(false)
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    error,
+    setError,
+    loading,
+    selectedRole,
+    fillDemo,
+    showPass,
+    setShowPass,
+    handleLogin,
+  } = useLogin()
 
-  const fillDemo = (role) => { setSelectedRole(role); setError('') }
-
-  const handleLogin = async () => {
-    if (!email.trim() || !password) { setError('Vui lòng nhập email và mật khẩu.'); return }
-    setError('')
-    setLoading(true)
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
-      })
-      if (!res.ok) {
-        setError(res.status === 401 ? 'Sai email hoặc mật khẩu.' : `Lỗi server (${res.status}).`)
-        return
-      }
-      const data = await res.json()
-      const role = data.role.toLowerCase()
-      login({ role, name: data.fullName, email: data.email }, data.token)
-      navigate(ROLE_LANDING[role] ?? '/', { replace: true })
-    } catch {
-      setError('Không kết nối được server. Vui lòng thử lại.')
-    } finally {
-      setLoading(false)
-    }
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleLogin()
   }
 
-  const handleKeyDown = (e) => { if (e.key === 'Enter') handleLogin() }
   return (
     <div
       className="flex-1 flex flex-col items-center justify-center px-4 py-12"
@@ -58,7 +35,9 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-6">
           <div className="w-7 h-7 flex items-center justify-center" style={{ backgroundColor: 'var(--accent)', borderRadius: '8px' }}>
-            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
           </div>
           <span className="text-[15px] font-bold text-gray-900" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>TechStore</span>
         </div>
@@ -79,34 +58,8 @@ export default function LoginPage() {
           </button>
         </p>
 
-        {/* Role selector */}
-        <div className="mb-6">
-          <p className="text-[10px] font-bold uppercase tracking-[0.15em] mb-2 text-gray-400">
-            Loại tài khoản demo
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {DEMO_ACCOUNTS.map(acc => (
-              <button
-                key={acc.role}
-                onClick={() => fillDemo(acc.role)}
-                className="flex flex-col items-start p-3 transition-all cursor-pointer"
-                style={{
-                  borderRadius: '8px',
-                  border: selectedRole === acc.role ? '1.5px solid var(--accent)' : '1.5px solid var(--cb)',
-                  backgroundColor: selectedRole === acc.role ? 'var(--accent-dim)' : 'var(--page)',
-                }}
-              >
-                <span
-                  className="text-[12px] font-bold mb-0.5"
-                  style={{ color: selectedRole === acc.role ? 'var(--accent)' : 'var(--ct1)' }}
-                >
-                  {acc.label}
-                </span>
-                <span className="text-[10px] text-gray-400">{acc.desc}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Demo Account Selector Component */}
+        <DemoAccountSelector selectedRole={selectedRole} onSelectRole={fillDemo} />
 
         <div style={{ height: '1.5px', backgroundColor: 'var(--cb)', marginBottom: '24px' }} />
 
@@ -175,7 +128,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Forgot */}
+        {/* Forgot Password Link */}
         <div className="flex justify-end mb-5">
           <button
             onClick={() => navigate('/forgot-password')}
@@ -197,8 +150,8 @@ export default function LoginPage() {
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
               Đang đăng nhập...
             </span>
