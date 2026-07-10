@@ -1,27 +1,12 @@
-import { useState, useEffect } from 'react'
-import { apiFetch } from '../../../services/api'
+import { useState } from 'react'
+import { useAccountManagement } from '../hooks/useAccountManagement'
 
 const STATUS_CFG = {
   active:   { label:'Hoạt động',  bg:'bg-green-100',  text:'text-green-700',  dot:'bg-green-500'  },
   blocked:  { label:'Bị khoá',    bg:'bg-red-100',    text:'text-red-600',    dot:'bg-red-500'    },
   pending:  { label:'Chờ duyệt',  bg:'bg-amber-100',  text:'text-amber-700',  dot:'bg-amber-400'  },
 }
-const BG_CYCLE = ['bg-[#E8420A]','bg-teal-500','bg-purple-500','bg-pink-500','bg-orange-500','bg-[#0D0F14]','bg-green-500','bg-red-400','bg-cyan-500','bg-yellow-500']
 
-function normalizeAccount(dto, index) {
-  return {
-    id: dto.id,
-    email: dto.email,
-    name: dto.email,
-    username: dto.email.split('@')[0],
-    status: (dto.status || '').toLowerCase(),
-    createdAt: dto.createdAt ? new Date(dto.createdAt).toLocaleDateString('vi-VN') : '—',
-    lastLogin: '—',
-    loginCount: dto.loginLogsIds?.length ?? 0,
-    initials: dto.email[0].toUpperCase(),
-    bg: BG_CYCLE[index % BG_CYCLE.length],
-  }
-}
 
 function Avatar({ initials, bg, size='md' }) {
   const sz = size==='lg' ? 'w-14 h-14 text-lg' : size==='sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -183,62 +168,25 @@ function AccountDetailDrawer({ account, onClose, onBlock, onUnblock, onDelete, o
    ROOT PAGE
 ══════════════════════════════════════ */
 export default function AccountManagementPage() {
-  const [accounts, setAccounts]         = useState([])
-  const [loading, setLoading]           = useState(true)
-  const [error, setError]               = useState(null)
-  const [search, setSearch]             = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [selected, setSelected]         = useState(null)
-  const [toast, setToast]               = useState(null)
-
-  useEffect(() => {
-    apiFetch('/api/manager/accounts')
-      .then(data => setAccounts(data.map((d, i) => normalizeAccount(d, i))))
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
-
-  function showToast(msg) { setToast(msg); setTimeout(() => setToast(null), 2800) }
-
-  const total   = accounts.length
-  const active  = accounts.filter(a => a.status === 'active').length
-  const blocked = accounts.filter(a => a.status === 'blocked').length
-
-  const filtered = accounts.filter(a => {
-    const q = search.toLowerCase()
-    return (
-      (!q || a.email.toLowerCase().includes(q)) &&
-      (!statusFilter || a.status === statusFilter)
-    )
-  })
-
-  async function handleBlock(id) {
-    try {
-      const data = await apiFetch(`/api/manager/accounts/${id}/block`, { method: 'PATCH' })
-      setAccounts(p => p.map(x => x.id === id ? { ...x, status: (data.status || '').toLowerCase() } : x))
-      showToast('Đã khoá tài khoản')
-    } catch (e) {
-      showToast(`Lỗi: ${e.message}`)
-    }
-  }
-  async function handleUnblock(id) {
-    try {
-      const data = await apiFetch(`/api/manager/accounts/${id}/unblock`, { method: 'PATCH' })
-      setAccounts(p => p.map(x => x.id === id ? { ...x, status: (data.status || '').toLowerCase() } : x))
-      showToast('Đã mở khoá tài khoản')
-    } catch (e) {
-      showToast(`Lỗi: ${e.message}`)
-    }
-  }
-  async function handleDelete(id) {
-    try {
-      await apiFetch(`/api/manager/accounts/${id}`, { method: 'DELETE' })
-      setAccounts(p => p.filter(x => x.id !== id))
-      showToast('Đã xoá tài khoản')
-    } catch (e) {
-      showToast(`Lỗi: ${e.message}`)
-    }
-  }
+  const {
+    accounts,
+    loading,
+    error,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    selected,
+    setSelected,
+    toast,
+    total,
+    active,
+    blocked,
+    filtered,
+    handleBlock,
+    handleUnblock,
+    handleDelete,
+  } = useAccountManagement()
   function handleResetPwd(id) {
     const a = accounts.find(x => x.id === id)
     showToast(`Đã gửi email đặt lại mật khẩu đến ${a?.email}`)

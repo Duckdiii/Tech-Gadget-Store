@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../../../context/AuthContext'
-import { apiFetch } from '../../../services/api'
+import { useStaffImport } from '../hooks/useStaffImport'
 
 const SUPPLIERS  = ['Apple VN', 'Samsung Electronics VN', 'Sony VN', 'LG Electronics VN', 'Xiaomi VN', 'ASUS VN', 'Dell Technologies VN']
 const WAREHOUSES = ['Kho trung tâm', 'Kho chi nhánh Q1', 'Kho chi nhánh Q7', 'Kho phụ B']
@@ -160,142 +160,35 @@ function ImportReceiptModal({ receipt, onClose }) {
 /* ── Main Page ── */
 export default function StaffImportPage() {
   const { user } = useAuth()
-  const [productsList, setProductsList] = useState([])
-  const [supplier,  setSupplier]  = useState('')
-  const [warehouse, setWarehouse] = useState(WAREHOUSES[0])
-  const [date,      setDate]      = useState(today())
-  const [note,      setNote]      = useState('')
-  const [rows,      setRows]      = useState([BLANK_ROW()])
-  const [errors,    setErrors]    = useState({})
-  const [receipt,   setReceipt]   = useState(null)
-  const [loading,   setLoading]   = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-
-  const userPerfId = USER_EMAIL_TO_ID[user?.email] || 'user-stf-01'
-
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        setLoading(true)
-        const raw = await apiFetch('/api/products')
-        const detailed = await Promise.all(
-          raw.map(async (p) => {
-            try {
-              return await apiFetch(`/api/products/${p.id}`)
-            } catch {
-              return { ...p, variants: [] }
-            }
-          })
-        )
-        setProductsList(detailed)
-      } catch (err) {
-        console.error("Failed to load products list", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadProducts()
-  }, [])
+  const {
+    productsList,
+    supplier,
+    setSupplier,
+    warehouse,
+    setWarehouse,
+    date,
+    setDate,
+    note,
+    setNote,
+    rows,
+    errors,
+    receipt,
+    setReceipt,
+    loading,
+    submitting,
+    addRow,
+    removeRow,
+    updateRow,
+    handleSubmit,
+    resetForm,
+  } = useStaffImport(user)
 
   const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400'
   const sel = inp + ' cursor-pointer'
 
-  function addRow() { setRows(r => [...r, BLANK_ROW()]) }
-  function removeRow(i) { setRows(r => r.filter((_,idx) => idx !== i)) }
-
-  function updateRow(i, field, val) {
-    setRows(r => r.map((row, idx) => {
-      if (idx !== i) return row
-      const next = { ...row, [field]: val }
-      
-      // Auto-set prices if existing product/variant is selected
-      if (field === 'productId') {
-        next.productVariantId = ''
-      }
-      if (field === 'productVariantId') {
-        const prod = productsList.find(p => p.id === row.productId)
-        const variant = prod?.variants?.find(v => v.id === val)
-        if (variant) {
-          next.unitPrice = variant.price || 0
-          next.displayName = prod.name
-          next.specs = `${variant.ramGb ? variant.ramGb + 'GB RAM / ' : ''}${variant.storageGb ? variant.storageGb + 'GB Storage / ' : ''}${variant.color || ''}`
-        }
-      }
-      return next
-    }))
-  }
-
   const subtotal = rows.reduce((s, r) => s + (Number(r.qty) || 0) * (Number(r.unitPrice) || 0), 0)
   const vat      = Math.round(subtotal * 0.1)
   const total    = subtotal + vat
-
-  async function handleSubmit() {
-    const e = {}
-    if (!supplier.trim()) e.supplier = 'Vui lòng chọn nhà cung cấp'
-    
-    const validRows = rows.filter(r => (r.isNewProduct && r.newName.trim()) || (!r.isNewProduct && r.productVariantId))
-    if (validRows.length === 0) e.rows = 'Cần ít nhất 1 sản phẩm hợp lệ'
-    
-    if (Object.keys(e).length) { setErrors(e); return }
-    setErrors({})
-    setSubmitting(true)
-
-    try {
-      const payload = {
-        performedById: userPerfId,
-        note: `${supplier}; ${note}`,
-        items: validRows.map(r => {
-          if (r.isNewProduct) {
-            return {
-              newProduct: {
-                name: r.newName.trim(),
-                description: r.newDescription.trim() || 'Nhập kho sản phẩm mới',
-                brandId: r.newBrandId,
-                categoryId: r.newCategoryId,
-                ramGb: Number(r.newRamGb) || null,
-                storageGb: Number(r.newStorageGb) || null,
-                color: r.newColor.trim(),
-                price: Number(r.newPrice) || 0,
-              },
-              quantity: Number(r.qty) || 1,
-              importPrice: Number(r.unitPrice) || 0,
-            }
-          } else {
-            return {
-              productVariantId: r.productVariantId,
-              quantity: Number(r.qty) || 1,
-              importPrice: Number(r.unitPrice) || 0,
-            }
-          }
-        })
-      }
-
-      const res = await apiFetch('/api/import-logs', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      })
-
-      setReceipt({
-        id: res.id,
-        date: new Date(res.importedAt || res.createdAt).toLocaleDateString('vi-VN'),
-        supplier,
-        warehouse,
-        note,
-        staffName: user?.name || 'Lê Hoàng Dũng',
-        rows: validRows
-      })
-    } catch (err) {
-      console.error(err)
-      setErrors({ submit: err.message || 'Lỗi hệ thống khi nhập kho' })
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  function resetForm() {
-    setSupplier(''); setWarehouse(WAREHOUSES[0]); setDate(today())
-    setNote(''); setRows([BLANK_ROW()]); setErrors({}); setReceipt(null)
-  }
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50">

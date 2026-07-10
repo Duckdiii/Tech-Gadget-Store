@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
-import { apiFetch } from '../../../services/api'
-import { getToken } from '../../../context/AuthContext'
+import { useRevenueReport } from '../hooks/useRevenueReport'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
 
@@ -147,46 +145,7 @@ function TrendBadge({ trend, trendExtra, trendUp }) {
 }
 
 export default function RevenueReportPage() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetchReport = async () => {
-    try {
-      setLoading(true)
-      const res = await apiFetch('/api/manager/revenue-report')
-      setData(res)
-    } catch (e) {
-      console.error("Lỗi tải báo cáo doanh thu:", e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchReport()
-  }, [])
-
-  const handleExport = async () => {
-    try {
-      const token = getToken()
-      const res = await fetch('/api/manager/revenue-report/export', {
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      })
-      if (!res.ok) throw new Error("Lỗi xuất báo cáo")
-      const blob = await res.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `revenue_report.csv`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-    } catch (e) {
-      alert("Lỗi xuất file báo cáo: " + e.message)
-    }
-  }
+  const { data, loading, handleExport } = useRevenueReport()
 
   if (loading) {
     return (

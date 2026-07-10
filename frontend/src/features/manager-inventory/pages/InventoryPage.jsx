@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
-import { apiFetch } from '../../../services/api'
+import { useState, useRef } from 'react'
+import { useInventory } from '../hooks/useInventory'
 
 /* ── Shared helpers ── */
 function fmt(n) {
@@ -871,53 +871,14 @@ const TABS = [
 ]
 
 export default function InventoryPage() {
-  const [activeTab, setActiveTab] = useState('inventory')
-  const [productsList, setProductsList] = useState([])
-  const [importLogs, setImportLogs] = useState([])
-  const [exportLogs, setExportLogs] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    let active = true
-    async function loadData() {
-      try {
-        setLoading(true)
-        const rawProducts = await apiFetch('/api/products')
-        const detailed = await Promise.all(
-          rawProducts.map(async (p) => {
-            try {
-              return await apiFetch(`/api/products/${p.id}`)
-            } catch {
-              return { ...p, variants: [] }
-            }
-          })
-        )
-
-        let logs = []
-        try {
-          logs = await apiFetch('/api/manager/warehouse-logs')
-        } catch (e) {
-          console.warn("Failed to load warehouse logs", e)
-        }
-
-        if (!active) return
-
-        const imports = groupLogs(logs, 'IMPORT')
-        const exports = groupLogs(logs, 'EXPORT')
-        const liveProducts = buildInventoryProducts(detailed, logs)
-
-        setProductsList(liveProducts)
-        setImportLogs(imports)
-        setExportLogs(exports)
-      } catch (err) {
-        console.error("Failed to load inventory", err)
-      } finally {
-        if (active) setLoading(false)
-      }
-    }
-    loadData()
-    return () => { active = false }
-  }, [])
+  const {
+    activeTab,
+    setActiveTab,
+    productsList,
+    importLogs,
+    exportLogs,
+    loading,
+  } = useInventory()
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
