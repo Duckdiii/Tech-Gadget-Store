@@ -25,13 +25,16 @@ import com.project.tech_gadget_store.modules.payment.entity.CODPaymentMethod;
 import com.project.tech_gadget_store.modules.payment.repository.CODPaymentMethodRepository;
 import com.project.tech_gadget_store.seed.PersonaCatalog.CategoryBrandAffinity;
 import com.project.tech_gadget_store.seed.PersonaCatalog.Persona;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -57,10 +60,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomerOrderSeeder implements CommandLineRunner {
 
     private static final int TOTAL_CUSTOMERS = 300;
-    private static final double BASE_ORDERS_PER_CUSTOMER = 4.0;
+    private static final double BASE_ORDERS_PER_CUSTOMER = 12.0;
     /** Chance an order item ignores persona affinity entirely, to avoid unrealistically clean data. */
     private static final double NOISE_PICK_PROBABILITY = 0.15;
     private static final long RANDOM_SEED = 42L;
+    /**
+     * How many customers to process before flushing and clearing the persistence context.
+     * Without this, Hibernate's session keeps accumulating every managed entity across all
+     * 300 customers, making each flush progressively slower (observed: seeding degraded from
+     * ~80 orders/min to ~20 orders/min over a single run at this data scale).
+     */
+    private static final int FLUSH_EVERY_N_CUSTOMERS = 20;
 
     private static final List<String> PROVINCES = List.of("Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng", "Cần Thơ", "Hải Phòng");
     private static final List<String> ORDER_STATUS_POOL =
@@ -75,6 +85,7 @@ public class CustomerOrderSeeder implements CommandLineRunner {
     private final CODPaymentMethodRepository codPaymentMethodRepository;
     private final FavoriteProductRepository favoriteProductRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EntityManager entityManager;
 
     private final Random random = new Random(RANDOM_SEED);
 
@@ -98,6 +109,14 @@ public class CustomerOrderSeeder implements CommandLineRunner {
             return;
         }
 
+        // Fetch every variant once and group by product — avoids an N+1 query (one per order
+        // item / favorite pick) which made seeding at this scale (150 products, thousands of
+        // order items) impractically slow.
+        List<String> allProductIds = allProducts.stream().map(Product::getId).toList();
+        Map<String, List<ProductVariant>> variantsByProductId = productVariantRepository
+                .findVariantsForProductIds(allProductIds).stream()
+                .collect(Collectors.groupingBy(pv -> pv.getProduct().getId()));
+
         int customerCount = 0;
         int orderCount = 0;
         int orderItemCount = 0;
@@ -109,7 +128,7 @@ public class CustomerOrderSeeder implements CommandLineRunner {
             customerCount++;
 
             List<Product> candidatePool = productPoolByPersona.getOrDefault(persona.key(), allProducts);
-            favoriteCount += seedFavorites(customer, persona, candidatePool, allProducts);
+            favoriteCount += seedFavorites(customer, persona, candidatePool, allProducts, variantsByProductId);
             int orderCountForCustomer = pickOrderCount(persona);
 
             for (int j = 0; j < orderCountForCustomer; j++) {
@@ -120,7 +139,7 @@ public class CustomerOrderSeeder implements CommandLineRunner {
                 int itemCount = 1 + random.nextInt(3);
                 for (int k = 0; k < itemCount; k++) {
                     Product product = pickProduct(persona, candidatePool, allProducts);
-                    List<ProductVariant> variants = productVariantRepository.findByProductId(product.getId());
+                    List<ProductVariant> variants = variantsByProductId.getOrDefault(product.getId(), Collections.emptyList());
                     if (variants.isEmpty()) {
                         continue;
                     }
@@ -136,6 +155,11 @@ public class CustomerOrderSeeder implements CommandLineRunner {
                 orderRepository.save(order);
                 orderCount++;
             }
+
+            if ((i + 1) % FLUSH_EVERY_N_CUSTOMERS == 0) {
+                entityManager.flush();
+                entityManager.clear();
+            }
         }
 
         log.info("[CustomerOrderSeeder] Seeded {} customers, {} orders, {} order items, {} favorites.",
@@ -147,12 +171,13 @@ public class CustomerOrderSeeder implements CommandLineRunner {
      * purchases, but intentionally not required to overlap with what the customer actually
      * bought (browsing/wishlisting behavior differs from purchase behavior in real stores).
      */
-    private int seedFavorites(Customer customer, Persona persona, List<Product> candidatePool, List<Product> allProducts) {
+    private int seedFavorites(Customer customer, Persona persona, List<Product> candidatePool, List<Product> allProducts,
+            Map<String, List<ProductVariant>> variantsByProductId) {
         int favoriteTarget = random.nextInt(4); // 0-3 favorites per customer
         int seeded = 0;
         for (int i = 0; i < favoriteTarget; i++) {
             Product product = pickProduct(persona, candidatePool, allProducts);
-            List<ProductVariant> variants = productVariantRepository.findByProductId(product.getId());
+            List<ProductVariant> variants = variantsByProductId.getOrDefault(product.getId(), Collections.emptyList());
             if (variants.isEmpty()) {
                 continue;
             }

@@ -2,9 +2,11 @@ package com.project.tech_gadget_store.modules.catalog.service;
 
 import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
+import com.project.tech_gadget_store.modules.catalog.entity.CustomerRecommendationCache;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
 import com.project.tech_gadget_store.modules.catalog.mapper.ProductMapper;
+import com.project.tech_gadget_store.modules.catalog.repository.CustomerRecommendationCacheRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
@@ -30,16 +32,19 @@ public class RecommendationService {
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
     private final OrderRepository orderRepository;
+    private final CustomerRecommendationCacheRepository customerRecommendationCacheRepository;
     private final ProductMapper productMapper;
 
     public RecommendationService(
             ProductRepository productRepository,
             ProductVariantRepository productVariantRepository,
             OrderRepository orderRepository,
+            CustomerRecommendationCacheRepository customerRecommendationCacheRepository,
             ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.productVariantRepository = productVariantRepository;
         this.orderRepository = orderRepository;
+        this.customerRecommendationCacheRepository = customerRecommendationCacheRepository;
         this.productMapper = productMapper;
     }
 
@@ -205,12 +210,29 @@ public class RecommendationService {
     }
 
     /**
-     * "Dành cho bạn" — MVP personalization (no ML): top sellers within the categories a
-     * customer has bought from before, excluding products they already own. Falls back to
-     * site-wide top sellers for cold-start customers (no purchase history) and to pad out
-     * results when the category-scoped list is too short.
+     * "Dành cho bạn". Checks the ml-service's batch-computed Matrix Factorization cache
+     * first (real personalization); falls back to the MVP rule-based logic below when the
+     * cache has nothing for this customer yet (brand-new customer / not seen by the last
+     * training run — the model hasn't caught up to them yet).
      */
     public List<ProductResponseDto> getForYouRecommendations(String customerId) {
+        List<CustomerRecommendationCache> cached =
+                customerRecommendationCacheRepository.findByCustomerIdOrderByRankAsc(customerId);
+        if (!cached.isEmpty()) {
+            List<String> cachedProductIds = cached.stream().map(CustomerRecommendationCache::getProductId).toList();
+            return mapProductsToDtos(fetchProductsInOrder(cachedProductIds));
+        }
+
+        return getForYouRecommendationsMvp(customerId);
+    }
+
+    /**
+     * MVP fallback (no ML): top sellers within the categories a customer has bought from
+     * before, excluding products they already own. Falls back further to site-wide top
+     * sellers for cold-start customers (no purchase history) and to pad out results when the
+     * category-scoped list is too short.
+     */
+    private List<ProductResponseDto> getForYouRecommendationsMvp(String customerId) {
         List<String> purchasedCategoryIds = orderRepository.findPurchasedCategoryIdsByCustomerId(customerId);
         List<String> purchasedProductIds = orderRepository.findPurchasedProductIdsByCustomerId(customerId);
         List<String> excludeIds = purchasedProductIds.isEmpty() ? NO_EXCLUSIONS : purchasedProductIds;

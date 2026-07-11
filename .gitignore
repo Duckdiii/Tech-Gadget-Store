@@ -43,6 +43,12 @@ frontend/.cache/
 tmp/
 temp/
 
+# Python / ml-service
+ml-service/.venv/
+ml-service/__pycache__/
+ml-service/*.pyc
+ml-service/models/
+
 # Local agent/tooling folders
 .agents/
 .claude/

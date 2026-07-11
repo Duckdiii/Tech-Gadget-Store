@@ -10,9 +10,14 @@ import com.project.tech_gadget_store.modules.catalog.repository.CategoryReposito
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -111,10 +116,67 @@ public class CatalogSeeder implements CommandLineRunner {
                                 new BrandSpec("jbl", "JBL", logo, "Thương hiệu âm thanh phổ thông, giá tốt."));
         }
 
+        private static final long CATALOG_RANDOM_SEED = 20240601L;
+
+        private static final List<String> COLORS = List.of("Đen", "Trắng", "Xanh", "Bạc", "Xám", "Vàng", "Đỏ");
+
+        private static final List<String> PHONE_LINE_WORDS = List.of(
+                        "Nova", "Edge", "Prime", "Flex", "Neo", "Zenith", "Spark", "Vortex");
+        private static final List<String> LAPTOP_LINE_WORDS = List.of(
+                        "Book", "Studio", "Elite", "Forge", "Swift", "Core", "Pulse", "Vector");
+        private static final List<String> MONITOR_LINE_WORDS = List.of(
+                        "Vision", "Clarity", "Wave", "Frame", "Display", "View", "Canvas", "Prism");
+        private static final List<String> HEADPHONE_LINE_WORDS = List.of(
+                        "Sound", "Beat", "Echo", "Tune", "Bass", "Aura", "Resonance", "Drift");
+        private static final List<String> WATCH_LINE_WORDS = List.of(
+                        "Fit", "Move", "Track", "Sync", "Active", "Vital", "Flow", "Orbit");
+
+        /**
+         * Extra products per (category, brand), generated procedurally so the catalog is large
+         * enough for MF to have real room to beat simple popularity-based recommendations
+         * (a handful of hand-picked products per brand isn't enough signal at scale).
+         */
+        private List<ProductSpec> generateExtraProducts(
+                        List<String> brandKeys, Map<String, String> brandDisplayNames, List<String> lineWords,
+                        BigDecimal minPrice, BigDecimal maxPrice, boolean hasSpecs, int perBrand, Random random) {
+                List<ProductSpec> extras = new ArrayList<>();
+                for (String brandKey : brandKeys) {
+                        String brandName = brandDisplayNames.get(brandKey);
+                        for (int i = 1; i <= perBrand; i++) {
+                                String lineWord = lineWords.get(random.nextInt(lineWords.size()));
+                                String name = brandName + " " + lineWord + " " + i;
+                                BigDecimal price = randomPrice(minPrice, maxPrice, random);
+                                String color = COLORS.get(random.nextInt(COLORS.size()));
+                                List<VariantSpec> variants = hasSpecs
+                                                ? List.of(new VariantSpec(
+                                                                List.of(6, 8, 12, 16, 32).get(random.nextInt(5)),
+                                                                List.of(128, 256, 512, 1024).get(random.nextInt(4)),
+                                                                color, price))
+                                                : List.of(new VariantSpec(null, null, color, price));
+                                extras.add(new ProductSpec(name,
+                                                "Sản phẩm mở rộng danh mục, dùng để tăng độ đa dạng cho recommendation system.",
+                                                brandKey, variants));
+                        }
+                }
+                return extras;
+        }
+
+        private BigDecimal randomPrice(BigDecimal min, BigDecimal max, Random random) {
+                double value = min.doubleValue() + random.nextDouble() * (max.doubleValue() - min.doubleValue());
+                return BigDecimal.valueOf(Math.round(value / 10000.0) * 10000.0).setScale(0, RoundingMode.HALF_UP);
+        }
+
+        private List<ProductSpec> withExtras(List<ProductSpec> base, List<ProductSpec> extras) {
+                return Stream.concat(base.stream(), extras.stream()).toList();
+        }
+
         private List<CategorySpec> categorySpecs() {
                 String img = "https://placehold.co/400x400?text=Product";
+                Map<String, String> brandNames = brandSpecs().stream()
+                                .collect(Collectors.toMap(BrandSpec::key, BrandSpec::name));
+                Random random = new Random(CATALOG_RANDOM_SEED);
                 return List.of(
-                                new CategorySpec("Điện thoại", img, List.of(
+                                new CategorySpec("Điện thoại", img, withExtras(List.of(
                                                 new ProductSpec("iPhone 15", "Điện thoại flagship của Apple.", "apple",
                                                                 List.of(
                                                                                 new VariantSpec(6, 128, "Đen",
@@ -149,8 +211,11 @@ public class CatalogSeeder implements CommandLineRunner {
                                                                                                 new BigDecimal("5990000")))),
                                                 new ProductSpec("Xiaomi 14", "Flagship của Xiaomi.", "xiaomi", List.of(
                                                                 new VariantSpec(12, 256, "Đen",
-                                                                                new BigDecimal("18990000")))))),
-                                new CategorySpec("Laptop", img, List.of(
+                                                                                new BigDecimal("18990000"))))),
+                                                generateExtraProducts(List.of("apple", "samsung", "xiaomi"), brandNames,
+                                                                PHONE_LINE_WORDS, new BigDecimal("4500000"),
+                                                                new BigDecimal("40000000"), true, 8, random))),
+                                new CategorySpec("Laptop", img, withExtras(List.of(
                                                 new ProductSpec("MacBook Air M2", "Laptop mỏng nhẹ của Apple.", "apple",
                                                                 List.of(
                                                                                 new VariantSpec(8, 256, "Bạc",
@@ -191,8 +256,11 @@ public class CatalogSeeder implements CommandLineRunner {
                                                 new ProductSpec("Lenovo IdeaPad Slim 5", "Laptop mỏng nhẹ tầm trung.",
                                                                 "lenovo", List.of(
                                                                                 new VariantSpec(8, 256, "Xám",
-                                                                                                new BigDecimal("12990000")))))),
-                                new CategorySpec("Màn hình", img, List.of(
+                                                                                                new BigDecimal("12990000"))))),
+                                                generateExtraProducts(List.of("apple", "dell", "asus", "lenovo"), brandNames,
+                                                                LAPTOP_LINE_WORDS, new BigDecimal("10000000"),
+                                                                new BigDecimal("70000000"), true, 8, random))),
+                                new CategorySpec("Màn hình", img, withExtras(List.of(
                                                 new ProductSpec("Dell UltraSharp U2723QE", "Màn hình 4K chuyên đồ họa.",
                                                                 "dell", List.of(
                                                                                 new VariantSpec(null, null, "Đen",
@@ -217,8 +285,11 @@ public class CatalogSeeder implements CommandLineRunner {
                                                 new ProductSpec("LG 24MK430H", "Màn hình văn phòng phổ thông.", "lg",
                                                                 List.of(
                                                                                 new VariantSpec(null, null, "Đen",
-                                                                                                new BigDecimal("2790000")))))),
-                                new CategorySpec("Tai nghe", img, List.of(
+                                                                                                new BigDecimal("2790000"))))),
+                                                generateExtraProducts(List.of("dell", "asus", "lg"), brandNames,
+                                                                MONITOR_LINE_WORDS, new BigDecimal("2500000"),
+                                                                new BigDecimal("20000000"), false, 8, random))),
+                                new CategorySpec("Tai nghe", img, withExtras(List.of(
                                                 new ProductSpec("AirPods Pro 2", "Tai nghe chống ồn của Apple.",
                                                                 "apple", List.of(
                                                                                 new VariantSpec(null, null, "Trắng",
@@ -242,8 +313,11 @@ public class CatalogSeeder implements CommandLineRunner {
                                                 new ProductSpec("JBL Live 660NC",
                                                                 "Tai nghe over-ear chống ồn phổ thông.", "jbl", List.of(
                                                                                 new VariantSpec(null, null, "Đen",
-                                                                                                new BigDecimal("1990000")))))),
-                                new CategorySpec("Đồng hồ thông minh", img, List.of(
+                                                                                                new BigDecimal("1990000"))))),
+                                                generateExtraProducts(List.of("apple", "sony", "jbl"), brandNames,
+                                                                HEADPHONE_LINE_WORDS, new BigDecimal("1000000"),
+                                                                new BigDecimal("15000000"), false, 8, random))),
+                                new CategorySpec("Đồng hồ thông minh", img, withExtras(List.of(
                                                 new ProductSpec("Apple Watch Series 9", "Smartwatch cao cấp của Apple.",
                                                                 "apple", List.of(
                                                                                 new VariantSpec(null, null, "Đen",
@@ -259,6 +333,9 @@ public class CatalogSeeder implements CommandLineRunner {
                                                 new ProductSpec("Samsung Galaxy Watch6 Classic",
                                                                 "Smartwatch cao cấp của Samsung.", "samsung", List.of(
                                                                                 new VariantSpec(null, null, "Bạc",
-                                                                                                new BigDecimal("8990000")))))));
+                                                                                                new BigDecimal("8990000"))))),
+                                                generateExtraProducts(List.of("apple", "samsung"), brandNames,
+                                                                WATCH_LINE_WORDS, new BigDecimal("3000000"),
+                                                                new BigDecimal("12000000"), false, 8, random))));
         }
 }

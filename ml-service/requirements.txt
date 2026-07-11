@@ -1,0 +1,5 @@
+implicit
+psycopg2-binary
+pandas
+scipy
+python-dotenv
