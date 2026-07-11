@@ -6,36 +6,42 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
-
 /**
- * Blocks brute-force attacks on POST /api/auth/login.
- * Allows MAX_ATTEMPTS per IP within the WINDOW. On breach, returns 429.
- * Uses an in-memory ConcurrentHashMap; state resets on app restart.
+ * Blocks spam/brute-force on the public, unauthenticated {@code /api/auth/*} endpoints.
+ * Allows a per-path attempt limit per IP within a per-path window; on breach, returns 429.
+ * Counters live in Redis (see {@link RateLimiterService}) so they survive app restarts and
+ * are shared across backend instances.
  */
 @Component
-public class LoginRateLimitFilter extends OncePerRequestFilter {
+public class AuthRateLimitFilter extends OncePerRequestFilter {
 
-    private static final String LOGIN_PATH = "/api/auth/login";
-    private static final int MAX_ATTEMPTS = 5;
-    private static final long WINDOW_MS = 15 * 60 * 1000L;
+    private record Rule(int maxAttempts, Duration window) {
+    }
 
+    private static final Map<String, Rule> RULES = Map.of(
+            "/api/auth/login", new Rule(5, Duration.ofMinutes(15)),
+            "/api/auth/register", new Rule(5, Duration.ofMinutes(15)),
+            "/api/auth/forgot-password", new Rule(3, Duration.ofMinutes(15)),
+            "/api/auth/reset-password", new Rule(5, Duration.ofMinutes(15)));
+
+    private final RateLimiterService rateLimiterService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // ip -> [attemptCount, windowStartMs]
-    private final ConcurrentHashMap<String, long[]> attempts = new ConcurrentHashMap<>();
+    public AuthRateLimitFilter(RateLimiterService rateLimiterService) {
+        this.rateLimiterService = rateLimiterService;
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         return !("POST".equalsIgnoreCase(request.getMethod())
-                && LOGIN_PATH.equals(request.getServletPath()));
+                && RULES.containsKey(request.getServletPath()));
     }
 
     @Override
@@ -44,18 +50,12 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getServletPath();
+        Rule rule = RULES.get(path);
         String ip = resolveClientIp(request);
-        long now = System.currentTimeMillis();
+        String key = "rate-limit:" + path + ":" + ip;
 
-        long[] bucket = attempts.compute(ip, (k, v) -> {
-            if (v == null || now - v[1] >= WINDOW_MS) {
-                return new long[]{1, now};
-            }
-            v[0]++;
-            return v;
-        });
-
-        if (bucket[0] > MAX_ATTEMPTS) {
+        if (!rateLimiterService.tryAcquire(key, rule.maxAttempts(), rule.window())) {
             rejectRequest(response);
             return;
         }
@@ -70,7 +70,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         String body = objectMapper.writeValueAsString(Map.of(
                 "status", 429,
                 "error", "Too Many Requests",
-                "message", "Too many login attempts. Please try again after 15 minutes."));
+                "message", "Too many requests. Please try again later."));
         response.getWriter().write(body);
     }
 

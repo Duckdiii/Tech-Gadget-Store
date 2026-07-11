@@ -37,7 +37,11 @@ spring:
       hibernate:
         format_sql: true
 
-  # 2. Redis chưa dùng — sẽ bổ sung khi triển khai Giỏ hàng
+  # 2. Cấu hình Redis (Rate limiting; Giỏ hàng sẽ dùng sau)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
   # 3. Cấu hình SMTP mail (Gmail)
   mail:

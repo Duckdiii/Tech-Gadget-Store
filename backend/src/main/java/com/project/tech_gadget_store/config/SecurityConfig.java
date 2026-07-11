@@ -1,7 +1,7 @@
 package com.project.tech_gadget_store.config;
 
+import com.project.tech_gadget_store.modules.auth.security.AuthRateLimitFilter;
 import com.project.tech_gadget_store.modules.auth.security.JwtAuthFilter;
-import com.project.tech_gadget_store.modules.auth.security.LoginRateLimitFilter;
 import com.project.tech_gadget_store.modules.auth.service.CustomUserDetailsService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,14 +36,14 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     private final JwtAuthFilter jwtAuthFilter;
-    private final LoginRateLimitFilter loginRateLimitFilter;
+    private final AuthRateLimitFilter authRateLimitFilter;
     private final CustomUserDetailsService userDetailsService;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
-                          LoginRateLimitFilter loginRateLimitFilter,
+                          AuthRateLimitFilter authRateLimitFilter,
                           CustomUserDetailsService userDetailsService) {
         this.jwtAuthFilter = jwtAuthFilter;
-        this.loginRateLimitFilter = loginRateLimitFilter;
+        this.authRateLimitFilter = authRateLimitFilter;
         this.userDetailsService = userDetailsService;
     }
 
@@ -111,8 +111,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthFilter, LoginRateLimitFilter.class);
+                .addFilterBefore(authRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter, AuthRateLimitFilter.class);
 
         return http.build();
     }

@@ -1,36 +1,36 @@
 package com.project.tech_gadget_store.modules.auth.service;
 
-import com.project.tech_gadget_store.modules.auth.entity.InvalidatedToken;
-import com.project.tech_gadget_store.modules.auth.repository.InvalidatedTokenRepository;
 import com.project.tech_gadget_store.modules.auth.security.AccountUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 
 @Service
 public class JwtService {
 
+    private static final String BLACKLIST_PREFIX = "jwt-blacklist:";
+
     private final SecretKey key;
     private final long expirationMs;
-    private final InvalidatedTokenRepository invalidatedTokenRepository;
+    private final StringRedisTemplate redisTemplate;
 
     public JwtService(
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.expiration-ms}") long expirationMs,
-            InvalidatedTokenRepository invalidatedTokenRepository) {
+            StringRedisTemplate redisTemplate) {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.expirationMs = expirationMs;
-        this.invalidatedTokenRepository = invalidatedTokenRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     public String generateToken(AccountUserDetails details) {
@@ -58,7 +58,7 @@ public class JwtService {
 
     public boolean isTokenValid(String token) {
         try {
-            if (invalidatedTokenRepository.existsByToken(token)) {
+            if (Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token))) {
                 return false;
             }
             return parseClaims(token).getExpiration().after(new Date());
@@ -67,25 +67,23 @@ public class JwtService {
         }
     }
 
-    @Transactional
+    /**
+     * Blacklists a token for exactly the time it has left before its own {@code exp} claim
+     * would invalidate it anyway — the Redis key expires itself, so there's no separate cleanup
+     * job to maintain.
+     */
     public void invalidateToken(String token) {
         if (token == null || token.isBlank()) {
             return;
         }
+        String key = BLACKLIST_PREFIX + token;
         try {
-            Date expiry = extractExpiration(token);
-            LocalDateTime expiryTime = expiry.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-
-            if (!invalidatedTokenRepository.existsByToken(token)) {
-                InvalidatedToken invalidatedToken = new InvalidatedToken(token, expiryTime);
-                invalidatedTokenRepository.save(invalidatedToken);
+            Duration ttl = Duration.between(Instant.now(), extractExpiration(token).toInstant());
+            if (ttl.isPositive()) {
+                redisTemplate.opsForValue().set(key, "1", ttl);
             }
         } catch (Exception e) {
-            LocalDateTime defaultExpiry = LocalDateTime.now().plusHours(24);
-            InvalidatedToken invalidatedToken = new InvalidatedToken(token, defaultExpiry);
-            invalidatedTokenRepository.save(invalidatedToken);
+            redisTemplate.opsForValue().set(key, "1", Duration.ofHours(24));
         }
     }
 

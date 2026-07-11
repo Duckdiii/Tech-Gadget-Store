@@ -1,18 +1,14 @@
 package com.project.tech_gadget_store.modules.catalog.service;
 
 import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
-import com.project.tech_gadget_store.modules.auth.entity.Customer;
-import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.modules.catalog.entity.CustomerRecommendationCache;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
-import com.project.tech_gadget_store.modules.catalog.entity.ViewLog;
 import com.project.tech_gadget_store.modules.catalog.mapper.ProductMapper;
 import com.project.tech_gadget_store.modules.catalog.repository.CustomerRecommendationCacheRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
-import com.project.tech_gadget_store.modules.catalog.repository.ViewLogRepository;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,7 +20,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,8 +36,7 @@ public class RecommendationService {
     private final ProductVariantRepository productVariantRepository;
     private final OrderRepository orderRepository;
     private final CustomerRecommendationCacheRepository customerRecommendationCacheRepository;
-    private final ViewLogRepository viewLogRepository;
-    private final CustomerRepository customerRepository;
+    private final RecentlyViewedService recentlyViewedService;
     private final ProductMapper productMapper;
 
     public RecommendationService(
@@ -50,15 +44,13 @@ public class RecommendationService {
             ProductVariantRepository productVariantRepository,
             OrderRepository orderRepository,
             CustomerRecommendationCacheRepository customerRecommendationCacheRepository,
-            ViewLogRepository viewLogRepository,
-            CustomerRepository customerRepository,
+            RecentlyViewedService recentlyViewedService,
             ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.productVariantRepository = productVariantRepository;
         this.orderRepository = orderRepository;
         this.customerRecommendationCacheRepository = customerRecommendationCacheRepository;
-        this.viewLogRepository = viewLogRepository;
-        this.customerRepository = customerRepository;
+        this.recentlyViewedService = recentlyViewedService;
         this.productMapper = productMapper;
     }
 
@@ -274,15 +266,12 @@ public class RecommendationService {
     /**
      * Records that a customer viewed a product's detail page — powers "Bạn vừa xem" and
      * "Gợi ý từ lịch sử". Only called for logged-in customers (see {@code ProductController});
-     * anonymous views are never logged.
+     * anonymous views are never logged. No existence validation needed here: the customer is
+     * already resolved by the caller, and a bogus productId is harmlessly dropped later by
+     * {@link #fetchProductsInOrder}.
      */
-    @Transactional
     public void recordView(String customerId, String productId) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + customerId));
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
-        viewLogRepository.save(new ViewLog(customer, product));
+        recentlyViewedService.recordView(customerId, productId);
     }
 
     /** "Bạn vừa xem" — the customer's own view history, most recent first, no ranking logic. */
@@ -320,27 +309,9 @@ public class RecommendationService {
         return suggestions;
     }
 
-    /**
-     * Up to {@link #RECENTLY_VIEWED_LIMIT} distinct, most-recently-viewed product ids. Fetches
-     * more raw log rows than needed since repeat views of the same product would otherwise
-     * starve the distinct-product count.
-     */
+    /** Up to {@link #RECENTLY_VIEWED_LIMIT} distinct, most-recently-viewed product ids. */
     private List<String> getRecentlyViewedProductIds(String customerId) {
-        List<ViewLog> recentViews = viewLogRepository.findRecentByCustomerId(
-                customerId, PageRequest.of(0, RECENTLY_VIEWED_LIMIT * 4));
-
-        List<String> distinctIds = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
-        for (ViewLog viewLog : recentViews) {
-            String productId = viewLog.getProduct().getId();
-            if (seen.add(productId)) {
-                distinctIds.add(productId);
-                if (distinctIds.size() >= RECENTLY_VIEWED_LIMIT) {
-                    break;
-                }
-            }
-        }
-        return distinctIds;
+        return recentlyViewedService.getRecentProductIds(customerId, RECENTLY_VIEWED_LIMIT);
     }
 
     /** Re-fetches full entities for the given ids, preserving the ids' order (findAllById does not). */
