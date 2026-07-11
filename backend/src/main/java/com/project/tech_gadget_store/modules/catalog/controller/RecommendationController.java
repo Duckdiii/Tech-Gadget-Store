@@ -48,9 +48,28 @@ public class RecommendationController {
 
     @GetMapping("/for-you")
     public ResponseEntity<List<ProductResponseDto>> getForYouRecommendations(Authentication authentication) {
+        String customerId = resolveCustomerId(authentication);
+        List<ProductResponseDto> recommendations = recommendationService.getForYouRecommendations(customerId);
+        return ResponseEntity.ok(recommendations);
+    }
+
+    @GetMapping("/recently-viewed")
+    public ResponseEntity<List<ProductResponseDto>> getRecentlyViewed(Authentication authentication) {
+        String customerId = resolveCustomerId(authentication);
+        List<ProductResponseDto> recentlyViewed = recommendationService.getRecentlyViewed(customerId);
+        return ResponseEntity.ok(recentlyViewed);
+    }
+
+    @GetMapping("/suggestions-from-history")
+    public ResponseEntity<List<ProductResponseDto>> getSuggestionsFromHistory(Authentication authentication) {
+        String customerId = resolveCustomerId(authentication);
+        List<ProductResponseDto> suggestions = recommendationService.getSuggestionsFromHistory(customerId);
+        return ResponseEntity.ok(suggestions);
+    }
+
+    private String resolveCustomerId(Authentication authentication) {
         Customer customer = customerRepository.findByAccountEmail(authentication.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
-        List<ProductResponseDto> recommendations = recommendationService.getForYouRecommendations(customer.getId());
-        return ResponseEntity.ok(recommendations);
+        return customer.getId();
     }
 }

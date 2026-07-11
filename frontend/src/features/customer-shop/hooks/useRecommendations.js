@@ -57,3 +57,19 @@ export function useCartRecommendations(productIds) {
     productIds && productIds.length > 0
   )
 }
+
+export function useRecentlyViewed(enabled) {
+  return useRecommendationFetcher(
+    () => shopService.getRecentlyViewed(),
+    [enabled],
+    enabled
+  )
+}
+
+export function useSuggestionsFromHistory(enabled) {
+  return useRecommendationFetcher(
+    () => shopService.getSuggestionsFromHistory(),
+    [enabled],
+    enabled
+  )
+}

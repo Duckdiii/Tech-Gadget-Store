@@ -3,12 +3,14 @@ import { useNav } from '../../../hooks/useNav'
 import StoreNavbar from '../../../components/StoreNavbar'
 import { useAuth } from '../../../context/AuthContext'
 import RecommendationSection from '../components/RecommendationSection'
-import { useForYouRecommendations } from '../hooks/useRecommendations'
+import { useForYouRecommendations, useRecentlyViewed, useSuggestionsFromHistory } from '../hooks/useRecommendations'
 
 export default function HomePage() {
   const onNavigate = useNav()
   const { user } = useAuth()
   const { products: forYouProducts, loading: forYouLoading } = useForYouRecommendations(!!user)
+  const { products: recentlyViewedProducts, loading: recentlyViewedLoading } = useRecentlyViewed(!!user)
+  const { products: historySuggestions, loading: historySuggestionsLoading } = useSuggestionsFromHistory(!!user)
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
   const [activeTab, setActiveTab] = useState('bestseller')
@@ -247,6 +249,24 @@ export default function HomePage() {
             title="Dành cho bạn"
             products={forYouProducts}
             loading={forYouLoading}
+            onNavigate={onNavigate}
+          />
+        )}
+
+        {/* ══ BẠN VỪA XEM + GỢI Ý TỪ LỊCH SỬ (logged-in only) ══ */}
+        {user && (
+          <RecommendationSection
+            title="Bạn vừa xem"
+            products={recentlyViewedProducts}
+            loading={recentlyViewedLoading}
+            onNavigate={onNavigate}
+          />
+        )}
+        {user && (
+          <RecommendationSection
+            title="Gợi ý từ lịch sử"
+            products={historySuggestions}
+            loading={historySuggestionsLoading}
             onNavigate={onNavigate}
           />
         )}

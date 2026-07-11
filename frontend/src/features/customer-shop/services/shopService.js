@@ -61,4 +61,12 @@ export const shopService = {
   async getCartRecommendations(productIds) {
     return axiosClient.get(`/api/products/cart-recommendations?productIds=${productIds.join(',')}`)
   },
+
+  async getRecentlyViewed() {
+    return axiosClient.get('/api/products/recently-viewed')
+  },
+
+  async getSuggestionsFromHistory() {
+    return axiosClient.get('/api/products/suggestions-from-history')
+  },
 }

@@ -1,23 +1,30 @@
 package com.project.tech_gadget_store.modules.catalog.service;
 
 import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
+import com.project.tech_gadget_store.modules.auth.entity.Customer;
+import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.modules.catalog.entity.CustomerRecommendationCache;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
+import com.project.tech_gadget_store.modules.catalog.entity.ViewLog;
 import com.project.tech_gadget_store.modules.catalog.mapper.ProductMapper;
 import com.project.tech_gadget_store.modules.catalog.repository.CustomerRecommendationCacheRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
+import com.project.tech_gadget_store.modules.catalog.repository.ViewLogRepository;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RecommendationService {
 
     private static final int FOR_YOU_LIMIT = 6;
+    private static final int RECENTLY_VIEWED_LIMIT = 5;
     /** Placeholder id passed to "NOT IN" native queries when there is nothing real to exclude. */
     private static final List<String> NO_EXCLUSIONS = List.of("00000000-0000-0000-0000-000000000000");
 
@@ -33,6 +41,8 @@ public class RecommendationService {
     private final ProductVariantRepository productVariantRepository;
     private final OrderRepository orderRepository;
     private final CustomerRecommendationCacheRepository customerRecommendationCacheRepository;
+    private final ViewLogRepository viewLogRepository;
+    private final CustomerRepository customerRepository;
     private final ProductMapper productMapper;
 
     public RecommendationService(
@@ -40,11 +50,15 @@ public class RecommendationService {
             ProductVariantRepository productVariantRepository,
             OrderRepository orderRepository,
             CustomerRecommendationCacheRepository customerRecommendationCacheRepository,
+            ViewLogRepository viewLogRepository,
+            CustomerRepository customerRepository,
             ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.productVariantRepository = productVariantRepository;
         this.orderRepository = orderRepository;
         this.customerRecommendationCacheRepository = customerRecommendationCacheRepository;
+        this.viewLogRepository = viewLogRepository;
+        this.customerRepository = customerRepository;
         this.productMapper = productMapper;
     }
 
@@ -255,6 +269,78 @@ public class RecommendationService {
         }
 
         return mapProductsToDtos(fetchProductsInOrder(topSellingIds));
+    }
+
+    /**
+     * Records that a customer viewed a product's detail page — powers "Bạn vừa xem" and
+     * "Gợi ý từ lịch sử". Only called for logged-in customers (see {@code ProductController});
+     * anonymous views are never logged.
+     */
+    @Transactional
+    public void recordView(String customerId, String productId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + customerId));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+        viewLogRepository.save(new ViewLog(customer, product));
+    }
+
+    /** "Bạn vừa xem" — the customer's own view history, most recent first, no ranking logic. */
+    public List<ProductResponseDto> getRecentlyViewed(String customerId) {
+        return mapProductsToDtos(fetchProductsInOrder(getRecentlyViewedProductIds(customerId)));
+    }
+
+    /**
+     * "Gợi ý từ lịch sử" — reuses {@link #getSimilarProducts} for each of the customer's
+     * recently viewed products, merging results and excluding both duplicates and the viewed
+     * products themselves. No new similarity logic — this is purely a fan-out over content-based
+     * recommendations already built for idea 1.
+     */
+    public List<ProductResponseDto> getSuggestionsFromHistory(String customerId) {
+        List<String> recentProductIds = getRecentlyViewedProductIds(customerId);
+        if (recentProductIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ProductResponseDto> suggestions = new ArrayList<>();
+        Set<String> seen = new HashSet<>(recentProductIds);
+        for (String viewedProductId : recentProductIds) {
+            if (suggestions.size() >= FOR_YOU_LIMIT) {
+                break;
+            }
+            for (ProductResponseDto candidate : getSimilarProducts(viewedProductId)) {
+                if (suggestions.size() >= FOR_YOU_LIMIT) {
+                    break;
+                }
+                if (seen.add(candidate.getId())) {
+                    suggestions.add(candidate);
+                }
+            }
+        }
+        return suggestions;
+    }
+
+    /**
+     * Up to {@link #RECENTLY_VIEWED_LIMIT} distinct, most-recently-viewed product ids. Fetches
+     * more raw log rows than needed since repeat views of the same product would otherwise
+     * starve the distinct-product count.
+     */
+    private List<String> getRecentlyViewedProductIds(String customerId) {
+        List<ViewLog> recentViews = viewLogRepository.findRecentByCustomerId(
+                customerId, PageRequest.of(0, RECENTLY_VIEWED_LIMIT * 4));
+
+        List<String> distinctIds = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (ViewLog viewLog : recentViews) {
+            String productId = viewLog.getProduct().getId();
+            if (seen.add(productId)) {
+                distinctIds.add(productId);
+                if (distinctIds.size() >= RECENTLY_VIEWED_LIMIT) {
+                    break;
+                }
+            }
+        }
+        return distinctIds;
     }
 
     /** Re-fetches full entities for the given ids, preserving the ids' order (findAllById does not). */
