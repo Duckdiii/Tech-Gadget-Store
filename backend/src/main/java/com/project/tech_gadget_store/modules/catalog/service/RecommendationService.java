@@ -7,6 +7,7 @@ import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
 import com.project.tech_gadget_store.modules.catalog.mapper.ProductMapper;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
+import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,16 +23,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class RecommendationService {
 
+    private static final int FOR_YOU_LIMIT = 6;
+    /** Placeholder id passed to "NOT IN" native queries when there is nothing real to exclude. */
+    private static final List<String> NO_EXCLUSIONS = List.of("00000000-0000-0000-0000-000000000000");
+
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final OrderRepository orderRepository;
     private final ProductMapper productMapper;
 
     public RecommendationService(
             ProductRepository productRepository,
             ProductVariantRepository productVariantRepository,
+            OrderRepository orderRepository,
             ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.productVariantRepository = productVariantRepository;
+        this.orderRepository = orderRepository;
         this.productMapper = productMapper;
     }
 
@@ -144,8 +152,8 @@ public class RecommendationService {
      * Fallback to Content-Based if there are less than 6 recommendations.
      */
     public List<ProductResponseDto> getFrequentlyBoughtTogether(String productId) {
-        List<Product> boughtTogether = productRepository.findFrequentlyBoughtTogether(productId, 6);
-        List<ProductResponseDto> dtos = mapProductsToDtos(boughtTogether);
+        List<String> boughtTogetherIds = productRepository.findFrequentlyBoughtTogetherIds(productId, 6);
+        List<ProductResponseDto> dtos = mapProductsToDtos(fetchProductsInOrder(boughtTogetherIds));
 
         if (dtos.size() < 6) {
             List<ProductResponseDto> similar = getSimilarProducts(productId);
@@ -172,8 +180,8 @@ public class RecommendationService {
             return Collections.emptyList();
         }
 
-        List<Product> boughtTogether = productRepository.findFrequentlyBoughtTogetherForMultipleProducts(productIds, 6);
-        List<ProductResponseDto> dtos = mapProductsToDtos(boughtTogether);
+        List<String> boughtTogetherIds = productRepository.findFrequentlyBoughtTogetherIdsForMultipleProducts(productIds, 6);
+        List<ProductResponseDto> dtos = mapProductsToDtos(fetchProductsInOrder(boughtTogetherIds));
 
         if (dtos.size() < 6) {
             String firstProductId = productIds.get(0);
@@ -194,6 +202,47 @@ public class RecommendationService {
         }
 
         return dtos;
+    }
+
+    /**
+     * "Dành cho bạn" — MVP personalization (no ML): top sellers within the categories a
+     * customer has bought from before, excluding products they already own. Falls back to
+     * site-wide top sellers for cold-start customers (no purchase history) and to pad out
+     * results when the category-scoped list is too short.
+     */
+    public List<ProductResponseDto> getForYouRecommendations(String customerId) {
+        List<String> purchasedCategoryIds = orderRepository.findPurchasedCategoryIdsByCustomerId(customerId);
+        List<String> purchasedProductIds = orderRepository.findPurchasedProductIdsByCustomerId(customerId);
+        List<String> excludeIds = purchasedProductIds.isEmpty() ? NO_EXCLUSIONS : purchasedProductIds;
+
+        List<String> topSellingIds = new ArrayList<>(purchasedCategoryIds.isEmpty()
+                ? productRepository.findTopSellingIdsOverall(excludeIds, FOR_YOU_LIMIT)
+                : productRepository.findTopSellingIdsByCategoriesExcluding(purchasedCategoryIds, excludeIds, FOR_YOU_LIMIT));
+
+        if (topSellingIds.size() < FOR_YOU_LIMIT) {
+            List<String> seenProductIds = new ArrayList<>(purchasedProductIds);
+            seenProductIds.addAll(topSellingIds);
+            List<String> fallbackExcludeIds = seenProductIds.isEmpty() ? NO_EXCLUSIONS : seenProductIds;
+            List<String> fallbackIds = productRepository.findTopSellingIdsOverall(fallbackExcludeIds, FOR_YOU_LIMIT);
+            for (String id : fallbackIds) {
+                if (topSellingIds.size() >= FOR_YOU_LIMIT) {
+                    break;
+                }
+                topSellingIds.add(id);
+            }
+        }
+
+        return mapProductsToDtos(fetchProductsInOrder(topSellingIds));
+    }
+
+    /** Re-fetches full entities for the given ids, preserving the ids' order (findAllById does not). */
+    private List<Product> fetchProductsInOrder(List<String> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        Map<String, Product> byId = productRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Product::getId, p -> p));
+        return ids.stream().map(byId::get).filter(Objects::nonNull).toList();
     }
 
     private List<ProductResponseDto> mapProductsToDtos(List<Product> products) {

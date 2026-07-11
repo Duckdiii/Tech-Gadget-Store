@@ -3,6 +3,8 @@ import StoreNavbar from '../../../components/StoreNavbar'
 import { useCart } from '../hooks/useCart'
 import CartItem from '../components/CartItem'
 import OrderSummary from '../components/OrderSummary'
+import RecommendationSection from '../components/RecommendationSection'
+import { useCartRecommendations } from '../hooks/useRecommendations'
 
 export default function CartPage() { // hiển thị trang giỏ hàng
   const {
@@ -22,6 +24,9 @@ export default function CartPage() { // hiển thị trang giỏ hàng
     removeCheckedItems,
     onNavigate,
   } = useCart()
+
+  const cartProductIds = [...new Set(items.map(i => i.rawItem?.productId).filter(Boolean))]
+  const { products: cartRecommendations, loading: cartRecommendationsLoading } = useCartRecommendations(cartProductIds)
 
   return (
     <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
@@ -86,6 +91,15 @@ export default function CartPage() { // hiển thị trang giỏ hàng
               <OrderSummary items={items} />
             </div>
           </div>
+        )}
+
+        {!loading && items.length > 0 && (
+          <RecommendationSection
+            title="Khách hàng cũng mua"
+            products={cartRecommendations}
+            loading={cartRecommendationsLoading}
+            onNavigate={onNavigate}
+          />
         )}
       </div>
 

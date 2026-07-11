@@ -44,4 +44,21 @@ export const shopService = {
   async getProductById(productId) {
     return axiosClient.get(`/api/products/${productId}`)
   },
+
+  // Recommendation APIs
+  async getForYouRecommendations() {
+    return axiosClient.get('/api/products/for-you')
+  },
+
+  async getSimilarProducts(productId) {
+    return axiosClient.get(`/api/products/${productId}/similar`)
+  },
+
+  async getFrequentlyBoughtTogether(productId) {
+    return axiosClient.get(`/api/products/${productId}/frequently-bought-together`)
+  },
+
+  async getCartRecommendations(productIds) {
+    return axiosClient.get(`/api/products/cart-recommendations?productIds=${productIds.join(',')}`)
+  },
 }

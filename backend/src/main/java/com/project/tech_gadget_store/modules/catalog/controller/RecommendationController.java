@@ -1,13 +1,18 @@
 package com.project.tech_gadget_store.modules.catalog.controller;
 
+import com.project.tech_gadget_store.modules.auth.entity.Customer;
+import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.modules.catalog.service.RecommendationService;
 import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -16,9 +21,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class RecommendationController {
 
     private final RecommendationService recommendationService;
+    private final CustomerRepository customerRepository;
 
-    public RecommendationController(RecommendationService recommendationService) {
+    public RecommendationController(RecommendationService recommendationService, CustomerRepository customerRepository) {
         this.recommendationService = recommendationService;
+        this.customerRepository = customerRepository;
     }
 
     @GetMapping("/{productId}/similar")
@@ -36,6 +43,14 @@ public class RecommendationController {
     @GetMapping("/cart-recommendations")
     public ResponseEntity<List<ProductResponseDto>> getCartRecommendations(@RequestParam List<String> productIds) {
         List<ProductResponseDto> recommendations = recommendationService.getCartRecommendations(productIds);
+        return ResponseEntity.ok(recommendations);
+    }
+
+    @GetMapping("/for-you")
+    public ResponseEntity<List<ProductResponseDto>> getForYouRecommendations(Authentication authentication) {
+        Customer customer = customerRepository.findByAccountEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+        List<ProductResponseDto> recommendations = recommendationService.getForYouRecommendations(customer.getId());
         return ResponseEntity.ok(recommendations);
     }
 }

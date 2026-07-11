@@ -6,6 +6,7 @@ import com.project.tech_gadget_store.modules.auth.entity.Manager;
 import com.project.tech_gadget_store.modules.auth.entity.User;
 import java.util.Collection;
 import java.util.List;
+import org.hibernate.Hibernate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,8 +34,12 @@ public class AccountUserDetails implements UserDetails {
     }
 
     private static String resolveRole(User user) {
-        if (user instanceof Manager) return "MANAGER";
-        if (user instanceof Customer) return "CUSTOMER";
+        // user is a lazy proxy of the abstract User type (JOINED inheritance, no discriminator
+        // column), so a plain `instanceof` check against it always fails on the subclass
+        // checks below unless unproxied first.
+        Object unproxied = Hibernate.unproxy(user);
+        if (unproxied instanceof Manager) return "MANAGER";
+        if (unproxied instanceof Customer) return "CUSTOMER";
         return "STAFF";
     }
 

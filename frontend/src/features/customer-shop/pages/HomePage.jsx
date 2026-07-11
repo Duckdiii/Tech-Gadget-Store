@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNav } from '../../../hooks/useNav'
 import StoreNavbar from '../../../components/StoreNavbar'
+import { useAuth } from '../../../context/AuthContext'
+import RecommendationSection from '../components/RecommendationSection'
+import { useForYouRecommendations } from '../hooks/useRecommendations'
 
 export default function HomePage() {
   const onNavigate = useNav()
+  const { user } = useAuth()
+  const { products: forYouProducts, loading: forYouLoading } = useForYouRecommendations(!!user)
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
   const [activeTab, setActiveTab] = useState('bestseller')
@@ -236,6 +241,15 @@ export default function HomePage() {
       {/* MAIN CONTENT AREA */}
       <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '0 28px' }}>
 
+        {/* ══ DÀNH CHO BẠN (personalized, logged-in only) ══ */}
+        {user && (
+          <RecommendationSection
+            title="Dành cho bạn"
+            products={forYouProducts}
+            loading={forYouLoading}
+            onNavigate={onNavigate}
+          />
+        )}
 
         {/* ══ FLASH SALE ══ */}
         <section id="flash-sale-section" style={{ padding: '52px 0 0' }}>

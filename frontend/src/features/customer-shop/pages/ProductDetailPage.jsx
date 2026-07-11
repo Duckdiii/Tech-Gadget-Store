@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
 import { useProductDetail } from '../hooks/useProductDetail'
+import RecommendationSection from '../components/RecommendationSection'
+import { useSimilarProducts, useFrequentlyBoughtTogether } from '../hooks/useRecommendations'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
 
@@ -50,6 +52,9 @@ export default function ProductDetailPage() {
     handleAddToCart,
     onNavigate,
   } = useProductDetail()
+
+  const { products: similarProducts, loading: similarLoading } = useSimilarProducts(product?.id)
+  const { products: boughtTogetherProducts, loading: boughtTogetherLoading } = useFrequentlyBoughtTogether(product?.id)
 
   if (loading) {
     return (
@@ -107,6 +112,19 @@ export default function ProductDetailPage() {
         </div>
 
         <ProductTabs product={product} />
+
+        <RecommendationSection
+          title="Sản phẩm tương tự"
+          products={similarProducts}
+          loading={similarLoading}
+          onNavigate={onNavigate}
+        />
+        <RecommendationSection
+          title="Khách hàng cũng mua"
+          products={boughtTogetherProducts}
+          loading={boughtTogetherLoading}
+          onNavigate={onNavigate}
+        />
       </div>
     </div>
   )

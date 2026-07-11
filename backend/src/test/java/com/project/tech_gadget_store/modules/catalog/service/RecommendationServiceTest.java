@@ -164,7 +164,8 @@ class RecommendationServiceTest {
             productIds.add("P" + i);
         }
 
-        when(productRepository.findFrequentlyBoughtTogether("target-id", 6)).thenReturn(products);
+        when(productRepository.findFrequentlyBoughtTogetherIds("target-id", 6)).thenReturn(productIds);
+        when(productRepository.findAllById(productIds)).thenReturn(products);
         when(productVariantRepository.findVariantsForProductIds(productIds)).thenReturn(variants);
 
         for (int i = 0; i < 6; i++) {
@@ -187,7 +188,8 @@ class RecommendationServiceTest {
         v1.setId("v1");
 
         // Co-occurrence returns P1
-        when(productRepository.findFrequentlyBoughtTogether("target-id", 6)).thenReturn(List.of(p1));
+        when(productRepository.findFrequentlyBoughtTogetherIds("target-id", 6)).thenReturn(List.of("P1"));
+        when(productRepository.findAllById(List.of("P1"))).thenReturn(List.of(p1));
         when(productVariantRepository.findVariantsForProductIds(List.of("P1"))).thenReturn(List.of(v1));
 
         ProductResponseDto dto1 = ProductResponseDto.builder().id("P1").build();
@@ -228,7 +230,7 @@ class RecommendationServiceTest {
         List<String> cartProductIds = List.of("target-id", "P2");
 
         // Co-occurrence query for multiple returns empty (no purchase history)
-        when(productRepository.findFrequentlyBoughtTogetherForMultipleProducts(cartProductIds, 6)).thenReturn(Collections.emptyList());
+        when(productRepository.findFrequentlyBoughtTogetherIdsForMultipleProducts(cartProductIds, 6)).thenReturn(Collections.emptyList());
 
         // Fallback Content-Based setup for first product "target-id"
         when(productRepository.findByIdAndIsActiveTrue("target-id")).thenReturn(Optional.of(targetProduct));

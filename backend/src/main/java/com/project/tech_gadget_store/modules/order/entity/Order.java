@@ -74,6 +74,7 @@ public class Order extends BaseEntity {
         this.address = address;
         this.selectedPaymentMethod = selectedPaymentMethod;
         this.orderDate = LocalDateTime.now();
+        this.items = new ArrayList<>();
     }
 
     public void addItem(OrderItem item) {
