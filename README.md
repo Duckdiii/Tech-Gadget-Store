@@ -8,6 +8,7 @@ Hệ thống bán lẻ thiết bị công nghệ full-stack (điện thoại, la
 |---|---|
 | Backend | Java 21, Spring Boot 4, Spring Security (JWT), Spring Data JPA/Hibernate |
 | Database | PostgreSQL (Supabase) |
+| Cache / Ephemeral data | Redis (rate limiting, lịch sử xem gần đây, JWT blacklist) |
 | Frontend | React 19, Vite, React Router, Tailwind CSS, Axios |
 | ML Service | Python, `implicit` (Matrix Factorization / ALS), pandas, scipy, psycopg2 |
 | Thanh toán | COD, MoMo, VNPay (tích hợp redirect + IPN webhook) |
@@ -53,7 +54,7 @@ Backend chia theo domain module: `auth`, `catalog`, `order`, `payment`, `loyalty
 
 ### Bảo mật & hạ tầng
 - Xác thực JWT stateless, phân quyền theo route (`CUSTOMER` / `STAFF` / `MANAGER`)
-- Rate-limiting cho đăng nhập, mã hoá mật khẩu BCrypt
+- Rate-limiting (Redis) cho login/register/forgot-password/reset-password, mã hoá mật khẩu BCrypt
 - Audit log đăng nhập, log thanh toán, log kho — phục vụ truy vết
 
 ## Hệ thống Recommendation
@@ -83,6 +84,18 @@ MF không thay thế lớp rule-based — 2 lớp tồn tại song song: MF ph�
 
 **Kết quả đo được (precision@6, so với baseline rule-based):** MF vượt trội gấp ~3 lần sau khi mở rộng catalog và tune hyperparameter. Chi tiết đầy đủ về training pipeline, lý do chọn thuật toán, cách đánh giá, và các quyết định kỹ thuật: xem **[ml-service/README.md](ml-service/README.md)**.
 
+## Redis
+
+Giống tinh thần ở phần Recommendation — chỉ dùng Redis ở chỗ dữ liệu **thật sự có bản chất ngắn hạn/TTL**, không áp dụng tràn lan cho mọi thứ có thể cache được:
+
+| Chỗ dùng | Cấu trúc Redis | Vì sao không để Postgres |
+|---|---|---|
+| Rate limiting login/register/forgot-password/reset-password (`AuthRateLimitFilter`, `RateLimiterService`) | String, `INCR` + `EXPIRE` (fixed-window counter) | Counter theo IP vốn chỉ cần sống đúng 1 cửa sổ thời gian (15 phút); lưu Postgres thì tốn 1 bảng và phải tự dọn |
+| "Bạn vừa xem" / "Gợi ý từ lịch sử" (`RecentlyViewedService`) | Sorted Set theo customer, member = productId, score = thời điểm xem | Lịch sử xem là dữ liệu phiên, nên tự biến mất sau một thời gian không hoạt động; Sorted Set còn tự khử trùng lặp (xem lại 1 sản phẩm chỉ cập nhật thứ tự, không tạo dòng mới) |
+| JWT blacklist khi logout (`JwtService.invalidateToken`) | String, TTL = thời gian còn lại tới hạn `exp` của token | Token bị vô hiệu hoá cũng chỉ cần "sống" đến đúng lúc nó tự hết hạn theo JWT — sau đó giữ lại vô nghĩa; trước đây lưu Postgres (`invalidated_tokens`) nhưng không có job dọn nên bảng phình to mãi |
+
+**Cố tình không dùng Redis** cho cache "Dành cho bạn" (`customer_recommendation_cache`) — đây là bảng Postgres do `ml-service` ghi theo batch offline, bản thân nó đã là kết quả tính sẵn (đọc theo `customerId` có index), không phải dữ liệu cần hết hạn. Giỏ hàng của khách đã đăng nhập cũng giữ nguyên Postgres vì cần bền vững qua nhiều thiết bị/phiên đăng nhập.
+
 ## Dữ liệu giả (seed data)
 
 Vì chưa có traffic thật, dữ liệu customer/order/catalog được sinh giả **có chủ đích** (không random thuần) qua các seeder ở `backend/src/main/java/.../seed/`, để dữ liệu mô phỏng đúng hành vi mua sắm thật:
@@ -95,8 +108,9 @@ Chạy seed: `./mvnw spring-boot:run -Dspring-boot.run.profiles=seed` (chỉ ch�
 
 ## Chạy dự án
 
-**Backend** (cần `backend/.env` với `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` trỏ tới Postgres):
+**Backend** (cần `backend/.env` với `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` trỏ tới Postgres, và một Redis đang chạy — mặc định `localhost:6379`, đổi qua `REDIS_HOST`/`REDIS_PORT` nếu cần):
 ```bash
+docker run -p 6379:6379 redis   # hoặc Redis cài native
 cd backend
 ./mvnw spring-boot:run
 ```
