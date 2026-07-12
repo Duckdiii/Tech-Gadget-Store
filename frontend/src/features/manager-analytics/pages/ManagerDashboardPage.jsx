@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNav } from '../../../hooks/useNav'
+import { useLowStockProducts } from '../../../hooks/useLowStockProducts'
 import RevenueChart from '../components/RevenueChart'
 
 /* ── Data ── */
@@ -102,14 +103,6 @@ const TOP_PRODUCTS = [
   { name: 'iPad Pro 11" M4',         sold: 55, revenue: 1209450000, pct: 36 },
 ]
 
-const LOW_STOCK = [
-  { name: 'iPad Mini 6 WiFi 64GB',  stock: 2,  min: 10, color: 'red' },
-  { name: 'Apple Watch S9 45mm',    stock: 4,  min: 10, color: 'red' },
-  { name: 'Xiaomi 14 Ultra',        stock: 7,  min: 10, color: 'amber' },
-  { name: 'Sony WH-1000XM5',        stock: 5,  min: 10, color: 'red' },
-  { name: 'DJI Mini 4 Pro',         stock: 8,  min: 10, color: 'amber' },
-]
-
 const QUICK_ACTIONS = [
   {
     id: 'revenueReport',
@@ -197,6 +190,7 @@ function fmt(n) {
 export default function ManagerDashboardPage() {
   const onNavigate = useNav()
   const [chartPeriod, setChartPeriod] = useState('year')
+  const { items: lowStockItems, totalCount: lowStockCount, threshold: lowStockThreshold, loading: lowStockLoading } = useLowStockProducts(5)
 
   const now = new Date()
   const greeting =
@@ -257,23 +251,29 @@ export default function ManagerDashboardPage() {
         <div className="grid grid-cols-5 gap-4">
           {KPI_CARDS.map((card, i) => {
             const c = COLOR_MAP[card.color]
+            const isLowStockCard = card.label === 'Cảnh báo tồn kho'
+            const value = isLowStockCard ? (lowStockLoading ? '—' : lowStockCount) : card.value
             return (
               <div key={i} className="bg-white rounded border border-gray-200 p-5 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <span className={`w-9 h-9 rounded flex items-center justify-center text-white shrink-0 ${c.icon}`}>
                     {card.icon}
                   </span>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${card.up ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
-                    {card.change}
-                  </span>
+                  {!isLowStockCard && (
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${card.up ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                      {card.change}
+                    </span>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium">{card.label}</p>
                   <p className={`text-2xl font-bold mt-0.5 ${c.text}`}>
-                    {card.value}<span className="text-base font-medium text-gray-400 ml-1">{card.unit}</span>
+                    {value}<span className="text-base font-medium text-gray-400 ml-1">{card.unit}</span>
                   </p>
                 </div>
-                <p className="text-[11px] text-gray-400">So với hôm qua</p>
+                <p className="text-[11px] text-gray-400">
+                  {isLowStockCard ? `Ngưỡng cảnh báo: ${lowStockThreshold}` : 'So với hôm qua'}
+                </p>
               </div>
             )
           })}
@@ -399,15 +399,21 @@ export default function ManagerDashboardPage() {
                 </button>
               </div>
               <div className="space-y-2.5">
-                {LOW_STOCK.map((item, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${item.color === 'red' ? 'bg-red-500' : 'bg-amber-400'}`} />
-                    <span className="text-xs text-gray-700 flex-1 truncate">{item.name}</span>
-                    <span className={`text-xs font-bold ${item.color === 'red' ? 'text-red-600' : 'text-amber-600'}`}>
-                      {item.stock}
-                    </span>
-                  </div>
-                ))}
+                {lowStockLoading ? (
+                  <p className="text-xs text-gray-400">Đang tải...</p>
+                ) : lowStockItems.length === 0 ? (
+                  <p className="text-xs text-gray-400">Không có sản phẩm nào sắp hết hàng.</p>
+                ) : (
+                  lowStockItems.map((item) => (
+                    <div key={item.id} className="flex items-center gap-3">
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${item.stock === 0 ? 'bg-red-500' : 'bg-amber-400'}`} />
+                      <span className="text-xs text-gray-700 flex-1 truncate">{item.name}</span>
+                      <span className={`text-xs font-bold ${item.stock === 0 ? 'text-red-600' : 'text-amber-600'}`}>
+                        {item.stock === 0 ? 'Hết hàng' : item.stock}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

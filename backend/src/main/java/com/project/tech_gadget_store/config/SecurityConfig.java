@@ -108,6 +108,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/import-logs/**").hasAnyRole("STAFF", "MANAGER")
                         .requestMatchers("/api/export-logs/**").hasAnyRole("STAFF", "MANAGER")
+                        .requestMatchers("/api/warehouse/low-stock-products/**").hasAnyRole("STAFF", "MANAGER")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))

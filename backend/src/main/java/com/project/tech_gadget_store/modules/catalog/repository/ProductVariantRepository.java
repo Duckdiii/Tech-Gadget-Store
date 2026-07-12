@@ -57,4 +57,11 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
         @Query("SELECT pv FROM ProductVariant pv WHERE pv.product.id IN :productIds")
         List<ProductVariant> findVariantsForProductIds(@Param("productIds") List<String> productIds);
+
+        @Query("SELECT pv.product.id, COALESCE(SUM(CASE WHEN ps.status = com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus.IN_STOCK THEN 1L ELSE 0L END), 0L) " +
+                        "FROM ProductVariant pv LEFT JOIN ProductSerial ps ON ps.productVariant = pv " +
+                        "GROUP BY pv.product.id " +
+                        "HAVING COALESCE(SUM(CASE WHEN ps.status = com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus.IN_STOCK THEN 1L ELSE 0L END), 0L) <= :threshold " +
+                        "ORDER BY 2 ASC")
+        List<Object[]> findLowStockProductIdsAndCounts(@Param("threshold") long threshold);
 }

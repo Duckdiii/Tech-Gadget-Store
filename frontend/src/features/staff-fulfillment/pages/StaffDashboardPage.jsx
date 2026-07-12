@@ -1,13 +1,8 @@
 import { useNav } from '../../../hooks/useNav'
+import { useLowStockProducts } from '../../../hooks/useLowStockProducts'
 import StatCard from '../components/StatCard'
 
 const fmt = n => n.toLocaleString('vi-VN')
-
-const LOW_STOCK = [
-  { name:'MacBook Air M3 13"',  sku:'APL-MBA-M3-13',    stock:2, min:5, status:'critical' },
-  { name:'AirPods Pro 2nd Gen', sku:'APL-APP2',          stock:3, min:5, status:'low'      },
-  { name:'iPad Pro 11" M4',     sku:'APL-IPDPRO-M4-11', stock:4, min:5, status:'low'      },
-]
 
 const PENDING_ORDERS = [
   { id:'#ORD-240613-001', customer:'Nguyễn Văn A', items:2, total:35990000, status:'processing', since:'2 giờ trước'  },
@@ -33,13 +28,14 @@ export default function StaffDashboardPage() {
   const onNavigate = useNav()
   const today = new Date()
   const dateStr = today.toLocaleDateString('vi-VN', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
+  const { items: lowStockItems, totalCount: lowStockCount, threshold: lowStockThreshold, loading: lowStockLoading } = useLowStockProducts(5)
 
   const KPI = [
     { label:'Phiếu nhập hôm nay', value:4, sub:'+2 so với hôm qua', color:'teal',  action:'staffImport',
       icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg> },
     { label:'Phiếu xuất hôm nay', value:7, sub:'+3 so với hôm qua', color:'blue',  action:'staffExport',
       icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg> },
-    { label:'Tồn kho sắp hết',    value:3, sub:'Cần nhập bổ sung',  color:'red',   action:null,
+    { label:'Tồn kho sắp hết',    value: lowStockLoading ? '—' : lowStockCount, sub:'Cần nhập bổ sung',  color:'red',   action:null,
       icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> },
     { label:'Đơn cần xử lý',      value:5, sub:'2 đơn quá hạn',    color:'amber', action:'staffOrders',
       icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg> },
@@ -92,23 +88,30 @@ export default function StaffDashboardPage() {
               </button>
             </div>
             <div className="divide-y divide-gray-50">
-              {LOW_STOCK.map((p, i) => (
-                <div key={i} className="px-5 py-3.5 flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded flex items-center justify-center shrink-0 ${p.status==='critical' ? 'bg-red-100' : 'bg-amber-100'}`}>
-                    <svg className={`w-4 h-4 ${p.status==='critical' ? 'text-red-500' : 'text-amber-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
+              {lowStockLoading ? (
+                <p className="px-5 py-3.5 text-xs text-gray-400">Đang tải...</p>
+              ) : lowStockItems.length === 0 ? (
+                <p className="px-5 py-3.5 text-xs text-gray-400">Không có sản phẩm nào sắp hết hàng.</p>
+              ) : (
+                lowStockItems.map((p) => (
+                  <div key={p.id} className="px-5 py-3.5 flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded flex items-center justify-center shrink-0 ${p.stock === 0 ? 'bg-red-100' : 'bg-amber-100'}`}>
+                      <svg className={`w-4 h-4 ${p.stock === 0 ? 'text-red-500' : 'text-amber-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-800 truncate">{p.name}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-bold ${p.stock === 0 ? 'text-red-600' : 'text-amber-600'}`}>
+                        {p.stock === 0 ? 'Hết hàng' : `Còn ${p.stock}`}
+                      </p>
+                      <p className="text-[11px] text-gray-400">Ngưỡng: {lowStockThreshold}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-800 truncate">{p.name}</p>
-                    <p className="text-[11px] text-gray-400">{p.sku}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className={`text-sm font-bold ${p.status==='critical' ? 'text-red-600' : 'text-amber-600'}`}>Còn {p.stock}</p>
-                    <p className="text-[11px] text-gray-400">Min: {p.min}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
             <div className="px-5 py-3 border-t border-gray-50">
               <button onClick={() => onNavigate('staffImport')} className="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded cursor-pointer transition-colors">
