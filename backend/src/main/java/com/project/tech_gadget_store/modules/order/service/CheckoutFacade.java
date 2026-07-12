@@ -33,14 +33,15 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.project.tech_gadget_store.config.RabbitMQConfig;
+import com.project.tech_gadget_store.modules.order.event.OrderPlacedMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-
 
 @Slf4j
 @Component
@@ -55,18 +56,20 @@ public class CheckoutFacade {
     private final ProductVariantRepository productVariantRepository;
     private final ProductSerialRepository productSerialRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final RabbitTemplate rabbitTemplate;
     private final List<PaymentStrategy> paymentStrategies;
 
     public CheckoutFacade(UserRepository userRepository,
-                          CustomerRepository customerRepository,
-                          AddressRepository addressRepository,
-                          OrderRepository orderRepository,
-                          PaymentLogRepository paymentLogRepository,
-                          PaymentMethodRepository paymentMethodRepository,
-                          ProductVariantRepository productVariantRepository,
-                          ProductSerialRepository productSerialRepository,
-                          ApplicationEventPublisher eventPublisher,
-                          List<PaymentStrategy> paymentStrategies) {
+            CustomerRepository customerRepository,
+            AddressRepository addressRepository,
+            OrderRepository orderRepository,
+            PaymentLogRepository paymentLogRepository,
+            PaymentMethodRepository paymentMethodRepository,
+            ProductVariantRepository productVariantRepository,
+            ProductSerialRepository productSerialRepository,
+            ApplicationEventPublisher eventPublisher,
+            RabbitTemplate rabbitTemplate,
+            List<PaymentStrategy> paymentStrategies) {
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
         this.addressRepository = addressRepository;
@@ -76,11 +79,13 @@ public class CheckoutFacade {
         this.productVariantRepository = productVariantRepository;
         this.productSerialRepository = productSerialRepository;
         this.eventPublisher = eventPublisher;
+        this.rabbitTemplate = rabbitTemplate;
         this.paymentStrategies = paymentStrategies;
     }
 
     @Transactional
-    public PaymentConfirmResponseDto confirmCheckout(PaymentConfirmRequestDto req, String customerEmail, String clientIp) {
+    public PaymentConfirmResponseDto confirmCheckout(PaymentConfirmRequestDto req, String customerEmail,
+            String clientIp) {
         Customer customer = customerRepository.findByAccountEmail(customerEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
 
@@ -103,10 +108,10 @@ public class CheckoutFacade {
                     item.getProductVariant().getProduct().getId(),
                     item.getProductVariant().getRamGb(),
                     item.getProductVariant().getStorageGb(),
-                    item.getProductVariant().getColor()
-            );
+                    item.getProductVariant().getColor());
             if (availableUnits.size() < item.getQuantity()) {
-                throw new IllegalArgumentException("Some items in your cart are no longer available. Please remove or update them to continue.");
+                throw new IllegalArgumentException(
+                        "Some items in your cart are no longer available. Please remove or update them to continue.");
             }
         }
 
@@ -122,17 +127,20 @@ public class CheckoutFacade {
         }
 
         Address address = addressRepository.findById(req.getAddressId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ giao hàng"));
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ giao hàng"));
 
         // Resolve Payment Method
         PaymentMethod paymentMethod = paymentMethodRepository.findById(req.getPaymentMethodId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phương thức thanh toán không hợp lệ"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Phương thức thanh toán không hợp lệ"));
 
         // Resolve Strategy
         PaymentStrategy activeStrategy = paymentStrategies.stream()
                 .filter(strategy -> strategy.supports(req.getPaymentMethodId()))
                 .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phương thức thanh toán không hỗ trợ"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Phương thức thanh toán không hỗ trợ"));
 
         BigDecimal subtotal = matchedItems.stream()
                 .map(CartItem::calculateSubtotal)
@@ -163,17 +171,15 @@ public class CheckoutFacade {
                         cartItem.getProductVariant().getProduct().getId(),
                         cartItem.getProductVariant().getRamGb(),
                         cartItem.getProductVariant().getStorageGb(),
-                        cartItem.getProductVariant().getColor()
-                );
+                        cartItem.getProductVariant().getColor());
                 if (availableUnits.size() < cartItem.getQuantity()) {
                     throw new IllegalStateException("Sản phẩm không đủ số lượng");
                 }
-                
+
                 List<ProductSerial> serials = productSerialRepository.findByProductVariantIdAndStatus(
                         cartItem.getProductVariant().getId(),
                         SerialStatus.IN_STOCK,
-                        org.springframework.data.domain.PageRequest.of(0, cartItem.getQuantity())
-                );
+                        org.springframework.data.domain.PageRequest.of(0, cartItem.getQuantity()));
 
                 for (int i = 0; i < cartItem.getQuantity(); i++) {
                     ProductVariant unit = availableUnits.get(i);
@@ -182,7 +188,7 @@ public class CheckoutFacade {
                     for (BundleService service : cartItem.getBundleServices()) {
                         orderItem.addBundleService(service);
                     }
-                    
+
                     ProductSerial serial = serials.get(i);
                     serial.setStatus(SerialStatus.SOLD);
                     serial.setInvoiceItemId(orderItem.getId());
@@ -228,13 +234,28 @@ public class CheckoutFacade {
             try {
                 long oldStock = oldStocks.getOrDefault(p.getId(), 0L);
                 long newStock = productVariantRepository.countAvailablePhysicalUnitsByProductId(p.getId());
-                eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ProductStockChangedEvent(p, oldStock, newStock));
+                eventPublisher.publishEvent(
+                        new com.project.tech_gadget_store.modules.notification.event.ProductStockChangedEvent(p,
+                                oldStock, newStock));
             } catch (Exception e) {
                 log.error("Failed to publish ProductStockChangedEvent: {}", e.getMessage(), e);
             }
         }
 
         // Delegate specific payment processing to strategy
-        return activeStrategy.initiatePayment(savedOrder, savedLog, finalAmount, req, clientIp);
+        PaymentConfirmResponseDto response = activeStrategy.initiatePayment(savedOrder, savedLog, finalAmount, req,
+                clientIp);
+
+        // Fan out order-confirmation side effects (email, invoice, notification) via
+        // RabbitMQ —
+        // publish-and-forget so the response above isn't delayed by any of them.
+        try {
+            rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_PLACED_EXCHANGE, "",
+                    new OrderPlacedMessage(savedOrder.getId()));
+        } catch (Exception e) {
+            log.error("Failed to publish OrderPlacedMessage for order {}: {}", savedOrder.getId(), e.getMessage(), e);
+        }
+
+        return response;
     }
 }

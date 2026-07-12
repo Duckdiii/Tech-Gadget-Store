@@ -1,4 +1,3 @@
-import React from 'react'
 
 export default function PayIcon({ type, cls = 'w-4 h-4' }) {
   const t = (type || '').toLowerCase()

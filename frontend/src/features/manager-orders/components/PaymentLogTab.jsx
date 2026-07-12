@@ -1,4 +1,3 @@
-import React from 'react'
 import { useManagerPaymentLogs } from '../hooks/useManagerPaymentLogs'
 import PayIcon from './PayIcon'
 import TxnDetailModal from './TxnDetailModal'

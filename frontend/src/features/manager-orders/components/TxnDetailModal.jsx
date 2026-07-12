@@ -1,4 +1,3 @@
-import React from 'react'
 import PayIcon from './PayIcon'
 
 function fmt(n) {

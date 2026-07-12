@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import { useAuth, ROLE_PAGES } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
+import { ROLE_PAGES } from '../config/constants'
 
 export const ROUTE_MAP = {
   home:               '/',

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useNav, ROUTE_MAP } from '../hooks/useNav'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { useAccessibility } from '../hooks/useAccessibility'
 import { apiFetch } from '../services/api'
 
@@ -131,7 +131,6 @@ export default function StoreNavbar() {
   const [subPanel, setSubPanel] = useState(null)
   const { dark, setDark, font, setFont, noMotion, setNoMotion } = useAccessibility()
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (!userMenu.open) setSubPanel(null) }, [userMenu.open])
 
   useEffect(() => {
@@ -167,7 +166,11 @@ export default function StoreNavbar() {
     apiFetch(`/api/notifications/${id}/read`, { method: 'PATCH' }).catch(() => {})
   }
 
-  const handleSearch = (e) => { e.preventDefault(); onNavigate('list') }
+  const handleSearch = (e) => {
+    e.preventDefault()
+    const q = search.trim()
+    onNavigate('list', { search: q ? `?keyword=${encodeURIComponent(q)}` : '' })
+  }
 
   const location = useLocation()
   const displayName = user?.name || 'Khách hàng'

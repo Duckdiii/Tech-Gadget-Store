@@ -1,4 +1,3 @@
-import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import AuthLayout from '../layouts/AuthLayout'
 import CustomerLayout from '../layouts/CustomerLayout'

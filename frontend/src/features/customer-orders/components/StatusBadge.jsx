@@ -1,4 +1,3 @@
-import React from 'react'
 
 const CUSTOMER_STATUS_CONFIG = {
   completed:  { label: 'Đã hoàn thành', dotColor: '#22C55E', bg: 'rgba(34,197,94,0.08)',  text: '#15803d',  border: 'rgba(34,197,94,0.25)'  },

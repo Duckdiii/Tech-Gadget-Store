@@ -1,17 +1,5 @@
 import { useNav } from '../../../hooks/useNav'
 
-const CHECKERBOARD = {
-  backgroundImage: `
-    linear-gradient(45deg, #c9cdd4 25%, transparent 25%),
-    linear-gradient(-45deg, #c9cdd4 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #c9cdd4 75%),
-    linear-gradient(-45deg, transparent 75%, #c9cdd4 75%)
-  `,
-  backgroundSize: '18px 18px',
-  backgroundPosition: '0 0, 0 9px, 9px -9px, -9px 0px',
-  backgroundColor: '#dde1e7',
-}
-
 function CreditCard({ brand, lastFour, holder, expiry, isDefault, dark }) {
   return (
     <div

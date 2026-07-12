@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 const ORDER_FILTER_TABS = [
   { id: 'all',        label: 'Tất cả' },

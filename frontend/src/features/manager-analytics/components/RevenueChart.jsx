@@ -1,4 +1,3 @@
-import React from 'react'
 
 const CW = 700, CH = 180, CPAD_B = 36
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNav } from '../../../hooks/useNav'
 import StoreNavbar from '../../../components/StoreNavbar'
-import { useAuth } from '../../../context/AuthContext'
+import { useAuth } from '../../../context/useAuth'
 import RecommendationSection from '../components/RecommendationSection'
 import { useForYouRecommendations, useRecentlyViewed, useSuggestionsFromHistory } from '../hooks/useRecommendations'
 

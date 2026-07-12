@@ -1,7 +1,6 @@
-import React from 'react'
 import { Outlet } from 'react-router-dom'
 import StaffSidebar from '../components/StaffSidebar'
-import { ROLE_PAGES } from '../context/AuthContext'
+import { ROLE_PAGES } from '../config/constants'
 
 export default function StaffLayout() {
   const allowedPages = ROLE_PAGES.staff

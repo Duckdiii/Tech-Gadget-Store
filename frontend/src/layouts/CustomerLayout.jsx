@@ -1,12 +1,10 @@
-import React from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import CustomerSidebar from '../components/CustomerSidebar'
 import InvoiceSidebar from '../components/InvoiceSidebar'
 import OrderHistorySidebar from '../components/OrderHistorySidebar'
 import PaymentSidebar from '../components/PaymentSidebar'
 import UserProfileSidebar from '../components/UserProfileSidebar'
 import NullSidebar from '../components/NullSidebar'
-import { ROLE_PAGES } from '../context/AuthContext'
+import { ROLE_PAGES } from '../config/constants'
 
 const SIDEBAR_MAP = {
   invoice:      InvoiceSidebar,

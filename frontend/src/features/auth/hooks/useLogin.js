@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth, ROLE_LANDING } from '../../../context/AuthContext'
+import { useAuth } from '../../../context/useAuth'
+import { ROLE_LANDING } from '../../../config/constants'
 import { authService } from '../services/authService'
 
 export function useLogin({ allowedRoles = ['customer', 'manager', 'staff'] } = {}) { // hook này dùng để xử lý việc đăng nhập, kiểm tra vai trò của người dùng và điều hướng đến trang phù hợp

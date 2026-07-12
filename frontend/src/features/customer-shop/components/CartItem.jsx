@@ -1,4 +1,3 @@
-import React from 'react'
 import QuantityControl from './QuantityControl'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }

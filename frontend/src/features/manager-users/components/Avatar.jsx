@@ -1,4 +1,3 @@
-import React from 'react'
 
 export default function Avatar({ initials, bg, size='md', src, alt }) {
   const sz = {

@@ -1,4 +1,4 @@
-import { useAuth } from '../../../context/AuthContext'
+import { useAuth } from '../../../context/useAuth'
 import { useStaffExport } from '../hooks/useStaffExport'
 import ExportReceiptModal from '../components/ExportReceiptModal'
 import { EXPORT_TYPES } from '../utils/inventoryHelpers'

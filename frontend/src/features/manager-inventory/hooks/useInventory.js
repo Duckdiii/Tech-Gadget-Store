@@ -83,10 +83,6 @@ function buildInventoryProducts(products, logs) {
       configMap[configKey].totalUnits += 1
     })
 
-    const productTotalImported = logs
-      .filter(l => l.type === 'IMPORT' && l.productName?.toLowerCase() === p.name?.toLowerCase())
-      .reduce((sum, item) => sum + item.quantity, 0)
-
     Object.values(configMap).forEach(variant => {
       const { ram, storage, color } = parseDetails(`${variant.ramGb}GB / ${variant.storageGb}GB / ${variant.color}`)
       const key = `${p.name}-${ram}-${storage}-${color}`.toLowerCase()

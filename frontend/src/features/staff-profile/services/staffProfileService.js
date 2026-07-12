@@ -4,7 +4,7 @@
 // theo đúng cấu trúc Feature-Driven, nhưng tạm thời chỉ mô phỏng cục bộ cho đến
 // khi backend bổ sung API tương ứng.
 export const staffProfileService = {
-  async changePassword({ current, next }) {
+  async changePassword() {
     return new Promise((resolve) => setTimeout(resolve, 300))
   },
 }

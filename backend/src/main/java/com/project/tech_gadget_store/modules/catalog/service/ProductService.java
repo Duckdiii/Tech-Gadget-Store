@@ -22,7 +22,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -91,16 +93,66 @@ public class ProductService {
                 .toList();
     }
 
+    /** Max full-text keyword matches considered, before other filters/pagination are applied. */
+    private static final int MAX_KEYWORD_MATCHES = 2000;
+
     public ProductPageResponseDto findProductsByFilter(ProductFilterRequestDto filter) {
-        Specification<Product> spec = buildSpecification(filter);
-        Sort sort = resolveSort(filter.getSort());
         int page = filter.getPage() != null ? filter.getPage() : 0;
         int size = filter.getSize() != null ? filter.getSize() : 20;
-
         int cappedSize = Math.min(size, MAX_PAGE_SIZE);
+
+        if (hasText(filter.getKeyword())) {
+            return findProductsByKeywordSearch(filter, page, cappedSize);
+        }
+
+        Specification<Product> spec = buildSpecification(filter, null);
+        Sort sort = resolveSort(filter.getSort());
         Page<Product> productPage = productRepository.findAll(spec, PageRequest.of(page, cappedSize, sort));
 
-        List<ProductResponseDto> items = productPage.getContent().stream()
+        return toPageResponseDto(productPage.getContent(), page, cappedSize,
+                productPage.getTotalElements(), productPage.getTotalPages());
+    }
+
+    /**
+     * Handles keyword search: ranks matching product ids via full-text search, then combines
+     * that ranked set with the other structured filters (brand/price/RAM/...). If the caller
+     * didn't request an explicit sort, results are ordered by relevance (best match first)
+     * across all pages; an explicit sort (e.g. price_asc) is respected via normal DB pagination.
+     */
+    private ProductPageResponseDto findProductsByKeywordSearch(ProductFilterRequestDto filter, int page, int size) {
+        List<String> rankedIds = productRepository.searchProductIdsByKeyword(filter.getKeyword().trim(), MAX_KEYWORD_MATCHES);
+        if (rankedIds.isEmpty()) {
+            return toPageResponseDto(List.of(), page, size, 0, 0);
+        }
+
+        Specification<Product> spec = buildSpecification(filter, rankedIds);
+
+        if (hasText(filter.getSort())) {
+            Sort sort = resolveSort(filter.getSort());
+            Page<Product> productPage = productRepository.findAll(spec, PageRequest.of(page, size, sort));
+            return toPageResponseDto(productPage.getContent(), page, size,
+                    productPage.getTotalElements(), productPage.getTotalPages());
+        }
+
+        Map<String, Integer> rankIndex = new HashMap<>();
+        for (int i = 0; i < rankedIds.size(); i++) {
+            rankIndex.put(rankedIds.get(i), i);
+        }
+        List<Product> sorted = productRepository.findAll(spec).stream()
+                .sorted(Comparator.comparing(p -> rankIndex.getOrDefault(p.getId(), Integer.MAX_VALUE)))
+                .toList();
+
+        int totalItems = sorted.size();
+        int totalPages = (int) Math.ceil(totalItems / (double) size);
+        int fromIndex = Math.min(page * size, totalItems);
+        int toIndex = Math.min(fromIndex + size, totalItems);
+
+        return toPageResponseDto(sorted.subList(fromIndex, toIndex), page, size, totalItems, totalPages);
+    }
+
+    private ProductPageResponseDto toPageResponseDto(List<Product> products, int page, int size,
+            long totalItems, int totalPages) {
+        List<ProductResponseDto> items = products.stream()
                 .map(product -> productMapper.toProductResponseDto(
                         product,
                         productVariantRepository.findByProductId(product.getId())))
@@ -108,10 +160,10 @@ public class ProductService {
 
         return ProductPageResponseDto.builder()
                 .items(items)
-                .page(productPage.getNumber())
-                .size(productPage.getSize())
-                .totalItems(productPage.getTotalElements())
-                .totalPages(productPage.getTotalPages())
+                .page(page)
+                .size(size)
+                .totalItems(totalItems)
+                .totalPages(totalPages)
                 .build();
     }
 
@@ -119,14 +171,18 @@ public class ProductService {
     // Specification builder
     // -------------------------------------------------------------------------
 
-    private Specification<Product> buildSpecification(ProductFilterRequestDto f) {
+    /**
+     * @param keywordMatchedIds product ids already ranked/filtered by full-text search
+     *     ({@link ProductRepository#searchProductIdsByKeyword}), or {@code null} when no
+     *     keyword search is active.
+     */
+    private Specification<Product> buildSpecification(ProductFilterRequestDto f, List<String> keywordMatchedIds) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.isTrue(root.get("isActive")));
 
-            if (hasText(f.getKeyword())) {
-                predicates.add(cb.like(cb.lower(root.get("name")),
-                        "%" + f.getKeyword().trim().toLowerCase() + "%"));
+            if (keywordMatchedIds != null) {
+                predicates.add(root.get("id").in(keywordMatchedIds));
             }
 
             if (hasItems(f.getBrandNames())) {

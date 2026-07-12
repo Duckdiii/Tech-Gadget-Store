@@ -1,4 +1,3 @@
-import React from 'react'
 
 const MANAGER_STATUS_CONFIG = {
   COMPLETED:             { label: 'Đã hoàn thành', dot: 'bg-green-500',  bg: 'bg-green-100',  text: 'text-green-700'  },

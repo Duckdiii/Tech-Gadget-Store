@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 const CARDS_INIT = [
   { id: 1, type: 'visa',       number: '4111111111111234', holder: 'ALEX JOHNSON', expiry: '12/27', bank: 'Vietcombank',  isDefault: true  },

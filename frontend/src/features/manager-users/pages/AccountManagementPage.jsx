@@ -1,7 +1,4 @@
-import { useState } from 'react'
 import { useAccountManagement } from '../hooks/useAccountManagement'
-import Avatar from '../components/Avatar'
-import InfoRow from '../components/InfoRow'
 import AccountDetailDrawer from '../components/AccountDetailDrawer'
 
 const STATUS_CFG = {

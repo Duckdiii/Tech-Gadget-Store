@@ -1,4 +1,4 @@
-import { useAuth } from '../../../context/AuthContext'
+import { useAuth } from '../../../context/useAuth'
 import { useStaffImport } from '../hooks/useStaffImport'
 import ImportReceiptModal from '../components/ImportReceiptModal'
 import { WAREHOUSES, fmt } from '../utils/inventoryHelpers'

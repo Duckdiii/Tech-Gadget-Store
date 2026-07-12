@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { analyticsService } from '../services/analyticsService'
-import { getToken } from '../../../context/AuthContext'
+import { getToken } from '../../../utils/authToken'
 
 const DEFAULT_FILTER = { period: 'MONTHLY' }
 

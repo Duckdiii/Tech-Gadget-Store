@@ -1,5 +1,4 @@
-import React from 'react'
-import { getToken } from '../../../context/AuthContext'
+import { getToken } from '../../../utils/authToken'
 
 function fmt(n) { return (n || 0).toLocaleString('vi-VN') + ' đ' }
 

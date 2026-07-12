@@ -1,4 +1,3 @@
-import React from 'react'
 import { useInventory } from '../hooks/useInventory'
 import InventoryTab from '../components/InventoryTab'
 import ImportLogTab from '../components/ImportLogTab'

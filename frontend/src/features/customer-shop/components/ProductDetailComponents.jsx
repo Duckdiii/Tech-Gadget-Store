@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
 

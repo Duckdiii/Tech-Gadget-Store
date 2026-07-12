@@ -1,4 +1,4 @@
-import { getToken } from '../context/AuthContext'
+import { getToken } from '../utils/authToken'
 
 export async function apiFetch(path, options = {}) {
   const token = getToken()

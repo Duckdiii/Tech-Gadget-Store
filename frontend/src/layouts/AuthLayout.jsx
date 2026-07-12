@@ -1,6 +1,6 @@
-import React from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
-import { useAuth, ROLE_LANDING } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
+import { ROLE_LANDING } from '../config/constants'
 
 export default function AuthLayout() {
   const { user } = useAuth()

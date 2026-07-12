@@ -1,4 +1,4 @@
-import { useAuth } from '../../../context/AuthContext'
+import { useAuth } from '../../../context/useAuth'
 import { useStaffProfile } from '../hooks/useStaffProfile'
 import ProfileCard from '../components/ProfileCard'
 import ChangePasswordCard from '../components/ChangePasswordCard'

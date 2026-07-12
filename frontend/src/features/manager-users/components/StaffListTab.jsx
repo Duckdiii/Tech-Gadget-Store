@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { apiFetch } from '../../../services/api'
 import Avatar from './Avatar'
 import InfoRow from './InfoRow'

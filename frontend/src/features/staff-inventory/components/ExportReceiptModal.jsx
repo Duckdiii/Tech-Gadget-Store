@@ -1,4 +1,3 @@
-import React from 'react'
 import { fmt, EXPORT_TYPES, EXPORT_TYPE_BADGE, resolveExportType } from '../utils/inventoryHelpers'
 
 export default function ExportReceiptModal({ receipt, onClose }) {

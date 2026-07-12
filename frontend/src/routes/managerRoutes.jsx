@@ -1,4 +1,3 @@
-import React from 'react'
 import { ManagerDashboardPage, RevenueReportPage } from '../features/manager-analytics'
 import { InventoryPage, ImportStockPage, SupplierManagementPage, SupplyOrderPage, ProductManagementPage } from '../features/manager-inventory'
 import { CustomerManagementPage, CustomerDetailPage, StaffManagementPage, AccountManagementPage } from '../features/manager-users'

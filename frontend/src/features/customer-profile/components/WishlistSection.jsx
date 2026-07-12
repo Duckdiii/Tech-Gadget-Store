@@ -1,4 +1,3 @@
-import React from 'react'
 import { useWishlistSection } from '../hooks/useWishlistSection'
 
 const CATEGORY_STYLE = {

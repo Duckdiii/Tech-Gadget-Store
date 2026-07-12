@@ -1,4 +1,3 @@
-import React from 'react'
 
 export default function StockBar({ stock, maxStock, barColor }) {
   const pct = maxStock > 0 ? Math.round((stock / maxStock) * 100) : 0

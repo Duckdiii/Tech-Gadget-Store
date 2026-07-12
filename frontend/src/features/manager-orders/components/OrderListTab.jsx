@@ -1,7 +1,5 @@
-import React from 'react'
 import { useNav } from '../../../hooks/useNav'
 import { useManagerOrders } from '../hooks/useManagerOrders'
-import StatusBadge from './StatusBadge'
 import PayIcon from './PayIcon'
 
 function fmt(n) {

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useRegister } from '../hooks/useRegister'
-import Field, { getFieldCls } from '../components/Field'
+import Field from '../components/Field'
+import { getFieldCls } from '../utils/fieldStyles'
 
 export default function RegisterPage() {
   const navigate = useNavigate()

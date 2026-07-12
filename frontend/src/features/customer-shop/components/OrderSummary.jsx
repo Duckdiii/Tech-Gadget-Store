@@ -1,4 +1,3 @@
-import React from 'react'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
 

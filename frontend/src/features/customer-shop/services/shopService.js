@@ -45,6 +45,10 @@ export const shopService = {
     return axiosClient.get(`/api/products/${productId}`)
   },
 
+  async getProductsByFilter(params) {
+    return axiosClient.get('/api/products/filter', { params })
+  },
+
   // Recommendation APIs
   async getForYouRecommendations() {
     return axiosClient.get('/api/products/for-you')

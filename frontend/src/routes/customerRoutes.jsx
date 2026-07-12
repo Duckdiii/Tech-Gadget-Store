@@ -1,4 +1,3 @@
-import React from 'react'
 import { HomePage, ProductsPage, ProductDetailPage, CartPage, CheckoutPage, InvoicePage } from '../features/customer-shop'
 import { CustomerOrdersPage } from '../features/customer-orders'
 import { UserProfilePage, AddressModalPage, PaymentMethodsPage, AddCardModalPage } from '../features/customer-profile'

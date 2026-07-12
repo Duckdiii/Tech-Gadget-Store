@@ -1,4 +1,3 @@
-import React from 'react'
 import { useMembershipSection } from '../hooks/useMembershipSection'
 
 const TIER_DISPLAY = {

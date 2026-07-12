@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
 import OrderListTab from '../components/OrderListTab'
 import PaymentLogTab from '../components/PaymentLogTab'

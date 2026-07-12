@@ -43,6 +43,19 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
+  # 2b. Cấu hình RabbitMQ (xử lý bất đồng bộ sau khi đặt hàng: email xác nhận, hoá đơn, thông báo)
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 2000
+          max-retries: 3
+
   # 3. Cấu hình SMTP mail (Gmail)
   mail:
     host: ${EMAIL_SMTP_HOST:smtp.gmail.com}

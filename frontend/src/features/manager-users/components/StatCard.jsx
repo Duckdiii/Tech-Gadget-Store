@@ -1,4 +1,3 @@
-import React from 'react'
 
 export default function StatCard({ icon, label, value, valueSuffix, valueClass='text-gray-900', suffixClass='text-gray-500 text-base font-normal', padding='px-4 py-4' }) {
   return (

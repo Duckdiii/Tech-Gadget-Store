@@ -119,4 +119,17 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
         List<String> findTopSellingIdsOverall(
                         @Param("excludeProductIds") List<String> excludeProductIds,
                         @Param("limit") int limit);
+
+        /**
+         * IDs of active products matching a full-text search keyword, ranked by relevance
+         * (best match first). Searches {@code search_vector}, a generated tsvector column
+         * (name weighted 'A', description weighted 'B') with a GIN index — see migration
+         * {@code add_products_search_vector}. See {@link #findFrequentlyBoughtTogetherIds}
+         * for why this returns ids rather than {@code Product} directly.
+         */
+        @Query(value = "SELECT p.id FROM products p " +
+                        "WHERE p.is_active = true AND p.search_vector @@ websearch_to_tsquery('simple', :keyword) " +
+                        "ORDER BY ts_rank(p.search_vector, websearch_to_tsquery('simple', :keyword)) DESC " +
+                        "LIMIT :limit", nativeQuery = true)
+        List<String> searchProductIdsByKeyword(@Param("keyword") String keyword, @Param("limit") int limit);
 }

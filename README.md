@@ -96,6 +96,24 @@ Giống tinh thần ở phần Recommendation — chỉ dùng Redis ở chỗ d�
 
 **Cố tình không dùng Redis** cho cache "Dành cho bạn" (`customer_recommendation_cache`) — đây là bảng Postgres do `ml-service` ghi theo batch offline, bản thân nó đã là kết quả tính sẵn (đọc theo `customerId` có index), không phải dữ liệu cần hết hạn. Giỏ hàng của khách đã đăng nhập cũng giữ nguyên Postgres vì cần bền vững qua nhiều thiết bị/phiên đăng nhập.
 
+## RabbitMQ
+
+Sau khi checkout thành công (trừ kho + lưu đơn + khởi tạo thanh toán xong), `CheckoutFacade` publish 1 message `OrderPlacedMessage` (chỉ chứa `orderId`) vào exchange `order.placed.exchange` rồi trả response ngay — không chờ 3 việc phụ dưới đây xử lý xong:
+
+| Queue | Consumer | Việc làm |
+|---|---|---|
+| `order.email.queue` | `OrderEmailConsumer` | Gửi email xác nhận đặt hàng |
+| `order.invoice.queue` | `OrderInvoiceConsumer` | Tạo trước `Invoice` (khách xem hoá đơn sau này thấy ngay, không phải đợi tạo mới) |
+| `order.notification.queue` | `OrderNotificationConsumer` | Tạo thông báo trong app (chuông thông báo ở `StoreNavbar`) |
+
+Mỗi queue có cấu hình dead-letter (`order.placed.dlx`/`order.placed.dlq`) — message xử lý lỗi liên tục (Spring AMQP tự retry 3 lần, cấu hình ở `spring.rabbitmq.listener.simple.retry` trong `application.yml`) sẽ rơi vào đây thay vì mất, có chỗ xem lại sau.
+
+Chạy RabbitMQ local:
+```bash
+docker run -d -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+```
+Management UI xem queue/exchange trực quan tại `http://localhost:15672` (mặc định `guest`/`guest`). Đổi host/port/user/pass qua `RABBITMQ_HOST`/`RABBITMQ_PORT`/`RABBITMQ_USERNAME`/`RABBITMQ_PASSWORD` nếu cần.
+
 ## Dữ liệu giả (seed data)
 
 Vì chưa có traffic thật, dữ liệu customer/order/catalog được sinh giả **có chủ đích** (không random thuần) qua các seeder ở `backend/src/main/java/.../seed/`, để dữ liệu mô phỏng đúng hành vi mua sắm thật:
@@ -108,9 +126,10 @@ Chạy seed: `./mvnw spring-boot:run -Dspring-boot.run.profiles=seed` (chỉ ch�
 
 ## Chạy dự án
 
-**Backend** (cần `backend/.env` với `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` trỏ tới Postgres, và một Redis đang chạy — mặc định `localhost:6379`, đổi qua `REDIS_HOST`/`REDIS_PORT` nếu cần):
+**Backend** (cần `backend/.env` với `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` trỏ tới Postgres, một Redis đang chạy — mặc định `localhost:6379`, và một RabbitMQ đang chạy — mặc định `localhost:5672`, đổi qua `REDIS_HOST`/`REDIS_PORT`/`RABBITMQ_HOST`/`RABBITMQ_PORT` nếu cần):
 ```bash
 docker run -p 6379:6379 redis   # hoặc Redis cài native
+docker run -d -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 cd backend
 ./mvnw spring-boot:run
 ```

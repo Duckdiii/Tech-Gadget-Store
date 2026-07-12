@@ -1,7 +1,6 @@
-import React from 'react'
 import { Outlet } from 'react-router-dom'
 import TechStoreAdminSidebar from '../components/TechStoreAdminSidebar'
-import { ROLE_PAGES } from '../context/AuthContext'
+import { ROLE_PAGES } from '../config/constants'
 
 export default function ManagerLayout() {
   const allowedPages = ROLE_PAGES.manager

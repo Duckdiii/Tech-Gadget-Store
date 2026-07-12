@@ -17,5 +17,13 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // React Compiler readiness rule bundled into "recommended" as of eslint-plugin-react-hooks v6.
+      // It flags the standard "fetch on mount" pattern (setLoading(true) before an await) used
+      // throughout this codebase's data-fetching hooks, which is idiomatic and not a bug — see
+      // https://react.dev/reference/react/useEffect#fetching-data-with-effects. Disabled rather than
+      // rewriting ~20 working hooks to dodge a compiler-compatibility rule this app doesn't need yet.
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

@@ -1,4 +1,3 @@
-import React from 'react'
 
 function fmt(n) { return (n || 0).toLocaleString('vi-VN') + ' đ' }
 

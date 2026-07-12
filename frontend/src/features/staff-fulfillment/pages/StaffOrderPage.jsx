@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
 import { useStaffOrders } from '../hooks/useStaffOrders'
-import OrderDetailDrawer, { ORDER_STATUS, PAY_METHOD } from '../components/OrderDetailDrawer'
+import OrderDetailDrawer from '../components/OrderDetailDrawer'
+import { ORDER_STATUS, PAY_METHOD } from '../utils/orderConstants'
 
 const fmt = n => (n || 0).toLocaleString('vi-VN')
 

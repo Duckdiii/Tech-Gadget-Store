@@ -1,25 +1,52 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useNav } from '../../../hooks/useNav'
 import StoreNavbar from '../../../components/StoreNavbar'
 import ProductCard from '../components/ProductCard'
 import FilterPanel from '../components/FilterPanel'
 import Pagination from '../components/Pagination'
 import { mapApiProduct } from '../utils/mapApiProduct'
+import { shopService } from '../services/shopService'
 
+const SORT_OPTIONS = [
+  { label: 'Mới nhất', value: '' },
+  { label: 'Giá thấp đến cao', value: 'price_asc' },
+  { label: 'Giá cao đến thấp', value: 'price_desc' },
+]
+
+const PAGE_SIZE = 9
 
 export default function ProductsPage() {
   const onNavigate = useNav()
+  const [searchParams] = useSearchParams()
+  const keyword = searchParams.get('keyword') || ''
+  const [sort, setSort] = useState('')
+  const [page, setPage] = useState(0)
   const [products, setProducts] = useState([])
+  const [totalItems, setTotalItems] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  useEffect(() => { setPage(0) }, [keyword, sort])
+
   useEffect(() => {
-    fetch('/api/products')
-      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json() })
-      .then(data => setProducts((data.items ?? []).map(mapApiProduct)))
+    setLoading(true)
+    setError(null)
+    shopService.getProductsByFilter({
+      keyword: keyword || undefined,
+      sort: sort || undefined,
+      page,
+      size: PAGE_SIZE,
+    })
+      .then(data => {
+        setProducts((data.items ?? []).map(mapApiProduct))
+        setTotalItems(data.totalItems ?? 0)
+        setTotalPages(data.totalPages ?? 0)
+      })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
-  }, [])
+  }, [keyword, sort, page])
 
   return (
     <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
@@ -39,10 +66,12 @@ export default function ProductsPage() {
             Danh mục sản phẩm
           </p>
           <h1 className="text-[28px] font-black text-white" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
-            Điện thoại di động
+            {keyword ? `Kết quả cho "${keyword}"` : 'Điện thoại di động'}
           </h1>
           <p className="text-sm mt-1.5 text-slate-400">
-            Khám phá những mẫu điện thoại mới nhất với các ưu đãi trả góp 0% độc quyền tại TechStore.
+            {keyword
+              ? 'Kết quả được sắp xếp theo mức độ liên quan.'
+              : 'Khám phá những mẫu điện thoại mới nhất với các ưu đãi trả góp 0% độc quyền tại TechStore.'}
           </p>
         </div>
       </div>
@@ -69,22 +98,24 @@ export default function ProductsPage() {
               'Đang tải sản phẩm...'
             ) : (
               <>
-                Phân tích{' '}
+                Tìm thấy{' '}
                 <span className="font-extrabold" style={{ color: 'var(--t1)' }}>
-                  {products.length}
+                  {totalItems}
                 </span>{' '}
-                sản phẩm có sẵn
+                sản phẩm
               </>
             )}
           </p>
           <div className="flex items-center gap-3">
             <span className="text-[12.5px] font-medium" style={{ color: 'var(--t3)' }}>Sắp xếp theo:</span>
             <select
+              value={sort}
+              onChange={e => setSort(e.target.value)}
               className="px-3.5 py-2 text-[12.5px] font-semibold rounded-lg border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-white cursor-pointer"
             >
-              <option>Mới nhất</option>
-              <option>Giá thấp đến cao</option>
-              <option>Giá cao đến thấp</option>
+              {SORT_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -122,7 +153,9 @@ export default function ProductsPage() {
               </div>
             ) : products.length === 0 && !error ? (
               <div className="text-center py-20 text-sm font-semibold" style={{ color: 'var(--t3)' }}>
-                Rất tiếc! Không có sản phẩm nào đáp ứng bộ lọc của bạn.
+                {keyword
+                  ? `Rất tiếc! Không tìm thấy sản phẩm nào khớp với "${keyword}".`
+                  : 'Rất tiếc! Không có sản phẩm nào đáp ứng bộ lọc của bạn.'}
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-6">
@@ -131,8 +164,8 @@ export default function ProductsPage() {
                 ))}
               </div>
             )}
-            {!loading && products.length > 0 && (
-              <Pagination current={1} total={Math.ceil(products.length / 9)} />
+            {!loading && products.length > 0 && totalPages > 1 && (
+              <Pagination current={page + 1} total={totalPages} />
             )}
           </div>
         </div>

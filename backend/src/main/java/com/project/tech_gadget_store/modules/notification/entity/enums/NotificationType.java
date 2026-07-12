@@ -8,5 +8,6 @@ public enum NotificationType {
     PROMOTION,
     LOW_STOCK,
     IMPORT_STOCK,
-    EXPORT_STOCK
+    EXPORT_STOCK,
+    ORDER_PLACED
 }

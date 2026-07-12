@@ -1,4 +1,3 @@
-import React from 'react'
 
 export default function InfoRow({ label, value, labelWidth='w-36' }) {
   return (

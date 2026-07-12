@@ -1,4 +1,3 @@
-import React from 'react'
 
 export default function Pagination({ current, total }) {
   const pages = Array.from({ length: Math.min(total, 3) }, (_, i) => i + 1)

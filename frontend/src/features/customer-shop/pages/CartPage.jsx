@@ -1,4 +1,3 @@
-import React from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
 import { useCart } from '../hooks/useCart'
 import CartItem from '../components/CartItem'

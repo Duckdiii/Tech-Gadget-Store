@@ -1,4 +1,3 @@
-import React from 'react'
 import { fmt } from '../utils/inventoryHelpers'
 
 export default function ImportReceiptModal({ receipt, onClose }) {

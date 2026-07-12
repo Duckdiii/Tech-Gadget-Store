@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getToken } from '../context/AuthContext'
+import { getToken } from '../utils/authToken'
 
 const axiosClient = axios.create({
   headers: {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import StockBar from './StockBar'
 
 const STATUS_CONFIG = {
@@ -7,7 +7,7 @@ const STATUS_CONFIG = {
   het_hang: { label: 'Hết hàng',  bg: 'bg-gray-200',   text: 'text-gray-500',   barColor: 'bg-gray-300' },
 }
 
-export default function InventoryTab({ productsList, loading }) {
+export default function InventoryTab({ productsList }) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
   const [statusFilter, setStatusFilter] = useState('')

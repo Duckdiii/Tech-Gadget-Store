@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 import { useAccountSection } from '../hooks/useAccountSection'
 
 function Field({ label, value, editing, children, verified }) {

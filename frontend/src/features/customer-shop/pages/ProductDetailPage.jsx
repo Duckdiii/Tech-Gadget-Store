@@ -5,8 +5,6 @@ import { useViewerCount } from '../hooks/useViewerCount'
 import RecommendationSection from '../components/RecommendationSection'
 import { useSimilarProducts, useFrequentlyBoughtTogether } from '../hooks/useRecommendations'
 
-function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
-
 import { ProductImages, ProductInfo, SpecsTab } from '../components/ProductDetailComponents'
 
 function ProductTabs({ product }) {

@@ -1,4 +1,3 @@
-import React from 'react'
 
 export default function PasswordInput({ value, onChange, placeholder, disabled }) {
   // vd : value: "123456", onChange: (e) => setValue(e.target.value), placeholder: "Nhập mật khẩu", disabled: false

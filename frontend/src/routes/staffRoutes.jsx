@@ -1,4 +1,3 @@
-import React from 'react'
 import { StaffDashboardPage, StaffOrderPage } from '../features/staff-fulfillment'
 import { StaffImportPage, StaffExportPage, StaffLogPage } from '../features/staff-inventory'
 import { StaffProfilePage } from '../features/staff-profile'

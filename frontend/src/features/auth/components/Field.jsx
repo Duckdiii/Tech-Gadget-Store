@@ -1,4 +1,3 @@
-import React from 'react'
 
 export default function Field({ label, error, children }) {// vd: "Email", error: "Email không hợp lệ", children: <input ... />
   return (
@@ -16,8 +15,4 @@ export default function Field({ label, error, children }) {// vd: "Email", error
       )}
     </div>
   )
-}
-
-export function getFieldCls(error) {
-  return `field-dark w-full px-3.5 py-3 text-[13px]${error ? ' field-error' : ''}`
 }

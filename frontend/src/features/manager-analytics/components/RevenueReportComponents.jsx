@@ -1,4 +1,3 @@
-import React from 'react'
 
 /* ── Area Chart Constants & Helpers ── */
 const CW = 560, CH = 190, CPAD_B = 40
@@ -103,13 +102,12 @@ function segPath(start, end) {
 }
 
 export function DonutChart({ segments }) {
-  let angle = -Math.PI / 2
-  const paths = segments.map((seg) => {
-    const endAngle = angle + (seg.pct || 0) * 2 * Math.PI
-    const d = segPath(angle, endAngle - 0.01)
-    angle = endAngle
-    return { ...seg, d }
-  })
+  const paths = segments.reduce((acc, seg) => {
+    const startAngle = acc.length ? acc[acc.length - 1].endAngle : -Math.PI / 2
+    const endAngle = startAngle + (seg.pct || 0) * 2 * Math.PI
+    const d = segPath(startAngle, endAngle - 0.01)
+    return [...acc, { ...seg, d, endAngle }]
+  }, [])
 
   const majorSeg = segments[0] || { label: 'Trống', pct: 0 }
 
