@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: techstore
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      rabbitmq:
+        image: rabbitmq:3-management
+        ports: ["5672:5672"]
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      MAVEN_OPTS: -Duser.timezone=UTC
+      DB_URL: jdbc:postgresql://localhost:5432/techstore
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: TddZH+sG1lCRN/prDIgKGUWY9TFf8+giDh8HezidvkZn1/1QH3AsEj8E4hwSvo65
+      EMAIL_SMTP_USER: ci@example.com
+      EMAIL_SMTP_PASS: dummy
+      EMAIL_FROM_ADDRESS: ci@example.com
+      MOMO_ENDPOINT: https://dummy.example.com
+      MOMO_PARTNER_CODE: dummy
+      MOMO_ACCESS_KEY: dummy
+      MOMO_SECRET_KEY: dummy
+      MOMO_REDIRECT_URL: https://dummy.example.com
+      MOMO_IPN_URL: https://dummy.example.com
+      VNPAY_URL: https://dummy.example.com
+      VNPAY_TMN_CODE: dummy
+      VNPAY_HASH_SECRET: dummy
+      VNPAY_RETURN_URL: https://dummy.example.com
+      VNPAY_IPN_URL: https://dummy.example.com
+      VNPAY_PAYMENT_URL: https://dummy.example.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Run backend tests
+        working-directory: backend
+        run: ./mvnw test -B
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
