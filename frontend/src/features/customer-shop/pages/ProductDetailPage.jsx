@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
 import { useProductDetail } from '../hooks/useProductDetail'
+import { useViewerCount } from '../hooks/useViewerCount'
 import RecommendationSection from '../components/RecommendationSection'
 import { useSimilarProducts, useFrequentlyBoughtTogether } from '../hooks/useRecommendations'
 
@@ -55,6 +56,7 @@ export default function ProductDetailPage() {
 
   const { products: similarProducts, loading: similarLoading } = useSimilarProducts(product?.id)
   const { products: boughtTogetherProducts, loading: boughtTogetherLoading } = useFrequentlyBoughtTogether(product?.id)
+  const { viewerCount } = useViewerCount(product?.id)
 
   if (loading) {
     return (
@@ -107,6 +109,7 @@ export default function ProductDetailPage() {
               setSelectedColor={setSelectedColor}
               adding={adding}
               handleAddToCart={handleAddToCart}
+              viewerCount={viewerCount}
             />
           </div>
         </div>

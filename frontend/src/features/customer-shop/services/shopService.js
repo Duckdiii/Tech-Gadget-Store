@@ -69,4 +69,8 @@ export const shopService = {
   async getSuggestionsFromHistory() {
     return axiosClient.get('/api/products/suggestions-from-history')
   },
+
+  async getViewerCount(productId, visitorId) {
+    return axiosClient.get(`/api/products/${productId}/viewers?visitorId=${visitorId}`)
+  },
 }

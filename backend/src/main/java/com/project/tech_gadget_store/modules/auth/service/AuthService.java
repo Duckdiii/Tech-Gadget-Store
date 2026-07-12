@@ -14,9 +14,10 @@ import com.project.tech_gadget_store.modules.loyalty.entity.Membership;
 import com.project.tech_gadget_store.modules.loyalty.entity.enums.MembershipTier;
 import com.project.tech_gadget_store.modules.loyalty.repository.MembershipRepository;
 import com.project.tech_gadget_store.modules.notification.service.EmailService;
-import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,12 +29,16 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class AuthService {
 
+    private static final String RESET_TOKEN_PREFIX = "password-reset:";
+    private static final Duration RESET_TOKEN_TTL = Duration.ofHours(1);
+
     private final AccountRepository accountRepository;
     private final CustomerRepository customerRepository;
     private final MembershipRepository membershipRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailService emailService;
+    private final StringRedisTemplate redisTemplate;
     private final String frontendUrl;
 
     public AuthService(AccountRepository accountRepository,
@@ -42,6 +47,7 @@ public class AuthService {
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             EmailService emailService,
+            StringRedisTemplate redisTemplate,
             @Value("${app.frontend-url}") String frontendUrl) {
         this.accountRepository = accountRepository;
         this.customerRepository = customerRepository;
@@ -49,6 +55,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailService = emailService;
+        this.redisTemplate = redisTemplate;
         this.frontendUrl = frontendUrl;
     }
 
@@ -76,19 +83,16 @@ public class AuthService {
         return new LoginResponseDto(token, account.getEmail(), customer.getFullName(), "CUSTOMER");
     }
 
-    @Transactional
     public void forgotPassword(ForgotPasswordRequestDto req) {
         Account account = accountRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản với email này."));
 
         String token = UUID.randomUUID().toString();
-        account.setResetToken(token);
-        account.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
-        accountRepository.save(account);
+        redisTemplate.opsForValue().set(RESET_TOKEN_PREFIX + token, account.getId(), RESET_TOKEN_TTL);
 
         String resetLink = frontendUrl + "/reset-password?token=" + token;
         String subject = "[TechStore] Khôi phục mật khẩu";
-        String body = "Xin chào,\n\nBạn đã yêu cầu khôi phục mật khẩu. Vui lòng bấm vào liên kết bên dưới để đặt lại mật khẩu mới:\n" 
+        String body = "Xin chào,\n\nBạn đã yêu cầu khôi phục mật khẩu. Vui lòng bấm vào liên kết bên dưới để đặt lại mật khẩu mới:\n"
                 + resetLink + "\n\nLiên kết này có hiệu lực trong vòng 1 giờ.\nNếu bạn không yêu cầu này, vui lòng bỏ qua email này.\n\nTrân trọng,\nTechStore Team";
 
         emailService.send(req.getEmail(), subject, body);
@@ -96,16 +100,17 @@ public class AuthService {
 
     @Transactional
     public void resetPassword(ResetPasswordRequestDto req) {
-        Account account = accountRepository.findByResetToken(req.getToken())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã khôi phục không hợp lệ hoặc đã hết hạn."));
-
-        if (account.getResetTokenExpiry() == null || account.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã khôi phục đã hết hạn.");
+        String key = RESET_TOKEN_PREFIX + req.getToken();
+        String accountId = redisTemplate.opsForValue().get(key);
+        if (accountId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã khôi phục không hợp lệ hoặc đã hết hạn.");
         }
 
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã khôi phục không hợp lệ hoặc đã hết hạn."));
+
         account.changePassword(passwordEncoder.encode(req.getPassword()));
-        account.setResetToken(null);
-        account.setResetTokenExpiry(null);
         accountRepository.save(account);
+        redisTemplate.delete(key);
     }
 }

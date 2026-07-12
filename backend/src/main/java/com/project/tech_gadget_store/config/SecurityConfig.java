@@ -26,8 +26,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -40,8 +38,8 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
-                          AuthRateLimitFilter authRateLimitFilter,
-                          CustomUserDetailsService userDetailsService) {
+            AuthRateLimitFilter authRateLimitFilter,
+            CustomUserDetailsService userDetailsService) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.authRateLimitFilter = authRateLimitFilter;
         this.userDetailsService = userDetailsService;
@@ -91,9 +89,11 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/products/for-you", "/api/products/recently-viewed",
-                                        "/api/products/suggestions-from-history").hasRole("CUSTOMER")
+                                "/api/products/suggestions-from-history")
+                        .hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/payment/vnpay/return", "/api/payment/momo/return").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payment/vnpay/return", "/api/payment/momo/return")
+                        .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()

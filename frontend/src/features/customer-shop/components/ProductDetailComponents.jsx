@@ -45,7 +45,8 @@ export function ProductInfo({
   selectedColor,
   setSelectedColor,
   adding,
-  handleAddToCart
+  handleAddToCart,
+  viewerCount = 0
 }) {
   // Extract option pools
   const rams = Array.from(new Set(product.variants.map(v => v.ramGb))).filter(Boolean).sort((a, b) => a - b)
@@ -78,6 +79,16 @@ export function ProductInfo({
         <span className="text-sm line-through" style={{ color: 'var(--t3)' }}>{fmt(originalPrice)}</span>
         <span className="text-xs font-bold px-2 py-0.5" style={{ color: 'var(--ok)', backgroundColor: 'rgba(34,197,94,0.08)', borderRadius: '4px' }}>Tiết kiệm 12%</span>
       </div>
+
+      {viewerCount >= 2 && (
+        <div className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--accent)' }}>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          {viewerCount} người đang xem sản phẩm này
+        </div>
+      )}
 
       {/* Variant RAM selections */}
       {rams.length > 0 && (

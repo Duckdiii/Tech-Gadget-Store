@@ -8,9 +8,11 @@ import com.project.tech_gadget_store.modules.catalog.dto.response.ProductDetailR
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductPageResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.modules.catalog.service.ProductService;
+import com.project.tech_gadget_store.modules.catalog.service.ProductViewerTrackerService;
 import com.project.tech_gadget_store.modules.catalog.service.RecommendationService;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +31,17 @@ public class ProductController {
 
     private final ProductService productService;
     private final RecommendationService recommendationService;
+    private final ProductViewerTrackerService productViewerTrackerService;
     private final CustomerRepository customerRepository;
 
     public ProductController(
             ProductService productService,
             RecommendationService recommendationService,
+            ProductViewerTrackerService productViewerTrackerService,
             CustomerRepository customerRepository) {
         this.productService = productService;
         this.recommendationService = recommendationService;
+        this.productViewerTrackerService = productViewerTrackerService;
         this.customerRepository = customerRepository;
     }
 
@@ -51,6 +56,13 @@ public class ProductController {
     public ResponseEntity<ProductDetailResponseDto> getById(@PathVariable String id, Authentication authentication) {
         recordViewIfLoggedIn(id, authentication);
         return ResponseEntity.ok(productService.viewDetailProduct(id));
+    }
+
+    @GetMapping("/{id}/viewers")
+    public ResponseEntity<Map<String, Long>> getViewerCount(
+            @PathVariable String id, @RequestParam String visitorId) {
+        long count = productViewerTrackerService.recordViewerAndCount(id, visitorId);
+        return ResponseEntity.ok(Map.of("count", count));
     }
 
     @GetMapping("/flash-sale-today")
