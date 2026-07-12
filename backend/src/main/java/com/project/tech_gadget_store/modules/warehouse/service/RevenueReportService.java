@@ -20,6 +20,7 @@ import com.project.tech_gadget_store.modules.payment.entity.VNPayPaymentMethod;
 import com.project.tech_gadget_store.modules.warehouse.dto.request.RevenueReportFilterRequestDto;
 import com.project.tech_gadget_store.modules.warehouse.dto.response.RevenueReportResponseDto;
 import com.project.tech_gadget_store.modules.warehouse.dto.response.RevenueTrendPointDto;
+import com.project.tech_gadget_store.modules.warehouse.repository.ImportLogItemRepository;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -41,9 +42,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class RevenueReportService {
 
     private final OrderRepository orderRepository;
+    private final ImportLogItemRepository importLogItemRepository;
 
-    public RevenueReportService(OrderRepository orderRepository) {
+    public RevenueReportService(OrderRepository orderRepository, ImportLogItemRepository importLogItemRepository) {
         this.orderRepository = orderRepository;
+        this.importLogItemRepository = importLogItemRepository;
     }
 
     public RevenueReportResponseDto getRevenueReport(RevenueReportFilterRequestDto filter) {
@@ -109,6 +112,28 @@ public class RevenueReportService {
                         !o.getOrderDate().isAfter(finalEnd))
                 .collect(Collectors.toList());
 
+        // Cancellation rate: cancelled/refunded vs. all orders placed in the same date range
+        // (not just completed ones), since a cancelled order never reaches COMPLETED.
+        List<Order> ordersInRange = orders.stream()
+                .filter(o -> o.getOrderDate() != null &&
+                        !o.getOrderDate().isBefore(finalStart) &&
+                        !o.getOrderDate().isAfter(finalEnd))
+                .collect(Collectors.toList());
+        long cancelledOrRefundedCount = ordersInRange.stream()
+                .filter(o -> o.getOrderStatus() == OrderStatus.CANCELLED || o.getOrderStatus() == OrderStatus.REFUNDED)
+                .count();
+        Double cancellationRate = ordersInRange.isEmpty()
+                ? 0.0
+                : (cancelledOrRefundedCount * 100.0) / ordersInRange.size();
+
+        // Average import cost per variant, for the top-profit-products report below.
+        Map<String, BigDecimal> avgCostByVariantId = new HashMap<>();
+        for (Object[] row : importLogItemRepository.findAverageImportPricePerVariant()) {
+            String variantId = (String) row[0];
+            Number avgPrice = (Number) row[1];
+            avgCostByVariantId.put(variantId, BigDecimal.valueOf(avgPrice.doubleValue()));
+        }
+
         // Process matching order items based on filters
         List<MatchedItem> matchedItems = new ArrayList<>();
         Set<String> distinctOrderIds = new HashSet<>();
@@ -164,7 +189,9 @@ public class RevenueReportService {
                     .revenueByCategory(Collections.emptyList())
                     .revenueByBrand(Collections.emptyList())
                     .topSellingProducts(Collections.emptyList())
+                    .topProfitProducts(Collections.emptyList())
                     .revenueByPaymentMethod(Collections.emptyList())
+                    .cancellationRate(cancellationRate)
                     .build();
         }
 
@@ -208,7 +235,7 @@ public class RevenueReportService {
                 .sorted(Comparator.comparing(BrandRevenueDto::getRevenue).reversed())
                 .collect(Collectors.toList());
 
-        // 5. Top 5 Selling Products
+        // 5. Top 5 Selling Products (+ profit, when import cost data is available)
         Map<Product, ProductSalesAggregate> productSalesMap = new HashMap<>();
         for (MatchedItem mi : matchedItems) {
             Product prod = mi.product;
@@ -218,6 +245,12 @@ public class RevenueReportService {
             ProductSalesAggregate agg = productSalesMap.computeIfAbsent(prod, k -> new ProductSalesAggregate());
             agg.quantitySold += qty;
             agg.revenue = agg.revenue.add(rev);
+
+            BigDecimal avgCost = avgCostByVariantId.get(mi.item.getProductVariant().getId());
+            if (avgCost != null) {
+                agg.profit = agg.profit.add(rev.subtract(avgCost.multiply(BigDecimal.valueOf(qty))));
+                agg.hasCostData = true;
+            }
         }
         List<ProductSalesDto> topSellingProducts = productSalesMap.entrySet().stream()
                 .map(e -> ProductSalesDto.builder()
@@ -225,12 +258,27 @@ public class RevenueReportService {
                         .productName(e.getKey().getName())
                         .quantitySold(e.getValue().quantitySold)
                         .revenue(e.getValue().revenue)
+                        .profit(e.getValue().hasCostData ? e.getValue().profit : null)
                         .build())
                 .sorted((a, b) -> {
                     int cmp = Integer.compare(b.getQuantitySold(), a.getQuantitySold());
                     if (cmp != 0) return cmp;
                     return b.getRevenue().compareTo(a.getRevenue());
                 })
+                .limit(5)
+                .collect(Collectors.toList());
+
+        // 5b. Top 5 Most Profitable Products (only products with known import cost)
+        List<ProductSalesDto> topProfitProducts = productSalesMap.entrySet().stream()
+                .filter(e -> e.getValue().hasCostData)
+                .map(e -> ProductSalesDto.builder()
+                        .productId(e.getKey().getId())
+                        .productName(e.getKey().getName())
+                        .quantitySold(e.getValue().quantitySold)
+                        .revenue(e.getValue().revenue)
+                        .profit(e.getValue().profit)
+                        .build())
+                .sorted(Comparator.comparing(ProductSalesDto::getProfit).reversed())
                 .limit(5)
                 .collect(Collectors.toList());
 
@@ -264,7 +312,9 @@ public class RevenueReportService {
                 .revenueByCategory(revenueByCategory)
                 .revenueByBrand(revenueByBrand)
                 .topSellingProducts(topSellingProducts)
+                .topProfitProducts(topProfitProducts)
                 .revenueByPaymentMethod(revenueByPaymentMethod)
+                .cancellationRate(cancellationRate)
                 .build();
     }
 
@@ -277,6 +327,7 @@ public class RevenueReportService {
         sb.append("Time Period,").append(filter.getPeriod() != null ? filter.getPeriod() : "MONTHLY").append("\n");
         sb.append("Total Revenue,").append(report.getTotalRevenue()).append("\n");
         sb.append("Total Completed Orders,").append(report.getTotalOrders()).append("\n");
+        sb.append("Cancellation Rate (%),").append(report.getCancellationRate()).append("\n");
         if (report.getMessage() != null) {
             sb.append("Message,").append(escapeCsv(report.getMessage())).append("\n");
         }
@@ -318,6 +369,18 @@ public class RevenueReportService {
               .append(escapeCsv(ps.getProductName())).append(",")
               .append(ps.getQuantitySold()).append(",")
               .append(ps.getRevenue()).append("\n");
+        }
+        sb.append("\n");
+
+        // 5b. Top Profit Products
+        sb.append("TOP 5 MOST PROFITABLE PRODUCTS\n");
+        sb.append("Product ID,Product Name,Quantity Sold,Revenue,Profit\n");
+        for (ProductSalesDto ps : report.getTopProfitProducts()) {
+            sb.append(escapeCsv(ps.getProductId())).append(",")
+              .append(escapeCsv(ps.getProductName())).append(",")
+              .append(ps.getQuantitySold()).append(",")
+              .append(ps.getRevenue()).append(",")
+              .append(ps.getProfit()).append("\n");
         }
         sb.append("\n");
 
@@ -439,6 +502,8 @@ public class RevenueReportService {
     private static class ProductSalesAggregate {
         int quantitySold = 0;
         BigDecimal revenue = BigDecimal.ZERO;
+        BigDecimal profit = BigDecimal.ZERO;
+        boolean hasCostData = false;
     }
 
     private static class PaymentMethodRevenueAggregate {

@@ -13,6 +13,7 @@ import com.project.tech_gadget_store.modules.payment.entity.MomoPaymentMethod;
 import com.project.tech_gadget_store.modules.payment.entity.VNPayPaymentMethod;
 import com.project.tech_gadget_store.modules.warehouse.dto.request.RevenueReportFilterRequestDto;
 import com.project.tech_gadget_store.modules.warehouse.dto.response.RevenueReportResponseDto;
+import com.project.tech_gadget_store.modules.warehouse.repository.ImportLogItemRepository;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -37,6 +38,9 @@ class RevenueReportServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private ImportLogItemRepository importLogItemRepository;
+
     @InjectMocks
     private RevenueReportService revenueReportService;
 
@@ -51,6 +55,8 @@ class RevenueReportServiceTest {
     private Brand brandDell;
 
     void setUpMocks() {
+        lenient().when(importLogItemRepository.findAverageImportPricePerVariant()).thenReturn(Collections.emptyList());
+
         // Categories & Brands
         categoryPhone = mock(Category.class);
         lenient().when(categoryPhone.getId()).thenReturn("cat-phone");

@@ -5,8 +5,15 @@ function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
 
 import { AreaChart, DonutChart, TrendBadge } from '../components/RevenueReportComponents'
 
+const PERIOD_OPTIONS = [
+  { value: 'DAILY', label: 'Hôm nay' },
+  { value: 'WEEKLY', label: 'Tuần này' },
+  { value: 'MONTHLY', label: 'Tháng này' },
+  { value: 'CUSTOM', label: 'Tùy chỉnh' },
+]
+
 export default function RevenueReportPage() {
-  const { data, loading, handleExport } = useRevenueReport()
+  const { data, loading, filter, setFilter, handleExport } = useRevenueReport()
 
   if (loading) {
     return (
@@ -24,7 +31,17 @@ export default function RevenueReportPage() {
     totalOrders: 0,
     trend: [],
     revenueByCategory: [],
-    topSellingProducts: []
+    topSellingProducts: [],
+    topProfitProducts: [],
+    cancellationRate: 0,
+  }
+
+  const handlePeriodChange = (period) => {
+    setFilter(period === 'CUSTOM' ? { ...filter, period } : { period })
+  }
+
+  const handleCustomDateChange = (key, value) => {
+    setFilter((f) => ({ ...f, period: 'CUSTOM', [key]: value }))
   }
 
   const kpis = [
@@ -84,6 +101,18 @@ export default function RevenueReportPage() {
         </svg>
       ),
     },
+    {
+      label: 'TỶ LỆ HỦY ĐƠN',
+      value: `${(report.cancellationRate || 0).toFixed(1)}%`,
+      caption: 'Đơn bị hủy hoặc hoàn tiền',
+      iconBg: 'bg-red-50',
+      iconColor: 'text-red-500',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      ),
+    },
   ]
 
   // Parse segments for Donut chart
@@ -116,8 +145,40 @@ export default function RevenueReportPage() {
           </div>
         </div>
 
+        {/* Period selector */}
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1 bg-gray-100 p-1 rounded">
+            {PERIOD_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => handlePeriodChange(opt.value)}
+                className={`px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer ${filter.period === opt.value ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          {filter.period === 'CUSTOM' && (
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={filter.startDate || ''}
+                onChange={(e) => handleCustomDateChange('startDate', e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1.5 text-xs text-gray-700"
+              />
+              <span className="text-xs text-gray-400">đến</span>
+              <input
+                type="date"
+                value={filter.endDate || ''}
+                onChange={(e) => handleCustomDateChange('endDate', e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1.5 text-xs text-gray-700"
+              />
+            </div>
+          )}
+        </div>
+
         {/* KPI Cards */}
-        <div className="grid grid-cols-4 gap-5">
+        <div className="grid grid-cols-5 gap-5">
           {kpis.map((card, i) => (
             <div key={i} className="bg-white rounded border border-gray-200 px-5 py-5">
               <div className="flex items-start justify-between mb-3">
@@ -127,7 +188,11 @@ export default function RevenueReportPage() {
                 </span>
               </div>
               <p className="text-2xl font-black text-gray-900 leading-tight mb-3">{card.value}</p>
-              <TrendBadge trend={card.trend} trendExtra={card.trendExtra} trendUp={card.trendUp} />
+              {card.caption ? (
+                <p className="text-[11px] text-gray-400">{card.caption}</p>
+              ) : (
+                <TrendBadge trend={card.trend} trendExtra={card.trendExtra} trendUp={card.trendUp} />
+              )}
             </div>
           ))}
         </div>
@@ -201,6 +266,42 @@ export default function RevenueReportPage() {
                 <span className="text-sm text-gray-700 font-medium">{row.quantitySold}</span>
                 <span className="text-sm font-bold text-[#E8420A] text-right">
                   {fmt(row.revenue)}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Top Profit Products */}
+        <div className="bg-white rounded border border-gray-200">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <h2 className="text-base font-bold text-gray-800">Sản phẩm lợi nhuận cao nhất</h2>
+          </div>
+
+          {/* Table header */}
+          <div className="grid grid-cols-[3rem_1fr_10rem_12rem] gap-3 px-5 py-3 border-b border-gray-100">
+            {['STT', 'TÊN SẢN PHẨM', 'SỐ LƯỢNG ĐÃ BÁN', 'LỢI NHUẬN'].map((h) => (
+              <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase text-left last:text-right">
+                {h}
+              </span>
+            ))}
+          </div>
+
+          {/* Table rows */}
+          {report.topProfitProducts.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              Chưa có dữ liệu giá vốn (nhập kho) để tính lợi nhuận
+            </div>
+          ) : (
+            report.topProfitProducts.map((row, idx) => (
+              <div key={row.productId} className="grid grid-cols-[3rem_1fr_10rem_12rem] gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left">
+                <span className="text-sm text-gray-500 font-medium">{idx + 1}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-gray-800">{row.productName}</span>
+                </div>
+                <span className="text-sm text-gray-700 font-medium">{row.quantitySold}</span>
+                <span className="text-sm font-bold text-[#E8420A] text-right">
+                  {fmt(row.profit)}
                 </span>
               </div>
             ))

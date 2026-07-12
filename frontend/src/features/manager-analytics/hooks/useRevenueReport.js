@@ -1,31 +1,35 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { analyticsService } from '../services/analyticsService'
 import { getToken } from '../../../context/AuthContext'
 
+const DEFAULT_FILTER = { period: 'MONTHLY' }
+
 export function useRevenueReport() {
+  const [filter, setFilter] = useState(DEFAULT_FILTER)
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await analyticsService.getRevenueReport()
+      const res = await analyticsService.getRevenueReport(filter)
       setData(res)
     } catch (e) {
       console.error('Lỗi tải báo cáo doanh thu:', e)
     } finally {
       setLoading(false)
     }
-  }
+  }, [filter])
 
   useEffect(() => {
     fetchReport()
-  }, [])
+  }, [fetchReport])
 
   const handleExport = async () => {
     try {
       const token = getToken()
-      const res = await fetch('/api/manager/revenue-report/export', {
+      const query = analyticsService.buildExportQuery(filter)
+      const res = await fetch(`/api/manager/revenue-report/export${query}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
       if (!res.ok) throw new Error('Lỗi xuất báo cáo')
@@ -46,6 +50,8 @@ export function useRevenueReport() {
   return {
     data,
     loading,
+    filter,
+    setFilter,
     handleExport,
     fetchReport,
   }

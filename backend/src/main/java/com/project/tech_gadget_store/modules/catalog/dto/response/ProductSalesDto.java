@@ -17,4 +17,5 @@ public class ProductSalesDto {
     private String productName;
     private int quantitySold;
     private BigDecimal revenue;
+    private BigDecimal profit;
 }

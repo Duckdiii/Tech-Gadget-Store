@@ -25,5 +25,7 @@ public class RevenueReportResponseDto {
     private List<CategoryRevenueDto> revenueByCategory;
     private List<BrandRevenueDto> revenueByBrand;
     private List<ProductSalesDto> topSellingProducts;
+    private List<ProductSalesDto> topProfitProducts;
     private List<PaymentMethodRevenueDto> revenueByPaymentMethod;
+    private Double cancellationRate;
 }
