@@ -33,9 +33,11 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.project.tech_gadget_store.common.logging.CorrelationIdFilter;
 import com.project.tech_gadget_store.config.RabbitMQConfig;
 import com.project.tech_gadget_store.modules.order.event.OrderPlacedMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -250,8 +252,15 @@ public class CheckoutFacade {
         // RabbitMQ —
         // publish-and-forget so the response above isn't delayed by any of them.
         try {
+            String correlationId = MDC.get(CorrelationIdFilter.MDC_KEY);
             rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_PLACED_EXCHANGE, "",
-                    new OrderPlacedMessage(savedOrder.getId()));
+                    new OrderPlacedMessage(savedOrder.getId()),
+                    message -> {
+                        if (correlationId != null) {
+                            message.getMessageProperties().setCorrelationId(correlationId);
+                        }
+                        return message;
+                    });
         } catch (Exception e) {
             log.error("Failed to publish OrderPlacedMessage for order {}: {}", savedOrder.getId(), e.getMessage(), e);
         }

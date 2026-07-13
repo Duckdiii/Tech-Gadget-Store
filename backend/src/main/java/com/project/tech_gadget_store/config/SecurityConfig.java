@@ -101,6 +101,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                        .requestMatchers("/actuator/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.POST, "/api/payment/momo/ipn").permitAll()
                         .requestMatchers("/api/manager/warehouse-logs/**").hasAnyRole("STAFF", "MANAGER")
                         .requestMatchers("/api/manager/orders/**").hasAnyRole("STAFF", "MANAGER")

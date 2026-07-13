@@ -1,6 +1,29 @@
 server:
   port: 8080 # Port để chạy API cục bộ (http://localhost:8080)
 
+logging:
+  pattern:
+    # Nhúng correlationId (đặt ở CorrelationIdFilter) vào mọi dòng log, không
+    # cần thêm thủ công vào từng câu log riêng lẻ.
+    level: "%5p [%X{correlationId:-}]"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Chỉ bật đúng những gì cần (health cho load balancer/Docker healthcheck,
+        # metrics để theo dõi vận hành) — không bật env/beans vì có thể lộ cấu hình nội bộ.
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    mail:
+      # Actuator mặc định tự thử kết nối SMTP thật để đánh giá "khoẻ" — với
+      # SMTP credentials là giá trị demo giả (xem docker-compose.yml), kiểm tra
+      # này luôn fail dù ứng dụng vẫn hoạt động bình thường, nên tắt riêng nó.
+      enabled: false
+
 momo:
   endpoint: ${MOMO_ENDPOINT}
   partner-code: ${MOMO_PARTNER_CODE}
