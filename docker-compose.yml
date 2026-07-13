@@ -1,0 +1,111 @@
+services: #danh sách các container cần dựng
+#-----------------------------------------------------------------------------------------------------------------------------
+  postgres: #container 1
+    image: postgres:16 #Dùng image có sẵn từ Docker Hub
+    environment: #truyền biến môi trường vào container, Lần đầu tiên container này chạng sẽ tạo ra DB và user theo các biến này
+      POSTGRES_DB: techstore
+      POSTGRES_USER: techstore
+      POSTGRES_PASSWORD: techstore
+    ports:
+      - "5432:5432" #5432 (cổng chuẩn của Postgres)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data #là đường dẫn bên trong container — nơi Postgres thật sự ghi file dữ liệu xuống đĩa. postgres_data là tên 1 "kho lưu trữ" do Docker quản lý
+    healthcheck: #cơ chế để Docker biết "Postgres đã thật sự sẵn sàng nhận kết nối chưa"
+      test: ["CMD-SHELL", "pg_isready -U techstore"] #lệnh kiểm tra Postgres đã sẵn sàng chưa, nếu chưa thì Docker sẽ coi container này "chết" (unhealthy)
+      interval: 5s #cứ mỗi 5 giây, Docker chạy lại lệnh kiểm tra 1 lần
+      timeout: 5s #nếu quá 5 giây mà chưa có kết quả thì coi như thất bại
+      retries: 10 #nếu thất bại 10 lần liên tiếp thì coi như container này "chết" (unhealthy)
+
+  redis: #container 2
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq: #container 3
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+#-----------------------------------------------------------------------------------------------------------------------------
+  backend:
+  #vì đây là code của chính bạn, không có sẵn trên Docker Hub
+    build: 
+      context: ./backend #vào thư mục ./backend, tìm file Dockerfile ở đó, và coi toàn bộ nội dung thư mục này là nguyên liệu để build
+    depends_on: #Backend cần cả 3 thứ này sẵn sàng trước khi khởi động
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      #kích hoạt seed dữ liệu
+      #là cách viết qua biến môi trường của đúng flag -Dspring-boot.run.profiles=seed
+      #Spring Boot tự nhận biến SPRING_PROFILES_ACTIVE và hiểu là "hãy bật profile seed", kích hoạt CatalogSeeder/CustomerOrderSeeder chạy nếu DB đang rỗng.
+      SPRING_PROFILES_ACTIVE: seed
+      #thông tin kết nối 3 hạ tầng
+      DB_URL: jdbc:postgresql://postgres:5432/techstore
+      DB_USERNAME: techstore
+      DB_PASSWORD: techstore
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+      #giá trị giả để Spring khởi động đủ bean, không dùng thật
+      JWT_SECRET: RgNcS3lz326YXPzSUy8CyKgU14JQtzM49Y5/mCpXTazRgeVzKtTdwnP7UyEBN8FI
+      EMAIL_SMTP_USER: demo@example.com
+      EMAIL_SMTP_PASS: demo
+      EMAIL_FROM_ADDRESS: demo@example.com
+      MOMO_ENDPOINT: https://dummy.example.com
+      MOMO_PARTNER_CODE: dummy
+      MOMO_ACCESS_KEY: dummy
+      MOMO_SECRET_KEY: dummy
+      MOMO_REDIRECT_URL: https://dummy.example.com
+      MOMO_IPN_URL: https://dummy.example.com
+      VNPAY_URL: https://dummy.example.com
+      VNPAY_TMN_CODE: dummy
+      VNPAY_HASH_SECRET: dummy
+      VNPAY_RETURN_URL: https://dummy.example.com
+      VNPAY_IPN_URL: https://dummy.example.com
+      VNPAY_PAYMENT_URL: https://dummy.example.com
+    ports:
+      # Map ra 8081 vì 8080 có thể đã bị chiếm bởi tiến trình khác trên máy host
+      # (không ảnh hưởng cổng nội bộ 8080 mà Nginx proxy /api tới, xem nginx.conf).
+      - "8081:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend #đợi tới khi container backend đã được khởi động (start)
+    ports:
+    #Cổng 80 là cổng chuẩn HTTP mà Nginx lắng nghe bên trong container
+      - "3000:80" #mở cổng ra ngoài máy host - "cổng-trên-máy-bạn:cổng-bên-trong-container"
+
+  ml-service:
+    build:
+      context: ./ml-service
+    # service nào có profiles: ["ml"] sẽ bị bỏ qua hoàn toàn khi bạn gõ lệnh mặc định — nó chỉ chạy khi bạn chủ động gọi kèm cờ --profile ml
+    profiles: ["ml"] # 
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/techstore
+      DB_USERNAME: techstore
+      DB_PASSWORD: techstore
+
+volumes:
+  postgres_data:

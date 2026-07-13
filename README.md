@@ -126,6 +126,27 @@ Chạy seed: `./mvnw spring-boot:run -Dspring-boot.run.profiles=seed` (chỉ ch�
 
 ## Chạy dự án
 
+### Chạy nhanh bằng Docker Compose (khuyến nghị nếu chỉ muốn xem thử)
+
+Chỉ cần cài [Docker](https://www.docker.com/) — không cần cài Java/Node/Python hay tự tạo `.env`. Toàn bộ stack (Postgres, Redis, RabbitMQ, backend, frontend) tự dựng và tự sinh dữ liệu mẫu (150 sản phẩm, 300 khách hàng theo persona) ngay lần chạy đầu:
+
+```bash
+docker compose up --build
+```
+
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Backend API: `http://localhost:8081` (map ra 8081 vì 8080 dễ bị tiến trình khác trên máy chiếm — đổi lại trong `docker-compose.yml` nếu muốn)
+- RabbitMQ management UI: `http://localhost:15672` (`guest`/`guest`)
+
+Postgres ở đây là một database **local, rỗng, riêng biệt** dựng ngay trong Docker — không liên quan tới Supabase dùng cho môi trường dev thật, nên không cần bất kỳ credentials nào của tác giả. Dữ liệu được giữ lại qua Docker volume, tắt/bật lại (`docker compose up`) không mất dữ liệu và không seed trùng lặp.
+
+`ml-service` không chạy mặc định (đây là các script batch train/generate, không phải web server) — chạy thử qua profile riêng:
+```bash
+docker compose --profile ml run ml-service python check_connection.py
+```
+
+### Chạy thủ công (dành cho dev hằng ngày, có hot-reload)
+
 **Backend** (cần `backend/.env` với `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` trỏ tới Postgres, một Redis đang chạy — mặc định `localhost:6379`, và một RabbitMQ đang chạy — mặc định `localhost:5672`, đổi qua `REDIS_HOST`/`REDIS_PORT`/`RABBITMQ_HOST`/`RABBITMQ_PORT` nếu cần):
 ```bash
 docker run -p 6379:6379 redis   # hoặc Redis cài native
