@@ -7,6 +7,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://localhost:8080',
+      // ws: true — Vite proxy không tự nâng cấp kết nối WebSocket nếu không khai báo rõ.
+      '/ws': { target: 'http://localhost:8080', ws: true },
     },
   },
 })

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { useNav, ROUTE_MAP } from '../hooks/useNav'
 import { useAuth } from '../context/useAuth'
 import { useAccessibility } from '../hooks/useAccessibility'
+import { useNotificationSocket } from '../hooks/useNotificationSocket'
 import { apiFetch } from '../services/api'
 
 function timeAgo(dateStr) {
@@ -137,6 +138,13 @@ export default function StoreNavbar() {
     if (!user || user.role !== 'customer') { setNotifications([]); return }
     apiFetch('/api/notifications').then(setNotifications).catch(() => {})
   }, [user])
+
+  // Thông báo mới phát sinh sau khi trang đã mở (ví dụ vừa đặt hàng xong) tự đẩy vào đây qua
+  // WebSocket — không cần refresh để thấy, khác với fetch lịch sử ở trên chỉ chạy 1 lần.
+  useNotificationSocket(user, (notification) => {
+    setNotifications(prev => [notification, ...prev])
+    setBellRing(true)
+  })
 
   const unreadCount = notifications.filter(n => !n.readAt).length
 

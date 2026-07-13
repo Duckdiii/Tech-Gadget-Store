@@ -25,7 +25,7 @@ public class NotificationService {
     public List<NotificationResponseDto> getMyNotifications(String email) {
         User user = resolveUser(email);
         return notificationRepository.findByCustomerIdOrderByCreatedAtDesc(user.getId()).stream()
-                .map(this::toResponseDto)
+                .map(NotificationResponseDto::from)
                 .toList();
     }
 
@@ -35,7 +35,7 @@ public class NotificationService {
         Notification notification = notificationRepository.findByIdAndCustomerId(notificationId, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found with id: " + notificationId));
         notification.markRead();
-        return toResponseDto(notificationRepository.save(notification));
+        return NotificationResponseDto.from(notificationRepository.save(notification));
     }
 
     @Transactional
@@ -48,21 +48,7 @@ public class NotificationService {
 
     private User resolveUser(String email) {
         return accountRepository.findByEmail(email)
-                .map(com.project.tech_gadget_store.modules.auth.entity.Account::getUser)
+                .map(Account::getUser)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
-    }
-
-    private NotificationResponseDto toResponseDto(Notification n) {
-        return NotificationResponseDto.builder()
-                .id(n.getId())
-                .createdAt(n.getCreatedAt())
-                .updatedAt(n.getUpdatedAt())
-                .title(n.getTitle())
-                .type(n.getType())
-                .message(n.getMessage())
-                .status(n.getStatus())
-                .sentAt(n.getSentAt())
-                .readAt(n.getReadAt())
-                .build();
     }
 }

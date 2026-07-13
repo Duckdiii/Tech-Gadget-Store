@@ -102,6 +102,9 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                        // Xác thực thật diễn ra ở tầng STOMP CONNECT (xem StompAuthInterceptor),
+                        // không phải ở đây — handshake HTTP nâng cấp WebSocket không mang JWT được.
+                        .requestMatchers("/ws", "/ws/**").permitAll()
                         .requestMatchers("/actuator/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.POST, "/api/payment/momo/ipn").permitAll()
                         .requestMatchers("/api/manager/warehouse-logs/**").hasAnyRole("STAFF", "MANAGER")
