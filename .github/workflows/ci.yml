@@ -77,7 +77,7 @@ jobs:
 
       - name: Run backend tests
         working-directory: backend
-        run: ./mvnw test -B
+        run: sh mvnw test -B
 
   frontend:
     runs-on: ubuntu-latest
