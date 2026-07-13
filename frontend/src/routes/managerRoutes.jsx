@@ -1,4 +1,4 @@
-import { ManagerDashboardPage, RevenueReportPage } from '../features/manager-analytics'
+import { ManagerDashboardPage, RevenueReportPage, RecommendationExperimentPage } from '../features/manager-analytics'
 import { InventoryPage, ImportStockPage, SupplierManagementPage, SupplyOrderPage, ProductManagementPage } from '../features/manager-inventory'
 import { CustomerManagementPage, CustomerDetailPage, StaffManagementPage, AccountManagementPage } from '../features/manager-users'
 import { SystemConfigPage, RecoverRestorePage, PromotionSettingsPage, BrandCategoryManagementPage, BundleServiceManagementPage, MembershipManagementPage } from '../features/manager-settings'
@@ -7,6 +7,7 @@ import { OrderHistoryPage } from '../features/manager-orders'
 export const managerRoutes = [
   { path: '/dashboard', element: <ManagerDashboardPage /> },
   { path: '/revenue', element: <RevenueReportPage /> },
+  { path: '/recommendation-experiment', element: <RecommendationExperimentPage /> },
   { path: '/inventory', element: <InventoryPage /> },
   { path: '/import', element: <ImportStockPage /> },
   { path: '/suppliers', element: <SupplierManagementPage /> },

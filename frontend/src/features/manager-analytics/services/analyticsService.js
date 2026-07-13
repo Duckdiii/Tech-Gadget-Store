@@ -16,4 +16,7 @@ export const analyticsService = {
     return axiosClient.get(`/api/manager/revenue-report${buildQuery(filter)}`)
   },
   buildExportQuery: buildQuery,
+  getRecommendationExperimentSummary: () => {
+    return axiosClient.get('/api/manager/recommendation-experiment/summary')
+  },
 }

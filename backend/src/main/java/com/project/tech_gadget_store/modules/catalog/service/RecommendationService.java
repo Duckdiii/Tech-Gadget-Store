@@ -1,14 +1,19 @@
 package com.project.tech_gadget_store.modules.catalog.service;
 
 import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
+import com.project.tech_gadget_store.modules.catalog.dto.response.ForYouItemDto;
+import com.project.tech_gadget_store.modules.catalog.dto.response.ForYouRecommendationResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
+import com.project.tech_gadget_store.modules.catalog.dto.response.RecommendationExperimentSummaryDto;
 import com.project.tech_gadget_store.modules.catalog.entity.CustomerRecommendationCache;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
+import com.project.tech_gadget_store.modules.catalog.entity.RecommendationExperimentLog;
 import com.project.tech_gadget_store.modules.catalog.mapper.ProductMapper;
 import com.project.tech_gadget_store.modules.catalog.repository.CustomerRecommendationCacheRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
+import com.project.tech_gadget_store.modules.catalog.repository.RecommendationExperimentLogRepository;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -36,6 +41,7 @@ public class RecommendationService {
     private final ProductVariantRepository productVariantRepository;
     private final OrderRepository orderRepository;
     private final CustomerRecommendationCacheRepository customerRecommendationCacheRepository;
+    private final RecommendationExperimentLogRepository recommendationExperimentLogRepository;
     private final RecentlyViewedService recentlyViewedService;
     private final ProductMapper productMapper;
 
@@ -44,12 +50,14 @@ public class RecommendationService {
             ProductVariantRepository productVariantRepository,
             OrderRepository orderRepository,
             CustomerRecommendationCacheRepository customerRecommendationCacheRepository,
+            RecommendationExperimentLogRepository recommendationExperimentLogRepository,
             RecentlyViewedService recentlyViewedService,
             ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.productVariantRepository = productVariantRepository;
         this.orderRepository = orderRepository;
         this.customerRecommendationCacheRepository = customerRecommendationCacheRepository;
+        this.recommendationExperimentLogRepository = recommendationExperimentLogRepository;
         this.recentlyViewedService = recentlyViewedService;
         this.productMapper = productMapper;
     }
@@ -220,16 +228,75 @@ public class RecommendationService {
      * first (real personalization); falls back to the MVP rule-based logic below when the
      * cache has nothing for this customer yet (brand-new customer / not seen by the last
      * training run — the model hasn't caught up to them yet).
+     *
+     * A/B test: among customers who DO have an MF cache (a real choice exists), a stable hash
+     * of customerId holds back ~half into rule-based anyway (variant RULE_BASED_HOLDOUT), so
+     * click-through rate between MF and rule-based can be compared on real traffic — not just
+     * ml-service's offline precision@6 backtest. Cold-start customers (no cache, no real choice)
+     * are served rule-based as before but excluded from the experiment (variant left null, no
+     * log rows) so they don't dilute the comparison. See RecommendationExperimentLog.
      */
-    public List<ProductResponseDto> getForYouRecommendations(String customerId) {
+    @Transactional
+    public ForYouRecommendationResponseDto getForYouRecommendations(String customerId) {
         List<CustomerRecommendationCache> cached =
                 customerRecommendationCacheRepository.findByCustomerIdOrderByRankAsc(customerId);
+
+        String variant;
+        List<ProductResponseDto> products;
         if (!cached.isEmpty()) {
-            List<String> cachedProductIds = cached.stream().map(CustomerRecommendationCache::getProductId).toList();
-            return mapProductsToDtos(fetchProductsInOrder(cachedProductIds));
+            boolean isHoldout = Math.floorMod(customerId.hashCode(), 2) == 1;
+            if (isHoldout) {
+                variant = "RULE_BASED_HOLDOUT";
+                products = getForYouRecommendationsMvp(customerId);
+            } else {
+                variant = "MF";
+                List<String> cachedProductIds =
+                        cached.stream().map(CustomerRecommendationCache::getProductId).toList();
+                products = mapProductsToDtos(fetchProductsInOrder(cachedProductIds));
+            }
+        } else {
+            variant = null;
+            products = getForYouRecommendationsMvp(customerId);
         }
 
-        return getForYouRecommendationsMvp(customerId);
+        List<ForYouItemDto> items = products.stream()
+                .map(p -> ForYouItemDto.builder()
+                        .impressionId(variant != null ? logImpression(customerId, variant, p.getId()) : null)
+                        .product(p)
+                        .build())
+                .toList();
+        return ForYouRecommendationResponseDto.builder().variant(variant).items(items).build();
+    }
+
+    private String logImpression(String customerId, String variant, String productId) {
+        RecommendationExperimentLog log = new RecommendationExperimentLog(customerId, variant, productId);
+        return recommendationExperimentLogRepository.save(log).getId();
+    }
+
+    /** Số liệu tổng hợp CTR theo variant cho trang báo cáo Manager. */
+    public List<RecommendationExperimentSummaryDto> getExperimentSummary() {
+        return recommendationExperimentLogRepository.countShownAndClickedByVariant().stream()
+                .map(row -> {
+                    long shown = (long) row[1];
+                    long clicked = ((Number) row[2]).longValue();
+                    double ctr = shown == 0 ? 0.0 : (double) clicked / shown * 100.0;
+                    return RecommendationExperimentSummaryDto.builder()
+                            .variant((String) row[0])
+                            .shownCount(shown)
+                            .clickedCount(clicked)
+                            .ctr(ctr)
+                            .build();
+                })
+                .toList();
+    }
+
+    /** Đánh dấu khách đã bấm vào 1 sản phẩm gợi ý — chỉ chủ nhân impression đó mới ghi được. */
+    @Transactional
+    public void markImpressionClicked(String impressionId, String customerId) {
+        RecommendationExperimentLog log = recommendationExperimentLogRepository
+                .findByIdAndCustomerId(impressionId, customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Impression not found: " + impressionId));
+        log.markClicked();
     }
 
     /**

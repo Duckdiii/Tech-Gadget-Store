@@ -2,17 +2,14 @@ import { useEffect, useRef } from 'react'
 import { Client } from '@stomp/stompjs'
 import { getToken } from '../utils/authToken'
 
-// Kết nối WebSocket (STOMP) khi có khách hàng đăng nhập, nhận thông báo mới real-time
-// (đẩy từ OrderNotificationConsumer) — không cần refresh trang. onNotification không cần
-// tự memo hoá: hook luôn gọi đúng bản mới nhất qua ref, chỉ kết nối lại khi `user` đổi.
-export function useNotificationSocket(user, onNotification) {
-  const callbackRef = useRef(onNotification)
+export function useNotificationSocket(user, onNotification) {// Hook này dùng để lắng nghe các thông báo từ server gửi về qua WebSocket
+  const callbackRef = useRef(onNotification)// Dùng useRef để lưu trữ callback onNotification, tránh việc tạo lại hàm khi component re-render
 
-  useEffect(() => {
-    callbackRef.current = onNotification
+  useEffect(() => {// Cập nhật callbackRef.current mỗi khi onNotification thay đổi
+    callbackRef.current = onNotification // Cập nhật callbackRef.current mỗi khi onNotification thay đổi
   })
 
-  useEffect(() => {
+  useEffect(() => {// Tạo kết nối WebSocket khi user thay đổi
     if (!user || user.role !== 'customer') return
 
     const token = getToken()
@@ -23,7 +20,7 @@ export function useNotificationSocket(user, onNotification) {
       brokerURL: `${protocol}://${window.location.host}/ws`,
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
-      onConnect: () => {
+      onConnect: () => { // Khi kết nối thành công, đăng ký lắng nghe thông báo từ server
         client.subscribe('/user/queue/notifications', (message) => {
           callbackRef.current(JSON.parse(message.body))
         })

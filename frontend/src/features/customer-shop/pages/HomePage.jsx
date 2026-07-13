@@ -4,11 +4,25 @@ import StoreNavbar from '../../../components/StoreNavbar'
 import { useAuth } from '../../../context/useAuth'
 import RecommendationSection from '../components/RecommendationSection'
 import { useForYouRecommendations, useRecentlyViewed, useSuggestionsFromHistory } from '../hooks/useRecommendations'
+import { shopService } from '../services/shopService'
 
 export default function HomePage() {
   const onNavigate = useNav()
   const { user } = useAuth()
   const { products: forYouProducts, loading: forYouLoading } = useForYouRecommendations(!!user)
+
+  // Chỉ riêng "Dành cho bạn" cần báo cáo click về cho A/B test (xem RecommendationExperimentLog)
+  // — ProductCard/RecommendationSection dùng chung cho mọi loại gợi ý nên giữ nguyên, không sửa.
+  const handleForYouNavigate = (page, opts) => {
+    if (page === 'detail' && opts?.search) {
+      const productId = new URLSearchParams(opts.search).get('id')
+      const clicked = forYouProducts.find(p => p.id === productId)
+      if (clicked?.__impressionId) {
+        shopService.trackForYouClick(clicked.__impressionId).catch(() => {})
+      }
+    }
+    onNavigate(page, opts)
+  }
   const { products: recentlyViewedProducts, loading: recentlyViewedLoading } = useRecentlyViewed(!!user)
   const { products: historySuggestions, loading: historySuggestionsLoading } = useSuggestionsFromHistory(!!user)
   const [email, setEmail] = useState('')
@@ -249,7 +263,7 @@ export default function HomePage() {
             title="Dành cho bạn"
             products={forYouProducts}
             loading={forYouLoading}
-            onNavigate={onNavigate}
+            onNavigate={handleForYouNavigate}
           />
         )}
 

@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.modules.catalog.controller;
 
 import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
+import com.project.tech_gadget_store.modules.catalog.dto.response.ForYouRecommendationResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.modules.catalog.service.RecommendationService;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -47,10 +49,17 @@ public class RecommendationController {
     }
 
     @GetMapping("/for-you")
-    public ResponseEntity<List<ProductResponseDto>> getForYouRecommendations(Authentication authentication) {
+    public ResponseEntity<ForYouRecommendationResponseDto> getForYouRecommendations(Authentication authentication) {
         String customerId = resolveCustomerId(authentication);
-        List<ProductResponseDto> recommendations = recommendationService.getForYouRecommendations(customerId);
+        ForYouRecommendationResponseDto recommendations = recommendationService.getForYouRecommendations(customerId);
         return ResponseEntity.ok(recommendations);
+    }
+
+    @PostMapping("/for-you/impressions/{impressionId}/click")
+    public ResponseEntity<Void> markForYouClicked(@PathVariable String impressionId, Authentication authentication) {
+        String customerId = resolveCustomerId(authentication);
+        recommendationService.markImpressionClicked(impressionId, customerId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/recently-viewed")

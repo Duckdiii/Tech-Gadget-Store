@@ -10,44 +10,53 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 /**
- * STOMP over WebSocket cho thông báo real-time (xem {@code OrderNotificationConsumer}).
- * Dùng simple broker in-memory — đủ cho quy mô 1 instance, không cần RabbitMQ làm STOMP relay.
+ * STOMP over WebSocket cho thông báo real-time (xem
+ * {@code OrderNotificationConsumer}).
+ * Dùng simple broker in-memory — đủ cho quy mô 1 instance, không cần RabbitMQ
+ * làm STOMP relay.
  */
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer { // lớp cấu hình hệ thống tin nhắn WebSocket
+                                                                           // dùng STOMP
 
-    private final StompAuthInterceptor stompAuthInterceptor;
-
-    // Cùng property với CorsConfigurationSource (SecurityConfig) — Spring WebSocket mặc định
-    // chỉ chấp nhận handshake same-origin, và khi đi qua Nginx (cổng nội bộ khác cổng ngoài),
-    // nó không tự suy ra đúng origin nên cần khai báo tường minh, không thì bị từ chối 403.
-    @Value("${cors.allowed-origins:http://localhost:5173}")
-    private String allowedOrigins;
+    private final StompAuthInterceptor stompAuthInterceptor; // interceptor xác thực JWT khi client gửi STOMP CONNECT
+                                                             // frame (xem
+    // StompAuthInterceptor)
+    @Value("${cors.allowed-origins:http://localhost:5173}") // đọc từ application.properties, mặc định cho phép origin
+                                                            // của frontend dev server
+    private String allowedOrigins; // danh sách origin được phép kết nối WebSocket, phân tách bằng dấu phẩy
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOriginPatterns(allowedOrigins.split(","));
+        // addEndpoint("/ws"): Định nghĩa cái "địa chỉ nhà" để phía Frontend (Client)
+        // gọi vào làm thủ tục bắt tay (Handshake). Khi Client muốn kết nối WebSocket,
+        // nó phải gọi lên url kiểu như: ws://localhost:8080/ws.
+        registry.addEndpoint("/ws").setAllowedOriginPatterns(allowedOrigins.split(","));// Nó cho phép các ứng dụng
+                                                                                        // Frontend nằm ở domain khác
+                                                                                        // (ví dụ cái cổng 5173 ở trên)
+                                                                                        // được phép kết nối vào Server
+                                                                                        // Spring Boot này mà không bị
+                                                                                        // trình duyệt chặn lại.
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // "/queue" BẮT BUỘC phải khai ở đây — UserDestinationMessageHandler dịch
-        // "/user/{email}/queue/notifications" thành "/queue/notifications-user{sessionId}",
-        // nhưng nếu SimpleBrokerMessageHandler không được khai nhận "/queue" làm prefix của
-        // nó, nó âm thầm bỏ qua toàn bộ subscribe/message thuộc prefix đó (đã tự debug ra
-        // bug này — log "Translated" hiện đúng, nhưng message không bao giờ tới client).
-        // "/topic" dự phòng cho broadcast chung (không dùng hiện tại). LƯU Ý: "/user" KHÔNG
-        // được liệt vào đây — nếu đưa vào, SimpleBrokerMessageHandler sẽ tự xử lý luôn
-        // destination "/user/queue/..." nguyên văn, chặn trước khi UserDestinationMessageHandler
-        // kịp dịch nó thành đúng địa chỉ riêng của từng phiên.
+        // Mở ra 2 tuyến đường chính để Client đăng ký nhận tin (SUBSCRIBE)
+        // topic: Dùng cho broadcast (ví dụ thông báo chung cho tất cả khách hàng)
+        // queue: Dùng cho tin nhắn riêng tư (ví dụ thông báo chỉ gửi cho 1 khách hàng
+        // cụ thể)
         registry.enableSimpleBroker("/topic", "/queue");
-        registry.setUserDestinationPrefix("/user");
+        registry.setUserDestinationPrefix("/user"); // gửi tin nhắn riêng tư cho một User cụ thể
     }
 
     @Override
+    // InboundChannel: Là luồng tin nhắn đi từ phía Client bắn lên Server (ví dụ:
+    // lệnh kết nối CONNECT, lệnh gửi tin SEND)
     public void configureClientInboundChannel(ChannelRegistration registration) {
+        // interceptors(stompAuthInterceptor): Gắn interceptor xác thực JWT khi Client
+        // gửi STOMP CONNECT frame (xem
         registration.interceptors(stompAuthInterceptor);
     }
 }

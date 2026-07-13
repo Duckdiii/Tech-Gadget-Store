@@ -41,12 +41,34 @@ export function useFrequentlyBoughtTogether(productId) {
   )
 }
 
+// Không dùng chung useRecommendationFetcher — /api/products/for-you trả về
+// {variant, items:[{impressionId, product}]} (phục vụ A/B test MF vs rule-based, xem
+// RecommendationExperimentLog ở backend), khác shape mảng phẳng của các loại gợi ý khác.
+// Gắn __impressionId vào từng sản phẩm đã map để HomePage dùng lại khi báo cáo click.
 export function useForYouRecommendations(enabled) {
-  return useRecommendationFetcher(
-    () => shopService.getForYouRecommendations(),
-    [enabled],
-    enabled
-  )
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(enabled)
+
+  useEffect(() => {
+    if (!enabled) {
+      setProducts([])
+      setLoading(false)
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+    shopService.getForYouRecommendations()
+      .then(data => {
+        if (cancelled) return
+        const items = data?.items ?? []
+        setProducts(items.map(item => ({ ...mapApiProduct(item.product), __impressionId: item.impressionId })))
+      })
+      .catch(err => { if (!cancelled) console.error('Lỗi tải gợi ý sản phẩm:', err) })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [enabled])
+
+  return { products, loading }
 }
 
 export function useCartRecommendations(productIds) {

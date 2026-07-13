@@ -54,6 +54,13 @@ export const shopService = {
     return axiosClient.get('/api/products/for-you')
   },
 
+  // Ghi nhận khách bấm vào 1 gợi ý "Dành cho bạn" — dùng cho A/B test MF vs rule-based
+  // (xem RecommendationExperimentLog ở backend). Không throw nếu lỗi — không được làm gián
+  // đoạn việc khách điều hướng sang trang chi tiết sản phẩm.
+  async trackForYouClick(impressionId) {
+    return axiosClient.post(`/api/products/for-you/impressions/${impressionId}/click`)
+  },
+
   async getSimilarProducts(productId) {
     return axiosClient.get(`/api/products/${productId}/similar`)
   },

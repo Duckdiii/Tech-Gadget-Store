@@ -22,10 +22,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Creates the in-app "order placed" notification (bell icon on {@code StoreNavbar}) off the
+ * Creates the in-app "order placed" notification (bell icon on
+ * {@code StoreNavbar}) off the
  * checkout critical path — see
- * {@link com.project.tech_gadget_store.modules.order.service.CheckoutFacade} — and pushes it
- * live over WebSocket (STOMP, see {@code WebSocketConfig}) to the customer if they're online,
+ * {@link com.project.tech_gadget_store.modules.order.service.CheckoutFacade} —
+ * and pushes it
+ * live over WebSocket (STOMP, see {@code WebSocketConfig}) to the customer if
+ * they're online,
  * so the bell updates without a page refresh.
  */
 @Slf4j
@@ -62,6 +65,10 @@ public class OrderNotificationConsumer {
             log.info("Order {} notification created", order.getId());
 
             String email = order.getCustomer().getAccount().getEmail();
+            // Gửi tin nhắn WebSocket đến client đã đăng nhập với email này, đến destination
+            // /user/{email}/queue/notifications
+            // queue: Dùng cho tin nhắn riêng tư (ví dụ thông báo chỉ gửi cho 1 khách hàng
+            // cụ thể)
             messagingTemplate.convertAndSendToUser(email, "/queue/notifications",
                     NotificationResponseDto.from(notification));
             log.info("Order {} notification pushed over WebSocket to {}", order.getId(), email);

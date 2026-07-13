@@ -26,6 +26,16 @@ const NAV_GROUPS = [
           </svg>
         ),
       },
+      {
+        id: 'recommendationExperiment',
+        path: '/recommendation-experiment',
+        label: 'A/B Test gợi ý',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9.75 3v4.5l-4.243 7.348A2 2 0 007.244 18h9.512a2 2 0 001.737-2.652L14.25 7.5V3M9 3h6m-6 8h6" />
+          </svg>
+        ),
+      },
     ],
   },
   {
