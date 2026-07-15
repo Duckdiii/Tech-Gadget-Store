@@ -49,6 +49,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer { // l�
         // cụ thể)
         registry.enableSimpleBroker("/topic", "/queue");
         registry.setUserDestinationPrefix("/user"); // gửi tin nhắn riêng tư cho một User cụ thể
+        // Client gửi lệnh (SEND) tới các @MessageMapping (vd chatbot) qua tiền tố /app,
+        // ví dụ /app/chat.send — tách biệt rõ với các destination broadcast/queue ở trên.
+        registry.setApplicationDestinationPrefixes("/app");
     }
 
     @Override

@@ -91,6 +91,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/products/for-you", "/api/products/recently-viewed",
                                 "/api/products/suggestions-from-history")
                         .hasRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.GET, "/api/chatbot/**").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/payment/vnpay/return", "/api/payment/momo/return")
                         .permitAll()

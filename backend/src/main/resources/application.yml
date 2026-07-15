@@ -113,6 +113,10 @@ app:
   inventory:
     # Số lượng đơn vị còn lại (theo cấu hình RAM/dung lượng/màu) từ mức này trở xuống sẽ gửi cảnh báo sắp hết hàng
     low-stock-threshold: ${LOW_STOCK_THRESHOLD:5}
+  chatbot:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${CHATBOT_MODEL:gemini-2.5-flash}
+    max-tool-rounds: ${CHATBOT_MAX_TOOL_ROUNDS:3}
   payment:
     # false = production, true = sandbox (mặc định)
     default-sandbox-mode: ${PAYMENT_SANDBOX_MODE:true}
