@@ -4,7 +4,7 @@ import ProductCard from './ProductCard'
 const CARD_WIDTH = 280
 const CARD_GAP = 20
 
-export default function RecommendationSection({ title, products, loading, onNavigate }) {
+export default function RecommendationSection({ title, products, loading, onNavigate, hideTitle = false }) {
   const scrollRef = useRef(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -29,7 +29,7 @@ export default function RecommendationSection({ title, products, loading, onNavi
   if (loading) {
     return (
       <section className="mt-10">
-        <h2 className="text-lg font-black mb-4" style={{ color: 'var(--t1)' }}>{title}</h2>
+        {!hideTitle && <h2 className="text-lg font-black mb-4" style={{ color: 'var(--t1)' }}>{title}</h2>}
         <div className="flex gap-5 overflow-hidden">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-80 shrink-0 animate-pulse" style={{ width: CARD_WIDTH, backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px' }} />
@@ -45,7 +45,7 @@ export default function RecommendationSection({ title, products, loading, onNavi
 
   return (
     <section className="mt-10 rec-scroll-wrap relative">
-      <h2 className="text-lg font-black mb-4" style={{ color: 'var(--t1)' }}>{title}</h2>
+      {!hideTitle && <h2 className="text-lg font-black mb-4" style={{ color: 'var(--t1)' }}>{title}</h2>}
 
       {canScrollLeft && (
         <button

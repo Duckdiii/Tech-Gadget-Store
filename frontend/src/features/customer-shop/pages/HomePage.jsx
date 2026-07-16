@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNav } from '../../../hooks/useNav'
 import StoreNavbar from '../../../components/StoreNavbar'
 import { useAuth } from '../../../context/useAuth'
@@ -50,11 +50,34 @@ export default function HomePage() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
   const [activeTab, setActiveTab] = useState('bestseller')
+  const [activeRecTab, setActiveRecTab] = useState('forYou')
 
   // ══ FLASH SALE (real data) ══
   const [flashProducts, setFlashProducts] = useState([])
   const [flashLoading, setFlashLoading] = useState(true)
   const [flashEndAt, setFlashEndAt] = useState(null)
+
+  const flashScrollRef = useRef(null)
+  const [canScrollFlashLeft, setCanScrollFlashLeft] = useState(false)
+  const [canScrollFlashRight, setCanScrollFlashRight] = useState(false)
+
+  const updateFlashScrollState = useCallback(() => {
+    const el = flashScrollRef.current
+    if (!el) return
+    setCanScrollFlashLeft(el.scrollLeft > 4)
+    setCanScrollFlashRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }, [])
+
+  useEffect(() => {
+    updateFlashScrollState()
+  }, [flashProducts, updateFlashScrollState])
+
+  const scrollFlashByAmount = (dir) => {
+    const el = flashScrollRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * (196 + 12) * 2, behavior: 'smooth' })
+  }
+
 
   useEffect(() => {
     shopService.getFlashSaleProducts()
@@ -304,32 +327,71 @@ export default function HomePage() {
       {/* MAIN CONTENT AREA */}
       <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '0 28px' }}>
 
-        {/* ══ DÀNH CHO BẠN (personalized, logged-in only) ══ */}
-        {user && (
-          <RecommendationSection
-            title="Dành cho bạn"
-            products={forYouProducts}
-            loading={forYouLoading}
-            onNavigate={handleForYouNavigate}
-          />
-        )}
+        {/* ══ GỢI Ý CÁ NHÂN HÓA (personalized, logged-in only) ══ */}
+        {user && (forYouLoading || forYouProducts.length > 0 || historySuggestions.length > 0) && (
+          <section className="mt-10">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid #E5E7EB', paddingBottom: '12px' }}>
+              <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#111827', letterSpacing: '-.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                Gợi ý cho bạn
+              </h2>
+              {historySuggestions.length > 0 && (
+                <div style={{ display: 'flex', gap: '4px', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '3px' }}>
+                  <button
+                    className="tab-btn"
+                    style={{
+                      background: activeRecTab === 'forYou' ? 'linear-gradient(135deg,#F97316,#EA580C)' : 'transparent',
+                      color: activeRecTab === 'forYou' ? 'white' : '#6B7280',
+                      border: 'none',
+                      borderRadius: '7px',
+                      padding: '7px 16px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onClick={() => setActiveRecTab('forYou')}
+                  >
+                    Dành cho bạn
+                  </button>
+                  <button
+                    className="tab-btn"
+                    style={{
+                      background: activeRecTab === 'history' ? 'linear-gradient(135deg,#F97316,#EA580C)' : 'transparent',
+                      color: activeRecTab === 'history' ? 'white' : '#6B7280',
+                      border: 'none',
+                      borderRadius: '7px',
+                      padding: '7px 16px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onClick={() => setActiveRecTab('history')}
+                  >
+                    Từ lịch sử xem
+                  </button>
+                </div>
+              )}
+            </div>
 
-        {/* ══ BẠN VỪA XEM + GỢI Ý TỪ LỊCH SỬ (logged-in only) ══ */}
-        {user && (
-          <RecommendationSection
-            title="Bạn vừa xem"
-            products={recentlyViewedProducts}
-            loading={recentlyViewedLoading}
-            onNavigate={onNavigate}
-          />
-        )}
-        {user && (
-          <RecommendationSection
-            title="Gợi ý từ lịch sử"
-            products={historySuggestions}
-            loading={historySuggestionsLoading}
-            onNavigate={onNavigate}
-          />
+            {activeRecTab === 'forYou' ? (
+              <RecommendationSection
+                title="Dành cho bạn"
+                products={forYouProducts}
+                loading={forYouLoading}
+                onNavigate={handleForYouNavigate}
+                hideTitle={true}
+              />
+            ) : (
+              <RecommendationSection
+                title="Gợi ý từ lịch sử"
+                products={historySuggestions}
+                loading={historySuggestionsLoading}
+                onNavigate={onNavigate}
+                hideTitle={true}
+              />
+            )}
+          </section>
         )}
 
         {/* ══ FLASH SALE ══ */}
@@ -355,46 +417,87 @@ export default function HomePage() {
           </div>
 
           {/* Flash products list */}
-          {flashLoading ? (
-            <div className="scroll-x" style={{ display: 'flex', gap: '12px' }}>
-              {[...Array(6)].map((_, i) => (
-                <div key={i} style={{ flexShrink: 0, width: '196px', height: '260px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px' }} className="animate-pulse" />
-              ))}
-            </div>
-          ) : flashProducts.length === 0 ? (
-            <div style={{ padding: '32px', textAlign: 'center', color: '#9CA3AF', fontSize: '14px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px' }}>
-              Hiện chưa có sản phẩm Flash Sale nào đang diễn ra.
-            </div>
-          ) : (
-            <div className="scroll-x" style={{ display: 'flex', gap: '12px' }}>
-              {flashProducts.map((item) => (
-                <div key={item.variantId || item.id} onClick={() => onNavigate('detail', { search: '?id=' + item.id })} className="flash-card" style={{ flexShrink: 0, width: '196px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer' }}>
-                  <div style={{ height: '148px', background: 'linear-gradient(135deg,#F8FAFC,#F1F5F9)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.name} className="h-28 w-28 object-contain" style={{ filter: 'drop-shadow(0 8px 16px rgba(15,23,42,0.08))' }} />
-                    ) : (
-                      <svg width="52" height="86" viewBox="0 0 62 102" fill="none">
-                        <rect x="3" y="0" width="56" height="102" rx="10" fill="rgba(148,163,184,.18)"></rect>
-                        <rect x="8" y="6" width="46" height="90" rx="7" fill="rgba(148,163,184,.1)"></rect>
-                        <rect x="20" y="2" width="22" height="5" rx="2.5" fill="rgba(100,116,139,.35)"></rect>
-                        <rect x="19" y="93" width="24" height="3" rx="1.5" fill="rgba(100,116,139,.3)"></rect>
-                      </svg>
-                    )}
-                    {!!item.discountPercent && (
-                      <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#EA580C', color: 'white', fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '6px' }}>-{Math.round(item.discountPercent)}%</div>
-                    )}
+          <div style={{ position: 'relative' }}>
+            {canScrollFlashLeft && (
+              <button
+                onClick={() => scrollFlashByAmount(-1)}
+                aria-label="Cuộn sang trái"
+                className="rec-arrow"
+                style={{
+                  position: 'absolute', left: '-16px', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
+                  width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: '#fff', border: '1px solid #E5E7EB', color: '#111827', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', cursor: 'pointer',
+                }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+              </button>
+            )}
+            {canScrollFlashRight && (
+              <button
+                onClick={() => scrollFlashByAmount(1)}
+                aria-label="Cuộn sang phải"
+                className="rec-arrow"
+                style={{
+                  position: 'absolute', right: '-16px', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
+                  width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: '#fff', border: '1px solid #E5E7EB', color: '#111827', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', cursor: 'pointer',
+                }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+              </button>
+            )}
+
+            {flashLoading ? (
+              <div className="scroll-x" style={{ display: 'flex', gap: '12px' }}>
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} style={{ flexShrink: 0, width: '196px', height: '260px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px' }} className="animate-pulse" />
+                ))}
+              </div>
+            ) : flashProducts.length === 0 ? (
+              <div style={{ padding: '32px', textAlign: 'center', color: '#9CA3AF', fontSize: '14px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px' }}>
+                Hiện chưa có sản phẩm Flash Sale nào đang diễn ra.
+              </div>
+            ) : (
+              <div
+                ref={flashScrollRef}
+                onScroll={updateFlashScrollState}
+                className="scroll-x"
+                style={{ display: 'flex', gap: '12px', scrollSnapType: 'x proximity' }}
+              >
+                {flashProducts.map((item) => (
+                  <div
+                    key={item.variantId || item.id}
+                    onClick={() => onNavigate('detail', { search: '?id=' + item.id })}
+                    className="flash-card"
+                    style={{ flexShrink: 0, width: '196px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer', scrollSnapAlign: 'start' }}
+                  >
+                    <div style={{ height: '148px', background: 'linear-gradient(135deg,#F8FAFC,#F1F5F9)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.name} className="h-28 w-28 object-contain" style={{ filter: 'drop-shadow(0 8px 16px rgba(15,23,42,0.08))' }} />
+                      ) : (
+                        <svg width="52" height="86" viewBox="0 0 62 102" fill="none">
+                          <rect x="3" y="0" width="56" height="102" rx="10" fill="rgba(148,163,184,.18)"></rect>
+                          <rect x="8" y="6" width="46" height="90" rx="7" fill="rgba(148,163,184,.1)"></rect>
+                          <rect x="20" y="2" width="22" height="5" rx="2.5" fill="rgba(100,116,139,.35)"></rect>
+                          <rect x="19" y="93" width="24" height="3" rx="1.5" fill="rgba(100,116,139,.3)"></rect>
+                        </svg>
+                      )}
+                      {!!item.discountPercent && (
+                        <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#EA580C', color: 'white', fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '6px' }}>-{Math.round(item.discountPercent)}%</div>
+                      )}
+                    </div>
+                    <div style={{ padding: '12px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', lineHeight: '1.4', marginBottom: '6px', minHeight: '36px' }}>{item.name}</div>
+                      <div style={{ fontSize: '16px', fontWeight: 800, color: '#EA580C', letterSpacing: '-.3px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{formatCurrency(item.salePrice)}</div>
+                      {item.originalPrice != null && (
+                        <div style={{ fontSize: '11px', color: '#9CA3AF', textDecoration: 'line-through', marginTop: '1px' }}>{formatCurrency(item.originalPrice)}</div>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ padding: '12px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', lineHeight: '1.4', marginBottom: '6px', minHeight: '36px' }}>{item.name}</div>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#EA580C', letterSpacing: '-.3px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{formatCurrency(item.salePrice)}</div>
-                    {item.originalPrice != null && (
-                      <div style={{ fontSize: '11px', color: '#9CA3AF', textDecoration: 'line-through', marginTop: '1px' }}>{formatCurrency(item.originalPrice)}</div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </section>
 
         {/* ══ FEATURED PRODUCTS ══ */}
@@ -634,6 +737,16 @@ export default function HomePage() {
             </div>
           )}
         </section>
+
+        {/* ══ BẠN VỪA XEM (logged-in only) ══ */}
+        {user && (
+          <RecommendationSection
+            title="Sản phẩm bạn vừa xem"
+            products={recentlyViewedProducts}
+            loading={recentlyViewedLoading}
+            onNavigate={onNavigate}
+          />
+        )}
 
 
         {/* ══ NEWSLETTER ══ */}
