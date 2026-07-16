@@ -149,39 +149,38 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F9FAFB' }}>
+    <div className="min-h-screen bg-gray-50">
       <StoreNavbar />
 
       {/* ══ HERO ══ */}
-      <section style={{ position: 'relative', background: '#fff', overflow: 'hidden', padding: '80px 0 64px' }}>
+      <section className="relative bg-white overflow-hidden py-16 lg:py-20">
         {/* BG decoration */}
-        <div style={{ position: 'absolute', top: '-60px', right: '-60px', width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(234,88,12,.07) 0%,transparent 70%)', pointerEvents: 'none' }}></div>
-        <div style={{ position: 'absolute', bottom: '-40px', left: '-40px', width: '400px', height: '400px', background: 'radial-gradient(circle,rgba(249,115,22,.05) 0%,transparent 70%)', pointerEvents: 'none' }}></div>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(234,88,12,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(234,88,12,.025) 1px,transparent 1px)', backgroundSize: '56px 56px', pointerEvents: 'none' }}></div>
+        <div className="absolute -top-[60px] -right-[60px] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(234,88,12,0.07)_0%,transparent_70%)] pointer-events-none"></div>
+        <div className="absolute -bottom-[40px] -left-[40px] w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(249,115,22,0.05)_0%,transparent_70%)] pointer-events-none"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(234,88,12,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(234,88,12,0.025)_1px,transparent_1px)] bg-[size:56px_56px] pointer-events-none"></div>
 
-        <div className="max-w-screen-2xl mx-auto px-12 flex items-center justify-between gap-16 relative" style={{ zIndex: 1 }}>
+        <div className="max-w-screen-2xl mx-auto px-6 md:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16 relative z-10">
           {/* Left info column */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#FFF7ED', border: '1px solid rgba(234,88,12,.25)', borderRadius: '24px', padding: '6px 14px', fontSize: '13px', color: '#EA580C', fontWeight: 600, marginBottom: '24px' }}>
-              <span className="animate-glow" style={{ width: '7px', height: '7px', background: '#F97316', borderRadius: '50%', display: 'inline-block', flexShrink: 0 }}></span>
+          <div className="flex-1 w-full min-w-0">
+            <div className="inline-flex items-center gap-2 bg-orange-50 border border-orange-500/25 rounded-full px-3.5 py-1.5 text-xs md:text-sm text-orange-600 font-semibold mb-6">
+              <span className="animate-glow w-1.5 h-1.5 bg-orange-500 rounded-full inline-block shrink-0"></span>
               Đối tác chính hãng Apple · Samsung · OPPO · Xiaomi
             </div>
 
-            <h1 style={{ fontSize: '58px', fontWeight: 900, lineHeight: 1.08, letterSpacing: '-2.5px', marginBottom: '20px' }}>
-              <span style={{ display: 'block', color: '#111827' }}>Công Nghệ</span>
-              <span className="gradient-text" style={{ display: 'block' }}>Đỉnh Cao,</span>
-              <span style={{ display: 'block', color: '#111827' }}>Giá Cực Tốt</span>
+            <h1 className="text-4xl md:text-5xl lg:text-[58px] font-black leading-[1.08] tracking-[-2.5px] mb-5">
+              <span className="block text-gray-900">Công Nghệ</span>
+              <span className="gradient-text block">Đỉnh Cao,</span>
+              <span className="block text-gray-900">Giá Cực Tốt</span>
             </h1>
 
-            <p style={{ fontSize: '17px', color: '#6B7280', lineHeight: 1.75, maxWidth: '500px', marginBottom: '32px' }}>
-              Hơn <strong style={{ color: '#111827' }}>500+ mẫu điện thoại</strong> chính hãng từ các thương hiệu hàng đầu. Bảo hành chính hãng, giao hàng trong 2 giờ, giá tốt nhất thị trường.
+            <p className="text-sm md:text-base lg:text-[17px] text-gray-500 leading-relaxed max-w-[500px] mb-8">
+              Hơn <strong className="text-gray-955">500+ mẫu điện thoại</strong> chính hãng từ các thương hiệu hàng đầu. Bảo hành chính hãng, giao hàng trong 2 giờ, giá tốt nhất thị trường.
             </p>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
+            <div className="flex flex-wrap items-center gap-3 mb-10">
               <button
                 onClick={() => onNavigate('list')}
-                className="btn-orange"
-                style={{ background: 'linear-gradient(135deg,#F97316,#EA580C)', color: 'white', border: 'none', borderRadius: '12px', padding: '14px 28px', fontSize: '16px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 6px 20px rgba(234,88,12,.35)' }}
+                className="btn-orange w-full sm:w-auto bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl px-7 py-3.5 text-base font-bold flex items-center justify-center gap-2 shadow-[0_6px_20px_rgba(234,88,12,0.35)]"
               >
                 Mua ngay
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -193,59 +192,58 @@ export default function HomePage() {
                   const el = document.getElementById('flash-sale-section')
                   if (el) el.scrollIntoView({ behavior: 'smooth' })
                 }}
-                className="btn-outline"
-                style={{ background: 'transparent', color: '#EA580C', border: '1.5px solid rgba(234,88,12,.3)', borderRadius: '12px', padding: '14px 28px', fontSize: '16px', fontWeight: 600 }}
+                className="btn-outline w-full sm:w-auto bg-transparent text-orange-600 border border-orange-500/30 rounded-xl px-7 py-3.5 text-base font-semibold flex items-center justify-center"
               >
                 Xem Flash Sale →
               </button>
             </div>
 
             {/* Trust badges */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-                <div style={{ width: '32px', height: '32px', background: '#ECFDF5', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                 </div>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Chính hãng 100%</div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF' }}>Cam kết hoàn tiền</div>
+                  <div className="text-xs md:text-sm font-bold text-gray-900">Chính hãng 100%</div>
+                  <div className="text-[10px] md:text-xs text-gray-400">Cam kết hoàn tiền</div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-                <div style={{ width: '32px', height: '32px', background: '#FFF7ED', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 </div>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Giao trong 2 giờ</div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF' }}>TP.HCM &amp; Hà Nội</div>
+                  <div className="text-xs md:text-sm font-bold text-gray-900">Giao trong 2 giờ</div>
+                  <div className="text-[10px] md:text-xs text-gray-400">TP.HCM &amp; Hà Nội</div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-                <div style={{ width: '32px', height: '32px', background: '#FEF3C7', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                 </div>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Bảo hành 24 tháng</div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF' }}>1 đổi 1 trong 30 ngày</div>
+                  <div className="text-xs md:text-sm font-bold text-gray-900">Bảo hành 24 tháng</div>
+                  <div className="text-[10px] md:text-xs text-gray-400">1 đổi 1 trong 30 ngày</div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-                <div style={{ width: '32px', height: '32px', background: '#FFF7ED', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                 </div>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Trả góp 0%</div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF' }}>Lên đến 24 tháng</div>
+                  <div className="text-xs md:text-sm font-bold text-gray-900">Trả góp 0%</div>
+                  <div className="text-[10px] md:text-xs text-gray-400">Lên đến 24 tháng</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right Phone Art */}
-          <div style={{ flexShrink: 0, width: '320px', height: '540px', position: 'relative' }}>
-            <div className="animate-glow" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '320px', height: '320px', background: 'radial-gradient(circle,rgba(234,88,12,.18) 0%,transparent 70%)', pointerEvents: 'none' }}></div>
+          <div className="shrink-0 w-80 h-[540px] relative hidden lg:block">
+            <div className="animate-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-[radial-gradient(circle,rgba(234,88,12,0.18)_0%,transparent_70%)] pointer-events-none"></div>
 
-            <div className="animate-float" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}>
+            <div className="animate-float absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <svg width="232" height="468" viewBox="0 0 232 468" fill="none" style={{ filter: 'drop-shadow(0 32px 56px rgba(0,0,0,.18)) drop-shadow(0 0 40px rgba(234,88,12,.15))' }}>
                 <rect width="232" height="468" rx="41" fill="#1C1C1E"></rect>
                 <rect x="0.75" y="0.75" width="230.5" height="466.5" rx="40.25" stroke="rgba(255,255,255,.12)" strokeWidth="1.5" fill="none"></rect>
@@ -292,22 +290,22 @@ export default function HomePage() {
             {/* Floating chips (real site-wide stats) */}
             {homeStats && (
               <>
-                <div className="animate-float2" style={{ position: 'absolute', left: '-52px', top: '20%', background: '#fff', border: '1px solid rgba(234,88,12,.25)', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.1)', whiteSpace: 'nowrap' }}>
-                  <div style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 500, marginBottom: '2px' }}>Sản phẩm</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{homeStats.totalProducts.toLocaleString('vi-VN')}+</div>
-                  <div style={{ fontSize: '10px', color: '#EA580C', fontWeight: 600 }}>Đa dạng mẫu mã</div>
+                <div className="animate-float2 absolute -left-12 top-[20%] bg-white border border-orange-500/25 rounded-xl p-3.5 shadow-md whitespace-nowrap">
+                  <div className="text-[10px] text-gray-400 font-medium mb-0.5">Sản phẩm</div>
+                  <div className="text-base font-extrabold text-gray-900">{homeStats.totalProducts.toLocaleString('vi-VN')}+</div>
+                  <div className="text-[10px] text-orange-600 font-semibold">Đa dạng mẫu mã</div>
                 </div>
                 {homeStats.averageRating != null && (
-                  <div className="animate-float" style={{ position: 'absolute', right: '-36px', top: '29%', background: '#fff', border: '1px solid rgba(16,185,129,.25)', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.1)', whiteSpace: 'nowrap', animationDelay: '0.8s' }}>
-                    <div style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 500, marginBottom: '2px' }}>Đánh giá</div>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{homeStats.averageRating.toFixed(1)}★</div>
-                    <div style={{ fontSize: '10px', color: '#10B981', fontWeight: 600 }}>Từ khách hàng thật</div>
+                  <div className="animate-float absolute -right-9 top-[29%] bg-white border border-emerald-500/25 rounded-xl p-3.5 shadow-md whitespace-nowrap [animation-delay:0.8s]">
+                    <div className="text-[10px] text-gray-400 font-medium mb-0.5">Đánh giá</div>
+                    <div className="text-base font-extrabold text-gray-900">{homeStats.averageRating.toFixed(1)}★</div>
+                    <div className="text-[10px] text-emerald-500 font-semibold">Từ khách hàng thật</div>
                   </div>
                 )}
-                <div className="animate-float2" style={{ position: 'absolute', right: '-30px', bottom: '20%', background: '#fff', border: '1px solid rgba(234,88,12,.25)', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.1)', whiteSpace: 'nowrap' }}>
-                  <div style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 500, marginBottom: '2px' }}>Khách hàng</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#EA580C' }}>{homeStats.totalCustomers.toLocaleString('vi-VN')}+</div>
-                  <div style={{ fontSize: '10px', color: '#F97316', fontWeight: 600 }}>Tin dùng TechStore</div>
+                <div className="animate-float2 absolute -right-[30px] bottom-[20%] bg-white border border-orange-500/25 rounded-xl p-3.5 shadow-md whitespace-nowrap">
+                  <div className="text-[10px] text-gray-400 font-medium mb-0.5">Khách hàng</div>
+                  <div className="text-base font-extrabold text-orange-600">{homeStats.totalCustomers.toLocaleString('vi-VN')}+</div>
+                  <div className="text-[10px] text-orange-500 font-semibold">Tin dùng TechStore</div>
                 </div>
               </>
             )}
@@ -315,17 +313,17 @@ export default function HomePage() {
         </div>
 
         {/* Stats bar */}
-        <div style={{ maxWidth: '1300px', margin: '56px auto 0', padding: '0 28px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1px', background: '#E5E7EB', borderRadius: '14px', overflow: 'hidden', border: '1px solid #E5E7EB' }}>
-            <div style={{ background: '#fff', padding: '22px 28px', textAlign: 'center' }}><div style={{ fontSize: '30px', fontWeight: 900, color: '#111827', letterSpacing: '-1px' }}>{homeStats ? `${homeStats.totalProducts.toLocaleString('vi-VN')}+` : '—'}</div><div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '4px' }}>Mẫu điện thoại</div></div>
-            <div style={{ background: '#fff', padding: '22px 28px', textAlign: 'center' }}><div style={{ fontSize: '30px', fontWeight: 900, color: '#111827', letterSpacing: '-1px' }}>{homeStats ? `${homeStats.totalCustomers.toLocaleString('vi-VN')}+` : '—'}</div><div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '4px' }}>Khách hàng tin dùng</div></div>
-            <div style={{ background: '#fff', padding: '22px 28px', textAlign: 'center' }}><div style={{ fontSize: '30px', fontWeight: 900, color: '#10B981', letterSpacing: '-1px' }}>{homeStats?.averageRating != null ? `${homeStats.averageRating.toFixed(1)}★` : '—'}</div><div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '4px' }}>Đánh giá trung bình{homeStats?.totalReviews ? ` (${homeStats.totalReviews.toLocaleString('vi-VN')})` : ''}</div></div>
+        <div className="max-w-[1300px] mx-auto mt-14 px-6 md:px-7">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-gray-200 rounded-2xl overflow-hidden border border-gray-200">
+            <div className="bg-white p-5 md:p-7 text-center"><div className="text-3xl font-black text-gray-900 tracking-tight">{homeStats ? `${homeStats.totalProducts.toLocaleString('vi-VN')}+` : '—'}</div><div className="text-xs md:text-sm text-gray-400 mt-1">Mẫu điện thoại</div></div>
+            <div className="bg-white p-5 md:p-7 text-center"><div className="text-3xl font-black text-gray-900 tracking-tight">{homeStats ? `${homeStats.totalCustomers.toLocaleString('vi-VN')}+` : '—'}</div><div className="text-xs md:text-sm text-gray-400 mt-1">Khách hàng tin dùng</div></div>
+            <div className="bg-white p-5 md:p-7 text-center"><div className="text-3xl font-black text-emerald-500 tracking-tight">{homeStats?.averageRating != null ? `${homeStats.averageRating.toFixed(1)}★` : '—'}</div><div className="text-xs md:text-sm text-gray-400 mt-1">Đánh giá trung bình{homeStats?.totalReviews ? ` (${homeStats.totalReviews.toLocaleString('vi-VN')})` : ''}</div></div>
           </div>
         </div>
       </section>
 
       {/* MAIN CONTENT AREA */}
-      <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '0 28px' }}>
+      <div className="max-w-[1300px] mx-auto px-6 md:px-7">
 
         {/* ══ GỢI Ý CÁ NHÂN HÓA (personalized, logged-in only) ══ */}
         {user && (forYouLoading || forYouProducts.length > 0 || historySuggestions.length > 0) && (
@@ -501,48 +499,36 @@ export default function HomePage() {
         </section>
 
         {/* ══ FEATURED PRODUCTS ══ */}
-        <section style={{ padding: '56px 0 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', letterSpacing: '-.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Sản phẩm nổi bật</h2>
-            <div style={{ display: 'flex', gap: '4px', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '3px' }}>
+        <section className="pt-14">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <h2 className="text-2xl font-black text-gray-900 tracking-tight font-['Be_Vietnam_Pro',sans-serif]">Sản phẩm nổi bật</h2>
+            <div className="flex gap-1 bg-gray-100 border border-gray-200 rounded-xl p-1">
               <button
-                className="tab-btn"
-                style={{
-                  background: activeTab === 'bestseller' ? 'linear-gradient(135deg,#F97316,#EA580C)' : 'transparent',
-                  color: activeTab === 'bestseller' ? 'white' : '#6B7280',
-                  borderRadius: '7px',
-                  padding: '7px 16px',
-                  fontSize: '13px',
-                  fontWeight: 600
-                }}
+                className={`tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                  activeTab === 'bestseller' 
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm' 
+                    : 'bg-transparent text-gray-500 hover:text-gray-900'
+                }`}
                 onClick={() => setActiveTab('bestseller')}
               >
                 Bán chạy
               </button>
               <button
-                className="tab-btn"
-                style={{
-                  background: activeTab === 'new' ? 'linear-gradient(135deg,#F97316,#EA580C)' : 'transparent',
-                  color: activeTab === 'new' ? 'white' : '#6B7280',
-                  borderRadius: '7px',
-                  padding: '7px 16px',
-                  fontSize: '13px',
-                  fontWeight: 600
-                }}
+                className={`tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                  activeTab === 'new' 
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm' 
+                    : 'bg-transparent text-gray-500 hover:text-gray-900'
+                }`}
                 onClick={() => setActiveTab('new')}
               >
                 Mới nhất
               </button>
               <button
-                className="tab-btn"
-                style={{
-                  background: activeTab === 'sale' ? 'linear-gradient(135deg,#F97316,#EA580C)' : 'transparent',
-                  color: activeTab === 'sale' ? 'white' : '#6B7280',
-                  borderRadius: '7px',
-                  padding: '7px 16px',
-                  fontSize: '13px',
-                  fontWeight: 600
-                }}
+                className={`tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                  activeTab === 'sale' 
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm' 
+                    : 'bg-transparent text-gray-500 hover:text-gray-900'
+                }`}
                 onClick={() => setActiveTab('sale')}
               >
                 Đang giảm
@@ -551,48 +537,48 @@ export default function HomePage() {
           </div>
 
           {featuredLoading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} style={{ height: '380px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px' }} className="animate-pulse" />
+                <div key={i} className="h-[380px] bg-white border border-gray-200 rounded-2xl animate-pulse" />
               ))}
             </div>
           ) : featuredProducts.length === 0 ? (
-            <div style={{ padding: '32px', textAlign: 'center', color: '#9CA3AF', fontSize: '14px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px' }}>
+            <div className="p-8 text-center text-gray-400 text-sm bg-white border border-gray-200 rounded-2xl">
               Không có sản phẩm nào phù hợp.
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {featuredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
               ))}
             </div>
           )}
 
-          <div style={{ textAlign: 'center', marginTop: '28px' }}>
-            <button onClick={() => onNavigate('list')} className="btn-outline" style={{ background: 'transparent', color: '#EA580C', border: '1.5px solid rgba(234,88,12,.3)', borderRadius: '12px', padding: '12px 28px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>Xem tất cả sản phẩm →</button>
+          <div className="text-center mt-7">
+            <button onClick={() => onNavigate('list')} className="btn-outline w-full sm:w-auto bg-transparent text-orange-600 border border-orange-500/30 rounded-xl px-7 py-3 text-sm md:text-base font-semibold cursor-pointer">Xem tất cả sản phẩm →</button>
           </div>
         </section>
 
         {/* ══ PROMO BANNERS ══ */}
-        <section style={{ padding: '56px 0 0' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr .8fr', gap: '16px' }}>
-            <div onClick={() => onNavigate('list')} className="promo-banner" style={{ background: 'linear-gradient(135deg,#EA580C,#F97316,#FB923C)', borderRadius: '20px', padding: '40px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', right: '-30px', top: '-30px', width: '200px', height: '200px', background: 'rgba(255,255,255,.08)', borderRadius: '50%', pointerEvents: 'none' }}></div>
-              <div style={{ position: 'absolute', right: '60px', bottom: '-50px', width: '160px', height: '160px', background: 'rgba(255,255,255,.06)', borderRadius: '50%', pointerEvents: 'none' }}></div>
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'inline-block', background: 'rgba(255,255,255,.18)', borderRadius: '8px', padding: '4px 12px', fontSize: '12px', fontWeight: 700, color: 'white', marginBottom: '14px', letterSpacing: '.5px' }}>THU CŨ ĐỔI MỚI</div>
-                <h3 style={{ fontSize: '30px', fontWeight: 900, color: 'white', letterSpacing: '-.8px', marginBottom: '10px', lineHeight: 1.15, fontFamily: 'Be Vietnam Pro, sans-serif' }}>Thu máy cũ<br />Giá cao nhất</h3>
-                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,.78)', marginBottom: '22px', lineHeight: 1.65 }}>Đổi điện thoại cũ lấy máy mới — trợ giá <strong style={{ color: '#FEF3C7' }}>lên đến 3 triệu</strong></p>
-                <button className="btn-orange" style={{ background: 'white', color: '#EA580C', border: 'none', borderRadius: '10px', padding: '11px 22px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Định giá ngay →</button>
+        <section className="pt-14">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            <div onClick={() => onNavigate('list')} className="promo-banner lg:col-span-3 bg-gradient-to-br from-orange-600 via-orange-500 to-orange-400 rounded-2xl p-8 md:p-10 relative overflow-hidden cursor-pointer">
+              <div className="absolute -right-[30px] -top-[30px] w-[200px] h-[200px] bg-white/8 rounded-full pointer-events-none"></div>
+              <div className="absolute right-[60px] -bottom-[50px] w-[160px] h-[160px] bg-white/6 rounded-full pointer-events-none"></div>
+              <div className="relative z-10">
+                <div className="inline-block bg-white/18 rounded-lg px-3 py-1 text-xs font-bold text-white mb-3.5 tracking-wide">THU CŨ ĐỔI MỚI</div>
+                <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-2.5 leading-[1.15] font-['Be_Vietnam_Pro',sans-serif]">Thu máy cũ<br />Giá cao nhất</h3>
+                <p className="text-sm text-white/78 mb-5 leading-relaxed">Đổi điện thoại cũ lấy máy mới — trợ giá <strong className="text-amber-100 font-bold">lên đến 3 triệu</strong></p>
+                <button className="btn-orange bg-white text-orange-600 border-none rounded-xl px-5.5 py-2.5 text-sm font-extrabold cursor-pointer">Định giá ngay →</button>
               </div>
             </div>
-            <div onClick={() => onNavigate('list')} className="promo-banner" style={{ background: '#111827', borderRadius: '20px', padding: '40px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', right: '-30px', top: '-30px', width: '180px', height: '180px', background: 'rgba(234,88,12,.08)', borderRadius: '50%', pointerEvents: 'none' }}></div>
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'inline-block', background: 'rgba(234,88,12,.2)', borderRadius: '8px', padding: '4px 12px', fontSize: '12px', fontWeight: 700, color: '#F97316', marginBottom: '14px', letterSpacing: '.5px' }}>TRẢ GÓP 0%</div>
-                <h3 style={{ fontSize: '30px', fontWeight: 900, color: 'white', letterSpacing: '-.8px', marginBottom: '10px', lineHeight: 1.15, fontFamily: 'Be Vietnam Pro, sans-serif' }}>Trả góp<br />0% lãi suất</h3>
-                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,.6)', marginBottom: '22px', lineHeight: 1.65 }}>Lên đến 24 tháng. Duyệt trong <strong style={{ color: '#F97316' }}>5 phút</strong></p>
-                <button className="btn-orange" style={{ background: 'linear-gradient(135deg,#F97316,#EA580C)', color: 'white', border: 'none', borderRadius: '10px', padding: '11px 22px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Xem điều kiện →</button>
+            <div onClick={() => onNavigate('list')} className="promo-banner lg:col-span-2 bg-gray-900 rounded-2xl p-8 md:p-10 relative overflow-hidden cursor-pointer">
+              <div className="absolute -right-[30px] -top-[30px] w-[180px] h-[180px] bg-orange-500/8 rounded-full pointer-events-none"></div>
+              <div className="relative z-10">
+                <div className="inline-block bg-orange-500/20 rounded-lg px-3 py-1 text-xs font-bold text-orange-500 mb-3.5 tracking-wide">TRẢ GÓP 0%</div>
+                <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-2.5 leading-[1.15] font-['Be_Vietnam_Pro',sans-serif]">Trả góp<br />0% lãi suất</h3>
+                <p className="text-sm text-gray-400 mb-5 leading-relaxed">Lên đến 24 tháng. Duyệt trong <strong className="text-orange-500 font-bold">5 phút</strong></p>
+                <button className="btn-orange bg-gradient-to-br from-orange-500 to-orange-600 text-white border-none rounded-xl px-5.5 py-2.5 text-sm font-extrabold cursor-pointer">Xem điều kiện →</button>
               </div>
             </div>
           </div>
@@ -601,19 +587,18 @@ export default function HomePage() {
       </div>
 
       {/* ══ PARTNER BRANDS ══ */}
-      <section style={{ padding: '52px 0', marginTop: '56px', background: '#fff', borderTop: '1px solid #E5E7EB', borderBottom: '1px solid #E5E7EB' }}>
-        <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '0 28px' }}>
-          <p style={{ textAlign: 'center', fontSize: '12px', fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '2.5px', marginBottom: '32px' }}>Thương hiệu đối tác chính hãng</p>
+      <section className="py-12 mt-14 bg-white border-y border-gray-200">
+        <div className="max-w-[1300px] mx-auto px-6 md:px-7">
+          <p className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-8">Thương hiệu đối tác chính hãng</p>
           {brandNames.length === 0 ? (
-            <div style={{ textAlign: 'center', fontSize: '13px', color: '#D1D5DB' }}>—</div>
+            <div className="text-center text-xs text-gray-300">—</div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '24px', flexWrap: 'wrap' }}>
+            <div className="flex items-center justify-center md:justify-around gap-6 md:gap-8 flex-wrap">
               {brandNames.map(brand => (
                 <div
                   key={brand}
                   onClick={() => onNavigate('list', { search: '?keyword=' + encodeURIComponent(brand) })}
-                  className="brand-logo"
-                  style={{ fontSize: '22px', fontWeight: 700, color: '#111827', fontFamily: 'system-ui', letterSpacing: '.5px' }}
+                  className="brand-logo text-xl md:text-2xl font-bold text-gray-900 font-sans tracking-wide cursor-pointer transition-all duration-300 hover:scale-110"
                 >
                   {brand}
                 </div>
@@ -623,115 +608,115 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '0 28px' }}>
+      <div className="max-w-[1300px] mx-auto px-6 md:px-7">
 
         {/* ══ SERVICES ══ */}
-        <section style={{ padding: '56px 0 0' }}>
-          <h2 style={{ textAlign: 'center', fontSize: '24px', fontWeight: 900, color: '#111827', marginBottom: '6px', letterSpacing: '-.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Cam kết của Tech Store</h2>
-          <p style={{ textAlign: 'center', fontSize: '15px', color: '#9CA3AF', marginBottom: '36px' }}>Khách hàng luôn là ưu tiên hàng đầu</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
-            <div className="svc-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '26px 18px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div className="svc-icon" style={{ width: '52px', height: '52px', background: '#FFF7ED', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+        <section className="pt-14">
+          <h2 className="text-center text-2xl font-black text-gray-900 mb-1.5 tracking-tight font-['Be_Vietnam_Pro',sans-serif]">Cam kết của Tech Store</h2>
+          <p className="text-center text-sm md:text-base text-gray-400 mb-9">Khách hàng luôn là ưu tiên hàng đầu</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="svc-card border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+              <div className="svc-icon w-13 h-13 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3.5">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '7px' }}>Hàng chính hãng</h3>
-              <p style={{ fontSize: '12.5px', color: '#9CA3AF', lineHeight: '1.65' }}>100% chính hãng từ nhà sản xuất. Hoàn tiền nếu phát hiện hàng giả.</p>
+              <h3 className="text-base font-bold text-gray-900 mb-1.5">Hàng chính hãng</h3>
+              <p className="text-xs md:text-[13px] text-gray-400 leading-relaxed">100% chính hãng từ nhà sản xuất. Hoàn tiền nếu phát hiện hàng giả.</p>
             </div>
-            <div className="svc-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '26px 18px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div className="svc-icon" style={{ width: '52px', height: '52px', background: '#FFF7ED', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+            <div className="svc-card border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+              <div className="svc-icon w-13 h-13 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3.5">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '7px' }}>Giao hàng 2 giờ</h3>
-              <p style={{ fontSize: '12.5px', color: '#9CA3AF', lineHeight: '1.65' }}>Nhận ngay trong 2 giờ tại TP.HCM và Hà Nội. Miễn phí giao hàng.</p>
+              <h3 className="text-base font-bold text-gray-900 mb-1.5">Giao hàng 2 giờ</h3>
+              <p className="text-xs md:text-[13px] text-gray-400 leading-relaxed">Nhận ngay trong 2 giờ tại TP.HCM và Hà Nội. Miễn phí giao hàng.</p>
             </div>
-            <div className="svc-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '26px 18px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div className="svc-icon" style={{ width: '52px', height: '52px', background: '#FFF7ED', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+            <div className="svc-card border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+              <div className="svc-icon w-13 h-13 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3.5">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '7px' }}>Bảo hành 24 tháng</h3>
-              <p style={{ fontSize: '12.5px', color: '#9CA3AF', lineHeight: '1.65' }}>Bảo hành chính hãng 12–24 tháng. 1 đổi 1 trong 30 ngày nếu lỗi.</p>
+              <h3 className="text-base font-bold text-gray-900 mb-1.5">Bảo hành 24 tháng</h3>
+              <p className="text-xs md:text-[13px] text-gray-400 leading-relaxed">Bảo hành chính hãng 12–24 tháng. 1 đổi 1 trong 30 ngày nếu lỗi.</p>
             </div>
-            <div className="svc-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '26px 18px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div className="svc-icon" style={{ width: '52px', height: '52px', background: '#FFF7ED', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+            <div className="svc-card border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+              <div className="svc-icon w-13 h-13 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3.5">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '7px' }}>Trả góp 0%</h3>
-              <p style={{ fontSize: '12.5px', color: '#9CA3AF', lineHeight: '1.65' }}>Hỗ trợ trả góp 0% lãi suất lên đến 24 tháng qua ngân hàng đối tác.</p>
+              <h3 className="text-base font-bold text-gray-900 mb-1.5">Trả góp 0%</h3>
+              <p className="text-xs md:text-[13px] text-gray-400 leading-relaxed">Hỗ trợ trả góp 0% lãi suất lên đến 24 tháng qua ngân hàng đối tác.</p>
             </div>
-            <div className="svc-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '26px 18px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div className="svc-icon" style={{ width: '52px', height: '52px', background: '#FFF7ED', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+            <div className="svc-card border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+              <div className="svc-icon w-13 h-13 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3.5">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" /></svg>
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '7px' }}>Đổi trả 30 ngày</h3>
-              <p style={{ fontSize: '12.5px', color: '#9CA3AF', lineHeight: '1.65' }}>Không vừa ý? Hoàn trả dễ dàng trong 30 ngày, không cần lý do.</p>
+              <h3 className="text-base font-bold text-gray-900 mb-1.5">Đổi trả 30 ngày</h3>
+              <p className="text-xs md:text-[13px] text-gray-400 leading-relaxed">Không vừa ý? Hoàn trả dễ dàng trong 30 ngày, không cần lý do.</p>
             </div>
-            <div className="svc-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '26px 18px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div className="svc-icon" style={{ width: '52px', height: '52px', background: '#FFF7ED', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+            <div className="svc-card border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+              <div className="svc-icon w-13 h-13 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3.5">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '7px' }}>Hỗ trợ 24/7</h3>
-              <p style={{ fontSize: '12.5px', color: '#9CA3AF', lineHeight: '1.65' }}>Đội ngũ tư vấn chuyên sâu sẵn sàng hỗ trợ bất kỳ lúc nào.</p>
+              <h3 className="text-base font-bold text-gray-900 mb-1.5">Hỗ trợ 24/7</h3>
+              <p className="text-xs md:text-[13px] text-gray-400 leading-relaxed">Đội ngũ tư vấn chuyên sâu sẵn sàng hỗ trợ bất kỳ lúc nào.</p>
             </div>
-            <div className="svc-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '26px 18px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div className="svc-icon" style={{ width: '52px', height: '52px', background: '#FFF7ED', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+            <div className="svc-card border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+              <div className="svc-icon w-13 h-13 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3.5">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '7px' }}>Giá tốt nhất</h3>
-              <p style={{ fontSize: '12.5px', color: '#9CA3AF', lineHeight: '1.65' }}>Cam kết giá rẻ nhất thị trường — tìm thấy rẻ hơn, hoàn 110%.</p>
+              <h3 className="text-base font-bold text-gray-900 mb-1.5">Giá tốt nhất</h3>
+              <p className="text-xs md:text-[13px] text-gray-400 leading-relaxed">Cam kết giá rẻ nhất thị trường — tìm thấy rẻ hơn, hoàn 110%.</p>
             </div>
-            <div className="svc-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '26px 18px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div className="svc-icon" style={{ width: '52px', height: '52px', background: '#FFF7ED', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+            <div className="svc-card border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+              <div className="svc-icon w-13 h-13 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3.5">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '7px' }}>Đa dạng thanh toán</h3>
-              <p style={{ fontSize: '12.5px', color: '#9CA3AF', lineHeight: '1.65' }}>Visa, Mastercard, MoMo, ZaloPay, VNPay hoặc thanh toán khi nhận hàng.</p>
+              <h3 className="text-base font-bold text-gray-900 mb-1.5">Đa dạng thanh toán</h3>
+              <p className="text-xs md:text-[13px] text-gray-400 leading-relaxed">Visa, Mastercard, MoMo, ZaloPay, VNPay hoặc thanh toán khi nhận hàng.</p>
             </div>
           </div>
         </section>
 
         {/* ══ REVIEWS ══ */}
-        <section style={{ padding: '56px 0 0' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
+        <section className="pt-14">
+          <div className="flex items-end justify-between mb-7 flex-wrap gap-3">
             <div>
-              <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', letterSpacing: '-.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Khách hàng nói gì?</h2>
-              <p style={{ fontSize: '14px', color: '#9CA3AF', marginTop: '5px' }}>
+              <h2 className="text-2xl font-black text-gray-900 tracking-tight font-['Be_Vietnam_Pro',sans-serif]">Khách hàng nói gì?</h2>
+              <p className="text-sm text-gray-400 mt-1">
                 {homeStats?.totalReviews ? `Hơn ${homeStats.totalReviews.toLocaleString('vi-VN')} đánh giá từ khách thực` : 'Đánh giá từ khách hàng thực'}
               </p>
             </div>
             {homeStats?.averageRating != null && (
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '42px', fontWeight: 900, color: '#EA580C', letterSpacing: '-2px', lineHeight: 1, fontFamily: 'Be Vietnam Pro, sans-serif' }}>{homeStats.averageRating.toFixed(1)}</div>
-                <div style={{ color: '#F59E0B', fontSize: '17px', marginTop: '2px' }}>★★★★★</div>
-                <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{homeStats.totalReviews.toLocaleString('vi-VN')} đánh giá</div>
+              <div className="text-left md:text-right">
+                <div className="text-[42px] font-black text-orange-600 tracking-tighter leading-none font-['Be_Vietnam_Pro',sans-serif]">{homeStats.averageRating.toFixed(1)}</div>
+                <div className="text-amber-500 text-lg mt-0.5">★★★★★</div>
+                <div className="text-xs text-gray-400">{homeStats.totalReviews.toLocaleString('vi-VN')} đánh giá</div>
               </div>
             )}
           </div>
           {reviewsLoading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} style={{ height: '190px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px' }} className="animate-pulse" />
+                <div key={i} className="h-[190px] bg-white border border-gray-200 rounded-2xl animate-pulse" />
               ))}
             </div>
           ) : reviewHighlights.length === 0 ? (
-            <div style={{ padding: '32px', textAlign: 'center', color: '#9CA3AF', fontSize: '14px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px' }}>
+            <div className="p-8 text-center text-gray-400 text-sm bg-white border border-gray-200 rounded-2xl">
               Chưa có đánh giá nào từ khách hàng.
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${reviewHighlights.length}, 1fr)`, gap: '16px' }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {reviewHighlights.map((review, i) => (
-                <div key={review.id} className="review-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div key={review.id} className="review-card border border-gray-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
                     <div style={{ width: '44px', height: '44px', background: ['linear-gradient(135deg,#F97316,#EA580C)', 'linear-gradient(135deg,#10B981,#059669)', 'linear-gradient(135deg,#F59E0B,#EA580C)'][i % 3], borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '15px', color: 'white', flexShrink: 0 }}>{avatarInitials(review.userName)}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, color: '#111827', fontSize: '15px' }}>{review.userName}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-gray-900 text-sm md:text-base">{review.userName}</div>
                       {review.productName && (
-                        <div style={{ fontSize: '12px', color: '#9CA3AF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{review.productName}</div>
+                        <div className="text-xs text-gray-400 truncate">{review.productName}</div>
                       )}
                     </div>
-                    <div style={{ color: '#F59E0B', fontSize: '13px', flexShrink: 0 }}>{'★'.repeat(review.rating ?? 0)}</div>
+                    <div className="text-amber-500 text-xs shrink-0">{'★'.repeat(review.rating ?? 0)}</div>
                   </div>
-                  <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.75 }}>"{review.content}"</p>
-                  <div style={{ marginTop: '14px', fontSize: '11px', color: '#D1D5DB' }}>{timeAgo(review.createdAt)}</div>
+                  <p className="text-sm text-gray-500 leading-relaxed">"{review.content}"</p>
+                  <div className="mt-3.5 text-[11px] text-gray-300">{timeAgo(review.createdAt)}</div>
                 </div>
               ))}
             </div>
@@ -750,30 +735,30 @@ export default function HomePage() {
 
 
         {/* ══ NEWSLETTER ══ */}
-        <section style={{ padding: '56px 0 80px' }}>
-          <div style={{ background: 'linear-gradient(135deg,#F97316,#EA580C,#C2410C)', borderRadius: '24px', padding: '52px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '220px', height: '220px', background: 'rgba(255,255,255,.07)', borderRadius: '50%', pointerEvents: 'none' }}></div>
-            <div style={{ position: 'absolute', bottom: '-70px', left: '-50px', width: '260px', height: '260px', background: 'rgba(255,255,255,.05)', borderRadius: '50%', pointerEvents: 'none' }}></div>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,.7)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '12px' }}>Newsletter</p>
-              <h2 style={{ fontSize: '28px', fontWeight: 900, color: 'white', marginBottom: '12px', letterSpacing: '-.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Nhận ưu đãi độc quyền mỗi tuần</h2>
-              <p style={{ fontSize: '15px', color: 'rgba(255,255,255,.75)', marginBottom: '28px' }}>Đăng ký nhận Flash Sale, sản phẩm mới và mã giảm giá riêng cho thành viên</p>
+        <section className="pt-14 pb-20">
+          <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-[24px] p-8 md:p-12 text-center relative overflow-hidden">
+            <div className="absolute -top-[50px] -right-[50px] w-[220px] h-[220px] bg-white/7 rounded-full pointer-events-none"></div>
+            <div className="absolute -bottom-[70px] -left-[50px] w-[260px] h-[260px] bg-white/5 rounded-full pointer-events-none"></div>
+            <div className="relative z-10">
+              <p className="text-[12px] font-bold text-white/70 tracking-widest uppercase mb-3">Newsletter</p>
+              <h2 className="text-2xl md:text-3xl font-black text-white mb-3 tracking-tight font-['Be_Vietnam_Pro',sans-serif]">Nhận ưu đãi độc quyền mỗi tuần</h2>
+              <p className="text-sm md:text-base text-white/75 mb-7">Đăng ký nhận Flash Sale, sản phẩm mới và mã giảm giá riêng cho thành viên</p>
               
               {subscribed ? (
-                <div style={{ maxWidth: '440px', margin: '0 auto', padding: '12px 20px', background: 'rgba(255,255,255,0.15)', border: '1.5px solid #10B981', borderRadius: '10px', color: '#10B981', fontWeight: 700 }}>
+                <div className="max-w-[440px] mx-auto py-3 px-5 bg-white/15 border border-emerald-500 rounded-xl text-emerald-400 font-bold">
                   ✅ Đã đăng ký thành công ưu đãi!
                 </div>
               ) : (
-                <form onSubmit={handleSubscribe} style={{ display: 'flex', gap: '10px', maxWidth: '440px', margin: '0 auto' }}>
+                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2.5 max-w-[440px] mx-auto">
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Nhập email của bạn..."
-                    style={{ flex: 1, background: 'rgba(255,255,255,.15)', border: '1.5px solid rgba(255,255,255,.25)', borderRadius: '10px', padding: '12px 18px', fontSize: '14px', color: 'white', outline: 'none' }}
+                    className="flex-1 bg-white/15 border border-white/25 rounded-xl px-4.5 py-3 text-sm text-white placeholder-white/60 outline-none focus:border-white/50 transition-all duration-200"
                   />
-                  <button className="btn-orange" type="submit" style={{ background: '#fff', color: '#EA580C', border: 'none', borderRadius: '10px', padding: '12px 20px', fontSize: '14px', fontWeight: 800, whiteSpace: 'nowrap', transition: 'all .3s' }}>
+                  <button className="btn-orange w-full sm:w-auto bg-white text-orange-600 border-none rounded-xl px-6 py-3 text-sm font-extrabold whitespace-nowrap transition-all duration-300 cursor-pointer" type="submit">
                     Đăng ký
                   </button>
                 </form>
@@ -785,25 +770,14 @@ export default function HomePage() {
       </div>
 
       {/* ══ FOOTER ══ */}
-      <footer style={{ background: '#111827', borderTop: '1px solid rgba(255,255,255,.06)', padding: '60px 0 0' }}>
-        <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '0 28px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1.3fr', gap: '40px', marginBottom: '48px' }}>
+      <footer className="bg-gray-900 border-t border-white/6 pt-16">
+        <div className="max-w-[1300px] mx-auto px-6 md:px-7">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10 mb-12">
 
             {/* Brand column */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                <div
-                  style={{
-                    width: '38px',
-                    height: '38px',
-                    background: 'linear-gradient(135deg, #F97316, #EA580C)',
-                    borderRadius: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 14px rgba(234, 88, 12, 0.35)',
-                  }}
-                >
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-[0_4px_14px_rgba(234,88,12,0.35)]">
                   <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
                     <path
                       d="M11 2.5L4.5 6.2v6.8c0 3.8 2.8 7.4 6.5 8.4 3.7-1 6.5-4.6 6.5-8.4V6.2L11 2.5z"
@@ -817,16 +791,15 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <div style={{ display: 'flex', gap: '2px' }}>
-                  <span style={{ fontSize: '21px', fontWeight: 900, color: '#F9FAFB', letterSpacing: '-0.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Tech</span>
-                  <span style={{ fontSize: '21px', fontWeight: 900, color: '#EA580C', letterSpacing: '-0.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Store</span>
+                <div className="flex gap-0.5">
+                  <span className="text-xl font-black text-gray-50 tracking-tight font-['Be_Vietnam_Pro',sans-serif]">Tech</span>
+                  <span className="text-xl font-black text-orange-600 tracking-tight font-['Be_Vietnam_Pro',sans-serif]">Store</span>
                 </div>
               </div>
-              <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: '1.8', marginBottom: '20px' }}>Hệ thống bán lẻ điện thoại chính hãng hàng đầu Việt Nam. Cam kết giá tốt, chất lượng và dịch vụ tận tâm.</p>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+              <p className="text-xs md:text-sm text-gray-500 leading-relaxed mb-5">Hệ thống bán lẻ điện thoại chính hãng hàng đầu Việt Nam. Cam kết giá tốt, chất lượng và dịch vụ tận tâm.</p>
+              <div className="flex gap-2 mb-5">
                 <div
-                  className="social-btn"
-                  style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}
+                  className="social-btn w-9 h-9 bg-white/6 rounded-lg flex items-center justify-center text-gray-400"
                   title="Facebook"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -834,8 +807,7 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <div
-                  className="social-btn"
-                  style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}
+                  className="social-btn w-9 h-9 bg-white/6 rounded-lg flex items-center justify-center text-gray-400"
                   title="Zalo"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -843,8 +815,7 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <div
-                  className="social-btn"
-                  style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}
+                  className="social-btn w-9 h-9 bg-white/6 rounded-lg flex items-center justify-center text-gray-400"
                   title="YouTube"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -852,8 +823,7 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <div
-                  className="social-btn"
-                  style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,.06)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF' }}
+                  className="social-btn w-9 h-9 bg-white/6 rounded-lg flex items-center justify-center text-gray-400"
                   title="TikTok"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -862,115 +832,115 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '10.5px', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: '8px' }}>Thanh toán</div>
-                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                  <div style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '6px', padding: '4px 9px', fontSize: '11px', fontWeight: 600, color: '#9CA3AF' }}>Visa</div>
-                  <div style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '6px', padding: '4px 9px', fontSize: '11px', fontWeight: 600, color: '#9CA3AF' }}>Mastercard</div>
-                  <div style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '6px', padding: '4px 9px', fontSize: '11px', fontWeight: 600, color: '#9CA3AF' }}>MoMo</div>
-                  <div style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '6px', padding: '4px 9px', fontSize: '11px', fontWeight: 600, color: '#9CA3AF' }}>ZaloPay</div>
-                  <div style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '6px', padding: '4px 9px', fontSize: '11px', fontWeight: 600, color: '#9CA3AF' }}>VNPay</div>
-                  <div style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '6px', padding: '4px 9px', fontSize: '11px', fontWeight: 600, color: '#9CA3AF' }}>COD</div>
+                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2">Thanh toán</div>
+                <div className="flex gap-1.5 flex-wrap">
+                  <div className="bg-white/6 border border-white/8 rounded-md px-2 py-1 text-[10px] md:text-xs font-semibold text-gray-400">Visa</div>
+                  <div className="bg-white/6 border border-white/8 rounded-md px-2 py-1 text-[10px] md:text-xs font-semibold text-gray-400">Mastercard</div>
+                  <div className="bg-white/6 border border-white/8 rounded-md px-2 py-1 text-[10px] md:text-xs font-semibold text-gray-400">MoMo</div>
+                  <div className="bg-white/6 border border-white/8 rounded-md px-2 py-1 text-[10px] md:text-xs font-semibold text-gray-400">ZaloPay</div>
+                  <div className="bg-white/6 border border-white/8 rounded-md px-2 py-1 text-[10px] md:text-xs font-semibold text-gray-400">VNPay</div>
+                  <div className="bg-white/6 border border-white/8 rounded-md px-2 py-1 text-[10px] md:text-xs font-semibold text-gray-400">COD</div>
                 </div>
               </div>
             </div>
 
             {/* Products column */}
             <div>
-              <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#F9FAFB', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Sản phẩm</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>iPhone</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Samsung Galaxy</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>OPPO</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Xiaomi / Redmi</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Vivo</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Realme</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Google Pixel</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Phụ kiện</span>
+              <h4 className="text-xs md:text-sm font-bold text-gray-50 mb-4 uppercase tracking-wider font-['Be_Vietnam_Pro',sans-serif]">Sản phẩm</h4>
+              <div className="flex flex-col gap-2">
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">iPhone</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Samsung Galaxy</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">OPPO</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Xiaomi / Redmi</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Vivo</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Realme</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Google Pixel</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Phụ kiện</span>
               </div>
             </div>
 
             {/* Services column */}
             <div>
-              <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#F9FAFB', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Dịch vụ</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Hướng dẫn mua hàng</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Chính sách bảo hành</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Đổi trả hàng</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Trả góp 0%</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Thu cũ đổi mới</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Kiểm tra đơn hàng</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>So sánh sản phẩm</span>
+              <h4 className="text-xs md:text-sm font-bold text-gray-50 mb-4 uppercase tracking-wider font-['Be_Vietnam_Pro',sans-serif]">Dịch vụ</h4>
+              <div className="flex flex-col gap-2">
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Hướng dẫn mua hàng</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Chính sách bảo hành</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Đổi trả hàng</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Trả góp 0%</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Thu cũ đổi mới</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Kiểm tra đơn hàng</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">So sánh sản phẩm</span>
               </div>
             </div>
 
             {/* Company column */}
             <div>
-              <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#F9FAFB', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Công ty</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Giới thiệu</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Tuyển dụng</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Tin tức</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Hệ thống cửa hàng</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Chính sách bảo mật</span>
-                <span onClick={() => onNavigate('list')} className="footer-link" style={{ fontSize: '13px', color: '#6B7280' }}>Điều khoản dịch vụ</span>
+              <h4 className="text-xs md:text-sm font-bold text-gray-50 mb-4 uppercase tracking-wider font-['Be_Vietnam_Pro',sans-serif]">Công ty</h4>
+              <div className="flex flex-col gap-2">
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Giới thiệu</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Tuyển dụng</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Tin tức</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Hệ thống cửa hàng</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Chính sách bảo mật</span>
+                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Điều khoản dịch vụ</span>
               </div>
             </div>
 
             {/* Contact column */}
             <div>
-              <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#F9FAFB', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Liên hệ</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <span style={{ color: '#F97316', flexShrink: 0, marginTop: '3px', display: 'flex', alignItems: 'center' }}>
+              <h4 className="text-xs md:text-sm font-bold text-gray-50 mb-4 uppercase tracking-wider font-['Be_Vietnam_Pro',sans-serif]">Liên hệ</h4>
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-2.5">
+                  <span className="text-orange-500 shrink-0 mt-0.5 flex items-center">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.806-5.122-4.103-6.927-6.927l1.293-.97a2.25 2.25 0 00.417-1.173L7.91 3.5c-.125-.501-.575-.852-1.091-.852H5.437a2.25 2.25 0 00-2.25 2.25v1.372z"/>
                     </svg>
                   </span>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#F9FAFB' }}>1800 6678</div>
-                    <div style={{ fontSize: '11px', color: '#6B7280' }}>Miễn phí · 8:00–22:00</div>
+                    <div className="text-sm font-bold text-gray-50">1800 6678</div>
+                    <div className="text-[10px] md:text-xs text-gray-500">Miễn phí · 8:00–22:00</div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <span style={{ color: '#F97316', flexShrink: 0, marginTop: '3px', display: 'flex', alignItems: 'center' }}>
+                <div className="flex gap-2.5">
+                  <span className="text-orange-500 shrink-0 mt-0.5 flex items-center">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
                     </svg>
                   </span>
                   <div>
-                    <div style={{ fontSize: '13px', color: '#D1D5DB' }}>support@techstore.vn</div>
-                    <div style={{ fontSize: '11px', color: '#6B7280' }}>Phản hồi trong 2 giờ</div>
+                    <div className="text-xs md:text-sm text-gray-300">support@techstore.vn</div>
+                    <div className="text-[10px] md:text-xs text-gray-500">Phản hồi trong 2 giờ</div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <span style={{ color: '#F97316', flexShrink: 0, marginTop: '3px', display: 'flex', alignItems: 'center' }}>
+                <div className="flex gap-2.5">
+                  <span className="text-orange-500 shrink-0 mt-0.5 flex items-center">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1115 0z"/>
                     </svg>
                   </span>
                   <div>
-                    <div style={{ fontSize: '13px', color: '#D1D5DB' }}>123 Nguyễn Huệ, Q.1, TP.HCM</div>
+                    <div className="text-xs md:text-sm text-gray-300">123 Nguyễn Huệ, Q.1, TP.HCM</div>
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '10.5px', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: '8px' }}>Chứng nhận</div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <div style={{ background: 'rgba(16,185,129,.1)', border: '1px solid rgba(16,185,129,.28)', borderRadius: '6px', padding: '4px 8px', fontSize: '10px', fontWeight: 700, color: '#10B981' }}>ĐKKD</div>
-                    <div style={{ background: 'rgba(249,115,22,.12)', border: '1px solid rgba(249,115,22,.28)', borderRadius: '6px', padding: '4px 8px', fontSize: '10px', fontWeight: 700, color: '#F97316' }}>BCER</div>
-                    <div style={{ background: 'rgba(245,158,11,.1)', border: '1px solid rgba(245,158,11,.28)', borderRadius: '6px', padding: '4px 8px', fontSize: '10px', fontWeight: 700, color: '#F59E0B' }}>ISO</div>
+                  <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2">Chứng nhận</div>
+                  <div className="flex gap-1.5">
+                    <div className="bg-emerald-500/10 border border-emerald-500/28 rounded-md px-2 py-1 text-[10px] font-bold text-emerald-400">ĐKKD</div>
+                    <div className="bg-orange-500/12 border border-orange-500/28 rounded-md px-2 py-1 text-[10px] font-bold text-orange-500">BCER</div>
+                    <div className="bg-amber-500/10 border border-amber-500/28 rounded-md px-2 py-1 text-[10px] font-bold text-amber-500">ISO</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', padding: '20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-            <span style={{ fontSize: '12px', color: '#6B7280' }}>© 2026 TechStore JSC. GPKD số: 0123456789 do Sở KHĐT TP.HCM cấp.</span>
-            <div style={{ display: 'flex', gap: '20px' }}>
-              <span className="footer-link" style={{ fontSize: '12px', color: '#6B7280' }}>Bảo mật</span>
-              <span className="footer-link" style={{ fontSize: '12px', color: '#6B7280' }}>Điều khoản</span>
-              <span className="footer-link" style={{ fontSize: '12px', color: '#6B7280' }}>Cookie</span>
+          <div className="border-t border-white/7 py-5 flex items-center justify-between flex-wrap gap-3">
+            <span className="text-xs text-gray-500">© 2026 TechStore JSC. GPKD số: 0123456789 do Sở KHĐT TP.HCM cấp.</span>
+            <div className="flex gap-5">
+              <span className="footer-link text-xs text-gray-500">Bảo mật</span>
+              <span className="footer-link text-xs text-gray-500">Điều khoản</span>
+              <span className="footer-link text-xs text-gray-500">Cookie</span>
             </div>
           </div>
         </div>
