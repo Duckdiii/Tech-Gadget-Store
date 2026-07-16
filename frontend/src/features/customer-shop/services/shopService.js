@@ -53,6 +53,10 @@ export const shopService = {
     return axiosClient.get('/api/products/flash-sale-today')
   },
 
+  async getBestsellers(limit = 4) {
+    return axiosClient.get('/api/products/bestsellers', { params: { limit } })
+  },
+
   async getBrandNames() {
     return axiosClient.get('/api/brands')
   },

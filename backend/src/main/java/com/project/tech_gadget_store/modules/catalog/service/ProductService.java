@@ -16,6 +16,7 @@ import com.project.tech_gadget_store.modules.loyalty.entity.BundleService;
 import com.project.tech_gadget_store.modules.loyalty.entity.Promotion;
 import com.project.tech_gadget_store.modules.loyalty.repository.BundleServiceRepository;
 import com.project.tech_gadget_store.modules.order.entity.OrderItem;
+import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import com.project.tech_gadget_store.modules.warehouse.entity.ExportLogItem;
 import jakarta.persistence.criteria.*;
 import java.math.BigDecimal;
@@ -25,6 +26,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,15 +45,35 @@ public class ProductService {
     private final BundleServiceRepository bundleServiceRepository;
     private final ProductMapper productMapper;
     private final ProductVariantRepository productVariantRepository;
+    private final OrderRepository orderRepository;
 
     public ProductService(ProductRepository productRepository,
             BundleServiceRepository bundleServiceRepository,
             ProductMapper productMapper,
-            ProductVariantRepository productVariantRepository) {
+            ProductVariantRepository productVariantRepository,
+            OrderRepository orderRepository) {
         this.productRepository = productRepository;
         this.bundleServiceRepository = bundleServiceRepository;
         this.productMapper = productMapper;
         this.productVariantRepository = productVariantRepository;
+        this.orderRepository = orderRepository;
+    }
+
+    /** Top-selling products (by total confirmed order quantity) — used for the homepage "Bán chạy" tab. */
+    public List<ProductResponseDto> findBestsellingProducts(int limit) {
+        List<Object[]> rows = orderRepository.findBestsellingProductIds(PageRequest.of(0, limit));
+        List<String> rankedIds = rows.stream().map(r -> (String) r[0]).toList();
+        if (rankedIds.isEmpty()) {
+            return List.of();
+        }
+        Map<String, Product> byId = productRepository.findAllById(rankedIds).stream()
+                .filter(Product::getIsActive)
+                .collect(Collectors.toMap(Product::getId, p -> p));
+        return rankedIds.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .map(p -> productMapper.toProductResponseDto(p, productVariantRepository.findByProductId(p.getId())))
+                .toList();
     }
 
     /** Max page size allowed for public product listing to prevent DoS / OOM. */

@@ -9,11 +9,23 @@ import { shopService } from '../services/shopService'
 import { mapApiProduct } from '../utils/mapApiProduct'
 import { formatCurrency } from '../../../utils/formatters'
 
-// Không có metric "bán chạy" thật trên backend — tạm dùng chung bộ lọc với tab "Mới nhất".
+// "bestseller" gọi API riêng (/api/products/bestsellers, xếp hạng theo số lượng đã bán thật);
+// 2 tab còn lại dùng chung /api/products/filter với tham số khác nhau.
 const FEATURED_TAB_PARAMS = {
-  bestseller: {},
   new: {},
   sale: { onPromotion: true },
+}
+
+const avatarInitials = (name) => (name || '?').trim().split(/\s+/).slice(-2).map(w => w[0]).join('').toUpperCase()
+
+const timeAgo = (dateStr) => {
+  const diffMs = Date.now() - new Date(dateStr).getTime()
+  const days = Math.floor(diffMs / 86400000)
+  if (days <= 0) return 'Hôm nay'
+  if (days === 1) return '1 ngày trước'
+  if (days < 30) return `${days} ngày trước`
+  const months = Math.floor(days / 30)
+  return `${months} tháng trước`
 }
 
 export default function HomePage() {
@@ -48,7 +60,14 @@ export default function HomePage() {
     shopService.getFlashSaleProducts()
       .then(items => {
         setFlashProducts(items || [])
-        if (items?.[0]?.saleEndAt) setFlashEndAt(new Date(items[0].saleEndAt))
+        // Nhiều promotion có thể đang chạy song song với thời gian kết thúc khác nhau —
+        // đếm ngược tới mốc kết thúc SỚM NHẤT, vì đó là lúc danh sách này bắt đầu thay đổi.
+        const soonestEnd = (items || []).reduce((min, it) => {
+          if (!it.saleEndAt) return min
+          const t = new Date(it.saleEndAt)
+          return !min || t < min ? t : min
+        }, null)
+        if (soonestEnd) setFlashEndAt(soonestEnd)
       })
       .catch(() => setFlashProducts([]))
       .finally(() => setFlashLoading(false))
@@ -74,8 +93,12 @@ export default function HomePage() {
 
   useEffect(() => {
     setFeaturedLoading(true)
-    shopService.getProductsByFilter({ ...FEATURED_TAB_PARAMS[activeTab], onlyAvailable: true, size: 4 })
-      .then(data => setFeaturedProducts((data.items ?? []).map(mapApiProduct)))
+    const request = activeTab === 'bestseller'
+      ? shopService.getBestsellers(4).then(items => (items ?? []).map(mapApiProduct))
+      : shopService.getProductsByFilter({ ...FEATURED_TAB_PARAMS[activeTab], size: 4 })
+          .then(data => (data.items ?? []).map(mapApiProduct))
+    request
+      .then(setFeaturedProducts)
       .catch(() => setFeaturedProducts([]))
       .finally(() => setFeaturedLoading(false))
   }, [activeTab])
@@ -94,17 +117,6 @@ export default function HomePage() {
       .catch(() => setReviewHighlights([]))
       .finally(() => setReviewsLoading(false))
   }, [])
-
-  const avatarInitials = (name) => (name || '?').trim().split(/\s+/).slice(-2).map(w => w[0]).join('').toUpperCase()
-  const timeAgo = (dateStr) => {
-    const diffMs = Date.now() - new Date(dateStr).getTime()
-    const days = Math.floor(diffMs / 86400000)
-    if (days <= 0) return 'Hôm nay'
-    if (days === 1) return '1 ngày trước'
-    if (days < 30) return `${days} ngày trước`
-    const months = Math.floor(days / 30)
-    return `${months} tháng trước`
-  }
 
   const handleSubscribe = (e) => {
     e.preventDefault()

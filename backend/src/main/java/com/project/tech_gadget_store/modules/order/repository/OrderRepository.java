@@ -85,4 +85,12 @@ public interface OrderRepository extends JpaRepository<Order, String> {
                                                                                                   // customer đã từng
                                                                                                   // mua (cũng loại trừ
                                                                                                   // đơn đã hủy)
+
+        // Product id + tổng số lượng đã bán, xếp giảm dần — dùng cho tab "Bán chạy" ở trang chủ.
+        // Loại trừ đơn đã hủy vì đơn đó không phản ánh nhu cầu thực.
+        @Query("SELECT pv.product.id, SUM(oi.quantity) FROM Order o JOIN o.items oi JOIN oi.productVariant pv " +
+                        "WHERE o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED "
+                        +
+                        "GROUP BY pv.product.id ORDER BY SUM(oi.quantity) DESC")
+        List<Object[]> findBestsellingProductIds(Pageable pageable);
 }

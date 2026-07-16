@@ -75,6 +75,12 @@ public class ProductController {
         return ResponseEntity.ok(productService.findTodayFlashSaleProducts());
     }
 
+    @GetMapping("/bestsellers")
+    public ResponseEntity<List<ProductResponseDto>> getBestsellers(
+            @RequestParam(defaultValue = "4") int limit) {
+        return ResponseEntity.ok(productService.findBestsellingProducts(limit));
+    }
+
     @GetMapping("/filter")
     public ResponseEntity<ProductPageResponseDto> getByFilter(
             @Valid @ModelAttribute ProductFilterRequestDto filter) {
