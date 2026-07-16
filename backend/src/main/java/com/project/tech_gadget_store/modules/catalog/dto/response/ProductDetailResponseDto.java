@@ -44,4 +44,6 @@ public class ProductDetailResponseDto {
     private Integer batteryCapacity;
     private String simType;
     private String operatingSystem;
+    private Double discountPercent;
+    private Integer salesCount;
 }

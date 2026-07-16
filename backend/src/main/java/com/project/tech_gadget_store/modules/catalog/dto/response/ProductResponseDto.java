@@ -24,4 +24,6 @@ public class ProductResponseDto {
     private Integer storageGb;
     private String color;
     private boolean hasVariants;
+    private Double discountPercent;
+    private Integer salesCount;
 }

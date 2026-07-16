@@ -93,4 +93,13 @@ public interface OrderRepository extends JpaRepository<Order, String> {
                         +
                         "GROUP BY pv.product.id ORDER BY SUM(oi.quantity) DESC")
         List<Object[]> findBestsellingProductIds(Pageable pageable);
+
+        @Query("SELECT COALESCE(SUM(oi.quantity), 0) FROM Order o JOIN o.items oi JOIN oi.productVariant pv " +
+                        "WHERE pv.product.id = :productId AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED")
+        Integer countSalesByProductId(@Param("productId") String productId);
+
+        @Query("SELECT pv.product.id, COALESCE(SUM(oi.quantity), 0) FROM Order o JOIN o.items oi JOIN oi.productVariant pv " +
+                        "WHERE pv.product.id IN :productIds AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED " +
+                        "GROUP BY pv.product.id")
+        List<Object[]> countProductSalesForList(@Param("productIds") List<String> productIds);
 }

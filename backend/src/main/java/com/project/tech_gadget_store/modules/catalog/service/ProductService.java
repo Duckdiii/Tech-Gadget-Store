@@ -99,7 +99,8 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("This product is no longer available"));
         List<ProductVariant> variants = productVariantRepository.findByProductId(id);
         List<BundleService> activeBundleServices = bundleServiceRepository.findByActiveTrue();
-        return productMapper.toProductDetailResponseDto(product, variants, activeBundleServices);
+        Integer salesCount = orderRepository.countSalesByProductId(id);
+        return productMapper.toProductDetailResponseDto(product, variants, activeBundleServices, salesCount);
     }
 
     public List<FlashSaleProductResponseDto> findTodayFlashSaleProducts() {
@@ -128,7 +129,41 @@ public class ProductService {
         }
 
         Specification<Product> spec = buildSpecification(filter, null);
-        Sort sort = resolveSort(filter.getSort());
+
+        String sortType = filter.getSort();
+        if ("price_asc".equals(sortType) || "price_desc".equals(sortType)) {
+            List<Product> allProducts = productRepository.findAll(spec);
+            
+            // Map product to its min variant price
+            Map<String, BigDecimal> minPrices = new java.util.HashMap<>();
+            for (Product p : allProducts) {
+                List<ProductVariant> variants = productVariantRepository.findByProductId(p.getId());
+                BigDecimal min = variants.stream()
+                        .map(ProductVariant::getPrice)
+                        .filter(Objects::nonNull)
+                        .min(BigDecimal::compareTo)
+                        .orElse(BigDecimal.ZERO);
+                minPrices.put(p.getId(), min);
+            }
+            
+            // Sort
+            List<Product> sortedList = new ArrayList<>(allProducts);
+            if ("price_asc".equals(sortType)) {
+                sortedList.sort(Comparator.comparing(p -> minPrices.getOrDefault(p.getId(), BigDecimal.ZERO)));
+            } else {
+                sortedList.sort(Comparator.comparing((Product p) -> minPrices.getOrDefault(p.getId(), BigDecimal.ZERO)).reversed());
+            }
+            
+            int totalItems = sortedList.size();
+            int totalPages = (int) Math.ceil(totalItems / (double) cappedSize);
+            int fromIndex = Math.min(page * cappedSize, totalItems);
+            int toIndex = Math.min(fromIndex + cappedSize, totalItems);
+            List<Product> pageContent = sortedList.subList(fromIndex, toIndex);
+            
+            return toPageResponseDto(pageContent, page, cappedSize, totalItems, totalPages);
+        }
+
+        Sort sort = resolveSort(sortType);
         Page<Product> productPage = productRepository.findAll(spec, PageRequest.of(page, cappedSize, sort));
 
         return toPageResponseDto(productPage.getContent(), page, cappedSize,
@@ -174,10 +209,28 @@ public class ProductService {
 
     private ProductPageResponseDto toPageResponseDto(List<Product> products, int page, int size,
             long totalItems, int totalPages) {
+        if (products.isEmpty()) {
+            return ProductPageResponseDto.builder()
+                    .items(List.of())
+                    .page(page)
+                    .size(size)
+                    .totalItems(totalItems)
+                    .totalPages(totalPages)
+                    .build();
+        }
+
+        List<String> productIds = products.stream().map(Product::getId).toList();
+        List<Object[]> salesCountsObj = orderRepository.countProductSalesForList(productIds);
+        Map<String, Integer> salesCountMap = new java.util.HashMap<>();
+        for (Object[] obj : salesCountsObj) {
+            salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
+        }
+
         List<ProductResponseDto> items = products.stream()
                 .map(product -> productMapper.toProductResponseDto(
                         product,
-                        productVariantRepository.findByProductId(product.getId())))
+                        productVariantRepository.findByProductId(product.getId()),
+                        salesCountMap.getOrDefault(product.getId(), 0)))
                 .toList();
 
         return ProductPageResponseDto.builder()
@@ -355,8 +408,6 @@ public class ProductService {
         if (sort == null)
             return Sort.by("createdAt").descending();
         return switch (sort) {
-            case "price_asc" -> Sort.by("minPrice").ascending();
-            case "price_desc" -> Sort.by("minPrice").descending();
             case "name_asc" -> Sort.by("name").ascending();
             case "name_desc" -> Sort.by("name").descending();
             default -> Sort.by("createdAt").descending();

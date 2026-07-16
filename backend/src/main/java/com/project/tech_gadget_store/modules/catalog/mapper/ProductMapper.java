@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductMapper {
 
-        public ProductResponseDto toProductResponseDto(Product product, List<ProductVariant> variants) {
+        public ProductResponseDto toProductResponseDto(Product product, List<ProductVariant> variants, Integer salesCount) {
                 ProductVariant first = variants.isEmpty() ? null : variants.get(0);
 
                 BigDecimal minPrice = variants.stream()
@@ -47,10 +47,12 @@ public class ProductMapper {
                                 .storageGb(first != null ? first.getStorageGb() : null)
                                 .color(first != null ? first.getColor() : null)
                                 .hasVariants(!variants.isEmpty())
+                                .discountPercent(getBestActivePromotionPercent(product))
+                                .salesCount(salesCount)
                                 .build();
         }
 
-        public ProductDetailResponseDto toProductDetailResponseDto(Product product, List<ProductVariant> variants, List<BundleService> bundleServices) {
+        public ProductDetailResponseDto toProductDetailResponseDto(Product product, List<ProductVariant> variants, List<BundleService> bundleServices, Integer salesCount) {
                 List<String> imageUrls = product.getImages().stream()
                                 .map(ProductImage::getImageUrl)
                                 .toList();
@@ -138,6 +140,8 @@ public class ProductMapper {
                                 .batteryCapacity(batteryCapacity)
                                 .simType(simType)
                                 .operatingSystem(operatingSystem)
+                                .discountPercent(getBestActivePromotionPercent(product))
+                                .salesCount(salesCount)
                                 .build();
         }
 
@@ -197,5 +201,20 @@ public class ProductMapper {
                                 .imageUrl(image.getImageUrl())
                                 .productId(productId)
                                 .build();
+        }
+
+        private Double getBestActivePromotionPercent(Product product) {
+                if (product.getPromotions() == null || product.getPromotions().isEmpty()) {
+                        return null;
+                }
+                java.time.LocalDateTime now = java.time.LocalDateTime.now();
+                return product.getPromotions().stream()
+                                .filter(p -> Boolean.TRUE.equals(p.getActive()))
+                                .filter(p -> p.getDiscountPercent() != null)
+                                .filter(p -> !p.getStartAt().isAfter(now))
+                                .filter(p -> !p.getEndAt().isBefore(now))
+                                .max(java.util.Comparator.comparing(Promotion::getDiscountPercent))
+                                .map(Promotion::getDiscountPercent)
+                                .orElse(null);
         }
 }

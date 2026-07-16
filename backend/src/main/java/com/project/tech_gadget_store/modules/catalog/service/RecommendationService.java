@@ -400,10 +400,16 @@ public class RecommendationService {
         Map<String, List<ProductVariant>> variantsByProductId = variants.stream()
                 .collect(Collectors.groupingBy(pv -> pv.getProduct().getId()));
 
+        List<Object[]> salesCountsObj = orderRepository.countProductSalesForList(productIds);
+        Map<String, Integer> salesCountMap = new java.util.HashMap<>();
+        for (Object[] obj : salesCountsObj) {
+            salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
+        }
+
         List<ProductResponseDto> result = new ArrayList<>();
         for (Product p : products) {
             List<ProductVariant> pVariants = variantsByProductId.getOrDefault(p.getId(), Collections.emptyList());
-            result.add(productMapper.toProductResponseDto(p, pVariants));
+            result.add(productMapper.toProductResponseDto(p, pVariants, salesCountMap.getOrDefault(p.getId(), 0)));
         }
         return result;
     }

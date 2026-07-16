@@ -36,9 +36,6 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Formula("(SELECT MIN(pv.price) FROM product_variants pv WHERE pv.product_id = id)")
-    private BigDecimal minPrice;
-
     @Column(name = "is_active", nullable = false, columnDefinition = "boolean not null default true")
     private Boolean isActive = true;
 

@@ -53,12 +53,13 @@ export function ProductInfo({
   const storages = Array.from(new Set(product.variants.map(v => v.storageGb))).filter(Boolean).sort((a, b) => a - b)
   const colors = Array.from(new Set(product.variants.map(v => v.color))).filter(Boolean)
 
-  const currentPrice = selectedVariant ? selectedVariant.price : product.minPrice
-  const originalPrice = currentPrice * 1.12
+  const discountPercent = product.discountPercent ? Number(product.discountPercent) : 0
+  const originalPrice = selectedVariant ? selectedVariant.price : product.minPrice
+  const currentPrice = discountPercent > 0 ? Math.round(originalPrice * (1 - discountPercent / 100)) : originalPrice
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2.5 flex-wrap">
         <span className="text-[10px] font-extrabold px-3 py-1 text-white tracking-wider uppercase" style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '6px' }}>{product.categoryName || 'Sản phẩm'}</span>
         <div className="flex items-center gap-0.5">
           {[...Array(5)].map((_, i) => (
@@ -67,6 +68,12 @@ export function ProductInfo({
             </svg>
           ))}
         </div>
+        {product.salesCount > 0 && (
+          <>
+            <span className="text-xs" style={{ color: 'var(--t3)' }}>|</span>
+            <span className="text-xs font-bold text-orange-500">Đã bán {product.salesCount}</span>
+          </>
+        )}
       </div>
 
       <div>
@@ -74,10 +81,14 @@ export function ProductInfo({
         <h1 className="text-2xl font-black mt-1" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{product.name}</h1>
       </div>
 
-      <div className="flex items-baseline gap-3">
+      <div className="flex items-baseline gap-3 flex-wrap">
         <span className="text-3xl font-black" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{fmt(currentPrice)}</span>
-        <span className="text-sm line-through" style={{ color: 'var(--t3)' }}>{fmt(originalPrice)}</span>
-        <span className="text-xs font-bold px-2 py-0.5" style={{ color: 'var(--ok)', backgroundColor: 'rgba(34,197,94,0.08)', borderRadius: '4px' }}>Tiết kiệm 12%</span>
+        {discountPercent > 0 && (
+          <>
+            <span className="text-sm line-through" style={{ color: 'var(--t3)' }}>{fmt(originalPrice)}</span>
+            <span className="text-xs font-bold px-2 py-0.5" style={{ color: 'var(--ok)', backgroundColor: 'rgba(34,197,94,0.08)', borderRadius: '4px' }}>Tiết kiệm {discountPercent}%</span>
+          </>
+        )}
       </div>
 
       {viewerCount >= 2 && (
