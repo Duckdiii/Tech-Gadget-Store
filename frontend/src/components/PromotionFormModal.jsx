@@ -49,7 +49,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
       .then((res) => setProducts(res?.content ?? []))
       .catch(() => setProducts([]))
       .finally(() => setLoadingProducts(false))
-  }, [isOpen, initialData])
+  }, [isOpen, initialData, isEdit])
 
   if (!isOpen) return null
 

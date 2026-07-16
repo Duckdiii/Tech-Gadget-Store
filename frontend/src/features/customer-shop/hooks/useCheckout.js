@@ -45,6 +45,7 @@ export function useCheckout() {
     }
 
     loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleOrderSubmit = async () => {

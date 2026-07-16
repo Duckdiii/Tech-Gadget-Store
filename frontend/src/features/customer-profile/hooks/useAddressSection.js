@@ -36,6 +36,7 @@ export function useAddressSection({ profile }) {
 
   useEffect(() => {
     fetchAddresses()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile])
 
   const handleSave = async (form) => {

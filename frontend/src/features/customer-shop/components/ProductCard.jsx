@@ -4,16 +4,6 @@ function formatPrice(price) {
   return price.toLocaleString('vi-VN') + ' đ'
 }
 
-const COLOR_SWATCHES = {
-  'đỏ': '#EF4444', 'đen': '#18181B', 'trắng': '#F8FAFC', 'xám': '#94A3B8',
-  'xanh': '#3B82F6', 'xanh dương': '#3B82F6', 'xanh lá': '#22C55E', 'xanh navy': '#1E3A8A',
-  'vàng': '#EAB308', 'hồng': '#EC4899', 'tím': '#A855F7', 'cam': '#F97316', 'bạc': '#CBD5E1', 'vàng gold': '#D4AF37',
-}
-
-function colorSwatch(color) {
-  if (!color) return null
-  return COLOR_SWATCHES[color.trim().toLowerCase()] ?? null
-}
 
 export default function ProductCard({ product, onNavigate }) {
   const [wished, setWished] = useState(false)
@@ -32,7 +22,7 @@ export default function ProductCard({ product, onNavigate }) {
   const savings = product.originalPrice ? product.originalPrice - product.price : null
   const savingsPct = savings && product.originalPrice ? Math.round((savings / product.originalPrice) * 100) : null
   const rating = product.rating ?? 0
-  const swatch = colorSwatch(product.color)
+
 
   return (
     <div
