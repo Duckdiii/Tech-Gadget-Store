@@ -27,6 +27,7 @@ import com.project.tech_gadget_store.modules.catalog.repository.ProductRepositor
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
 import com.project.tech_gadget_store.modules.loyalty.entity.BundleService;
 import com.project.tech_gadget_store.modules.loyalty.repository.BundleServiceRepository;
+import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,7 @@ public class ProductManagementService {
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
     private final BundleServiceRepository bundleServiceRepository;
+    private final OrderRepository orderRepository;
     private final ProductMapper productMapper;
 
     @Transactional
@@ -209,6 +211,7 @@ public class ProductManagementService {
     private ProductDetailResponseDto toDetailResponseDto(Product product) {
         List<ProductVariant> variants = productVariantRepository.findByProductId(product.getId());
         List<BundleService> activeBundleServices = bundleServiceRepository.findByActiveTrue();
-        return productMapper.toProductDetailResponseDto(product, variants, activeBundleServices);
+        Integer salesCount = orderRepository.countSalesByProductId(product.getId());
+        return productMapper.toProductDetailResponseDto(product, variants, activeBundleServices, salesCount);
     }
 }

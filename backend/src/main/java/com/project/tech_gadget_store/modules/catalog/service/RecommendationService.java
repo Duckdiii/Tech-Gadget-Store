@@ -159,10 +159,27 @@ public class RecommendationService {
         }
 
         // 4. Sort by score descending and return Top 6
-        return scoredProducts.stream()
+        List<ScoredProduct> topScored = scoredProducts.stream()
                 .sorted(Comparator.comparingDouble((ScoredProduct sp) -> sp.score).reversed())
                 .limit(6)
-                .map(sp -> productMapper.toProductResponseDto(sp.product, sp.variants))
+                .toList();
+
+        if (topScored.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> topIds = topScored.stream().map(sp -> sp.product.getId()).toList();
+        List<Object[]> salesCountsObj = orderRepository.countProductSalesForList(topIds);
+        Map<String, Integer> salesCountMap = new java.util.HashMap<>();
+        for (Object[] obj : salesCountsObj) {
+            salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
+        }
+
+        return topScored.stream()
+                .map(sp -> productMapper.toProductResponseDto(
+                        sp.product, 
+                        sp.variants,
+                        salesCountMap.getOrDefault(sp.product.getId(), 0)))
                 .toList();
     }
 

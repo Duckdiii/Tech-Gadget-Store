@@ -18,6 +18,7 @@ import com.project.tech_gadget_store.modules.catalog.entity.ProductImage;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
 import com.project.tech_gadget_store.modules.catalog.mapper.ProductMapper;
 import com.project.tech_gadget_store.modules.catalog.repository.BrandRepository;
+import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.CategoryRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductImageRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
@@ -64,6 +65,9 @@ class ProductManagementServiceTest {
 
     @Mock
     private ProductMapper productMapper;
+
+    @Mock
+    private OrderRepository orderRepository;
 
     @InjectMocks
     private ProductManagementService productManagementService;
@@ -121,7 +125,7 @@ class ProductManagementServiceTest {
         });
         when(productVariantRepository.findByProductId("prod-1")).thenReturn(List.of());
         when(bundleServiceRepository.findByActiveTrue()).thenReturn(List.of());
-        when(productMapper.toProductDetailResponseDto(any(), any(), any()))
+        when(productMapper.toProductDetailResponseDto(any(), any(), any(), any()))
                 .thenReturn(ProductDetailResponseDto.builder().name("iPhone 15").build());
 
         ProductDetailResponseDto result = productManagementService.createProduct(dto);
@@ -168,7 +172,7 @@ class ProductManagementServiceTest {
         when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
         when(productVariantRepository.findByProductId(anyString())).thenReturn(List.of());
         when(bundleServiceRepository.findByActiveTrue()).thenReturn(List.of());
-        when(productMapper.toProductDetailResponseDto(any(), any(), any()))
+        when(productMapper.toProductDetailResponseDto(any(), any(), any(), any()))
                 .thenReturn(ProductDetailResponseDto.builder().name("iPhone 15 Pro").build());
 
         ProductDetailResponseDto result = productManagementService.updateProduct("prod-1", dto);

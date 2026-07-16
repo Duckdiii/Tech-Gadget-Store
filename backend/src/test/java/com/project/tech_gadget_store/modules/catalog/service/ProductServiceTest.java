@@ -15,6 +15,7 @@ import com.project.tech_gadget_store.modules.catalog.repository.ProductRepositor
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
 import com.project.tech_gadget_store.modules.loyalty.entity.Promotion;
 import com.project.tech_gadget_store.modules.loyalty.repository.BundleServiceRepository;
+import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,6 +54,9 @@ class ProductServiceTest {
     @Mock
     private ProductVariantRepository productVariantRepository;
 
+    @Mock
+    private OrderRepository orderRepository;
+
     @InjectMocks
     private ProductService productService;
 
@@ -85,7 +89,8 @@ class ProductServiceTest {
         when(productRepository.findByIdAndIsActiveTrue("prod-1")).thenReturn(Optional.of(product));
         when(productVariantRepository.findByProductId("prod-1")).thenReturn(variants);
         when(bundleServiceRepository.findByActiveTrue()).thenReturn(List.of());
-        when(productMapper.toProductDetailResponseDto(product, variants, List.of())).thenReturn(expected);
+        when(orderRepository.countSalesByProductId("prod-1")).thenReturn(5);
+        when(productMapper.toProductDetailResponseDto(product, variants, List.of(), 5)).thenReturn(expected);
 
         ProductDetailResponseDto result = productService.viewDetailProduct("prod-1");
 
@@ -108,7 +113,8 @@ class ProductServiceTest {
 
         when(productRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
         when(productVariantRepository.findByProductId("prod-1")).thenReturn(List.of());
-        when(productMapper.toProductResponseDto(eq(product), any())).thenReturn(mapped);
+        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
+        when(productMapper.toProductResponseDto(eq(product), any(), anyInt())).thenReturn(mapped);
 
         ProductFilterRequestDto filter = ProductFilterRequestDto.builder().page(0).size(20).build();
         ProductPageResponseDto result = productService.findProductsByFilter(filter);
@@ -139,7 +145,8 @@ class ProductServiceTest {
         when(productRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(product)));
         when(productVariantRepository.findByProductId("prod-1")).thenReturn(List.of());
-        when(productMapper.toProductResponseDto(eq(product), any())).thenReturn(mapped);
+        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
+        when(productMapper.toProductResponseDto(eq(product), any(), anyInt())).thenReturn(mapped);
 
         ProductFilterRequestDto filter = ProductFilterRequestDto.builder()
                 .keyword("iphone").sort("price_asc").page(0).size(20).build();

@@ -9,6 +9,8 @@ import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
 import com.project.tech_gadget_store.modules.catalog.mapper.ProductMapper;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
+import com.project.tech_gadget_store.modules.loyalty.repository.BundleServiceRepository;
+import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +42,9 @@ class RecommendationServiceTest {
 
     @Mock
     private ProductMapper productMapper;
+
+    @Mock
+    private OrderRepository orderRepository;
 
     @InjectMocks
     private RecommendationService recommendationService;
@@ -134,9 +141,10 @@ class RecommendationServiceTest {
         ProductResponseDto dtoC = ProductResponseDto.builder().id("C").name("iPhone 14").build();
         ProductResponseDto dtoE = ProductResponseDto.builder().id("E").name("iPhone 15 Plus").build();
 
-        when(productMapper.toProductResponseDto(eq(productB), anyList())).thenReturn(dtoB);
-        when(productMapper.toProductResponseDto(eq(productC), anyList())).thenReturn(dtoC);
-        when(productMapper.toProductResponseDto(eq(productE), anyList())).thenReturn(dtoE);
+        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
+        when(productMapper.toProductResponseDto(eq(productB), anyList(), anyInt())).thenReturn(dtoB);
+        when(productMapper.toProductResponseDto(eq(productC), anyList(), anyInt())).thenReturn(dtoC);
+        when(productMapper.toProductResponseDto(eq(productE), anyList(), anyInt())).thenReturn(dtoE);
 
         List<ProductResponseDto> result = recommendationService.getSimilarProducts("target-id");
 
@@ -168,9 +176,10 @@ class RecommendationServiceTest {
         when(productRepository.findAllById(productIds)).thenReturn(products);
         when(productVariantRepository.findVariantsForProductIds(productIds)).thenReturn(variants);
 
+        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
         for (int i = 0; i < 6; i++) {
             ProductResponseDto dto = ProductResponseDto.builder().id("P" + (i + 1)).build();
-            when(productMapper.toProductResponseDto(eq(products.get(i)), anyList())).thenReturn(dto);
+            when(productMapper.toProductResponseDto(eq(products.get(i)), anyList(), anyInt())).thenReturn(dto);
         }
 
         List<ProductResponseDto> result = recommendationService.getFrequentlyBoughtTogether("target-id");
@@ -192,8 +201,9 @@ class RecommendationServiceTest {
         when(productRepository.findAllById(List.of("P1"))).thenReturn(List.of(p1));
         when(productVariantRepository.findVariantsForProductIds(List.of("P1"))).thenReturn(List.of(v1));
 
+        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
         ProductResponseDto dto1 = ProductResponseDto.builder().id("P1").build();
-        when(productMapper.toProductResponseDto(eq(p1), anyList())).thenReturn(dto1);
+        when(productMapper.toProductResponseDto(eq(p1), anyList(), anyInt())).thenReturn(dto1);
 
         // Fallback Content-Based setup
         when(productRepository.findByIdAndIsActiveTrue("target-id")).thenReturn(Optional.of(targetProduct));
@@ -209,7 +219,7 @@ class RecommendationServiceTest {
         when(productVariantRepository.findVariantsForProductIds(List.of("C", "P1"))).thenReturn(List.of(variantC, v1));
 
         ProductResponseDto dtoC = ProductResponseDto.builder().id("C").build();
-        when(productMapper.toProductResponseDto(eq(productC), anyList())).thenReturn(dtoC);
+        when(productMapper.toProductResponseDto(eq(productC), anyList(), anyInt())).thenReturn(dtoC);
 
         List<ProductResponseDto> result = recommendationService.getFrequentlyBoughtTogether("target-id");
 
@@ -252,8 +262,9 @@ class RecommendationServiceTest {
 
         ProductResponseDto dtoC = ProductResponseDto.builder().id("C").build();
         ProductResponseDto dtoP2 = ProductResponseDto.builder().id("P2").build();
-        when(productMapper.toProductResponseDto(eq(productC), anyList())).thenReturn(dtoC);
-        when(productMapper.toProductResponseDto(eq(productP2), anyList())).thenReturn(dtoP2);
+        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
+        when(productMapper.toProductResponseDto(eq(productC), anyList(), anyInt())).thenReturn(dtoC);
+        when(productMapper.toProductResponseDto(eq(productP2), anyList(), anyInt())).thenReturn(dtoP2);
 
         List<ProductResponseDto> result = recommendationService.getCartRecommendations(cartProductIds);
 

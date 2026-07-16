@@ -69,10 +69,27 @@ public class ProductService {
         Map<String, Product> byId = productRepository.findAllById(rankedIds).stream()
                 .filter(Product::getIsActive)
                 .collect(Collectors.toMap(Product::getId, p -> p));
-        return rankedIds.stream()
+        List<Product> products = rankedIds.stream()
                 .map(byId::get)
                 .filter(Objects::nonNull)
-                .map(p -> productMapper.toProductResponseDto(p, productVariantRepository.findByProductId(p.getId())))
+                .toList();
+
+        if (products.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> pIds = products.stream().map(Product::getId).toList();
+        List<Object[]> salesCountsObj = orderRepository.countProductSalesForList(pIds);
+        Map<String, Integer> salesCountMap = new java.util.HashMap<>();
+        for (Object[] obj : salesCountsObj) {
+            salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
+        }
+
+        return products.stream()
+                .map(p -> productMapper.toProductResponseDto(
+                        p, 
+                        productVariantRepository.findByProductId(p.getId()),
+                        salesCountMap.getOrDefault(p.getId(), 0)))
                 .toList();
     }
 
