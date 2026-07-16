@@ -17,6 +17,7 @@ import com.project.tech_gadget_store.modules.loyalty.entity.Promotion;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 
@@ -45,7 +46,11 @@ public class ProductMapper {
                                 .imageUrl(imageUrl)
                                 .ramGb(first != null ? first.getRamGb() : null)
                                 .storageGb(first != null ? first.getStorageGb() : null)
-                                .color(first != null ? first.getColor() : null)
+                                .color(variants.stream()
+                                                .map(ProductVariant::getColor)
+                                                .filter(Objects::nonNull)
+                                                .distinct()
+                                                .collect(Collectors.joining(", ")))
                                 .hasVariants(!variants.isEmpty())
                                 .discountPercent(getBestActivePromotionPercent(product))
                                 .salesCount(salesCount)

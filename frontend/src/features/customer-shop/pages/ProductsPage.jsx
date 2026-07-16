@@ -118,6 +118,7 @@ export default function ProductsPage() {
         setProducts((data.items ?? []).map(mapApiProduct))
         setTotalItems(data.totalItems ?? 0)
         setTotalPages(data.totalPages ?? 0)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
@@ -226,8 +227,8 @@ export default function ProductsPage() {
               </div>
             )}
             {loading ? (
-              <div className="grid grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
                   <ProductCardSkeleton key={i} />
                 ))}
               </div>
@@ -242,14 +243,14 @@ export default function ProductsPage() {
                       : 'Rất tiếc! Không có sản phẩm nào đáp ứng bộ lọc của bạn.'}
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {products.map(p => (
                   <ProductCard key={p.id} product={p} onNavigate={onNavigate} />
                 ))}
               </div>
             )}
             {!loading && products.length > 0 && totalPages > 1 && (
-              <Pagination current={page + 1} total={totalPages} />
+              <Pagination current={page + 1} total={totalPages} onChange={(p) => setPage(p - 1)} />
             )}
           </div>
         </div>

@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import ProductCard from './ProductCard'
 import ProductCardSkeleton from './ProductCardSkeleton'
 
-const CARD_WIDTH = 280
+const CARD_WIDTH = 260
 const CARD_GAP = 20
 
 export default function RecommendationSection({ title, products, loading, onNavigate, hideTitle = false }) {
