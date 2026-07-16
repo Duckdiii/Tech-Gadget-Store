@@ -3,8 +3,18 @@ import { useNav } from '../../../hooks/useNav'
 import StoreNavbar from '../../../components/StoreNavbar'
 import { useAuth } from '../../../context/useAuth'
 import RecommendationSection from '../components/RecommendationSection'
+import ProductCard from '../components/ProductCard'
 import { useForYouRecommendations, useRecentlyViewed, useSuggestionsFromHistory } from '../hooks/useRecommendations'
 import { shopService } from '../services/shopService'
+import { mapApiProduct } from '../utils/mapApiProduct'
+import { formatCurrency } from '../../../utils/formatters'
+
+// Không có metric "bán chạy" thật trên backend — tạm dùng chung bộ lọc với tab "Mới nhất".
+const FEATURED_TAB_PARAMS = {
+  bestseller: {},
+  new: {},
+  sale: { onPromotion: true },
+}
 
 export default function HomePage() {
   const onNavigate = useNav()
@@ -29,52 +39,72 @@ export default function HomePage() {
   const [subscribed, setSubscribed] = useState(false)
   const [activeTab, setActiveTab] = useState('bestseller')
 
-  // countdown state
-  const [countdown, setCountdown] = useState({ h: 5, m: 34, s: 21 })
+  // ══ FLASH SALE (real data) ══
+  const [flashProducts, setFlashProducts] = useState([])
+  const [flashLoading, setFlashLoading] = useState(true)
+  const [flashEndAt, setFlashEndAt] = useState(null)
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown(c => {
-        let { h, m, s } = c
-        if (s > 0) return { h, m, s: s - 1 }
-        if (m > 0) return { h, m: m - 1, s: 59 }
-        if (h > 0) return { h: h - 1, m: 59, s: 59 }
-        return { h: 0, m: 0, s: 0 }
+    shopService.getFlashSaleProducts()
+      .then(items => {
+        setFlashProducts(items || [])
+        if (items?.[0]?.saleEndAt) setFlashEndAt(new Date(items[0].saleEndAt))
       })
-    }, 1000)
-    return () => clearInterval(interval)
+      .catch(() => setFlashProducts([]))
+      .finally(() => setFlashLoading(false))
   }, [])
+
+  const [countdown, setCountdown] = useState({ h: 0, m: 0, s: 0 })
+  useEffect(() => {
+    if (!flashEndAt) return
+    const tick = () => {
+      const totalSec = Math.max(0, Math.floor((flashEndAt.getTime() - Date.now()) / 1000))
+      setCountdown({ h: Math.floor(totalSec / 3600), m: Math.floor((totalSec % 3600) / 60), s: totalSec % 60 })
+    }
+    tick()
+    const interval = setInterval(tick, 1000)
+    return () => clearInterval(interval)
+  }, [flashEndAt])
 
   const pad = n => String(n).padStart(2, '0')
 
-  const allProducts = {
-    bestseller: [
-      { name: 'iPhone 15 Pro Max', brand: 'Apple', price: '34.990.000đ', oldPrice: '39.990.000đ', discount: '-13%', badge: 'HOT', badgeColor: '#EA580C', rating: '4.9', reviews: '2.341', bgGradient: 'linear-gradient(135deg,#374151,#1F2937)' },
-      { name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '28.990.000đ', oldPrice: '33.990.000đ', discount: '-15%', badge: 'MỚI', badgeColor: '#1D4ED8', rating: '4.8', reviews: '1.876', bgGradient: 'linear-gradient(135deg,#1D4ED8,#1e3a8a)' },
-      { name: 'OPPO Find X7 Pro', brand: 'OPPO', price: '18.990.000đ', oldPrice: '22.990.000đ', discount: '-17%', badge: 'SALE', badgeColor: '#F97316', rating: '4.7', reviews: '934', bgGradient: 'linear-gradient(135deg,#065f46,#022c22)' },
-      { name: 'Xiaomi 14 Ultra', brand: 'Xiaomi', price: '19.990.000đ', oldPrice: '24.990.000đ', discount: '-20%', badge: 'HOT', badgeColor: '#EA580C', rating: '4.7', reviews: '1.123', bgGradient: 'linear-gradient(135deg,#92400e,#451a03)' },
-    ],
-    new: [
-      { name: 'iPhone 16 Pro', brand: 'Apple', price: '38.990.000đ', oldPrice: '', discount: '', badge: 'MỚI', badgeColor: '#1D4ED8', rating: '5.0', reviews: '432', bgGradient: 'linear-gradient(135deg,#475569,#1E293B)' },
-      { name: 'Samsung Galaxy Z Fold 6', brand: 'Samsung', price: '45.990.000đ', oldPrice: '', discount: '', badge: 'MỚI', badgeColor: '#1D4ED8', rating: '4.9', reviews: '287', bgGradient: 'linear-gradient(135deg,#1e40af,#1e3a8a)' },
-      { name: 'Google Pixel 9 Pro', brand: 'Google', price: '26.990.000đ', oldPrice: '', discount: '', badge: 'MỚI', badgeColor: '#1D4ED8', rating: '4.8', reviews: '156', bgGradient: 'linear-gradient(135deg,#166534,#14532d)' },
-      { name: 'OnePlus 12 Pro', brand: 'OnePlus', price: '17.990.000đ', oldPrice: '', discount: '', badge: 'MỚI', badgeColor: '#1D4ED8', rating: '4.7', reviews: '389', bgGradient: 'linear-gradient(135deg,#7c1d1d,#450a0a)' },
-    ],
-    sale: [
-      { name: 'iPhone 14', brand: 'Apple', price: '19.990.000đ', oldPrice: '26.990.000đ', discount: '-26%', badge: 'GIẢM', badgeColor: '#EA580C', rating: '4.8', reviews: '4.521', bgGradient: 'linear-gradient(135deg,#374151,#1F2937)' },
-      { name: 'Samsung Galaxy A55', brand: 'Samsung', price: '8.990.000đ', oldPrice: '12.990.000đ', discount: '-31%', badge: 'GIẢM', badgeColor: '#EA580C', rating: '4.6', reviews: '2.312', bgGradient: 'linear-gradient(135deg,#1D4ED8,#1e3a8a)' },
-      { name: 'Xiaomi Redmi Note 13', brand: 'Xiaomi', price: '5.490.000đ', oldPrice: '7.990.000đ', discount: '-31%', badge: 'GIẢM', badgeColor: '#EA580C', rating: '4.5', reviews: '3.421', bgGradient: 'linear-gradient(135deg,#7c2d12,#431407)' },
-      { name: 'OPPO A98', brand: 'OPPO', price: '6.490.000đ', oldPrice: '9.490.000đ', discount: '-32%', badge: 'GIẢM', badgeColor: '#EA580C', rating: '4.5', reviews: '1.876', bgGradient: 'linear-gradient(135deg,#065f46,#022c22)' },
-    ],
-  }
+  // ══ FEATURED PRODUCTS (real data) ══
+  const [featuredProducts, setFeaturedProducts] = useState([])
+  const [featuredLoading, setFeaturedLoading] = useState(true)
 
-  const flashItems = [
-    { name: 'Samsung S23 FE', price: '9.990.000', oldPrice: '14.990.000', discount: '-33%', soldPct: '78%', bgGradient: 'linear-gradient(135deg,#1e3a8a,#0f172a)' },
-    { name: 'iPhone 13', price: '14.990.000', oldPrice: '21.990.000', discount: '-32%', soldPct: '92%', bgGradient: 'linear-gradient(135deg,#374151,#1F2937)' },
-    { name: 'Xiaomi 13T Pro', price: '8.990.000', oldPrice: '13.990.000', discount: '-35%', soldPct: '65%', bgGradient: 'linear-gradient(135deg,#7c2d12,#431407)' },
-    { name: 'OPPO Reno 11', price: '7.990.000', oldPrice: '11.990.000', discount: '-28%', soldPct: '54%', bgGradient: 'linear-gradient(135deg,#065f46,#022c22)' },
-    { name: 'Vivo V29e', price: '5.990.000', oldPrice: '8.490.000', discount: '-29%', soldPct: '41%', bgGradient: 'linear-gradient(135deg,#4c1d95,#2e1065)' },
-    { name: 'Realme GT Neo 5', price: '6.490.000', oldPrice: '9.990.000', discount: '-35%', soldPct: '67%', bgGradient: 'linear-gradient(135deg,#c2410c,#7c2d12)' },
-  ]
+  useEffect(() => {
+    setFeaturedLoading(true)
+    shopService.getProductsByFilter({ ...FEATURED_TAB_PARAMS[activeTab], onlyAvailable: true, size: 4 })
+      .then(data => setFeaturedProducts((data.items ?? []).map(mapApiProduct)))
+      .catch(() => setFeaturedProducts([]))
+      .finally(() => setFeaturedLoading(false))
+  }, [activeTab])
+
+  // ══ SITE-WIDE STATS, BRANDS, REVIEW HIGHLIGHTS (real data) ══
+  const [brandNames, setBrandNames] = useState([])
+  const [homeStats, setHomeStats] = useState(null)
+  const [reviewHighlights, setReviewHighlights] = useState([])
+  const [reviewsLoading, setReviewsLoading] = useState(true)
+
+  useEffect(() => {
+    shopService.getBrandNames().then(setBrandNames).catch(() => setBrandNames([]))
+    shopService.getHomeStats().then(setHomeStats).catch(() => setHomeStats(null))
+    shopService.getReviewHighlights(3)
+      .then(setReviewHighlights)
+      .catch(() => setReviewHighlights([]))
+      .finally(() => setReviewsLoading(false))
+  }, [])
+
+  const avatarInitials = (name) => (name || '?').trim().split(/\s+/).slice(-2).map(w => w[0]).join('').toUpperCase()
+  const timeAgo = (dateStr) => {
+    const diffMs = Date.now() - new Date(dateStr).getTime()
+    const days = Math.floor(diffMs / 86400000)
+    if (days <= 0) return 'Hôm nay'
+    if (days === 1) return '1 ngày trước'
+    if (days < 30) return `${days} ngày trước`
+    const months = Math.floor(days / 30)
+    return `${months} tháng trước`
+  }
 
   const handleSubscribe = (e) => {
     e.preventDefault()
@@ -208,7 +238,7 @@ export default function HomePage() {
                 <rect x="26" y="328" width="22" height="22" rx="6" fill="rgba(234,88,12,.85)"></rect>
                 <text x="58" y="341" fontFamily="system-ui" fontSize="9.5" fill="rgba(255,255,255,.45)">Tech Store • Vừa xong</text>
                 <text x="58" y="357" fontFamily="system-ui" fontSize="11.5" fill="rgba(255,255,255,.88)" fontWeight={500}>Đơn hàng đã giao thành công ✅</text>
-                <text x="58" y="371" fontFamily="system-ui" fontSize="10" fill="rgba(255,255,255,.4)">iPhone 15 Pro Max • Titan đen</text>
+                <text x="58" y="371" fontFamily="system-ui" fontSize="10" fill="rgba(255,255,255,.4)">Đang trên đường giao đến bạn</text>
                 <rect x="78" y="442" width="76" height="4" rx="2" fill="rgba(255,255,255,.4)"></rect>
                 <rect x="-3" y="118" width="3" height="26" rx="1.5" fill="#2D2D30"></rect>
                 <rect x="-3" y="154" width="3" height="46" rx="1.5" fill="#2D2D30"></rect>
@@ -224,32 +254,37 @@ export default function HomePage() {
               </svg>
             </div>
 
-            {/* Floating chips */}
-            <div className="animate-float2" style={{ position: 'absolute', left: '-52px', top: '20%', background: '#fff', border: '1px solid rgba(234,88,12,.25)', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.1)', whiteSpace: 'nowrap' }}>
-              <div style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 500, marginBottom: '2px' }}>Camera</div>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>200 MP</div>
-              <div style={{ fontSize: '10px', color: '#EA580C', fontWeight: 600 }}>Pro Optical Zoom</div>
-            </div>
-            <div className="animate-float" style={{ position: 'absolute', right: '-36px', top: '29%', background: '#fff', border: '1px solid rgba(16,185,129,.25)', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.1)', whiteSpace: 'nowrap', animationDelay: '0.8s' }}>
-              <div style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 500, marginBottom: '2px' }}>Chip</div>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>A18 Pro</div>
-              <div style={{ fontSize: '10px', color: '#10B981', fontWeight: 600 }}>Apple Silicon</div>
-            </div>
-            <div className="animate-float2" style={{ position: 'absolute', right: '-30px', bottom: '20%', background: '#fff', border: '1px solid rgba(234,88,12,.25)', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.1)', whiteSpace: 'nowrap' }}>
-              <div style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 500, marginBottom: '2px' }}>Giảm còn</div>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: '#EA580C' }}>34.990.000đ</div>
-              <div style={{ fontSize: '10px', color: '#F97316', fontWeight: 600 }}>Tiết kiệm 5 triệu</div>
-            </div>
+            {/* Floating chips (real site-wide stats) */}
+            {homeStats && (
+              <>
+                <div className="animate-float2" style={{ position: 'absolute', left: '-52px', top: '20%', background: '#fff', border: '1px solid rgba(234,88,12,.25)', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.1)', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 500, marginBottom: '2px' }}>Sản phẩm</div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{homeStats.totalProducts.toLocaleString('vi-VN')}+</div>
+                  <div style={{ fontSize: '10px', color: '#EA580C', fontWeight: 600 }}>Đa dạng mẫu mã</div>
+                </div>
+                {homeStats.averageRating != null && (
+                  <div className="animate-float" style={{ position: 'absolute', right: '-36px', top: '29%', background: '#fff', border: '1px solid rgba(16,185,129,.25)', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.1)', whiteSpace: 'nowrap', animationDelay: '0.8s' }}>
+                    <div style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 500, marginBottom: '2px' }}>Đánh giá</div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{homeStats.averageRating.toFixed(1)}★</div>
+                    <div style={{ fontSize: '10px', color: '#10B981', fontWeight: 600 }}>Từ khách hàng thật</div>
+                  </div>
+                )}
+                <div className="animate-float2" style={{ position: 'absolute', right: '-30px', bottom: '20%', background: '#fff', border: '1px solid rgba(234,88,12,.25)', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.1)', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 500, marginBottom: '2px' }}>Khách hàng</div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#EA580C' }}>{homeStats.totalCustomers.toLocaleString('vi-VN')}+</div>
+                  <div style={{ fontSize: '10px', color: '#F97316', fontWeight: 600 }}>Tin dùng TechStore</div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* Stats bar */}
         <div style={{ maxWidth: '1300px', margin: '56px auto 0', padding: '0 28px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1px', background: '#E5E7EB', borderRadius: '14px', overflow: 'hidden', border: '1px solid #E5E7EB' }}>
-            <div style={{ background: '#fff', padding: '22px 28px', textAlign: 'center' }}><div style={{ fontSize: '30px', fontWeight: 900, color: '#111827', letterSpacing: '-1px' }}>500+</div><div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '4px' }}>Mẫu điện thoại</div></div>
-            <div style={{ background: '#fff', padding: '22px 28px', textAlign: 'center' }}><div style={{ fontSize: '30px', fontWeight: 900, color: '#EA580C', letterSpacing: '-1px' }}>50+</div><div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '4px' }}>Cửa hàng toàn quốc</div></div>
-            <div style={{ background: '#fff', padding: '22px 28px', textAlign: 'center' }}><div style={{ fontSize: '30px', fontWeight: 900, color: '#111827', letterSpacing: '-1px' }}>1M+</div><div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '4px' }}>Khách hàng tin dùng</div></div>
-            <div style={{ background: '#fff', padding: '22px 28px', textAlign: 'center' }}><div style={{ fontSize: '30px', fontWeight: 900, color: '#10B981', letterSpacing: '-1px' }}>4.9★</div><div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '4px' }}>Đánh giá trung bình</div></div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1px', background: '#E5E7EB', borderRadius: '14px', overflow: 'hidden', border: '1px solid #E5E7EB' }}>
+            <div style={{ background: '#fff', padding: '22px 28px', textAlign: 'center' }}><div style={{ fontSize: '30px', fontWeight: 900, color: '#111827', letterSpacing: '-1px' }}>{homeStats ? `${homeStats.totalProducts.toLocaleString('vi-VN')}+` : '—'}</div><div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '4px' }}>Mẫu điện thoại</div></div>
+            <div style={{ background: '#fff', padding: '22px 28px', textAlign: 'center' }}><div style={{ fontSize: '30px', fontWeight: 900, color: '#111827', letterSpacing: '-1px' }}>{homeStats ? `${homeStats.totalCustomers.toLocaleString('vi-VN')}+` : '—'}</div><div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '4px' }}>Khách hàng tin dùng</div></div>
+            <div style={{ background: '#fff', padding: '22px 28px', textAlign: 'center' }}><div style={{ fontSize: '30px', fontWeight: 900, color: '#10B981', letterSpacing: '-1px' }}>{homeStats?.averageRating != null ? `${homeStats.averageRating.toFixed(1)}★` : '—'}</div><div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '4px' }}>Đánh giá trung bình{homeStats?.totalReviews ? ` (${homeStats.totalReviews.toLocaleString('vi-VN')})` : ''}</div></div>
           </div>
         </div>
       </section>
@@ -308,35 +343,46 @@ export default function HomePage() {
           </div>
 
           {/* Flash products list */}
-          <div className="scroll-x" style={{ display: 'flex', gap: '12px' }}>
-            {flashItems.map((item, index) => (
-              <div key={index} onClick={() => onNavigate('detail')} className="flash-card" style={{ flexShrink: 0, width: '196px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', overflow: 'hidden' }}>
-                <div style={{ height: '148px', background: item.bgGradient, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="62" height="102" viewBox="0 0 62 102" fill="none">
-                    <rect x="3" y="0" width="56" height="102" rx="10" fill="rgba(255,255,255,.09)"></rect>
-                    <rect x="8" y="6" width="46" height="90" rx="7" fill="rgba(255,255,255,.05)"></rect>
-                    <rect x="20" y="2" width="22" height="5" rx="2.5" fill="rgba(0,0,0,.4)"></rect>
-                    <rect x="19" y="93" width="24" height="3" rx="1.5" fill="rgba(255,255,255,.28)"></rect>
-                  </svg>
-                  <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#EA580C', color: 'white', fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '6px' }}>{item.discount}</div>
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '7px 10px', background: 'linear-gradient(transparent,rgba(0,0,0,.55))' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,.6)' }}>Đã bán</span>
-                      <span style={{ fontSize: '10px', color: '#FCD34D', fontWeight: 700 }}>{item.soldPct}</span>
-                    </div>
-                    <div style={{ height: '4px', background: 'rgba(255,255,255,.15)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', background: 'linear-gradient(90deg,#FCD34D,#F97316)', borderRadius: '2px', width: item.soldPct }}></div>
-                    </div>
+          {flashLoading ? (
+            <div className="scroll-x" style={{ display: 'flex', gap: '12px' }}>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} style={{ flexShrink: 0, width: '196px', height: '260px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px' }} className="animate-pulse" />
+              ))}
+            </div>
+          ) : flashProducts.length === 0 ? (
+            <div style={{ padding: '32px', textAlign: 'center', color: '#9CA3AF', fontSize: '14px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px' }}>
+              Hiện chưa có sản phẩm Flash Sale nào đang diễn ra.
+            </div>
+          ) : (
+            <div className="scroll-x" style={{ display: 'flex', gap: '12px' }}>
+              {flashProducts.map((item) => (
+                <div key={item.variantId || item.id} onClick={() => onNavigate('detail', { search: '?id=' + item.id })} className="flash-card" style={{ flexShrink: 0, width: '196px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer' }}>
+                  <div style={{ height: '148px', background: 'linear-gradient(135deg,#F8FAFC,#F1F5F9)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt={item.name} className="h-28 w-28 object-contain" style={{ filter: 'drop-shadow(0 8px 16px rgba(15,23,42,0.08))' }} />
+                    ) : (
+                      <svg width="52" height="86" viewBox="0 0 62 102" fill="none">
+                        <rect x="3" y="0" width="56" height="102" rx="10" fill="rgba(148,163,184,.18)"></rect>
+                        <rect x="8" y="6" width="46" height="90" rx="7" fill="rgba(148,163,184,.1)"></rect>
+                        <rect x="20" y="2" width="22" height="5" rx="2.5" fill="rgba(100,116,139,.35)"></rect>
+                        <rect x="19" y="93" width="24" height="3" rx="1.5" fill="rgba(100,116,139,.3)"></rect>
+                      </svg>
+                    )}
+                    {!!item.discountPercent && (
+                      <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#EA580C', color: 'white', fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '6px' }}>-{Math.round(item.discountPercent)}%</div>
+                    )}
+                  </div>
+                  <div style={{ padding: '12px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', lineHeight: '1.4', marginBottom: '6px', minHeight: '36px' }}>{item.name}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#EA580C', letterSpacing: '-.3px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{formatCurrency(item.salePrice)}</div>
+                    {item.originalPrice != null && (
+                      <div style={{ fontSize: '11px', color: '#9CA3AF', textDecoration: 'line-through', marginTop: '1px' }}>{formatCurrency(item.originalPrice)}</div>
+                    )}
                   </div>
                 </div>
-                <div style={{ padding: '12px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', lineHeight: '1.4', marginBottom: '6px', minHeight: '36px' }}>{item.name}</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#EA580C', letterSpacing: '-.3px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{item.price}đ</div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', textDecoration: 'line-through', marginTop: '1px' }}>{item.oldPrice}đ</div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ══ FEATURED PRODUCTS ══ */}
@@ -389,51 +435,23 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
-            {allProducts[activeTab].map((item, index) => (
-              <div key={index} onClick={() => onNavigate('detail')} className="product-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', overflow: 'hidden', position: 'relative', boxShadow: '0 1px 3px rgba(0,0,0,.06)' }}>
-                <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 2, background: item.badgeColor, color: 'white', fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '6px' }}>{item.badge}</div>
-                <div
-                  onClick={(e) => { e.stopPropagation(); }}
-                  style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 2, background: 'rgba(0,0,0,.06)', border: '1px solid rgba(0,0,0,.08)', borderRadius: '8px', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M1.5 4h11M1.5 7h11M1.5 10h7" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round"></path>
-                  </svg>
-                </div>
-                <div className="p-img" style={{ height: '190px', background: item.bgGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-                  <svg width="76" height="128" viewBox="0 0 76 128" fill="none">
-                    <rect x="3" y="0" width="70" height="128" rx="12" fill="rgba(255,255,255,.1)"></rect>
-                    <rect x="9" y="7" width="58" height="114" rx="9" fill="rgba(255,255,255,.06)"></rect>
-                    <rect x="26" y="3" width="24" height="7" rx="3.5" fill="rgba(0,0,0,.45)"></rect>
-                    <circle cx="38" cy="6.5" r="2.5" fill="rgba(0,0,0,.7)"></circle>
-                    <rect x="23" y="117" width="30" height="4" rx="2" fill="rgba(255,255,255,.28)"></rect>
-                  </svg>
-                  <div style={{ position: 'absolute', bottom: '8px', left: '12px', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: '.5px' }}>{item.brand}</div>
-                </div>
-                <div style={{ padding: '14px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827', lineHeight: '1.45', marginBottom: '8px', minHeight: '41px' }}>{item.name}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
-                    <span style={{ color: '#F59E0B', fontSize: '12px', letterSpacing: '1px' }}>★★★★★</span>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#F59E0B' }}>{item.rating}</span>
-                    <span style={{ fontSize: '11px', color: '#9CA3AF' }}>({item.reviews})</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '18px', fontWeight: 900, color: '#EA580C', letterSpacing: '-.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{item.price}</span>
-                    {item.oldPrice && <span style={{ fontSize: '12px', color: '#9CA3AF', textDecoration: 'line-through' }}>{item.oldPrice}</span>}
-                    {item.discount && <span style={{ fontSize: '12px', fontWeight: 700, color: '#10B981' }}>{item.discount}</span>}
-                  </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onNavigate('cart'); }}
-                    className="p-btn btn-orange"
-                    style={{ width: '100%', background: 'linear-gradient(135deg,#F97316,#EA580C)', color: 'white', border: 'none', borderRadius: '10px', padding: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', opacity: 0.9, transform: 'translateY(5px)' }}
-                  >
-                    🛒 Thêm vào giỏ hàng
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          {featuredLoading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
+              {[...Array(4)].map((_, i) => (
+                <div key={i} style={{ height: '380px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px' }} className="animate-pulse" />
+              ))}
+            </div>
+          ) : featuredProducts.length === 0 ? (
+            <div style={{ padding: '32px', textAlign: 'center', color: '#9CA3AF', fontSize: '14px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px' }}>
+              Không có sản phẩm nào phù hợp.
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
+              ))}
+            </div>
+          )}
 
           <div style={{ textAlign: 'center', marginTop: '28px' }}>
             <button onClick={() => onNavigate('list')} className="btn-outline" style={{ background: 'transparent', color: '#EA580C', border: '1.5px solid rgba(234,88,12,.3)', borderRadius: '12px', padding: '12px 28px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>Xem tất cả sản phẩm →</button>
@@ -471,16 +489,22 @@ export default function HomePage() {
       <section style={{ padding: '52px 0', marginTop: '56px', background: '#fff', borderTop: '1px solid #E5E7EB', borderBottom: '1px solid #E5E7EB' }}>
         <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '0 28px' }}>
           <p style={{ textAlign: 'center', fontSize: '12px', fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '2.5px', marginBottom: '32px' }}>Thương hiệu đối tác chính hãng</p>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '24px', flexWrap: 'wrap' }}>
-            <div onClick={() => onNavigate('list')} className="brand-logo" style={{ fontSize: '26px', fontWeight: 900, color: '#111827', letterSpacing: '-1px', fontFamily: '-apple-system,system-ui' }}>Apple</div>
-            <div onClick={() => onNavigate('list')} className="brand-logo" style={{ fontSize: '22px', fontWeight: 700, color: '#111827', fontFamily: 'system-ui', letterSpacing: '.5px' }}>SAMSUNG</div>
-            <div onClick={() => onNavigate('list')} className="brand-logo" style={{ fontSize: '22px', fontWeight: 700, color: '#111827', fontFamily: 'system-ui', letterSpacing: '1px' }}>OPPO</div>
-            <div onClick={() => onNavigate('list')} className="brand-logo" style={{ fontSize: '22px', fontWeight: 700, color: '#111827', fontFamily: 'system-ui' }}>Xiaomi</div>
-            <div onClick={() => onNavigate('list')} className="brand-logo" style={{ fontSize: '22px', fontWeight: 700, color: '#111827', fontFamily: 'system-ui', letterSpacing: '.5px' }}>VIVO</div>
-            <div onClick={() => onNavigate('list')} className="brand-logo" style={{ fontSize: '22px', fontWeight: 700, color: '#111827', fontFamily: 'system-ui' }}>realme</div>
-            <div onClick={() => onNavigate('list')} className="brand-logo" style={{ fontSize: '22px', fontWeight: 700, color: '#111827', fontFamily: 'system-ui' }}>Google</div>
-            <div onClick={() => onNavigate('list')} className="brand-logo" style={{ fontSize: '22px', fontWeight: 700, color: '#111827', fontFamily: 'system-ui', letterSpacing: '2px' }}>SONY</div>
-          </div>
+          {brandNames.length === 0 ? (
+            <div style={{ textAlign: 'center', fontSize: '13px', color: '#D1D5DB' }}>—</div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '24px', flexWrap: 'wrap' }}>
+              {brandNames.map(brand => (
+                <div
+                  key={brand}
+                  onClick={() => onNavigate('list', { search: '?keyword=' + encodeURIComponent(brand) })}
+                  className="brand-logo"
+                  style={{ fontSize: '22px', fontWeight: 700, color: '#111827', fontFamily: 'system-ui', letterSpacing: '.5px' }}
+                >
+                  {brand}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -542,10 +566,10 @@ export default function HomePage() {
             </div>
             <div className="svc-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '26px 18px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
               <div className="svc-icon" style={{ width: '52px', height: '52px', background: '#FFF7ED', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '7px' }}>50+ Showroom</h3>
-              <p style={{ fontSize: '12.5px', color: '#9CA3AF', lineHeight: '1.65' }}>Trải nghiệm trực tiếp tại hơn 50 showroom khắp toàn quốc.</p>
+              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '7px' }}>Đa dạng thanh toán</h3>
+              <p style={{ fontSize: '12.5px', color: '#9CA3AF', lineHeight: '1.65' }}>Visa, Mastercard, MoMo, ZaloPay, VNPay hoặc thanh toán khi nhận hàng.</p>
             </div>
           </div>
         </section>
@@ -555,99 +579,50 @@ export default function HomePage() {
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
             <div>
               <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', letterSpacing: '-.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Khách hàng nói gì?</h2>
-              <p style={{ fontSize: '14px', color: '#9CA3AF', marginTop: '5px' }}>Hơn 10.000+ đánh giá 5 sao từ khách thực</p>
+              <p style={{ fontSize: '14px', color: '#9CA3AF', marginTop: '5px' }}>
+                {homeStats?.totalReviews ? `Hơn ${homeStats.totalReviews.toLocaleString('vi-VN')} đánh giá từ khách thực` : 'Đánh giá từ khách hàng thực'}
+              </p>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '42px', fontWeight: 900, color: '#EA580C', letterSpacing: '-2px', lineHeight: 1, fontFamily: 'Be Vietnam Pro, sans-serif' }}>4.9</div>
-              <div style={{ color: '#F59E0B', fontSize: '17px', marginTop: '2px' }}>★★★★★</div>
-              <div style={{ fontSize: '12px', color: '#9CA3AF' }}>10.000+ đánh giá</div>
-            </div>
+            {homeStats?.averageRating != null && (
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '42px', fontWeight: 900, color: '#EA580C', letterSpacing: '-2px', lineHeight: 1, fontFamily: 'Be Vietnam Pro, sans-serif' }}>{homeStats.averageRating.toFixed(1)}</div>
+                <div style={{ color: '#F59E0B', fontSize: '17px', marginTop: '2px' }}>★★★★★</div>
+                <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{homeStats.totalReviews.toLocaleString('vi-VN')} đánh giá</div>
+              </div>
+            )}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
-            <div className="review-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ width: '44px', height: '44px', background: 'linear-gradient(135deg,#F97316,#EA580C)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '15px', color: 'white', flexShrink: 0 }}>HN</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, color: '#111827', fontSize: '15px' }}>Hoàng Nam</div>
-                  <div style={{ fontSize: '12px', color: '#9CA3AF' }}>TP.HCM · iPhone 15 Pro Max</div>
-                </div>
-                <div style={{ color: '#F59E0B', fontSize: '13px', flexShrink: 0 }}>★★★★★</div>
-              </div>
-              <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.75 }}>"Mua iPhone tại Tech Store lần này cực kỳ hài lòng. Máy chính hãng, seal đầy đủ, giao trong 1.5 giờ. Nhân viên rất nhiệt tình và am hiểu sản phẩm."</p>
-              <div style={{ marginTop: '14px', fontSize: '11px', color: '#D1D5DB' }}>2 ngày trước</div>
+          {reviewsLoading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
+              {[...Array(3)].map((_, i) => (
+                <div key={i} style={{ height: '190px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px' }} className="animate-pulse" />
+              ))}
             </div>
-            <div className="review-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ width: '44px', height: '44px', background: 'linear-gradient(135deg,#10B981,#059669)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '15px', color: 'white', flexShrink: 0 }}>LA</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, color: '#111827', fontSize: '15px' }}>Lan Anh</div>
-                  <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Hà Nội · Samsung S24 Ultra</div>
-                </div>
-                <div style={{ color: '#F59E0B', fontSize: '13px', flexShrink: 0 }}>★★★★★</div>
-              </div>
-              <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.75 }}>"Giá ở đây rẻ hơn nhiều so với các chỗ khác, lại còn được trả góp 0% 12 tháng. Chính sách đổi trả rõ ràng, không phiền hà. Sẽ ủng hộ dài dài!"</p>
-              <div style={{ marginTop: '14px', fontSize: '11px', color: '#D1D5DB' }}>5 ngày trước</div>
+          ) : reviewHighlights.length === 0 ? (
+            <div style={{ padding: '32px', textAlign: 'center', color: '#9CA3AF', fontSize: '14px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px' }}>
+              Chưa có đánh giá nào từ khách hàng.
             </div>
-            <div className="review-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ width: '44px', height: '44px', background: 'linear-gradient(135deg,#F59E0B,#EA580C)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '15px', color: 'white', flexShrink: 0 }}>MT</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, color: '#111827', fontSize: '15px' }}>Minh Tú</div>
-                  <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Đà Nẵng · Xiaomi 14 Ultra</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${reviewHighlights.length}, 1fr)`, gap: '16px' }}>
+              {reviewHighlights.map((review, i) => (
+                <div key={review.id} className="review-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                    <div style={{ width: '44px', height: '44px', background: ['linear-gradient(135deg,#F97316,#EA580C)', 'linear-gradient(135deg,#10B981,#059669)', 'linear-gradient(135deg,#F59E0B,#EA580C)'][i % 3], borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '15px', color: 'white', flexShrink: 0 }}>{avatarInitials(review.userName)}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, color: '#111827', fontSize: '15px' }}>{review.userName}</div>
+                      {review.productName && (
+                        <div style={{ fontSize: '12px', color: '#9CA3AF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{review.productName}</div>
+                      )}
+                    </div>
+                    <div style={{ color: '#F59E0B', fontSize: '13px', flexShrink: 0 }}>{'★'.repeat(review.rating ?? 0)}</div>
+                  </div>
+                  <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.75 }}>"{review.content}"</p>
+                  <div style={{ marginTop: '14px', fontSize: '11px', color: '#D1D5DB' }}>{timeAgo(review.createdAt)}</div>
                 </div>
-                <div style={{ color: '#F59E0B', fontSize: '13px', flexShrink: 0 }}>★★★★★</div>
-              </div>
-              <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.75 }}>"Thu cũ đổi mới giá hời lắm! Mình đổi iPhone 13 được trợ giá 2.5 triệu. Showroom sạch sẽ, thoải mái trải nghiệm trước khi mua rất thích."</p>
-              <div style={{ marginTop: '14px', fontSize: '11px', color: '#D1D5DB' }}>1 tuần trước</div>
+              ))}
             </div>
-          </div>
+          )}
         </section>
 
-        {/* ══ BLOG ══ */}
-        <section style={{ padding: '56px 0 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', letterSpacing: '-.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Tin tức công nghệ</h2>
-            <span onClick={() => onNavigate('list')} style={{ fontSize: '14px', color: '#EA580C', fontWeight: 600, cursor: 'pointer' }}>Xem tất cả →</span>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
-            <div className="blog-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div style={{ height: '160px', overflow: 'hidden', position: 'relative' }}>
-                <div className="b-img" style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#F97316,#EA580C)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '52px' }}>📱</div>
-                <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(234,88,12,.9)', color: 'white', fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '6px' }}>REVIEW</div>
-              </div>
-              <div style={{ padding: '18px' }}>
-                <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '8px' }}>15 Tháng 6, 2026 · 5 phút đọc</div>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#111827', lineHeight: 1.5, marginBottom: '8px' }}>Đánh giá iPhone 16 Pro Max: Đỉnh cao hay chưa?</h3>
-                <p style={{ fontSize: '13px', color: '#9CA3AF', lineHeight: 1.65, marginBottom: '14px' }}>Camera 48MP, chip A18 Pro, thiết kế Titan sang trọng...</p>
-                <span onClick={() => onNavigate('list')} style={{ fontSize: '13px', color: '#EA580C', fontWeight: 600, cursor: 'pointer' }}>Đọc tiếp →</span>
-              </div>
-            </div>
-            <div className="blog-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div style={{ height: '160px', overflow: 'hidden', position: 'relative' }}>
-                <div className="b-img" style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#1D4ED8,#1e3a8a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '52px' }}>🔥</div>
-                <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(234,88,12,.9)', color: 'white', fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '6px' }}>HOT</div>
-              </div>
-              <div style={{ padding: '18px' }}>
-                <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '8px' }}>12 Tháng 6, 2026 · 3 phút đọc</div>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#111827', lineHeight: 1.5, marginBottom: '8px' }}>Top 5 Samsung tốt nhất tháng 6/2026</h3>
-                <p style={{ fontSize: '13px', color: '#9CA3AF', lineHeight: 1.65, marginBottom: '14px' }}>Galaxy S24 Ultra, Z Fold 6, A55... mẫu nào đáng mua nhất?</p>
-                <span onClick={() => onNavigate('list')} style={{ fontSize: '13px', color: '#EA580C', fontWeight: 600, cursor: 'pointer' }}>Đọc tiếp →</span>
-              </div>
-            </div>
-            <div className="blog-card" style={{ border: '1px solid #E5E7EB', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-              <div style={{ height: '160px', overflow: 'hidden', position: 'relative' }}>
-                <div className="b-img" style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#111827,#374151)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '52px' }}>💡</div>
-                <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(234,88,12,.9)', color: 'white', fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '6px' }}>MẸO HAY</div>
-              </div>
-              <div style={{ padding: '18px' }}>
-                <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '8px' }}>10 Tháng 6, 2026 · 4 phút đọc</div>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#111827', lineHeight: 1.5, marginBottom: '8px' }}>10 mẹo chọn mua điện thoại không bị hớ</h3>
-                <p style={{ fontSize: '13px', color: '#9CA3AF', lineHeight: 1.65, marginBottom: '14px' }}>Những điều cần lưu ý để không mua nhầm hàng kém chất lượng...</p>
-                <span onClick={() => onNavigate('list')} style={{ fontSize: '13px', color: '#EA580C', fontWeight: 600, cursor: 'pointer' }}>Đọc tiếp →</span>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* ══ NEWSLETTER ══ */}
         <section style={{ padding: '56px 0 80px' }}>
@@ -851,7 +826,6 @@ export default function HomePage() {
                   </span>
                   <div>
                     <div style={{ fontSize: '13px', color: '#D1D5DB' }}>123 Nguyễn Huệ, Q.1, TP.HCM</div>
-                    <div style={{ fontSize: '11px', color: '#6B7280' }}>+ 49 chi nhánh khác</div>
                   </div>
                 </div>
                 <div>

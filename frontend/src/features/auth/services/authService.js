@@ -5,8 +5,8 @@ export const authService = {
     return axiosClient.post('/api/auth/login', { email, password })
   },
 
-  async register(fullName, email, password) {
-    return axiosClient.post('/api/auth/register', { fullName, email, password })
+  async register(fullName, phone, email, password) {
+    return axiosClient.post('/api/auth/register', { fullName, phone, email, password })
   },
 
   async forgotPassword(email) {

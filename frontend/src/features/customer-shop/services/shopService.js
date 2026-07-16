@@ -49,6 +49,22 @@ export const shopService = {
     return axiosClient.get('/api/products/filter', { params })
   },
 
+  async getFlashSaleProducts() {
+    return axiosClient.get('/api/products/flash-sale-today')
+  },
+
+  async getBrandNames() {
+    return axiosClient.get('/api/brands')
+  },
+
+  async getHomeStats() {
+    return axiosClient.get('/api/stats/homepage')
+  },
+
+  async getReviewHighlights(limit = 6) {
+    return axiosClient.get('/api/reviews/highlights', { params: { limit } })
+  },
+
   async searchNaturalLanguage(query) {
     return axiosClient.get('/api/products/search-nl', { params: { q: query } })
   },
@@ -87,5 +103,15 @@ export const shopService = {
 
   async getViewerCount(productId, visitorId) {
     return axiosClient.get(`/api/products/${productId}/viewers?visitorId=${visitorId}`)
+  },
+
+  // Toggle favorite (wishlist heart) on a product for the logged-in customer
+  async toggleFavorite(productId) {
+    return axiosClient.post(`/api/customer/products/${productId}/favorite`)
+  },
+
+  // Toggle "notify me when back in stock" for a product for the logged-in customer
+  async toggleStockSubscription(productId) {
+    return axiosClient.post(`/api/customer/products/${productId}/subscription`)
   },
 }

@@ -6,11 +6,13 @@ import com.project.tech_gadget_store.modules.auth.repository.UserRepository;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.review.dto.request.ReviewRequestDto;
+import com.project.tech_gadget_store.modules.review.dto.response.ReviewHighlightResponseDto;
 import com.project.tech_gadget_store.modules.review.dto.response.ReviewResponseDto;
 import com.project.tech_gadget_store.modules.review.entity.Review;
 import com.project.tech_gadget_store.modules.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +59,26 @@ public class ReviewService {
     public Page<ReviewResponseDto> getProductReviews(String productId, Pageable pageable) {
         Page<Review> topLevelReviews = reviewRepository.findByProductIdAndParentIsNull(productId, pageable);
         return topLevelReviews.map(this::mapToDto);
+    }
+
+    /** Most recent well-rated reviews (4-5 stars) across all products — used for homepage testimonials. */
+    public List<ReviewHighlightResponseDto> getHighlightReviews(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return reviewRepository.findByParentIsNullAndRatingGreaterThanEqualOrderByCreatedAtDesc(4, pageable)
+                .stream()
+                .map(this::mapToHighlightDto)
+                .collect(Collectors.toList());
+    }
+
+    private ReviewHighlightResponseDto mapToHighlightDto(Review review) {
+        return ReviewHighlightResponseDto.builder()
+                .id(review.getId())
+                .userName(review.getUser() != null ? review.getUser().getFullName() : "Khách hàng")
+                .productName(review.getProduct() != null ? review.getProduct().getName() : null)
+                .content(review.getContent())
+                .rating(review.getRating())
+                .createdAt(review.getCreatedAt())
+                .build();
     }
 
     @Transactional

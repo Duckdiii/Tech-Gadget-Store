@@ -1,9 +1,11 @@
 package com.project.tech_gadget_store.modules.review.controller;
 
 import com.project.tech_gadget_store.modules.review.dto.request.ReviewRequestDto;
+import com.project.tech_gadget_store.modules.review.dto.response.ReviewHighlightResponseDto;
 import com.project.tech_gadget_store.modules.review.dto.response.ReviewResponseDto;
 import com.project.tech_gadget_store.modules.review.service.ReviewService;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -33,6 +35,12 @@ public class ReviewController {
             @RequestParam(defaultValue = "10") int size) {
         Page<ReviewResponseDto> reviews = reviewService.getProductReviews(productId, PageRequest.of(page, size));
         return ResponseEntity.ok(reviews);
+    }
+
+    @GetMapping("/highlights")
+    public ResponseEntity<List<ReviewHighlightResponseDto>> getHighlightReviews(
+            @RequestParam(defaultValue = "6") int limit) {
+        return ResponseEntity.ok(reviewService.getHighlightReviews(limit));
     }
 
     @DeleteMapping("/{id}")
