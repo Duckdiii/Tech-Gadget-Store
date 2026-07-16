@@ -46,7 +46,9 @@ export function ProductInfo({
   setSelectedColor,
   adding,
   handleAddToCart,
-  viewerCount = 0
+  viewerCount = 0,
+  averageRating = null,
+  reviewCount = 0,
 }) {
   // Extract option pools
   const rams = Array.from(new Set(product.variants.map(v => v.ramGb))).filter(Boolean).sort((a, b) => a - b)
@@ -61,13 +63,30 @@ export function ProductInfo({
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-2.5 flex-wrap">
         <span className="text-[10px] font-extrabold px-3 py-1 text-white tracking-wider uppercase" style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '6px' }}>{product.categoryName || 'Sản phẩm'}</span>
-        <div className="flex items-center gap-0.5">
-          {[...Array(5)].map((_, i) => (
-            <svg key={i} className="w-4 h-4" style={{ color: i < 5 ? '#F59E0B' : '#e2e8f0' }} fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-            </svg>
-          ))}
-        </div>
+        <button
+            onClick={() => document.getElementById('product-reviews')?.scrollIntoView({ behavior: 'smooth' })}
+            className="flex items-center gap-1.5 cursor-pointer border-none bg-transparent p-0"
+          >
+            <div className="flex items-center gap-0.5">
+              {[...Array(5)].map((_, i) => {
+                const fill = Math.max(0, Math.min(1, (averageRating ?? 0) - i))
+                return (
+                  <span key={i} className="relative w-4 h-4 inline-block">
+                    <svg className="absolute inset-0 w-4 h-4" style={{ color: '#e2e8f0' }} fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                    {fill > 0 && (
+                      <svg className="absolute inset-0 w-4 h-4" style={{ color: '#F59E0B', clipPath: `inset(0 ${(1 - fill) * 100}% 0 0)` }} fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                    )}
+                  </span>
+                )
+              })}
+            </div>
+            <span className="text-xs font-bold" style={{ color: 'var(--t2)' }}>{(averageRating ?? 0).toFixed(1)}</span>
+            <span className="text-xs" style={{ color: 'var(--t3)' }}>({reviewCount ?? 0})</span>
+          </button>
         {product.salesCount > 0 && (
           <>
             <span className="text-xs" style={{ color: 'var(--t3)' }}>|</span>

@@ -1,5 +1,6 @@
 package com.project.tech_gadget_store.modules.review.service;
 
+import com.project.tech_gadget_store.common.exception.ForbiddenException;
 import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.entity.User;
 import com.project.tech_gadget_store.modules.auth.repository.UserRepository;
@@ -31,12 +32,12 @@ public class ReviewService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ReviewResponseDto createReview(ReviewRequestDto requestDto) {
+    public ReviewResponseDto createReview(ReviewRequestDto requestDto, String authorUserId) {
         Product product = productRepository.findById(requestDto.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + requestDto.getProductId()));
 
-        User user = userRepository.findById(requestDto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + requestDto.getUserId()));
+        User user = userRepository.findById(authorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + authorUserId));
 
         Review parent = null;
         if (requestDto.getParentId() != null && !requestDto.getParentId().isBlank()) {
@@ -53,12 +54,12 @@ public class ReviewService {
                 .build();
 
         Review savedReview = reviewRepository.save(review);
-        return mapToDto(savedReview);
+        return mapToDto(savedReview, authorUserId);
     }
 
-    public Page<ReviewResponseDto> getProductReviews(String productId, Pageable pageable) {
+    public Page<ReviewResponseDto> getProductReviews(String productId, Pageable pageable, String viewerUserId) {
         Page<Review> topLevelReviews = reviewRepository.findByProductIdAndParentIsNull(productId, pageable);
-        return topLevelReviews.map(this::mapToDto);
+        return topLevelReviews.map(review -> mapToDto(review, viewerUserId));
     }
 
     /** Most recent well-rated reviews (4-5 stars) across all products — used for homepage testimonials. */
@@ -82,20 +83,25 @@ public class ReviewService {
     }
 
     @Transactional
-    public void deleteReview(String id) {
+    public void deleteReview(String id, String requesterUserId) {
         Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found with id: " + id));
+        if (review.getUser() == null || !review.getUser().getId().equals(requesterUserId)) {
+            throw new ForbiddenException("Bạn không có quyền xoá đánh giá này.");
+        }
         reviewRepository.delete(review);
     }
 
-    private ReviewResponseDto mapToDto(Review review) {
+    private ReviewResponseDto mapToDto(Review review, String viewerUserId) {
         String parentId = (review.getParent() != null) ? review.getParent().getId() : null;
         String userName = (review.getUser() != null) ? review.getUser().getFullName() : "Unknown User";
+        boolean mine = viewerUserId != null && review.getUser() != null
+                && viewerUserId.equals(review.getUser().getId());
 
         List<ReviewResponseDto> repliesDto = new ArrayList<>();
         if (review.getReplies() != null) {
             repliesDto = review.getReplies().stream()
-                    .map(this::mapToDto)
+                    .map(reply -> mapToDto(reply, viewerUserId))
                     .collect(Collectors.toList());
         }
 
@@ -110,6 +116,7 @@ public class ReviewService {
                 .createdAt(review.getCreatedAt())
                 .updatedAt(review.getUpdatedAt())
                 .replies(repliesDto)
+                .mine(mine)
                 .build();
     }
 }

@@ -24,4 +24,7 @@ public class ReviewResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<ReviewResponseDto> replies;
+    // true nếu review này thuộc về người đang gọi API — dùng để FE hiện nút xoá đúng chỗ,
+    // không cần lộ userId/email thật ra ngoài để so khớp.
+    private boolean mine;
 }

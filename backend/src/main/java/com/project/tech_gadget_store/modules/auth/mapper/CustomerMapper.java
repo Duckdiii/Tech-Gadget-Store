@@ -22,6 +22,7 @@ public class CustomerMapper {
                 .cartId(c.getCart() != null ? c.getCart().getId() : null)
                 .ordersIds(List.of())
                 .addressesIds(c.getAddresses().stream().map(a -> a.getId()).toList())
+                .preferredPaymentType(c.getPreferredPaymentType())
                 .build();
     }
 }

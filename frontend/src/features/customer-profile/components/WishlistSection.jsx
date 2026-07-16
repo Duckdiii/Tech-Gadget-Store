@@ -90,7 +90,7 @@ export default function WishlistSection() {
                 ['list', <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>]
               ].map(([v, icon]) => (
                 <button key={v} onClick={() => setView(v)}
-                  className={`p-2 transition-colors border-none cursor-pointer ${view === v ? 'bg-[#E8420A] text-white' : 'bg-white text-gray-400 hover:bg-gray-50'}`}>
+                  className={`p-2 transition-colors border-none cursor-pointer ${view === v ? 'bg-[var(--accent)] text-white' : 'bg-white text-gray-400 hover:bg-gray-50'}`}>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">{icon}</svg>
                 </button>
               ))}
@@ -147,7 +147,7 @@ export default function WishlistSection() {
                     {/* Info */}
                     <div className="p-3.5">
                       <div className="flex items-center gap-1.5 mb-1.5">
-                        <span className="text-[10px] font-bold text-[#E8420A] bg-orange-50 px-1.5 py-0.5 rounded">{item.brand}</span>
+                        <span className="text-[10px] font-bold text-[var(--accent)] bg-orange-50 px-1.5 py-0.5 rounded">{item.brand}</span>
                         <span className="text-[10px] text-gray-400">{item.category}</span>
                       </div>
                       <p className="text-[13px] font-semibold text-gray-800 leading-snug line-clamp-2 min-h-[36px]">{item.name}</p>
@@ -156,12 +156,12 @@ export default function WishlistSection() {
                         <span className="text-[10px] text-gray-400">({item.reviews})</span>
                       </div>
                       <div className="mt-2">
-                        <p className="text-[15px] font-bold text-[#E8420A]">{fmt(item.price)}</p>
+                        <p className="text-[15px] font-bold text-[var(--accent)]">{fmt(item.price)}</p>
                         {item.original && <p className="text-[11px] text-gray-400 line-through">{fmt(item.original)}</p>}
                       </div>
                       <div className="mt-1.5"><StockBadge stock={item.stock} /></div>
                       <button disabled={item.stock === 'out'}
-                        className={`mt-3 w-full py-2 text-[12px] font-semibold rounded transition-colors border-none cursor-pointer ${item.stock === 'out' ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#E8420A] hover:bg-[#c93808] text-white'}`}>
+                        className={`mt-3 w-full py-2 text-[12px] font-semibold rounded transition-colors border-none cursor-pointer ${item.stock === 'out' ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[var(--accent)] hover:bg-[var(--accent-d)] text-white'}`}>
                         {item.stock === 'out' ? 'Hết hàng' : 'Yêu thích'}
                       </button>
                     </div>
@@ -190,7 +190,7 @@ export default function WishlistSection() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold text-[#E8420A] bg-orange-50 px-1.5 py-0.5 rounded">{item.brand}</span>
+                            <span className="text-[10px] font-bold text-[var(--accent)] bg-orange-50 px-1.5 py-0.5 rounded">{item.brand}</span>
                             <span className="text-[10px] text-gray-400">{item.category}</span>
                           </div>
                           <p className="text-[14px] font-semibold text-gray-800 leading-snug line-clamp-2">{item.name}</p>
@@ -208,12 +208,12 @@ export default function WishlistSection() {
                       </div>
                       <div className="flex items-end justify-between mt-2">
                         <div>
-                          <p className="text-[16px] font-bold text-[#E8420A]">{fmt(item.price)}</p>
+                          <p className="text-[16px] font-bold text-[var(--accent)]">{fmt(item.price)}</p>
                           {item.original && <p className="text-[11px] text-gray-400 line-through">{fmt(item.original)}</p>}
                           <div className="mt-1"><StockBadge stock={item.stock} /></div>
                         </div>
                         <button disabled={item.stock === 'out'}
-                          className={`px-4 py-2 text-[12px] font-semibold rounded transition-colors border-none cursor-pointer ${item.stock === 'out' ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#E8420A] hover:bg-[#c93808] text-white'}`}>
+                          className={`px-4 py-2 text-[12px] font-semibold rounded transition-colors border-none cursor-pointer ${item.stock === 'out' ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[var(--accent)] hover:bg-[var(--accent-d)] text-white'}`}>
                           {item.stock === 'out' ? 'Hết hàng' : 'Yêu thích'}
                         </button>
                       </div>

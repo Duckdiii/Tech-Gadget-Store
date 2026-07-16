@@ -190,25 +190,25 @@ export default function ProductsPage() {
 
       {/* Category header */}
       <div
-        className="py-12 relative overflow-hidden"
+        className="py-5 relative overflow-hidden"
         style={{
           background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
           borderBottom: '1px solid var(--b1)',
         }}
       >
-        <div className="absolute top-0 right-0 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(232,66,10,0.08) 0%, transparent 70%)' }} />
+        <div className="absolute top-0 right-0 w-52 h-52 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(232,66,10,0.08) 0%, transparent 70%)' }} />
         <div className="max-w-screen-2xl mx-auto px-8 relative z-10">
-          <p className="text-[11px] font-extrabold tracking-[0.25em] uppercase mb-1.5" style={{ color: 'var(--accent)' }}>
+          <p className="text-[10px] font-extrabold tracking-[0.2em] uppercase mb-1" style={{ color: 'var(--accent)' }}>
             {selectedCategories.length > 0 ? selectedCategories.join(' · ') : 'Danh mục sản phẩm'}
           </p>
-          <h1 className="text-[28px] font-black text-white" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+          <h1 className="text-[20px] font-black text-white" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
             {pageTitle}
           </h1>
-          <p className="text-sm mt-1.5 text-slate-400">{pageSubtitle}</p>
+          <p className="text-xs mt-1 text-slate-400">{pageSubtitle}</p>
           {aiFilter && (
             <button
               onClick={() => onNavigate('list', { search: '' })}
-              className="mt-2 text-[12px] font-semibold underline decoration-dotted"
+              className="mt-1.5 text-[12px] font-semibold underline decoration-dotted"
               style={{ color: 'var(--accent)' }}
             >
               Xoá tìm kiếm AI, quay lại duyệt thường
@@ -273,16 +273,17 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* Filter + Grid */}
-        <div className="flex gap-7 items-start">
-          <FilterPanel
-            filters={filters}
-            onChange={patchFilters}
-            onReset={resetFilters}
-            categories={categories}
-            brands={brands}
-          />
-          <div className="flex-1 min-w-0">
+        {/* Filter bar */}
+        <FilterPanel
+          filters={filters}
+          onChange={patchFilters}
+          onReset={resetFilters}
+          categories={categories}
+          brands={brands}
+        />
+
+        {/* Grid */}
+        <div>
             {error && (
               <div
                 className="text-[13px] mb-6 px-4 py-3 font-semibold"
@@ -322,7 +323,6 @@ export default function ProductsPage() {
             {!loading && products.length > 0 && totalPages > 1 && (
               <Pagination current={page + 1} total={totalPages} onChange={(p) => setPage(p - 1)} />
             )}
-          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useMembershipSection } from '../hooks/useMembershipSection'
+import { useNav } from '../../../hooks/useNav'
 
 const TIER_DISPLAY = {
   STANDARD: { label: 'Thành viên', color: 'bg-gray-400',   ring: 'ring-gray-300',   text: 'text-gray-600'   },
@@ -14,6 +15,7 @@ function formatVnd(value) {
 }
 
 export default function MembershipSection() {
+  const onNavigate = useNav()
   const { data, tiers, loading, error } = useMembershipSection()
 
   if (loading) {
@@ -61,9 +63,20 @@ export default function MembershipSection() {
               <div className="w-full bg-white/20 rounded-full h-3">
                 <div className="bg-white h-3 rounded-full transition-all" style={{ width: `${pct}%` }} />
               </div>
-              <p className="text-xs text-white/60 mt-2">
-                Cần thêm <span className="font-black text-white">{formatVnd(data.amountToNextTier)}</span> chi tiêu để lên hạng {nextDisplay.label}
-              </p>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-white/60">
+                  Cần thêm <span className="font-black text-white">{formatVnd(data.amountToNextTier)}</span> chi tiêu để lên hạng {nextDisplay.label}
+                </p>
+                <button
+                  onClick={() => onNavigate('list')}
+                  className="text-xs font-bold text-white hover:text-[var(--accent-h)] bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-md transition-all cursor-pointer border border-white/25 flex items-center gap-1 shadow-sm"
+                >
+                  Mua thêm {formatVnd(data.amountToNextTier)} để đạt hạng {nextDisplay.label} — Mua sắm ngay
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
           ) : (
             <p className="mt-6 text-sm text-white/70">Bạn đang ở hạng thành viên cao nhất 🎉</p>
@@ -71,15 +84,29 @@ export default function MembershipSection() {
         </div>
 
         {/* Benefits summary strip */}
-        <div className="bg-white px-8 py-4 flex flex-wrap items-center gap-6 border-t border-gray-200">
-          <div className="flex items-center gap-2 text-sm text-[#E8420A] font-semibold">
-            <span className="w-9 h-9 rounded bg-orange-50 border border-orange-100 flex items-center justify-center text-xs font-black">{data.discountPercentage}%</span>
-            Giảm giá mỗi đơn
+        <div className="bg-white px-8 py-5 border-t border-gray-200 space-y-4">
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center gap-2 text-sm text-[var(--accent)] font-semibold">
+              <span className="w-9 h-9 rounded bg-orange-50 border border-orange-100 flex items-center justify-center text-xs font-black">{data.discountPercentage}%</span>
+              Giảm giá mỗi đơn
+            </div>
+            {data.freeShipping && (
+              <div className="flex items-center gap-2 text-sm text-[var(--accent)] font-semibold">
+                <span className="w-9 h-9 rounded bg-orange-50 border border-orange-100 flex items-center justify-center text-xs font-black">🚀</span>
+                Miễn phí vận chuyển
+              </div>
+            )}
           </div>
-          {data.freeShipping && (
-            <div className="flex items-center gap-2 text-sm text-[#E8420A] font-semibold">
-              <span className="w-9 h-9 rounded bg-orange-50 border border-orange-100 flex items-center justify-center text-xs font-black">🚀</span>
-              Miễn phí vận chuyển
+          
+          {data.discountPercentage > 0 && (
+            <div className="p-4 rounded-xl bg-green-50/70 border border-green-200 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white text-lg shrink-0">🎉</div>
+              <div>
+                <p className="text-sm font-bold text-green-800">
+                  Bạn đã tiết kiệm được <span className="font-extrabold text-green-950">{formatVnd(Math.round(data.totalSpent * (data.discountPercentage / 100)))}</span> từ ưu đãi giảm {data.discountPercentage}% của hạng {display.label}.
+                </p>
+                <p className="text-xs text-green-700/80 mt-0.5">Tiếp tục mua sắm tích lũy để nhận thêm nhiều ưu đãi đặc quyền!</p>
+              </div>
             </div>
           )}
         </div>
@@ -118,7 +145,7 @@ export default function MembershipSection() {
                       {(tier.minSpending / 1000000).toFixed(0)}tr đ
                     </span>
                   )}
-                  {isActive && <span className="text-[10px] font-black text-[#E8420A] bg-orange-50 px-1.5 py-0.5 rounded">Của bạn</span>}
+                  {isActive && <span className="text-[10px] font-black text-[var(--accent)] bg-orange-50 px-1.5 py-0.5 rounded">Của bạn</span>}
                 </div>
               )
             })}
@@ -131,7 +158,7 @@ export default function MembershipSection() {
         <h3 className="text-base font-bold text-gray-900 mb-5">Quyền lợi hạng {display.label}</h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="flex items-start gap-3 p-3.5 rounded bg-orange-50/50 border border-orange-100">
-            <div className="w-6 h-6 rounded-full bg-[#E8420A] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-6 h-6 rounded-full bg-[var(--accent)] flex items-center justify-center shrink-0 mt-0.5">
               <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
@@ -140,7 +167,7 @@ export default function MembershipSection() {
           </div>
           {data.freeShipping && (
             <div className="flex items-start gap-3 p-3.5 rounded bg-orange-50/50 border border-orange-100">
-              <div className="w-6 h-6 rounded-full bg-[#E8420A] flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-[var(--accent)] flex items-center justify-center shrink-0 mt-0.5">
                 <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>

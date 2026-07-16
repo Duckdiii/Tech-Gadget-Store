@@ -27,7 +27,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductMapper {
 
-        public ProductResponseDto toProductResponseDto(Product product, List<ProductVariant> variants, Integer salesCount) {
+        public ProductResponseDto toProductResponseDto(Product product, List<ProductVariant> variants, Integer salesCount,
+                        Double averageRating, Integer reviewCount) {
                 ProductVariant first = variants.isEmpty() ? null : variants.get(0);
 
                 BigDecimal minPrice = variants.stream()
@@ -57,6 +58,8 @@ public class ProductMapper {
                                 .discountPercent(getBestActivePromotionPercent(product))
                                 .salesCount(salesCount)
                                 .specSummary(buildSpecSummary(product, variants))
+                                .averageRating(averageRating)
+                                .reviewCount(reviewCount)
                                 .build();
         }
 

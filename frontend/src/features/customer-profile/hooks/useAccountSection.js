@@ -4,6 +4,18 @@ import { profileService } from '../services/profileService'
 export function useAccountSection({ profile, onProfileUpdate }) {
   const [avatarSrc, setAvatarSrc] = useState(null)
 
+  useEffect(() => {
+    const loadAvatar = () => {
+      if (profile?.email) {
+        const stored = localStorage.getItem(`customer_avatar_${profile.email}`)
+        if (stored) setAvatarSrc(stored)
+      }
+    }
+    loadAvatar()
+    window.addEventListener('customer_avatar_changed', loadAvatar)
+    return () => window.removeEventListener('customer_avatar_changed', loadAvatar)
+  }, [profile])
+
   const INIT = {
     firstName: '',
     lastName: '',
@@ -94,12 +106,13 @@ export function useAccountSection({ profile, onProfileUpdate }) {
   /* ── 2FA ── */
   const [twoFa, setTwoFa] = useState(true)
 
-  /* ── Avatar upload ── */
-  const handleAvatarChange = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const url = URL.createObjectURL(file)
-    setAvatarSrc(url)
+  /* ── Avatar select ── */
+  const handleAvatarSelect = (newAvatar) => {
+    if (profile?.email) {
+      localStorage.setItem(`customer_avatar_${profile.email}`, newAvatar)
+      setAvatarSrc(newAvatar)
+      window.dispatchEvent(new Event('customer_avatar_changed'))
+    }
   }
 
   const genderLabel = { male: 'Nam', female: 'Nữ', other: 'Khác' }
@@ -140,7 +153,7 @@ export function useAccountSection({ profile, onProfileUpdate }) {
     handleSavePw,
     twoFa,
     setTwoFa,
-    handleAvatarChange,
+    handleAvatarSelect,
     genderLabel,
     dobDisplay,
     strength,

@@ -15,15 +15,21 @@ export const shopService = {
   },
 
   async updateCartItemQuantity(itemId, quantity) {
-    return axiosClient.put(`/api/customer/cart/items/${itemId}/quantity`, { quantity })
+    const res = await axiosClient.put(`/api/customer/cart/items/${itemId}/quantity`, { quantity })
+    window.dispatchEvent(new Event('cart_changed'))
+    return res
   },
 
   async deleteCartItem(itemId) {
-    return axiosClient.delete(`/api/customer/cart/items/${itemId}`)
+    const res = await axiosClient.delete(`/api/customer/cart/items/${itemId}`)
+    window.dispatchEvent(new Event('cart_changed'))
+    return res
   },
 
   async addCartItem(productVariantId, quantity = 1) {
-    return axiosClient.post('/api/customer/cart/items', { productVariantId, quantity })
+    const res = await axiosClient.post('/api/customer/cart/items', { productVariantId, quantity })
+    window.dispatchEvent(new Event('cart_changed'))
+    return res
   },
 
   // Checkout APIs

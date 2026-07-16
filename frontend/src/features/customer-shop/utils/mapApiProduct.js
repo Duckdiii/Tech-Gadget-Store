@@ -12,6 +12,8 @@ export function mapApiProduct(p) {
     originalPrice: discountPercent > 0 ? minPrice : null,
     discountPercent: discountPercent > 0 ? discountPercent : null,
     salesCount: p.salesCount ?? 0,
+    rating: p.averageRating ?? null,
+    reviews: p.reviewCount ?? null,
     available: p.hasVariants,
     ram: p.ramGb != null ? `${p.ramGb}GB` : null,
     storage: p.storageGb != null ? `${p.storageGb}GB` : null,

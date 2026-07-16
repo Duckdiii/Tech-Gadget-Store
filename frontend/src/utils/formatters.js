@@ -3,6 +3,10 @@ export function formatCurrency(val) {
   return Number(val).toLocaleString('vi-VN') + ' đ'
 }
 
+export function avatarInitials(name) {
+  return (name || '?').trim().split(/\s+/).slice(-2).map(w => w[0]).join('').toUpperCase()
+}
+
 export function formatDate(val) {
   if (!val) return '—'
   if (Array.isArray(val)) {

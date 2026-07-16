@@ -127,6 +127,31 @@ export default function StoreNavbar() {
   const [aiLoading, setAiLoading] = useState(false)
   const [bellRing, setBellRing] = useState(false)
   const [notifications, setNotifications] = useState([])
+  const [cartCount, setCartCount] = useState(0)
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      if (!user || user.role !== 'customer') {
+        setCartCount(0)
+        return
+      }
+      try {
+        const cartData = await shopService.getCart()
+        if (cartData && cartData.items) {
+          const count = cartData.items.reduce((sum, item) => sum + item.quantity, 0)
+          setCartCount(count)
+        } else {
+          setCartCount(0)
+        }
+      } catch (err) {
+        console.error('Lỗi tải số lượng giỏ hàng:', err)
+      }
+    }
+
+    fetchCartCount()
+    window.addEventListener('cart_changed', fetchCartCount)
+    return () => window.removeEventListener('cart_changed', fetchCartCount)
+  }, [user])
 
   const bellRef = useRef(null)
   const userMenuRef = useRef(null)
@@ -341,12 +366,14 @@ export default function StoreNavbar() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.7} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
-              <span
-                className="absolute -top-1.5 -right-2 w-4 h-4 text-white text-[9px] font-bold flex items-center justify-center"
-                style={{ backgroundColor: 'var(--accent)', borderRadius: '2px' }}
-              >
-                2
-              </span>
+              {cartCount > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-2 w-4 h-4 text-white text-[9px] font-bold flex items-center justify-center animate-scale-up"
+                  style={{ backgroundColor: 'var(--accent)', borderRadius: '2px' }}
+                >
+                  {cartCount}
+                </span>
+              )}
             </button>
 
             {/* Bell */}

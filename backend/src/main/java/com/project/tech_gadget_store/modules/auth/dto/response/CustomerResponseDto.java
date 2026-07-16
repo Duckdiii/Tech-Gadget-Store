@@ -24,4 +24,5 @@ public class CustomerResponseDto {
     private String cartId;
     private List<String> ordersIds;
     private List<String> addressesIds;
+    private String preferredPaymentType;
 }

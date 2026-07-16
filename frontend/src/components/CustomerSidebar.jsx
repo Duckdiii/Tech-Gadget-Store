@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useNav, ROUTE_MAP } from '../hooks/useNav'
 
@@ -57,6 +58,7 @@ const NAV_ITEMS = [
 export default function CustomerSidebar({ allowedPages = null }) {
   const onNavigate = useNav()
   const location = useLocation()
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   return (
     <aside
@@ -152,7 +154,7 @@ export default function CustomerSidebar({ allowedPages = null }) {
         </button>
 
         <button
-          onClick={() => onNavigate('login')}
+          onClick={() => setShowLogoutModal(true)}
           className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-all duration-150"
           style={{ borderRadius: '4px', color: 'var(--err)' }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)' }}
@@ -164,6 +166,38 @@ export default function CustomerSidebar({ allowedPages = null }) {
           <span className="text-[13px] font-medium">Đăng xuất</span>
         </button>
       </div>
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl border border-gray-100 p-6 space-y-5 animate-scale-up text-gray-800">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
+              <h3 className="text-base font-bold text-gray-900">Xác nhận đăng xuất</h3>
+              <p className="text-xs text-gray-500">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 py-2.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer border-none"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={() => {
+                  setShowLogoutModal(false)
+                  onNavigate('login')
+                }}
+                className="flex-1 py-2.5 text-xs font-bold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors cursor-pointer border-none shadow-sm"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   )
 }

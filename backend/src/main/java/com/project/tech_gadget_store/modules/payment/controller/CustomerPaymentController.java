@@ -11,8 +11,10 @@ import com.project.tech_gadget_store.modules.order.entity.Cart;
 import com.project.tech_gadget_store.modules.order.entity.CartItem;
 import com.project.tech_gadget_store.modules.order.service.CheckoutFacade;
 import com.project.tech_gadget_store.modules.payment.dto.request.PaymentConfirmRequestDto;
+import com.project.tech_gadget_store.modules.payment.dto.request.UpdatePreferredPaymentMethodRequestDto;
 import com.project.tech_gadget_store.modules.payment.dto.response.PaymentConfirmResponseDto;
 import com.project.tech_gadget_store.modules.payment.dto.response.PaymentMethodResponseDto;
+import com.project.tech_gadget_store.modules.payment.dto.response.PreferredPaymentMethodResponseDto;
 import com.project.tech_gadget_store.modules.payment.repository.CODPaymentMethodRepository;
 import com.project.tech_gadget_store.modules.payment.repository.MomoPaymentMethodRepository;
 import com.project.tech_gadget_store.modules.payment.repository.VNPayPaymentMethodRepository;
@@ -122,14 +124,7 @@ public class CustomerPaymentController {
                         .build())
                 .collect(Collectors.toList());
 
-        List<PaymentMethodResponseDto> paymentMethods = new ArrayList<>();
-        momoMethodRepository.findFirstByOrderByCreatedAtAsc().ifPresent(m -> paymentMethods.add(PaymentMethodResponseDto
-                .builder().id(m.getId()).name(m.getName()).description(m.getDescription()).type("MOMO").build()));
-        vnpayMethodRepository.findFirstByOrderByCreatedAtAsc()
-                .ifPresent(v -> paymentMethods.add(PaymentMethodResponseDto.builder().id(v.getId()).name(v.getName())
-                        .description(v.getDescription()).type("VNPAY").build()));
-        codMethodRepository.findFirstByOrderByCreatedAtAsc().ifPresent(c -> paymentMethods.add(PaymentMethodResponseDto
-                .builder().id(c.getId()).name(c.getName()).description(c.getDescription()).type("COD").build()));
+        List<PaymentMethodResponseDto> paymentMethods = listAvailablePaymentMethods();
 
         return ResponseEntity.ok(CheckoutSummaryResponseDto.builder()
                 .items(itemDtos)
@@ -149,5 +144,53 @@ public class CustomerPaymentController {
         PaymentConfirmResponseDto response = checkoutFacade.confirmCheckout(req, authentication.getName(),
                 req.getClientIp());
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Phương thức thanh toán "ưu tiên" của khách — chỉ là tham chiếu tới 1 cổng thanh toán hệ
+     * thống đã cấu hình sẵn (MOMO/VNPAY/COD), KHÔNG lưu bất kỳ thông tin thẻ/tài khoản nào.
+     */
+    @GetMapping("/preferred-method")
+    public ResponseEntity<PreferredPaymentMethodResponseDto> getPreferredMethod(Authentication authentication) {
+        Customer customer = customerRepository.findByAccountEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+        return ResponseEntity.ok(PreferredPaymentMethodResponseDto.builder()
+                .available(listAvailablePaymentMethods())
+                .preferred(customer.getPreferredPaymentType())
+                .build());
+    }
+
+    @PutMapping("/preferred-method")
+    public ResponseEntity<PreferredPaymentMethodResponseDto> updatePreferredMethod(
+            @Valid @RequestBody UpdatePreferredPaymentMethodRequestDto request,
+            Authentication authentication) {
+        Customer customer = customerRepository.findByAccountEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+
+        List<PaymentMethodResponseDto> available = listAvailablePaymentMethods();
+        boolean isValidChoice = available.stream().anyMatch(m -> m.getType().equals(request.getPaymentType()));
+        if (!isValidChoice) {
+            throw new IllegalArgumentException("Phương thức thanh toán không hợp lệ hoặc chưa được kích hoạt.");
+        }
+
+        customer.setPreferredPaymentType(request.getPaymentType());
+        customerRepository.save(customer);
+
+        return ResponseEntity.ok(PreferredPaymentMethodResponseDto.builder()
+                .available(available)
+                .preferred(customer.getPreferredPaymentType())
+                .build());
+    }
+
+    private List<PaymentMethodResponseDto> listAvailablePaymentMethods() {
+        List<PaymentMethodResponseDto> paymentMethods = new ArrayList<>();
+        momoMethodRepository.findFirstByOrderByCreatedAtAsc().ifPresent(m -> paymentMethods.add(PaymentMethodResponseDto
+                .builder().id(m.getId()).name(m.getName()).description(m.getDescription()).type("MOMO").build()));
+        vnpayMethodRepository.findFirstByOrderByCreatedAtAsc()
+                .ifPresent(v -> paymentMethods.add(PaymentMethodResponseDto.builder().id(v.getId()).name(v.getName())
+                        .description(v.getDescription()).type("VNPAY").build()));
+        codMethodRepository.findFirstByOrderByCreatedAtAsc().ifPresent(c -> paymentMethods.add(PaymentMethodResponseDto
+                .builder().id(c.getId()).name(c.getName()).description(c.getDescription()).type("COD").build()));
+        return paymentMethods;
     }
 }

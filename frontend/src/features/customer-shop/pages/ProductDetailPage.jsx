@@ -2,7 +2,9 @@ import { useState } from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
 import { useProductDetail } from '../hooks/useProductDetail'
 import { useViewerCount } from '../hooks/useViewerCount'
+import { useProductReviews } from '../hooks/useProductReviews'
 import RecommendationSection from '../components/RecommendationSection'
+import ReviewsSection from '../components/ReviewsSection'
 import { useSimilarProducts, useFrequentlyBoughtTogether } from '../hooks/useRecommendations'
 
 import { ProductImages, ProductInfo, SpecsTab } from '../components/ProductDetailComponents'
@@ -55,6 +57,7 @@ export default function ProductDetailPage() {
   const { products: similarProducts, loading: similarLoading } = useSimilarProducts(product?.id)
   const { products: boughtTogetherProducts, loading: boughtTogetherLoading } = useFrequentlyBoughtTogether(product?.id)
   const { viewerCount } = useViewerCount(product?.id)
+  const reviewsState = useProductReviews(product?.id)
 
   if (loading) {
     return (
@@ -108,11 +111,15 @@ export default function ProductDetailPage() {
               adding={adding}
               handleAddToCart={handleAddToCart}
               viewerCount={viewerCount}
+              averageRating={reviewsState.averageRating}
+              reviewCount={reviewsState.reviews.length}
             />
           </div>
         </div>
 
         <ProductTabs product={product} />
+
+        <ReviewsSection {...reviewsState} />
 
         <RecommendationSection
           title="Sản phẩm tương tự"

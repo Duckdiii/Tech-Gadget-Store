@@ -54,7 +54,7 @@ function AddressModal({ initial, onClose, onSave }) {
   const handleSave = () => { if (validate()) onSave(form) }
 
   const inputCls = (key) =>
-    `w-full border rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition-colors ${
+    `w-full border rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[var(--accent)] transition-colors ${
       errors[key] ? 'border-red-400 bg-red-50' : 'border-gray-300'
     }`
 
@@ -143,7 +143,7 @@ function AddressModal({ initial, onClose, onSave }) {
               ].map(t => (
                 <label key={t.v} className={`flex-1 flex items-center gap-2.5 px-4 py-3 rounded border cursor-pointer transition-all ${
                   form.type === t.v
-                    ? 'border-[#E8420A] bg-orange-50 text-[#E8420A]'
+                    ? 'border-[var(--accent)] bg-orange-50 text-[var(--accent)]'
                     : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                 }`}>
                   <input type="radio" name="addrType" value={t.v} checked={form.type === t.v} onChange={set('type')} className="hidden" />
@@ -160,7 +160,7 @@ function AddressModal({ initial, onClose, onSave }) {
             <div
               onClick={() => setForm(prev => ({ ...prev, isDefault: !prev.isDefault }))}
               className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors shrink-0 ${
-                form.isDefault ? 'bg-[#E8420A] border-[#E8420A]' : 'border-gray-300 hover:border-[#E8420A]'
+                form.isDefault ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-gray-300 hover:border-[var(--accent)]'
               }`}
             >
               {form.isDefault && (
@@ -178,7 +178,7 @@ function AddressModal({ initial, onClose, onSave }) {
 
         <div className="flex items-center justify-end gap-3 px-7 py-5 border-t border-gray-100 bg-gray-50/60 rounded-b sticky bottom-0">
           <button onClick={onClose} className="px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors bg-white cursor-pointer">Huỷ bỏ</button>
-          <button onClick={handleSave} className="px-6 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded shadow-sm transition-colors border-none cursor-pointer">{initial ? 'Lưu thay đổi' : 'Thêm địa chỉ'}</button>
+          <button onClick={handleSave} className="px-6 py-2.5 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] rounded shadow-sm transition-colors border-none cursor-pointer">{initial ? 'Lưu thay đổi' : 'Thêm địa chỉ'}</button>
         </div>
       </div>
     </div>
@@ -186,7 +186,7 @@ function AddressModal({ initial, onClose, onSave }) {
 }
 
 const typeInfo = {
-  home:   { label: 'Nhà riêng', color: 'bg-orange-50 text-[#E8420A] border-orange-200', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+  home:   { label: 'Nhà riêng', color: 'bg-orange-50 text-[var(--accent)] border-orange-200', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
   office: { label: 'Công ty',   color: 'bg-purple-50 text-purple-700 border-purple-200', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
   other:  { label: 'Khác',      color: 'bg-gray-50 text-gray-600 border-gray-200',   icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z' },
 }
@@ -225,7 +225,7 @@ export default function AddressSection({ profile }) {
           </div>
           <button
             onClick={() => setModal('add')}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded shadow-sm transition-colors border-none cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] rounded shadow-sm transition-colors border-none cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -246,7 +246,7 @@ export default function AddressSection({ profile }) {
             <p className="text-sm text-gray-400 mt-1">Thêm địa chỉ để đặt hàng nhanh hơn</p>
             <button
               onClick={() => setModal('add')}
-              className="mt-5 flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded transition-colors shadow-sm border-none cursor-pointer"
+              className="mt-5 flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] rounded transition-colors shadow-sm border-none cursor-pointer"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -274,12 +274,12 @@ export default function AddressSection({ profile }) {
                         <span className="text-sm text-gray-500">{addr.phone}</span>
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${ti.color}`}>{ti.label}</span>
                         {addr.isDefault && (
-                          <span className="text-xs font-black text-[#E8420A] bg-orange-100 border border-orange-200 px-2 py-0.5 rounded">Mặc định</span>
+                          <span className="text-xs font-black text-[var(--accent)] bg-orange-100 border border-orange-200 px-2 py-0.5 rounded">Mặc định</span>
                         )}
                       </div>
                       <p className="text-sm text-gray-600 leading-relaxed">{fullAddr}</p>
                       <div className="flex items-center gap-1 mt-3">
-                        <button onClick={() => setModal({ editId: addr.id })} className="text-xs font-semibold text-[#E8420A] hover:text-[#c93808] hover:bg-orange-50 border border-orange-200 px-3 py-1.5 rounded transition-colors bg-white cursor-pointer">Chỉnh sửa</button>
+                        <button onClick={() => setModal({ editId: addr.id })} className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-d)] hover:bg-orange-50 border border-orange-200 px-3 py-1.5 rounded transition-colors bg-white cursor-pointer">Chỉnh sửa</button>
                         {!addr.isDefault && (
                           <button onClick={() => handleSetDefault(addr.id)} className="text-xs font-semibold text-gray-600 hover:text-gray-800 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded transition-colors bg-white cursor-pointer">Đặt làm mặc định</button>
                         )}

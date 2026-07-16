@@ -19,9 +19,6 @@ public class ReviewRequestDto {
     @NotBlank(message = "productId must not be blank")
     private String productId;
 
-    @NotBlank(message = "userId must not be blank")
-    private String userId;
-
     @NotBlank(message = "content must not be blank")
     private String content;
 

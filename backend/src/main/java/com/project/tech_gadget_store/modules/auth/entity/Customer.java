@@ -26,6 +26,11 @@ public class Customer extends User {
     @OneToOne(mappedBy = "customer", fetch = FetchType.LAZY)
     private Cart cart;
 
+    // Loại cổng thanh toán khách chọn làm mặc định cho lần thanh toán sau (vd. "MOMO"/"VNPAY"/"COD").
+    // Không lưu bất kỳ thông tin thẻ/tài khoản nào — chỉ tham chiếu tới PaymentMethod hệ thống đã cấu hình sẵn.
+    @Column(name = "preferred_payment_type", length = 20)
+    private String preferredPaymentType;
+
 
 
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)

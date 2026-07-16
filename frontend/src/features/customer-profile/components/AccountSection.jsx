@@ -1,5 +1,6 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useAccountSection } from '../hooks/useAccountSection'
+import AvatarPickerModal from './AvatarPickerModal'
 
 function Field({ label, value, editing, children, verified }) {
   return (
@@ -28,6 +29,7 @@ function Field({ label, value, editing, children, verified }) {
 
 export default function AccountSection({ profile, onProfileUpdate }) {
   const fileRef = useRef(null)
+  const [isPickerOpen, setIsPickerOpen] = useState(false)
   const {
     avatarSrc,
     info,
@@ -49,7 +51,7 @@ export default function AccountSection({ profile, onProfileUpdate }) {
     handleSavePw,
     twoFa,
     setTwoFa,
-    handleAvatarChange,
+    handleAvatarSelect,
     genderLabel,
     dobDisplay,
     strength,
@@ -62,26 +64,25 @@ export default function AccountSection({ profile, onProfileUpdate }) {
     <div className="space-y-5 text-gray-800">
       {/* ── Avatar + name hero ── */}
       <div className="bg-white rounded border border-gray-200 shadow-sm overflow-hidden">
-        <div className="h-24 bg-gradient-to-r from-[#E8420A] to-[#c93808]" />
+        <div className="h-24 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-d)]" />
         <div className="px-8 pb-6 -mt-12 flex items-end gap-6">
           {/* Avatar */}
           <div className="relative shrink-0">
-            <div className="w-24 h-24 rounded-full ring-4 ring-white shadow-lg overflow-hidden bg-gradient-to-br from-[#E8420A] to-[#c93808] flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full ring-4 ring-white shadow-lg overflow-hidden bg-gradient-to-br from-[var(--accent)] to-[var(--accent-d)] flex items-center justify-center">
               {avatarSrc
                 ? <img src={avatarSrc} alt="avatar" className="w-full h-full object-cover" />
                 : <span className="text-white text-3xl font-black">AJ</span>
               }
             </div>
             <button
-              onClick={() => fileRef.current?.click()}
-              className="absolute bottom-0 right-0 w-8 h-8 bg-[#E8420A] hover:bg-[#c93808] text-white rounded-full flex items-center justify-center shadow-md transition-colors border-2 border-white cursor-pointer"
+              onClick={() => setIsPickerOpen(true)}
+              className="absolute bottom-0 right-0 w-8 h-8 bg-[var(--accent)] hover:bg-[var(--accent-d)] text-white rounded-full flex items-center justify-center shadow-md transition-colors border-2 border-white cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           </div>
 
           {/* Name block */}
@@ -103,10 +104,10 @@ export default function AccountSection({ profile, onProfileUpdate }) {
             {editing ? (
               <>
                 <button onClick={handleCancel} className="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">Huỷ</button>
-                <button onClick={handleSave} className="px-5 py-2 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded transition-colors shadow-sm cursor-pointer border-none">Lưu thay đổi</button>
+                <button onClick={handleSave} className="px-5 py-2 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] rounded transition-colors shadow-sm cursor-pointer border-none">Lưu thay đổi</button>
               </>
             ) : (
-              <button onClick={() => setEditing(true)} className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-300 hover:border-[#E8420A] hover:text-[#E8420A] rounded transition-colors shadow-sm cursor-pointer bg-white">
+              <button onClick={() => setEditing(true)} className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-300 hover:border-[var(--accent)] hover:text-[var(--accent)] rounded transition-colors shadow-sm cursor-pointer bg-white">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
@@ -125,41 +126,41 @@ export default function AccountSection({ profile, onProfileUpdate }) {
             <p className="text-xs text-gray-400 mt-0.5">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
           </div>
           {editing && (
-            <span className="text-xs font-semibold text-[#E8420A] bg-orange-50 border border-orange-200 px-3 py-1 rounded">Đang chỉnh sửa</span>
+            <span className="text-xs font-semibold text-[var(--accent)] bg-orange-50 border border-orange-200 px-3 py-1 rounded">Đang chỉnh sửa</span>
           )}
         </div>
 
         <div className="px-8 py-2">
           <Field label="Họ" value={info.firstName} editing={editing}>
-            <input value={draft.firstName} onChange={handleChangeField('firstName')} className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]" placeholder="Nhập họ" />
+            <input value={draft.firstName} onChange={handleChangeField('firstName')} className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[var(--accent)]" placeholder="Nhập họ" />
           </Field>
           <Field label="Tên" value={info.lastName} editing={editing}>
-            <input value={draft.lastName} onChange={handleChangeField('lastName')} className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]" placeholder="Nhập tên" />
+            <input value={draft.lastName} onChange={handleChangeField('lastName')} className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[var(--accent)]" placeholder="Nhập tên" />
           </Field>
           <Field label="Số điện thoại" value={info.phone.replace(/^(\d{3})\d{4}(\d{2})$/, '$1·····$2')} editing={editing} verified>
             <div className="flex gap-2">
               <div className="flex items-center gap-2 border border-gray-300 rounded px-3 py-2.5 bg-gray-50 text-sm text-gray-600 shrink-0">
                 <span className="text-base">🇻🇳</span><span>+84</span>
               </div>
-              <input value={draft.phone} onChange={handleChangeField('phone')} className="flex-1 border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]" placeholder="Số điện thoại" maxLength={10} />
+              <input value={draft.phone} onChange={handleChangeField('phone')} className="flex-1 border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[var(--accent)]" placeholder="Số điện thoại" maxLength={10} />
             </div>
           </Field>
           <Field label="Email" value={info.email} editing={editing} verified>
             <div className="flex gap-2">
-              <input value={draft.email} onChange={handleChangeField('email')} type="email" className="flex-1 border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]" placeholder="Địa chỉ email" />
-              <button className="text-sm font-semibold text-[#E8420A] border border-orange-200 hover:bg-orange-50 px-4 rounded transition-colors shrink-0 cursor-pointer bg-white">Xác minh</button>
+              <input value={draft.email} onChange={handleChangeField('email')} type="email" className="flex-1 border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[var(--accent)]" placeholder="Địa chỉ email" />
+              <button className="text-sm font-semibold text-[var(--accent)] border border-orange-200 hover:bg-orange-50 px-4 rounded transition-colors shrink-0 cursor-pointer bg-white">Xác minh</button>
             </div>
           </Field>
           <Field label="Ngày sinh" value={dobDisplay} editing={editing}>
-            <input value={draft.dob} onChange={handleChangeField('dob')} type="date" className="border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]" />
+            <input value={draft.dob} onChange={handleChangeField('dob')} type="date" className="border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[var(--accent)]" />
           </Field>
           <Field label="Giới tính" value={genderLabel[info.gender] ?? '—'} editing={editing}>
             <div className="flex gap-3">
               {[{ v: 'male', l: 'Nam' }, { v: 'female', l: 'Nữ' }, { v: 'other', l: 'Khác' }].map(g => (
-                <label key={g.v} className={`flex items-center gap-2 px-4 py-2 rounded border cursor-pointer transition-colors text-sm font-medium ${draft.gender === g.v ? 'border-[#E8420A] bg-orange-50 text-[#E8420A]' : 'border-gray-300 text-gray-600 hover:border-gray-400'}`}>
+                <label key={g.v} className={`flex items-center gap-2 px-4 py-2 rounded border cursor-pointer transition-colors text-sm font-medium ${draft.gender === g.v ? 'border-[var(--accent)] bg-orange-50 text-[var(--accent)]' : 'border-gray-300 text-gray-600 hover:border-gray-400'}`}>
                   <input type="radio" name="gender" value={g.v} checked={draft.gender === g.v} onChange={handleChangeField('gender')} className="hidden" />
                   {draft.gender === g.v
-                    ? <span className="w-4 h-4 rounded-full bg-[#E8420A] flex items-center justify-center"><span className="w-2 h-2 rounded-full bg-white" /></span>
+                    ? <span className="w-4 h-4 rounded-full bg-[var(--accent)] flex items-center justify-center"><span className="w-2 h-2 rounded-full bg-white" /></span>
                     : <span className="w-4 h-4 rounded-full border-2 border-gray-400" />
                   }
                   {g.l}
@@ -168,7 +169,7 @@ export default function AccountSection({ profile, onProfileUpdate }) {
             </div>
           </Field>
           <Field label="Giới thiệu" value={info.bio || <span className="text-gray-400 italic">Chưa có thông tin</span>} editing={editing}>
-            <textarea value={draft.bio} onChange={handleChangeField('bio')} rows={3} className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] resize-none" placeholder="Viết vài dòng giới thiệu về bản thân..." />
+            <textarea value={draft.bio} onChange={handleChangeField('bio')} rows={3} className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[var(--accent)] resize-none" placeholder="Viết vài dòng giới thiệu về bản thân..." />
           </Field>
         </div>
 
@@ -177,7 +178,7 @@ export default function AccountSection({ profile, onProfileUpdate }) {
             <p className="text-xs text-gray-400">Các trường có dấu <span className="text-green-600 font-bold">Đã xác minh</span> cần xác minh lại nếu thay đổi.</p>
             <div className="flex gap-2">
               <button onClick={handleCancel} className="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors cursor-pointer bg-white">Huỷ bỏ</button>
-              <button onClick={handleSave} className="px-6 py-2 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded transition-colors shadow-sm cursor-pointer border-none">Lưu thay đổi</button>
+              <button onClick={handleSave} className="px-6 py-2 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] rounded transition-colors shadow-sm cursor-pointer border-none">Lưu thay đổi</button>
             </div>
           </div>
         )}
@@ -212,7 +213,7 @@ export default function AccountSection({ profile, onProfileUpdate }) {
                 <div key={f.key}>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">{f.label}</label>
                   <div className="relative">
-                    <input type={pwVisible[f.key] ? 'text' : 'password'} value={pw[f.key]} onChange={setPwField(f.key)} placeholder={f.placeholder} className="w-full border border-gray-300 rounded px-4 py-2.5 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A]" />
+                    <input type={pwVisible[f.key] ? 'text' : 'password'} value={pw[f.key]} onChange={setPwField(f.key)} placeholder={f.placeholder} className="w-full border border-gray-300 rounded px-4 py-2.5 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[var(--accent)]" />
                     <button type="button" onClick={() => togglePwVisible(f.key)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors border-none bg-transparent cursor-pointer">
                       {pwVisible[f.key] ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
@@ -235,7 +236,7 @@ export default function AccountSection({ profile, onProfileUpdate }) {
               )}
               {pwError && <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded px-4 py-3"><svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{pwError}</div>}
               {pwSaved && <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded px-4 py-3"><svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>Đổi mật khẩu thành công!</div>}
-              <button onClick={handleSavePw} className="px-6 py-2.5 text-sm font-bold text-white bg-[#E8420A] hover:bg-[#c93808] rounded transition-colors shadow-sm border-none cursor-pointer">Xác nhận đổi mật khẩu</button>
+              <button onClick={handleSavePw} className="px-6 py-2.5 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] rounded transition-colors shadow-sm border-none cursor-pointer">Xác nhận đổi mật khẩu</button>
             </div>
           </div>
         )}
@@ -245,7 +246,7 @@ export default function AccountSection({ profile, onProfileUpdate }) {
       <div className="bg-white rounded border border-gray-200 shadow-sm p-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded bg-orange-50 border border-orange-100 flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5 text-[#E8420A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
@@ -267,7 +268,7 @@ export default function AccountSection({ profile, onProfileUpdate }) {
                 <p className={`text-xs font-bold mt-0.5 ${twoFa ? 'text-green-600' : 'text-gray-400'}`}>{twoFa ? 'Đang bật — Xác thực qua SMS' : 'Chưa bật'}</p>
               </div>
             </div>
-            <button onClick={() => setTwoFa(v => !v)} className={`relative w-12 h-6 rounded-full transition-colors duration-200 border-none cursor-pointer ${twoFa ? 'bg-[#E8420A]' : 'bg-gray-300'}`}>
+            <button onClick={() => setTwoFa(v => !v)} className={`relative w-12 h-6 rounded-full transition-colors duration-200 border-none cursor-pointer ${twoFa ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}>
               <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-200 ${twoFa ? 'left-[26px]' : 'left-0.5'}`} />
             </button>
           </div>
@@ -301,6 +302,12 @@ export default function AccountSection({ profile, onProfileUpdate }) {
           </div>
         </div>
       </div>
+      <AvatarPickerModal
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        onSelect={handleAvatarSelect}
+        currentAvatar={avatarSrc}
+      />
     </div>
   )
 }

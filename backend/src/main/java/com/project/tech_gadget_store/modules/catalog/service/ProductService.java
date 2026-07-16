@@ -20,6 +20,7 @@ import com.project.tech_gadget_store.modules.loyalty.entity.Promotion;
 import com.project.tech_gadget_store.modules.loyalty.repository.BundleServiceRepository;
 import com.project.tech_gadget_store.modules.order.entity.OrderItem;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
+import com.project.tech_gadget_store.modules.review.repository.ReviewRepository;
 import com.project.tech_gadget_store.modules.warehouse.entity.ExportLogItem;
 import jakarta.persistence.criteria.*;
 import java.math.BigDecimal;
@@ -49,17 +50,41 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final ProductVariantRepository productVariantRepository;
     private final OrderRepository orderRepository;
+    private final ReviewRepository reviewRepository;
 
     public ProductService(ProductRepository productRepository,
             BundleServiceRepository bundleServiceRepository,
             ProductMapper productMapper,
             ProductVariantRepository productVariantRepository,
-            OrderRepository orderRepository) {
+            OrderRepository orderRepository,
+            ReviewRepository reviewRepository) {
         this.productRepository = productRepository;
         this.bundleServiceRepository = bundleServiceRepository;
         this.productMapper = productMapper;
         this.productVariantRepository = productVariantRepository;
         this.orderRepository = orderRepository;
+        this.reviewRepository = reviewRepository;
+    }
+
+    /** [productId -> [averageRating, reviewCount]] for a batch of products — avoids N+1 review queries per list. */
+    private Map<String, Object[]> fetchRatingStats(List<String> productIds) {
+        Map<String, Object[]> ratingMap = new HashMap<>();
+        for (Object[] row : reviewRepository.findRatingStatsByProductIds(productIds)) {
+            double avg = ((Number) row[1]).doubleValue();
+            int count = ((Number) row[2]).intValue();
+            ratingMap.put((String) row[0], new Object[] { avg, count });
+        }
+        return ratingMap;
+    }
+
+    private Double ratingOf(Map<String, Object[]> ratingMap, String productId) {
+        Object[] stat = ratingMap.get(productId);
+        return stat != null ? (Double) stat[0] : null;
+    }
+
+    private Integer reviewCountOf(Map<String, Object[]> ratingMap, String productId) {
+        Object[] stat = ratingMap.get(productId);
+        return stat != null ? (Integer) stat[1] : 0;
     }
 
     /** Top-selling products (by total confirmed order quantity) — used for the homepage "Bán chạy" tab. */
@@ -87,12 +112,15 @@ public class ProductService {
         for (Object[] obj : salesCountsObj) {
             salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
         }
+        Map<String, Object[]> ratingMap = fetchRatingStats(pIds);
 
         return products.stream()
                 .map(p -> productMapper.toProductResponseDto(
-                        p, 
+                        p,
                         productVariantRepository.findByProductId(p.getId()),
-                        salesCountMap.getOrDefault(p.getId(), 0)))
+                        salesCountMap.getOrDefault(p.getId(), 0),
+                        ratingOf(ratingMap, p.getId()),
+                        reviewCountOf(ratingMap, p.getId())))
                 .toList();
     }
 
@@ -245,12 +273,15 @@ public class ProductService {
         for (Object[] obj : salesCountsObj) {
             salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
         }
+        Map<String, Object[]> ratingMap = fetchRatingStats(productIds);
 
         List<ProductResponseDto> items = products.stream()
                 .map(product -> productMapper.toProductResponseDto(
                         product,
                         productVariantRepository.findByProductId(product.getId()),
-                        salesCountMap.getOrDefault(product.getId(), 0)))
+                        salesCountMap.getOrDefault(product.getId(), 0),
+                        ratingOf(ratingMap, product.getId()),
+                        reviewCountOf(ratingMap, product.getId())))
                 .toList();
 
         return ProductPageResponseDto.builder()

@@ -27,4 +27,6 @@ public class ProductResponseDto {
     private Double discountPercent;
     private Integer salesCount;
     private String specSummary;
+    private Double averageRating;
+    private Integer reviewCount;
 }

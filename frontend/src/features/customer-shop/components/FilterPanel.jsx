@@ -1,18 +1,57 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
-function FilterSection({ title, children, defaultOpen = true }) {
-  const [open, setOpen] = useState(defaultOpen)
+function useClickOutside(ref, onOutside) {
+  useEffect(() => {
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) onOutside()
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [ref, onOutside])
+}
+
+// Nút mở dropdown filter trên thanh ngang — panel bung xuống khi bấm, tự đóng khi click ra ngoài.
+function FilterDropdown({ label, count = 0, children, panelClassName = '' }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  useClickOutside(ref, () => setOpen(false))
+  const active = count > 0
+
   return (
-    <div className="pb-4 mb-4 last:mb-0 last:pb-0" style={{ borderBottom: '1px solid var(--b1)' }}>
-      <button onClick={() => setOpen(o => !o)} className="flex items-center justify-between w-full mb-3 cursor-pointer border-none bg-transparent">
-        <span className="text-[11px] font-extrabold uppercase tracking-wider" style={{ color: 'var(--t1)' }}>{title}</span>
-        <svg className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} style={{ color: 'var(--t3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1.5 px-3.5 py-2 text-[12.5px] font-semibold rounded-lg border transition-all cursor-pointer whitespace-nowrap"
+        style={{
+          borderColor: active ? 'var(--accent)' : 'var(--b1)',
+          backgroundColor: active ? 'rgba(234,88,12,0.06)' : 'var(--card)',
+          color: active ? 'var(--accent)' : 'var(--t2)',
+        }}
+      >
+        {label}
+        {active && (
+          <span className="w-4 h-4 text-[10px] font-black text-white flex items-center justify-center rounded-full shrink-0" style={{ backgroundColor: 'var(--accent)' }}>
+            {count}
+          </span>
+        )}
+        <svg className={`w-3 h-3 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      {open && <div className="animate-fade-in">{children}</div>}
+      {open && (
+        <div
+          className={`absolute left-0 top-full mt-2 z-20 p-4 min-w-[240px] max-h-[70vh] overflow-y-auto ${panelClassName}`}
+          style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', boxShadow: '0 16px 40px rgba(15,23,42,0.14)' }}
+        >
+          {children}
+        </div>
+      )}
     </div>
   )
+}
+
+function FilterGroupLabel({ children }) {
+  return <p className="text-[11px] font-extrabold uppercase tracking-wider mb-2.5 first:mt-0 mt-4" style={{ color: 'var(--t3)' }}>{children}</p>
 }
 
 function CheckGroup({ items, selected, onToggle }) {
@@ -181,16 +220,17 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
   const isHeadphonesScope = categoryType === 'headphones'
   const isSmartwatchScope = categoryType === 'smartwatch'
 
+  const phoneExtraCount = (activeOs !== 'all' ? 1 : 0) + (activeScreenBucket !== 'all' ? 1 : 0) + (activeBatteryBucket !== 'all' ? 1 : 0)
+    + (activeChipset !== 'all' ? 1 : 0) + (activeSim !== 'all' ? 1 : 0) + (filters.nfcSupported ? 1 : 0)
+  const laptopExtraCount = (filters.cpuKeyword ? 1 : 0) + (filters.gpuKeyword ? 1 : 0) + (activeOs !== 'all' ? 1 : 0)
+  const monitorExtraCount = (activeRefreshBucket !== 'all' ? 1 : 0) + (filters.panelType ? 1 : 0)
+  const headphonesExtraCount = (filters.isWireless != null ? 1 : 0) + (filters.hasNoiseCancelling ? 1 : 0)
+  const smartwatchExtraCount = (filters.hasGps ? 1 : 0) + (filters.isWaterResistant ? 1 : 0)
+  const otherCount = (filters.onlyAvailable ? 1 : 0) + (filters.onPromotion ? 1 : 0)
+
   const activeCount = selectedBrands.length + selectedRam.length + selectedStorage.length + selectedColors.length
-    + selectedCategories.length
-    + (activeOs !== 'all' ? 1 : 0) + (activeScreenBucket !== 'all' ? 1 : 0) + (activeBatteryBucket !== 'all' ? 1 : 0)
-    + (activeChipset !== 'all' ? 1 : 0) + (activeSim !== 'all' ? 1 : 0)
-    + (filters.nfcSupported ? 1 : 0) + (filters.onlyAvailable ? 1 : 0) + (filters.onPromotion ? 1 : 0)
-    + (priceActive ? 1 : 0) + (filters.keyword ? 1 : 0)
-    + (filters.cpuKeyword ? 1 : 0) + (filters.gpuKeyword ? 1 : 0)
-    + (filters.panelType ? 1 : 0) + (activeRefreshBucket !== 'all' ? 1 : 0)
-    + (filters.isWireless != null ? 1 : 0) + (filters.hasNoiseCancelling ? 1 : 0)
-    + (filters.hasGps ? 1 : 0) + (filters.isWaterResistant ? 1 : 0)
+    + selectedCategories.length + (priceActive ? 1 : 0) + (filters.keyword ? 1 : 0)
+    + phoneExtraCount + laptopExtraCount + monitorExtraCount + headphonesExtraCount + smartwatchExtraCount + otherCount
 
   const selectPricePreset = (value) => {
     const preset = PRICE_PRESETS.find(p => p.value === value)
@@ -208,65 +248,60 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
     const bucket = REFRESH_RATE_BUCKETS.find(b => b.value === value)
     onChange({ minRefreshRate: bucket?.min, maxRefreshRate: bucket?.max })
   }
+  const resetCategoryScopedFilters = () => onChange({
+    operatingSystem: undefined, chipset: undefined, simType: undefined,
+    nfcSupported: undefined, minScreenSize: undefined, maxScreenSize: undefined,
+    minBatteryCapacity: undefined, maxBatteryCapacity: undefined,
+    cpuKeyword: undefined, gpuKeyword: undefined, panelType: undefined,
+    minRefreshRate: undefined, maxRefreshRate: undefined,
+    isWireless: undefined, hasNoiseCancelling: undefined,
+    hasGps: undefined, isWaterResistant: undefined,
+  })
 
-  // Active filter chips for quick-clear
+  // Danh sách chip hiển thị MỌI tiêu chí đang chọn, mỗi chip bấm vào để xoá riêng tiêu chí đó.
   const activeChips = []
   selectedCategories.forEach(c => activeChips.push({ label: c, clear: () => toggleList('categoryNames', c) }))
   selectedBrands.forEach(b => activeChips.push({ label: b, clear: () => toggleList('brandNames', b) }))
   if (filters.keyword) activeChips.push({ label: `"${filters.keyword}"`, clear: () => onChange({ keyword: '' }) })
-  if (priceActive) activeChips.push({ label: 'Lọc giá', clear: () => onChange({ minPrice: undefined, maxPrice: undefined }) })
+  if (priceActive) {
+    const presetLabel = PRICE_PRESETS.find(p => p.value === activePricePreset && p.value !== '')?.label
+    activeChips.push({ label: presetLabel ?? 'Khoảng giá tuỳ chỉnh', clear: () => onChange({ minPrice: undefined, maxPrice: undefined }) })
+  }
+  selectedRam.forEach(r => activeChips.push({ label: `RAM ${r}GB`, clear: () => toggleList('ramGb', r) }))
+  selectedStorage.forEach(s => activeChips.push({ label: s >= 1000 ? `${s / 1000}TB` : `${s}GB`, clear: () => toggleList('storageGb', s) }))
+  selectedColors.forEach(c => activeChips.push({ label: c, clear: () => toggleList('colors', c) }))
+  if (activeOs !== 'all') activeChips.push({ label: activeOs === 'ios' ? 'iOS' : activeOs === 'android' ? 'Android' : activeOs === 'windows' ? 'Windows' : activeOs === 'macos' ? 'macOS' : activeOs === 'linux' ? 'Linux' : activeOs, clear: () => onChange({ operatingSystem: undefined }) })
+  if (activeScreenBucket !== 'all') activeChips.push({ label: SCREEN_BUCKETS.find(b => b.value === activeScreenBucket)?.label, clear: () => onChange({ minScreenSize: undefined, maxScreenSize: undefined }) })
+  if (activeBatteryBucket !== 'all') activeChips.push({ label: BATTERY_BUCKETS.find(b => b.value === activeBatteryBucket)?.label, clear: () => onChange({ minBatteryCapacity: undefined, maxBatteryCapacity: undefined }) })
+  if (activeChipset !== 'all') activeChips.push({ label: CHIPSET_OPTIONS.find(o => o.value === activeChipset)?.label, clear: () => onChange({ chipset: undefined }) })
+  if (activeSim !== 'all') activeChips.push({ label: SIM_OPTIONS.find(o => o.value === activeSim)?.label, clear: () => onChange({ simType: undefined }) })
+  if (filters.nfcSupported) activeChips.push({ label: 'Hỗ trợ NFC', clear: () => onChange({ nfcSupported: undefined }) })
+  if (filters.cpuKeyword) activeChips.push({ label: `CPU: ${filters.cpuKeyword}`, clear: () => onChange({ cpuKeyword: undefined }) })
+  if (filters.gpuKeyword) activeChips.push({ label: `GPU: ${filters.gpuKeyword}`, clear: () => onChange({ gpuKeyword: undefined }) })
+  if (activeRefreshBucket !== 'all') activeChips.push({ label: REFRESH_RATE_BUCKETS.find(b => b.value === activeRefreshBucket)?.label, clear: () => onChange({ minRefreshRate: undefined, maxRefreshRate: undefined }) })
+  if (filters.panelType) activeChips.push({ label: filters.panelType, clear: () => onChange({ panelType: undefined }) })
+  if (filters.isWireless === true) activeChips.push({ label: 'Không dây', clear: () => onChange({ isWireless: undefined }) })
+  if (filters.isWireless === false) activeChips.push({ label: 'Có dây', clear: () => onChange({ isWireless: undefined }) })
+  if (filters.hasNoiseCancelling) activeChips.push({ label: 'Chống ồn ANC', clear: () => onChange({ hasNoiseCancelling: undefined }) })
+  if (filters.hasGps) activeChips.push({ label: 'Có GPS', clear: () => onChange({ hasGps: undefined }) })
+  if (filters.isWaterResistant) activeChips.push({ label: 'Chống nước', clear: () => onChange({ isWaterResistant: undefined }) })
+  if (filters.onlyAvailable) activeChips.push({ label: 'Chỉ hàng có sẵn', clear: () => onChange({ onlyAvailable: undefined }) })
+  if (filters.onPromotion) activeChips.push({ label: 'Đang khuyến mãi', clear: () => onChange({ onPromotion: undefined }) })
 
   return (
-    <aside
-      className="w-60 shrink-0 p-5 h-fit sticky top-24"
-      style={{
-        backgroundColor: 'var(--card)',
-        border: '1px solid var(--b1)',
-        borderRadius: '16px',
-        boxShadow: '0 4px 20px rgba(15,23,42,0.02)'
-      }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-4" style={{ borderBottom: '1px solid var(--b1)' }}>
-        <div className="flex items-center gap-2">
+    <div className="w-full mb-6">
+      {/* Thanh lọc ngang */}
+      <div className="flex items-center gap-2.5 flex-wrap p-3" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', boxShadow: '0 4px 20px rgba(15,23,42,0.02)' }}>
+        <div className="flex items-center gap-1.5 shrink-0 pr-1">
+          <svg className="w-4 h-4" style={{ color: 'var(--t2)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M6 8h12M10 12h4" />
+          </svg>
           <span className="text-[12px] font-extrabold uppercase tracking-wider" style={{ color: 'var(--t1)' }}>Bộ lọc</span>
-          {activeCount > 0 && (
-            <span className="w-4 h-4 text-white text-[10px] font-black flex items-center justify-center" style={{ backgroundColor: 'var(--accent)', borderRadius: '4px' }}>
-              {activeCount}
-            </span>
-          )}
         </div>
-        {activeCount > 0 && (
-          <button onClick={onReset} className="text-[11px] font-bold transition-colors cursor-pointer border-none bg-transparent" style={{ color: 'var(--t3)' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}
-          >Xoá bộ lọc</button>
-        )}
-      </div>
 
-      {/* Active filter chips */}
-      {activeChips.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {activeChips.map((chip, i) => (
-            <button
-              key={i}
-              onClick={chip.clear}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold cursor-pointer border-none transition-all"
-              style={{ backgroundColor: 'rgba(234,88,12,0.08)', color: 'var(--accent)', border: '1px solid rgba(234,88,12,0.2)' }}
-            >
-              {chip.label}
-              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Search */}
-      <div className="flex-1 min-w-0 mb-4">
-        <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--t3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Tìm kiếm */}
+        <div className="relative shrink-0">
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style={{ color: 'var(--t3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -274,16 +309,12 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
             placeholder="Tìm sản phẩm..."
             value={keywordText}
             onChange={e => setKeywordText(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-[12px] rounded-lg border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] transition-all bg-[var(--s1)]"
+            className="w-40 sm:w-48 pl-8 pr-3 py-2 text-[12px] rounded-lg border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] transition-all bg-[var(--s1)]"
           />
         </div>
-      </div>
 
-      <div className="space-y-0">
-
-        {/* ===== Danh mục (multi-select từ DB) ===== */}
         {categories.length > 0 && (
-          <FilterSection title="Danh mục">
+          <FilterDropdown label="Danh mục" count={selectedCategories.length}>
             <div className="space-y-2">
               {categories.map(cat => (
                 <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer group">
@@ -291,19 +322,9 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
                     type="checkbox"
                     checked={selectedCategories.includes(cat.name)}
                     onChange={() => {
+                      const wasSelected = selectedCategories.includes(cat.name)
                       toggleList('categoryNames', cat.name)
-                      // Reset phone-specific filters when switching away from phone category
-                      if (selectedCategories.includes(cat.name)) {
-                        onChange({
-                          operatingSystem: undefined, chipset: undefined, simType: undefined,
-                          nfcSupported: undefined, minScreenSize: undefined, maxScreenSize: undefined,
-                          minBatteryCapacity: undefined, maxBatteryCapacity: undefined,
-                          cpuKeyword: undefined, gpuKeyword: undefined, panelType: undefined,
-                          minRefreshRate: undefined, maxRefreshRate: undefined,
-                          isWireless: undefined, hasNoiseCancelling: undefined,
-                          hasGps: undefined, isWaterResistant: undefined,
-                        })
-                      }
+                      if (wasSelected) resetCategoryScopedFilters()
                     }}
                     className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
                   />
@@ -313,13 +334,12 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
                 </label>
               ))}
             </div>
-          </FilterSection>
+          </FilterDropdown>
         )}
 
-        {/* ===== Thương hiệu (từ API) ===== */}
         {brands.length > 0 && (
-          <FilterSection title="Thương hiệu">
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
+          <FilterDropdown label="Thương hiệu" count={selectedBrands.length}>
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
               {brands.map(brand => (
                 <label key={brand} className="flex items-center gap-2.5 cursor-pointer group">
                   <input
@@ -332,11 +352,10 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
                 </label>
               ))}
             </div>
-          </FilterSection>
+          </FilterDropdown>
         )}
 
-        {/* ===== Mức giá (chung cho mọi loại) ===== */}
-        <FilterSection title="Mức giá">
+        <FilterDropdown label="Mức giá" count={priceActive ? 1 : 0}>
           <RadioGroup name="price" value={activePricePreset} onChange={selectPricePreset} items={PRICE_PRESETS} />
           {activePricePreset === '' && (
             <div className="flex items-center gap-1.5 mt-3">
@@ -359,23 +378,19 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
               />
             </div>
           )}
-        </FilterSection>
+        </FilterDropdown>
 
-        {/* ===== RAM & Storage (chung: Phone/Laptop) ===== */}
         {(isPhoneScope || isLaptopScope) && (
-          <>
-            <FilterSection title="RAM" defaultOpen={false}>
-              <CheckGroup items={RAM_OPTIONS} selected={selectedRam} onToggle={v => toggleList('ramGb', v)} />
-            </FilterSection>
-            <FilterSection title="Bộ nhớ trong" defaultOpen={false}>
-              <CheckGroup items={STORAGE_OPTIONS} selected={selectedStorage} onToggle={v => toggleList('storageGb', v)} />
-            </FilterSection>
-          </>
+          <FilterDropdown label="RAM / Bộ nhớ" count={selectedRam.length + selectedStorage.length}>
+            <FilterGroupLabel>RAM</FilterGroupLabel>
+            <CheckGroup items={RAM_OPTIONS} selected={selectedRam} onToggle={v => toggleList('ramGb', v)} />
+            <FilterGroupLabel>Bộ nhớ trong</FilterGroupLabel>
+            <CheckGroup items={STORAGE_OPTIONS} selected={selectedStorage} onToggle={v => toggleList('storageGb', v)} />
+          </FilterDropdown>
         )}
 
-        {/* ===== Màu sắc (chung cho mọi loại) ===== */}
-        <FilterSection title="Màu sắc" defaultOpen={false}>
-          <div className="flex flex-wrap gap-2 pt-1.5">
+        <FilterDropdown label="Màu sắc" count={selectedColors.length}>
+          <div className="flex flex-wrap gap-2">
             {COLOR_OPTIONS.map(({ value, hex }) => (
               <button
                 key={value}
@@ -397,90 +412,73 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
               {selectedColors.join(', ')}
             </p>
           )}
-        </FilterSection>
+        </FilterDropdown>
 
-        {/* ===== PHONE-specific filters ===== */}
         {isPhoneScope && (
-          <>
-            <FilterSection title="Hệ điều hành" defaultOpen={false}>
-              <RadioGroup name="os" value={activeOs} onChange={v => onChange({ operatingSystem: v === 'all' ? undefined : v })} items={[{ value: 'all', label: 'Tất cả' }, { value: 'ios', label: 'iOS' }, { value: 'android', label: 'Android' }]} />
-            </FilterSection>
-            <FilterSection title="Kích thước màn hình" defaultOpen={false}>
-              <RadioGroup name="screen" value={activeScreenBucket} onChange={selectScreenBucket} items={SCREEN_BUCKETS} />
-            </FilterSection>
-            <FilterSection title="Dung lượng pin" defaultOpen={false}>
-              <RadioGroup name="battery" value={activeBatteryBucket} onChange={selectBatteryBucket} items={BATTERY_BUCKETS} />
-            </FilterSection>
-            <FilterSection title="Chipset" defaultOpen={false}>
-              <RadioGroup name="chipset" value={activeChipset} onChange={v => onChange({ chipset: v === 'all' ? undefined : v })} items={CHIPSET_OPTIONS} />
-            </FilterSection>
-            <FilterSection title="Loại SIM" defaultOpen={false}>
-              <RadioGroup name="sim" value={activeSim} onChange={v => onChange({ simType: v === 'all' ? undefined : v })} items={SIM_OPTIONS} />
-            </FilterSection>
-            <FilterSection title="Tính năng đặc biệt" defaultOpen={false}>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2.5 cursor-pointer group">
-                  <input type="checkbox" checked={!!filters.nfcSupported} onChange={() => onChange({ nfcSupported: !filters.nfcSupported || undefined })} className="w-4 h-4 cursor-pointer accent-[var(--accent)]" />
-                  <span className="text-[12.5px]" style={{ color: filters.nfcSupported ? 'var(--t1)' : 'var(--t2)' }}>Hỗ trợ NFC</span>
-                </label>
-              </div>
-            </FilterSection>
-          </>
+          <FilterDropdown label="Bộ lọc điện thoại" count={phoneExtraCount}>
+            <FilterGroupLabel>Hệ điều hành</FilterGroupLabel>
+            <RadioGroup name="os" value={activeOs} onChange={v => onChange({ operatingSystem: v === 'all' ? undefined : v })} items={[{ value: 'all', label: 'Tất cả' }, { value: 'ios', label: 'iOS' }, { value: 'android', label: 'Android' }]} />
+            <FilterGroupLabel>Kích thước màn hình</FilterGroupLabel>
+            <RadioGroup name="screen" value={activeScreenBucket} onChange={selectScreenBucket} items={SCREEN_BUCKETS} />
+            <FilterGroupLabel>Dung lượng pin</FilterGroupLabel>
+            <RadioGroup name="battery" value={activeBatteryBucket} onChange={selectBatteryBucket} items={BATTERY_BUCKETS} />
+            <FilterGroupLabel>Chipset</FilterGroupLabel>
+            <RadioGroup name="chipset" value={activeChipset} onChange={v => onChange({ chipset: v === 'all' ? undefined : v })} items={CHIPSET_OPTIONS} />
+            <FilterGroupLabel>Loại SIM</FilterGroupLabel>
+            <RadioGroup name="sim" value={activeSim} onChange={v => onChange({ simType: v === 'all' ? undefined : v })} items={SIM_OPTIONS} />
+            <FilterGroupLabel>Tính năng đặc biệt</FilterGroupLabel>
+            <label className="flex items-center gap-2.5 cursor-pointer group">
+              <input type="checkbox" checked={!!filters.nfcSupported} onChange={() => onChange({ nfcSupported: !filters.nfcSupported || undefined })} className="w-4 h-4 cursor-pointer accent-[var(--accent)]" />
+              <span className="text-[12.5px]" style={{ color: filters.nfcSupported ? 'var(--t1)' : 'var(--t2)' }}>Hỗ trợ NFC</span>
+            </label>
+          </FilterDropdown>
         )}
 
-        {/* ===== LAPTOP-specific filters ===== */}
         {isLaptopScope && (
-          <>
-            <FilterSection title="CPU / Bộ xử lý" defaultOpen={true}>
-              <input
-                type="text"
-                placeholder="VD: Core i7, Ryzen 5..."
-                value={cpuText}
-                onChange={e => setCpuText(e.target.value)}
-                className="w-full px-2.5 py-1.5 text-[12px] rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)]"
-              />
-            </FilterSection>
-            <FilterSection title="GPU / Card đồ họa" defaultOpen={false}>
-              <input
-                type="text"
-                placeholder="VD: RTX 4060, Iris Xe..."
-                value={gpuText}
-                onChange={e => setGpuText(e.target.value)}
-                className="w-full px-2.5 py-1.5 text-[12px] rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)]"
-              />
-            </FilterSection>
-            <FilterSection title="Hệ điều hành" defaultOpen={false}>
-              <RadioGroup name="laptop-os" value={activeOs} onChange={v => onChange({ operatingSystem: v === 'all' ? undefined : v })} items={[{ value: 'all', label: 'Tất cả' }, { value: 'windows', label: 'Windows' }, { value: 'macos', label: 'macOS' }, { value: 'linux', label: 'Linux' }]} />
-            </FilterSection>
-          </>
+          <FilterDropdown label="Bộ lọc laptop" count={laptopExtraCount}>
+            <FilterGroupLabel>CPU / Bộ xử lý</FilterGroupLabel>
+            <input
+              type="text"
+              placeholder="VD: Core i7, Ryzen 5..."
+              value={cpuText}
+              onChange={e => setCpuText(e.target.value)}
+              className="w-full px-2.5 py-1.5 text-[12px] rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)]"
+            />
+            <FilterGroupLabel>GPU / Card đồ họa</FilterGroupLabel>
+            <input
+              type="text"
+              placeholder="VD: RTX 4060, Iris Xe..."
+              value={gpuText}
+              onChange={e => setGpuText(e.target.value)}
+              className="w-full px-2.5 py-1.5 text-[12px] rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)]"
+            />
+            <FilterGroupLabel>Hệ điều hành</FilterGroupLabel>
+            <RadioGroup name="laptop-os" value={activeOs} onChange={v => onChange({ operatingSystem: v === 'all' ? undefined : v })} items={[{ value: 'all', label: 'Tất cả' }, { value: 'windows', label: 'Windows' }, { value: 'macos', label: 'macOS' }, { value: 'linux', label: 'Linux' }]} />
+          </FilterDropdown>
         )}
 
-        {/* ===== MONITOR-specific filters ===== */}
         {isMonitorScope && (
-          <>
-            <FilterSection title="Tần số quét" defaultOpen={true}>
-              <RadioGroup name="refresh" value={activeRefreshBucket} onChange={selectRefreshBucket} items={REFRESH_RATE_BUCKETS} />
-            </FilterSection>
-            <FilterSection title="Tấm nền (Panel)" defaultOpen={false}>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2.5 cursor-pointer group">
-                  <input type="radio" name="panel" checked={!filters.panelType} onChange={() => onChange({ panelType: undefined })} className="w-4 h-4 cursor-pointer accent-[var(--accent)]" />
-                  <span className="text-[12.5px]" style={{ color: !filters.panelType ? 'var(--t1)' : 'var(--t2)' }}>Tất cả</span>
+          <FilterDropdown label="Bộ lọc màn hình" count={monitorExtraCount}>
+            <FilterGroupLabel>Tần số quét</FilterGroupLabel>
+            <RadioGroup name="refresh" value={activeRefreshBucket} onChange={selectRefreshBucket} items={REFRESH_RATE_BUCKETS} />
+            <FilterGroupLabel>Tấm nền (Panel)</FilterGroupLabel>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2.5 cursor-pointer group">
+                <input type="radio" name="panel" checked={!filters.panelType} onChange={() => onChange({ panelType: undefined })} className="w-4 h-4 cursor-pointer accent-[var(--accent)]" />
+                <span className="text-[12.5px]" style={{ color: !filters.panelType ? 'var(--t1)' : 'var(--t2)' }}>Tất cả</span>
+              </label>
+              {PANEL_TYPES.map(p => (
+                <label key={p} className="flex items-center gap-2.5 cursor-pointer group">
+                  <input type="radio" name="panel" checked={filters.panelType === p} onChange={() => onChange({ panelType: p })} className="w-4 h-4 cursor-pointer accent-[var(--accent)]" />
+                  <span className="text-[12.5px]" style={{ color: filters.panelType === p ? 'var(--t1)' : 'var(--t2)' }}>{p}</span>
                 </label>
-                {PANEL_TYPES.map(p => (
-                  <label key={p} className="flex items-center gap-2.5 cursor-pointer group">
-                    <input type="radio" name="panel" checked={filters.panelType === p} onChange={() => onChange({ panelType: p })} className="w-4 h-4 cursor-pointer accent-[var(--accent)]" />
-                    <span className="text-[12.5px]" style={{ color: filters.panelType === p ? 'var(--t1)' : 'var(--t2)' }}>{p}</span>
-                  </label>
-                ))}
-              </div>
-            </FilterSection>
-          </>
+              ))}
+            </div>
+          </FilterDropdown>
         )}
 
-        {/* ===== HEADPHONES-specific filters ===== */}
         {isHeadphonesScope && (
-          <FilterSection title="Kết nối & Tính năng" defaultOpen={true}>
+          <FilterDropdown label="Kết nối & Tính năng" count={headphonesExtraCount}>
             <div className="space-y-2">
               {[
                 [filters.isWireless === true, () => onChange({ isWireless: filters.isWireless === true ? undefined : true }), 'Không dây (Wireless)'],
@@ -493,12 +491,11 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
                 </label>
               ))}
             </div>
-          </FilterSection>
+          </FilterDropdown>
         )}
 
-        {/* ===== SMARTWATCH-specific filters ===== */}
         {isSmartwatchScope && (
-          <FilterSection title="Tính năng" defaultOpen={true}>
+          <FilterDropdown label="Tính năng" count={smartwatchExtraCount}>
             <div className="space-y-2">
               {[
                 [!!filters.hasGps, () => onChange({ hasGps: !filters.hasGps || undefined }), 'Có GPS'],
@@ -510,11 +507,10 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
                 </label>
               ))}
             </div>
-          </FilterSection>
+          </FilterDropdown>
         )}
 
-        {/* ===== Khác (chung cho mọi loại) ===== */}
-        <FilterSection title="Khác">
+        <FilterDropdown label="Khác" count={otherCount}>
           <div className="space-y-2">
             {[
               [!!filters.onlyAvailable, () => onChange({ onlyAvailable: !filters.onlyAvailable || undefined }), 'Chỉ hàng có sẵn'],
@@ -526,9 +522,39 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
               </label>
             ))}
           </div>
-        </FilterSection>
+        </FilterDropdown>
 
+        {activeCount > 0 && (
+          <button
+            onClick={onReset}
+            className="ml-auto flex items-center gap-1 text-[12px] font-bold transition-colors cursor-pointer border-none bg-transparent shrink-0"
+            style={{ color: 'var(--t3)' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}
+          >
+            Xoá tất cả ({activeCount})
+          </button>
+        )}
       </div>
-    </aside>
+
+      {/* Chip hiển thị các tiêu chí đang được chọn */}
+      {activeChips.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-3">
+          {activeChips.map((chip, i) => (
+            <button
+              key={i}
+              onClick={chip.clear}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer border-none transition-all"
+              style={{ backgroundColor: 'rgba(234,88,12,0.08)', color: 'var(--accent)', border: '1px solid rgba(234,88,12,0.2)' }}
+            >
+              {chip.label}
+              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
