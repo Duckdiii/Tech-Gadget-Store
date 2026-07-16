@@ -3,6 +3,7 @@ import { useSearchParams, useLocation } from 'react-router-dom'
 import { useNav } from '../../../hooks/useNav'
 import StoreNavbar from '../../../components/StoreNavbar'
 import ProductCard from '../components/ProductCard'
+import ProductCardSkeleton from '../components/ProductCardSkeleton'
 import FilterPanel from '../components/FilterPanel'
 import Pagination from '../components/Pagination'
 import { mapApiProduct } from '../utils/mapApiProduct'
@@ -227,15 +228,7 @@ export default function ProductsPage() {
             {loading ? (
               <div className="grid grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-80 animate-pulse"
-                    style={{
-                      backgroundColor: 'var(--card)',
-                      border: '1px solid var(--b1)',
-                      borderRadius: '16px',
-                    }}
-                  />
+                  <ProductCardSkeleton key={i} />
                 ))}
               </div>
             ) : products.length === 0 && !error ? (

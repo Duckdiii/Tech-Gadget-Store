@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import ProductCard from './ProductCard'
+import ProductCardSkeleton from './ProductCardSkeleton'
 
 const CARD_WIDTH = 280
 const CARD_GAP = 20
@@ -32,7 +33,9 @@ export default function RecommendationSection({ title, products, loading, onNavi
         {!hideTitle && <h2 className="text-lg font-black mb-4" style={{ color: 'var(--t1)' }}>{title}</h2>}
         <div className="flex gap-5 overflow-hidden">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-80 shrink-0 animate-pulse" style={{ width: CARD_WIDTH, backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px' }} />
+            <div key={i} className="shrink-0" style={{ width: CARD_WIDTH }}>
+              <ProductCardSkeleton />
+            </div>
           ))}
         </div>
       </section>

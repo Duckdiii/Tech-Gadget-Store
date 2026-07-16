@@ -4,6 +4,7 @@ import StoreNavbar from '../../../components/StoreNavbar'
 import { useAuth } from '../../../context/useAuth'
 import RecommendationSection from '../components/RecommendationSection'
 import ProductCard from '../components/ProductCard'
+import ProductCardSkeleton from '../components/ProductCardSkeleton'
 import { useForYouRecommendations, useRecentlyViewed, useSuggestionsFromHistory } from '../hooks/useRecommendations'
 import { shopService } from '../services/shopService'
 import { mapApiProduct } from '../utils/mapApiProduct'
@@ -51,6 +52,34 @@ export default function HomePage() {
   const [subscribed, setSubscribed] = useState(false)
   const [activeTab, setActiveTab] = useState('bestseller')
   const [activeRecTab, setActiveRecTab] = useState('forYou')
+
+  // ══ HERO SMART SEARCH STATES & LOGIC ══
+  const [heroSearch, setHeroSearch] = useState('')
+  const [heroSearchFocused, setHeroSearchFocused] = useState(false)
+  const [heroAiMode, setHeroAiMode] = useState(true)
+  const [heroAiLoading, setHeroAiLoading] = useState(false)
+
+  const handleHeroSearch = async (e, customQuery = null) => {
+    if (e) e.preventDefault()
+    const q = (customQuery !== null ? customQuery : heroSearch).trim()
+    if (!q) {
+      onNavigate('list', { search: '' })
+      return
+    }
+    if (!heroAiMode) {
+      onNavigate('list', { search: `?keyword=${encodeURIComponent(q)}` })
+      return
+    }
+    setHeroAiLoading(true)
+    try {
+      const data = await shopService.searchNaturalLanguage(q)
+      onNavigate('list', { state: { aiQuery: q, aiFilter: data.interpretedFilter, aiResults: data.results } })
+    } catch {
+      onNavigate('list', { search: `?keyword=${encodeURIComponent(q)}` })
+    } finally {
+      setHeroAiLoading(false)
+    }
+  }
 
   // ══ FLASH SALE (real data) ══
   const [flashProducts, setFlashProducts] = useState([])
@@ -173,9 +202,94 @@ export default function HomePage() {
               <span className="block text-gray-900">Giá Cực Tốt</span>
             </h1>
 
-            <p className="text-sm md:text-base lg:text-[17px] text-gray-500 leading-relaxed max-w-[500px] mb-8">
+            <p className="text-sm md:text-base lg:text-[17px] text-gray-500 leading-relaxed max-w-[500px] mb-6">
               Hơn <strong className="text-gray-955">500+ mẫu điện thoại</strong> chính hãng từ các thương hiệu hàng đầu. Bảo hành chính hãng, giao hàng trong 2 giờ, giá tốt nhất thị trường.
             </p>
+
+            {/* 🔍 KHUNG TÌM KIẾM THÔNG MINH */}
+            <form onSubmit={handleHeroSearch} className="relative w-full max-w-[550px] mb-8">
+              <div 
+                className={`relative flex items-center bg-white border rounded-2xl p-1.5 transition-all duration-300 ${
+                  heroSearchFocused 
+                    ? 'border-orange-500 shadow-[0_10px_30px_rgba(234,88,12,0.12)] ring-4 ring-orange-500/10' 
+                    : 'border-gray-200 shadow-sm'
+                }`}
+              >
+                {/* AI Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setHeroAiMode(v => !v)}
+                  title={heroAiMode ? 'Đang tìm bằng AI — bấm để tắt' : 'Bấm để bật tìm kiếm bằng câu hỏi tự nhiên'}
+                  className={`shrink-0 flex items-center gap-1 px-3 py-2 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer ${
+                    heroAiMode 
+                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm' 
+                      : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-800 border border-gray-200/50'
+                  }`}
+                >
+                  <span>✨</span>
+                  <span>AI</span>
+                </button>
+
+                {/* Input Field */}
+                <div className="relative flex-1 flex items-center min-w-0">
+                  <input
+                    type="text"
+                    value={heroSearch}
+                    onChange={e => setHeroSearch(e.target.value)}
+                    onFocus={() => setHeroSearchFocused(true)}
+                    onBlur={() => setHeroSearchFocused(false)}
+                    placeholder={
+                      heroAiMode 
+                        ? 'Tìm kiếm thông minh: "máy chụp hình đẹp dưới 15tr"...' 
+                        : 'Tìm tên điện thoại, máy tính, phụ kiện...'
+                    }
+                    className="w-full pl-3.5 pr-14 py-2.5 text-sm text-gray-900 placeholder-gray-400 bg-transparent border-none outline-none focus:ring-0 min-w-0"
+                  />
+                </div>
+
+                {/* Submit Search Button / Spinner */}
+                {heroAiLoading ? (
+                  <div className="absolute right-3.5 flex items-center justify-center">
+                    <svg className="animate-spin h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  </div>
+                ) : (
+                  <button
+                    type="submit"
+                    className="absolute right-2.5 p-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-all duration-200 cursor-pointer"
+                  >
+                    <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Tags Suggestions */}
+              <div className="flex flex-wrap items-center gap-2.5 mt-3 px-1.5">
+                <span className="text-xs text-gray-400">Gợi ý:</span>
+                {[
+                  { label: 'iPhone 15 Pro Max', q: 'iPhone 15 Pro Max' },
+                  { label: 'Samsung S24 Ultra', q: 'Samsung S24 Ultra' },
+                  { label: 'Máy dưới 10 triệu', q: 'điện thoại dưới 10 triệu' },
+                  { label: 'Trả góp 0%', q: 'trả góp 0%' }
+                ].map(tag => (
+                  <button
+                    key={tag.label}
+                    type="button"
+                    onClick={() => {
+                      setHeroSearch(tag.q)
+                      handleHeroSearch(null, tag.q)
+                    }}
+                    className="text-xs text-gray-500 bg-gray-100 hover:bg-orange-50 hover:text-orange-600 border border-gray-200/40 rounded-lg px-2.5 py-1 transition-all duration-200 cursor-pointer"
+                  >
+                    {tag.label}
+                  </button>
+                ))}
+              </div>
+            </form>
 
             <div className="flex flex-wrap items-center gap-3 mb-10">
               <button
@@ -448,7 +562,25 @@ export default function HomePage() {
             {flashLoading ? (
               <div className="scroll-x" style={{ display: 'flex', gap: '12px' }}>
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} style={{ flexShrink: 0, width: '196px', height: '260px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px' }} className="animate-pulse" />
+                  <div 
+                    key={i} 
+                    style={{ flexShrink: 0, width: '196px', height: '260px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', overflow: 'hidden' }} 
+                    className="animate-pulse flex flex-col"
+                  >
+                    <div className="h-[148px] bg-gray-50 border-b border-gray-200 flex items-center justify-center">
+                      <div className="w-12 h-12 bg-gray-200 rounded-xl" />
+                    </div>
+                    <div className="p-3 flex flex-col gap-2 flex-1 justify-between">
+                      <div className="space-y-1.5">
+                        <div className="h-3 w-full bg-gray-200 rounded" />
+                        <div className="h-3 w-3/4 bg-gray-200 rounded" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="h-4.5 w-16 bg-gray-200 rounded" />
+                        <div className="h-3 w-10 bg-gray-200 rounded" />
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : flashProducts.length === 0 ? (
@@ -539,7 +671,7 @@ export default function HomePage() {
           {featuredLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-[380px] bg-white border border-gray-200 rounded-2xl animate-pulse" />
+                <ProductCardSkeleton key={i} />
               ))}
             </div>
           ) : featuredProducts.length === 0 ? (
