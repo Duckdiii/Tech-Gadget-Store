@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import { useNav } from '../../../hooks/useNav'
 import StoreNavbar from '../../../components/StoreNavbar'
 import ProductCard from '../components/ProductCard'
@@ -16,29 +16,103 @@ const SORT_OPTIONS = [
 
 const PAGE_SIZE = 9
 
+// Bộ lọc rỗng — cũng là "shape" chuẩn mà FilterPanel dùng để đọc/ghi, khớp trực tiếp với các
+// field của ProductFilterRequestDto ở backend (trừ keyword/sort/page/size do trang này tự quản).
+const EMPTY_FILTERS = {
+  keyword: '',
+  brandNames: [],
+  minPrice: undefined,
+  maxPrice: undefined,
+  ramGb: [],
+  storageGb: [],
+  colors: [],
+  operatingSystem: undefined,
+  minScreenSize: undefined,
+  maxScreenSize: undefined,
+  minBatteryCapacity: undefined,
+  maxBatteryCapacity: undefined,
+  chipset: undefined,
+  simType: undefined,
+  nfcSupported: undefined,
+  onlyAvailable: undefined,
+  onPromotion: undefined,
+}
+
+function isFiltersEmpty(filters) {
+  return Object.entries(filters).every(([key, value]) => {
+    if (key === 'keyword') return !value
+    return Array.isArray(value) ? value.length === 0 : value === undefined || value === false
+  })
+}
+
+// Tóm tắt ngắn gọn bộ lọc mà AI đã suy ra, để khách biết hệ thống hiểu câu hỏi của mình như
+// thế nào — quan trọng vì kết quả dựa trên diễn giải của model, có thể không chính xác 100%.
+function describeAiFilter(filter) {
+  if (!filter) return null
+  const parts = []
+  if (filter.brandNames?.length) parts.push(filter.brandNames.join(', '))
+  if (filter.categoryNames?.length) parts.push(filter.categoryNames.join(', '))
+  if (filter.minPrice || filter.maxPrice) {
+    const fmt = (v) => `${Math.round(v / 1_000_000)} triệu`
+    if (filter.minPrice && filter.maxPrice) parts.push(`giá ${fmt(filter.minPrice)} – ${fmt(filter.maxPrice)}`)
+    else if (filter.maxPrice) parts.push(`giá dưới ${fmt(filter.maxPrice)}`)
+    else parts.push(`giá trên ${fmt(filter.minPrice)}`)
+  }
+  if (filter.ramGb?.length) parts.push(`RAM ${filter.ramGb.join('/')}GB`)
+  if (filter.storageGb?.length) parts.push(`bộ nhớ ${filter.storageGb.join('/')}GB`)
+  if (filter.colors?.length) parts.push(`màu ${filter.colors.join(', ')}`)
+  if (filter.chipset) parts.push(`chip ${filter.chipset}`)
+  if (filter.nfcSupported) parts.push('có NFC')
+  if (filter.keyword) parts.push(`"${filter.keyword}"`)
+  return parts.length ? parts.join(' · ') : null
+}
+
 export default function ProductsPage() {
   const onNavigate = useNav()
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const keyword = searchParams.get('keyword') || ''
+
+  // Khi khách vào trang này từ ô tìm kiếm AI trên StoreNavbar, router state mang theo câu hỏi
+  // gốc + bộ lọc đã diễn giải + kết quả trang đầu (để tránh gọi API 2 lần khi vừa vào trang).
+  const aiFilter = location.state?.aiFilter || null
+  const aiQuery = location.state?.aiQuery || ''
+  const aiInitialResults = location.state?.aiResults || null
+  const skipNextFetch = useRef(!!aiInitialResults)
+
   const [sort, setSort] = useState('')
   const [page, setPage] = useState(0)
-  const [products, setProducts] = useState([])
-  const [totalItems, setTotalItems] = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState(EMPTY_FILTERS)
+  const [products, setProducts] = useState(() => (aiInitialResults?.items ?? []).map(mapApiProduct))
+  const [totalItems, setTotalItems] = useState(() => aiInitialResults?.totalItems ?? 0)
+  const [totalPages, setTotalPages] = useState(() => aiInitialResults?.totalPages ?? 0)
+  const [loading, setLoading] = useState(!aiInitialResults)
   const [error, setError] = useState(null)
 
-  useEffect(() => { setPage(0) }, [keyword, sort])
+  const patchFilters = (patch) => setFilters(prev => ({ ...prev, ...patch }))
+  const resetFilters = () => setFilters(EMPTY_FILTERS)
+  const manualFiltersActive = !isFiltersEmpty(filters)
+
+  useEffect(() => { setPage(0) }, [keyword, sort, aiFilter, filters])
 
   useEffect(() => {
+    if (skipNextFetch.current) {
+      skipNextFetch.current = false
+      return
+    }
     setLoading(true)
     setError(null)
-    shopService.getProductsByFilter({
-      keyword: keyword || undefined,
-      sort: sort || undefined,
-      page,
-      size: PAGE_SIZE,
-    })
+    // Bộ lọc thủ công (FilterPanel) được ưu tiên cao nhất, sau đó mới đến bộ lọc AI đã diễn
+    // giải, cuối cùng là tìm theo từ khoá thường từ ô tìm kiếm trên navbar.
+    let params
+    if (manualFiltersActive) {
+      params = { ...filters, keyword: filters.keyword || keyword || undefined, sort: sort || undefined, page, size: PAGE_SIZE }
+    } else if (aiFilter) {
+      params = { ...aiFilter, sort: sort || aiFilter.sort || undefined, page, size: PAGE_SIZE }
+    } else {
+      params = { keyword: keyword || undefined, sort: sort || undefined, page, size: PAGE_SIZE }
+    }
+    shopService.getProductsByFilter(params)
       .then(data => {
         setProducts((data.items ?? []).map(mapApiProduct))
         setTotalItems(data.totalItems ?? 0)
@@ -46,7 +120,9 @@ export default function ProductsPage() {
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
-  }, [keyword, sort, page])
+  }, [keyword, sort, page, aiFilter, filters, manualFiltersActive])
+
+  const aiSummary = aiFilter ? describeAiFilter(aiFilter) : null
 
   return (
     <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
@@ -66,13 +142,24 @@ export default function ProductsPage() {
             Danh mục sản phẩm
           </p>
           <h1 className="text-[28px] font-black text-white" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
-            {keyword ? `Kết quả cho "${keyword}"` : 'Điện thoại di động'}
+            {aiFilter ? `✨ Kết quả AI cho "${aiQuery}"` : keyword ? `Kết quả cho "${keyword}"` : 'Điện thoại di động'}
           </h1>
           <p className="text-sm mt-1.5 text-slate-400">
-            {keyword
-              ? 'Kết quả được sắp xếp theo mức độ liên quan.'
-              : 'Khám phá những mẫu điện thoại mới nhất với các ưu đãi trả góp 0% độc quyền tại TechStore.'}
+            {aiFilter
+              ? (aiSummary ? `Hệ thống hiểu là: ${aiSummary}.` : 'Không tách được tiêu chí cụ thể, đang tìm theo toàn bộ câu hỏi.')
+              : keyword
+                ? 'Kết quả được sắp xếp theo mức độ liên quan.'
+                : 'Khám phá những mẫu điện thoại mới nhất với các ưu đãi trả góp 0% độc quyền tại TechStore.'}
           </p>
+          {aiFilter && (
+            <button
+              onClick={() => onNavigate('list', { search: '' })}
+              className="mt-2 text-[12px] font-semibold underline decoration-dotted"
+              style={{ color: 'var(--accent)' }}
+            >
+              Xoá tìm kiếm AI, quay lại duyệt thường
+            </button>
+          )}
         </div>
       </div>
 
@@ -122,7 +209,7 @@ export default function ProductsPage() {
 
         {/* Filter + Grid */}
         <div className="flex gap-7 items-start">
-          <FilterPanel />
+          <FilterPanel filters={filters} onChange={patchFilters} onReset={resetFilters} />
           <div className="flex-1 min-w-0">
             {error && (
               <div
@@ -153,9 +240,13 @@ export default function ProductsPage() {
               </div>
             ) : products.length === 0 && !error ? (
               <div className="text-center py-20 text-sm font-semibold" style={{ color: 'var(--t3)' }}>
-                {keyword
-                  ? `Rất tiếc! Không tìm thấy sản phẩm nào khớp với "${keyword}".`
-                  : 'Rất tiếc! Không có sản phẩm nào đáp ứng bộ lọc của bạn.'}
+                {manualFiltersActive
+                  ? 'Rất tiếc! Không có sản phẩm nào đáp ứng bộ lọc của bạn.'
+                  : aiFilter
+                    ? `Rất tiếc! Không tìm thấy sản phẩm nào phù hợp với "${aiQuery}".`
+                    : keyword
+                      ? `Rất tiếc! Không tìm thấy sản phẩm nào khớp với "${keyword}".`
+                      : 'Rất tiếc! Không có sản phẩm nào đáp ứng bộ lọc của bạn.'}
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-6">

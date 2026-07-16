@@ -5,6 +5,7 @@ import { useAuth } from '../context/useAuth'
 import { useAccessibility } from '../hooks/useAccessibility'
 import { useNotificationSocket } from '../hooks/useNotificationSocket'
 import { apiFetch } from '../services/api'
+import { shopService } from '../features/customer-shop/services/shopService'
 
 function timeAgo(dateStr) {
   const diffMs = Date.now() - new Date(dateStr).getTime()
@@ -122,6 +123,8 @@ export default function StoreNavbar() {
   const { user } = useAuth()
   const [search, setSearch] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
+  const [aiMode, setAiMode] = useState(false)
+  const [aiLoading, setAiLoading] = useState(false)
   const [bellRing, setBellRing] = useState(false)
   const [notifications, setNotifications] = useState([])
 
@@ -174,10 +177,26 @@ export default function StoreNavbar() {
     apiFetch(`/api/notifications/${id}/read`, { method: 'PATCH' }).catch(() => {})
   }
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault()
     const q = search.trim()
-    onNavigate('list', { search: q ? `?keyword=${encodeURIComponent(q)}` : '' })
+    if (!q) {
+      onNavigate('list', { search: '' })
+      return
+    }
+    if (!aiMode) {
+      onNavigate('list', { search: `?keyword=${encodeURIComponent(q)}` })
+      return
+    }
+    setAiLoading(true)
+    try {
+      const data = await shopService.searchNaturalLanguage(q)
+      onNavigate('list', { state: { aiQuery: q, aiFilter: data.interpretedFilter, aiResults: data.results } })
+    } catch {
+      onNavigate('list', { search: `?keyword=${encodeURIComponent(q)}` })
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   const location = useLocation()
@@ -254,8 +273,22 @@ export default function StoreNavbar() {
           </nav>
 
           {/* Search */}
-          <form onSubmit={handleSearch} className="flex-1">
-            <div className="relative flex items-center">
+          <form onSubmit={handleSearch} className="flex-1 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setAiMode(v => !v)}
+              title={aiMode ? 'Đang tìm bằng AI — bấm để tắt' : 'Tìm bằng câu hỏi tự nhiên, vd. "điện thoại chụp ảnh đẹp dưới 15 triệu"'}
+              className="shrink-0 flex items-center gap-1 px-2.5 py-2 text-[11px] font-bold transition-colors"
+              style={{
+                borderRadius: '3px',
+                border: `1px solid ${aiMode ? 'var(--accent)' : 'var(--b1)'}`,
+                backgroundColor: aiMode ? 'var(--accent)' : 'var(--s2)',
+                color: aiMode ? '#fff' : 'var(--t3)',
+              }}
+            >
+              ✨ AI
+            </button>
+            <div className="relative flex items-center flex-1">
               <svg
                 className="absolute left-3.5 w-[16px] h-[16px] pointer-events-none transition-colors"
                 style={{ color: searchFocused ? 'var(--accent)' : 'var(--t3)' }}
@@ -269,7 +302,7 @@ export default function StoreNavbar() {
                 onChange={e => setSearch(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                placeholder="Tìm điện thoại, máy tính, phụ kiện..."
+                placeholder={aiMode ? 'Mô tả sản phẩm bạn cần, vd. "laptop nhẹ pin trâu dưới 20 triệu"...' : 'Tìm điện thoại, máy tính, phụ kiện...'}
                 className="w-full pl-10 pr-20 py-2.5 text-[13px] transition-all"
                 style={{
                   backgroundColor: 'var(--s2)',
@@ -282,12 +315,13 @@ export default function StoreNavbar() {
               />
               <button
                 type="submit"
+                disabled={aiLoading}
                 className="absolute right-0 top-0 bottom-0 px-5 text-white text-[12px] font-bold tracking-wide transition-colors"
-                style={{ backgroundColor: 'var(--accent)', borderRadius: '0 3px 3px 0' }}
+                style={{ backgroundColor: 'var(--accent)', borderRadius: '0 3px 3px 0', opacity: aiLoading ? 0.7 : 1 }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
               >
-                Tìm
+                {aiLoading ? '...' : 'Tìm'}
               </button>
             </div>
           </form>

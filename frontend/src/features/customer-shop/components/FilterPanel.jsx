@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 function FilterSection({ title, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -57,50 +57,112 @@ function RadioGroup({ name, items, value, onChange }) {
   )
 }
 
+// Gõ tự do (từ khoá, giá) chỉ đẩy lên component cha sau khi ngừng gõ ~450ms, tránh gọi API
+// filter thật trên mỗi phím bấm.
+function useDebouncedCommit(externalValue, onCommit, delayMs = 450) {
+  const [text, setText] = useState(externalValue)
+  useEffect(() => { setText(externalValue) }, [externalValue])
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (text !== externalValue) onCommit(text)
+    }, delayMs)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text])
+  return [text, setText]
+}
+
 const BRAND_LIST = ['Apple', 'Samsung', 'Xiaomi', 'OPPO', 'vivo', 'realme', 'OnePlus', 'Nokia']
-const RAM_OPTIONS = [{ value: '4', label: '4 GB' }, { value: '6', label: '6 GB' }, { value: '8', label: '8 GB' }, { value: '12', label: '12 GB' }, { value: '16', label: '16 GB trở lên' }]
-const STORAGE_OPTIONS = [{ value: '64', label: '64 GB' }, { value: '128', label: '128 GB' }, { value: '256', label: '256 GB' }, { value: '512', label: '512 GB' }, { value: '1000', label: '1 TB' }]
+const RAM_OPTIONS = [{ value: 4, label: '4 GB' }, { value: 6, label: '6 GB' }, { value: 8, label: '8 GB' }, { value: 12, label: '12 GB' }, { value: 16, label: '16 GB' }]
+const STORAGE_OPTIONS = [{ value: 64, label: '64 GB' }, { value: 128, label: '128 GB' }, { value: 256, label: '256 GB' }, { value: 512, label: '512 GB' }, { value: 1000, label: '1 TB' }]
+// value = màu thật lưu trong DB (backend so khớp theo chuỗi con, không phân biệt hoa/thường)
 const COLOR_OPTIONS = [
-  { value: 'black', label: 'Đen', hex: '#111' }, { value: 'white', label: 'Trắng', hex: '#f3f4f6' },
-  { value: 'blue', label: 'Xanh', hex: '#3b82f6' }, { value: 'purple', label: 'Tím', hex: '#a855f7' },
-  { value: 'gold', label: 'Vàng', hex: '#facc15' }, { value: 'red', label: 'Đỏ', hex: '#ef4444' },
-  { value: 'green', label: 'Xanh lá', hex: '#22c55e' }, { value: 'silver', label: 'Bạc', hex: '#9ca3af' },
+  { value: 'Đen', hex: '#111' }, { value: 'Trắng', hex: '#f3f4f6' },
+  { value: 'Xanh', hex: '#3b82f6' }, { value: 'Tím', hex: '#a855f7' },
+  { value: 'Vàng', hex: '#facc15' }, { value: 'Đỏ', hex: '#ef4444' },
+  { value: 'Xanh lá', hex: '#22c55e' }, { value: 'Bạc', hex: '#9ca3af' },
 ]
-const SIM_OPTIONS = [{ value: 'nano', label: 'Nano SIM' }, { value: 'esim', label: 'eSIM' }, { value: 'nano+esim', label: 'Nano SIM + eSIM' }, { value: 'dual', label: 'Dual SIM' }]
+// Backend chỉ lưu 1 loại SIM/sản phẩm nên đây là chọn 1, không phải chọn nhiều.
+const SIM_OPTIONS = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'nano', label: 'Nano SIM' }, { value: 'esim', label: 'eSIM' },
+  { value: 'nano+esim', label: 'Nano SIM + eSIM' }, { value: 'dual', label: 'Dual SIM' },
+]
+const CHIPSET_OPTIONS = [
+  { value: 'all', label: 'Tất cả' }, { value: 'apple', label: 'Apple A-series' }, { value: 'snapdragon', label: 'Snapdragon' },
+  { value: 'dimensity', label: 'Dimensity' }, { value: 'exynos', label: 'Exynos' }, { value: 'helio', label: 'Helio' },
+]
 const PRICE_PRESETS = [
-  { value: '', label: 'Tất cả' }, { value: 'u5', label: 'Dưới 5 triệu' }, { value: '5-10', label: '5 – 10 triệu' },
-  { value: '10-20', label: '10 – 20 triệu' }, { value: '20-30', label: '20 – 30 triệu' }, { value: 'o30', label: 'Trên 30 triệu' },
+  { value: '', label: 'Tất cả', min: undefined, max: undefined },
+  { value: 'u5', label: 'Dưới 5 triệu', min: undefined, max: 5_000_000 },
+  { value: '5-10', label: '5 – 10 triệu', min: 5_000_000, max: 10_000_000 },
+  { value: '10-20', label: '10 – 20 triệu', min: 10_000_000, max: 20_000_000 },
+  { value: '20-30', label: '20 – 30 triệu', min: 20_000_000, max: 30_000_000 },
+  { value: 'o30', label: 'Trên 30 triệu', min: 30_000_000, max: undefined },
+]
+const SCREEN_BUCKETS = [
+  { value: 'all', label: 'Tất cả', min: undefined, max: undefined },
+  { value: 'small', label: 'Dưới 6.0"', min: undefined, max: 5.99 },
+  { value: 'medium', label: '6.0" – 6.5"', min: 6.0, max: 6.5 },
+  { value: 'large', label: 'Trên 6.5"', min: 6.51, max: undefined },
+]
+const BATTERY_BUCKETS = [
+  { value: 'all', label: 'Tất cả', min: undefined, max: undefined },
+  { value: 'small', label: 'Dưới 3500 mAh', min: undefined, max: 3499 },
+  { value: 'medium', label: '3500 – 4500 mAh', min: 3500, max: 4500 },
+  { value: 'large', label: '4500 – 5000 mAh', min: 4501, max: 5000 },
+  { value: 'xlarge', label: 'Trên 5000 mAh', min: 5001, max: undefined },
 ]
 
-export default function FilterPanel() {
-  const [keyword, setKeyword] = useState('')
-  const [selectedBrands, setSelectedBrands] = useState([])
-  const [minPrice, setMinPrice] = useState('')
-  const [maxPrice, setMaxPrice] = useState('')
-  const [pricePreset, setPricePreset] = useState('')
-  const [selectedRam, setSelectedRam] = useState([])
-  const [selectedStorage, setSelectedStorage] = useState([])
-  const [selectedColors, setSelectedColors] = useState([])
-  const [selectedSim, setSelectedSim] = useState([])
-  const [os, setOs] = useState('all')
-  const [screenSize, setScreenSize] = useState('all')
-  const [battery, setBattery] = useState('all')
-  const [chipset, setChipset] = useState('all')
-  const [nfc, setNfc] = useState(false)
-  const [onlyAvailable, setOnlyAvailable] = useState(false)
-  const [onPromotion, setOnPromotion] = useState(false)
+export default function FilterPanel({ filters, onChange, onReset }) {
+  const [keywordText, setKeywordText] = useDebouncedCommit(
+    filters.keyword ?? '', (v) => onChange({ keyword: v }))
 
-  const toggle = (setter) => (val) => setter(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val])
+  const minPriceVnd = filters.minPrice
+  const maxPriceVnd = filters.maxPrice
+  const [minPriceText, setMinPriceText] = useDebouncedCommit(
+    minPriceVnd != null ? String(minPriceVnd / 1_000_000) : '',
+    (v) => onChange({ minPrice: v.trim() === '' || Number.isNaN(Number(v)) ? undefined : Math.round(Number(v) * 1_000_000) }))
+  const [maxPriceText, setMaxPriceText] = useDebouncedCommit(
+    maxPriceVnd != null ? String(maxPriceVnd / 1_000_000) : '',
+    (v) => onChange({ maxPrice: v.trim() === '' || Number.isNaN(Number(v)) ? undefined : Math.round(Number(v) * 1_000_000) }))
 
-  const activeCount = [selectedBrands, selectedRam, selectedStorage, selectedColors, selectedSim].reduce((s, a) => s + a.length, 0)
-    + (os !== 'all' ? 1 : 0) + (screenSize !== 'all' ? 1 : 0) + (battery !== 'all' ? 1 : 0) + (chipset !== 'all' ? 1 : 0)
-    + (nfc ? 1 : 0) + (onlyAvailable ? 1 : 0) + (onPromotion ? 1 : 0) + (minPrice || maxPrice || pricePreset ? 1 : 0)
+  const toggleList = (field, value) => {
+    const current = filters[field] ?? []
+    const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value]
+    onChange({ [field]: next })
+  }
 
-  const resetAll = () => {
-    setKeyword(''); setSelectedBrands([]); setMinPrice(''); setMaxPrice(''); setPricePreset('')
-    setSelectedRam([]); setSelectedStorage([]); setSelectedColors([]); setSelectedSim([])
-    setOs('all'); setScreenSize('all'); setBattery('all'); setChipset('all')
-    setNfc(false); setOnlyAvailable(false); setOnPromotion(false)
+  const selectedBrands = filters.brandNames ?? []
+  const selectedRam = filters.ramGb ?? []
+  const selectedStorage = filters.storageGb ?? []
+  const selectedColors = filters.colors ?? []
+
+  const activePricePreset = PRICE_PRESETS.find(p => p.min === filters.minPrice && p.max === filters.maxPrice)?.value ?? ''
+  const activeOs = filters.operatingSystem ?? 'all'
+  const activeScreenBucket = SCREEN_BUCKETS.find(b => b.min === filters.minScreenSize && b.max === filters.maxScreenSize)?.value ?? 'all'
+  const activeBatteryBucket = BATTERY_BUCKETS.find(b => b.min === filters.minBatteryCapacity && b.max === filters.maxBatteryCapacity)?.value ?? 'all'
+  const activeChipset = filters.chipset ?? 'all'
+  const activeSim = filters.simType ?? 'all'
+  const priceActive = filters.minPrice != null || filters.maxPrice != null
+
+  const activeCount = selectedBrands.length + selectedRam.length + selectedStorage.length + selectedColors.length
+    + (activeOs !== 'all' ? 1 : 0) + (activeScreenBucket !== 'all' ? 1 : 0) + (activeBatteryBucket !== 'all' ? 1 : 0)
+    + (activeChipset !== 'all' ? 1 : 0) + (activeSim !== 'all' ? 1 : 0)
+    + (filters.nfcSupported ? 1 : 0) + (filters.onlyAvailable ? 1 : 0) + (filters.onPromotion ? 1 : 0)
+    + (priceActive ? 1 : 0) + (filters.keyword ? 1 : 0)
+
+  const selectPricePreset = (value) => {
+    const preset = PRICE_PRESETS.find(p => p.value === value)
+    onChange({ minPrice: preset?.min, maxPrice: preset?.max })
+  }
+  const selectScreenBucket = (value) => {
+    const bucket = SCREEN_BUCKETS.find(b => b.value === value)
+    onChange({ minScreenSize: bucket?.min, maxScreenSize: bucket?.max })
+  }
+  const selectBatteryBucket = (value) => {
+    const bucket = BATTERY_BUCKETS.find(b => b.value === value)
+    onChange({ minBatteryCapacity: bucket?.min, maxBatteryCapacity: bucket?.max })
   }
 
   return (
@@ -124,7 +186,7 @@ export default function FilterPanel() {
           )}
         </div>
         {activeCount > 0 && (
-          <button onClick={resetAll} className="text-[11px] font-bold transition-colors cursor-pointer border-none bg-transparent" style={{ color: 'var(--t3)' }}
+          <button onClick={onReset} className="text-[11px] font-bold transition-colors cursor-pointer border-none bg-transparent" style={{ color: 'var(--t3)' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}
           >Xoá bộ lọc</button>
@@ -140,8 +202,8 @@ export default function FilterPanel() {
           <input
             type="text"
             placeholder="Tìm sản phẩm..."
-            value={keyword}
-            onChange={e => setKeyword(e.target.value)}
+            value={keywordText}
+            onChange={e => setKeywordText(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-[12px] rounded-lg border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] transition-all bg-[var(--s1)]"
           />
         </div>
@@ -155,7 +217,7 @@ export default function FilterPanel() {
                 <input
                   type="checkbox"
                   checked={selectedBrands.includes(brand)}
-                  onChange={() => toggle(setSelectedBrands)(brand)}
+                  onChange={() => toggleList('brandNames', brand)}
                   className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
                 />
                 <span className="text-[12.5px] transition-colors" style={{ color: selectedBrands.includes(brand) ? 'var(--t1)' : 'var(--t2)' }}>{brand}</span>
@@ -165,22 +227,24 @@ export default function FilterPanel() {
         </FilterSection>
 
         <FilterSection title="Mức giá">
-          <RadioGroup name="price" value={pricePreset} onChange={v => { setPricePreset(v); setMinPrice(''); setMaxPrice('') }} items={PRICE_PRESETS} />
-          {pricePreset === '' && (
+          <RadioGroup name="price" value={activePricePreset} onChange={selectPricePreset} items={PRICE_PRESETS} />
+          {activePricePreset === '' && (
             <div className="flex items-center gap-1.5 mt-3">
               <input
                 type="text"
-                placeholder="Từ"
-                value={minPrice}
-                onChange={e => setMinPrice(e.target.value)}
+                inputMode="decimal"
+                placeholder="Từ (triệu)"
+                value={minPriceText}
+                onChange={e => setMinPriceText(e.target.value)}
                 className="w-full px-2.5 py-1.5 text-[12px] rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)]"
               />
               <span className="text-[11px] shrink-0" style={{ color: 'var(--t3)' }}>–</span>
               <input
                 type="text"
-                placeholder="Đến"
-                value={maxPrice}
-                onChange={e => setMaxPrice(e.target.value)}
+                inputMode="decimal"
+                placeholder="Đến (triệu)"
+                value={maxPriceText}
+                onChange={e => setMaxPriceText(e.target.value)}
                 className="w-full px-2.5 py-1.5 text-[12px] rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)]"
               />
             </div>
@@ -188,45 +252,36 @@ export default function FilterPanel() {
         </FilterSection>
 
         <FilterSection title="Hệ điều hành">
-          <RadioGroup name="os" value={os} onChange={setOs} items={[{ value: 'all', label: 'Tất cả' }, { value: 'ios', label: 'iOS' }, { value: 'android', label: 'Android' }]} />
+          <RadioGroup name="os" value={activeOs} onChange={v => onChange({ operatingSystem: v === 'all' ? undefined : v })} items={[{ value: 'all', label: 'Tất cả' }, { value: 'ios', label: 'iOS' }, { value: 'android', label: 'Android' }]} />
         </FilterSection>
 
         <FilterSection title="RAM" defaultOpen={false}>
-          <CheckGroup items={RAM_OPTIONS} selected={selectedRam} onToggle={toggle(setSelectedRam)} />
+          <CheckGroup items={RAM_OPTIONS} selected={selectedRam} onToggle={v => toggleList('ramGb', v)} />
         </FilterSection>
 
         <FilterSection title="Bộ nhớ trong" defaultOpen={false}>
-          <CheckGroup items={STORAGE_OPTIONS} selected={selectedStorage} onToggle={toggle(setSelectedStorage)} />
+          <CheckGroup items={STORAGE_OPTIONS} selected={selectedStorage} onToggle={v => toggleList('storageGb', v)} />
         </FilterSection>
 
         <FilterSection title="Kích thước màn hình" defaultOpen={false}>
-          <RadioGroup name="screen" value={screenSize} onChange={setScreenSize} items={[
-            { value: 'all', label: 'Tất cả' }, { value: 'small', label: 'Dưới 6.0"' },
-            { value: 'medium', label: '6.0" – 6.5"' }, { value: 'large', label: 'Trên 6.5"' },
-          ]} />
+          <RadioGroup name="screen" value={activeScreenBucket} onChange={selectScreenBucket} items={SCREEN_BUCKETS} />
         </FilterSection>
 
         <FilterSection title="Pin" defaultOpen={false}>
-          <RadioGroup name="battery" value={battery} onChange={setBattery} items={[
-            { value: 'all', label: 'Tất cả' }, { value: 'small', label: 'Dưới 3500 mAh' },
-            { value: 'medium', label: '3500 – 4500 mAh' }, { value: 'large', label: '4500 – 5000 mAh' }, { value: 'xlarge', label: 'Trên 5000 mAh' },
-          ]} />
+          <RadioGroup name="battery" value={activeBatteryBucket} onChange={selectBatteryBucket} items={BATTERY_BUCKETS} />
         </FilterSection>
 
         <FilterSection title="Chipset" defaultOpen={false}>
-          <RadioGroup name="chipset" value={chipset} onChange={setChipset} items={[
-            { value: 'all', label: 'Tất cả' }, { value: 'apple', label: 'Apple A-series' }, { value: 'snapdragon', label: 'Snapdragon' },
-            { value: 'dimensity', label: 'Dimensity' }, { value: 'exynos', label: 'Exynos' }, { value: 'helio', label: 'Helio' },
-          ]} />
+          <RadioGroup name="chipset" value={activeChipset} onChange={v => onChange({ chipset: v === 'all' ? undefined : v })} items={CHIPSET_OPTIONS} />
         </FilterSection>
 
         <FilterSection title="Màu sắc" defaultOpen={false}>
           <div className="flex flex-wrap gap-2 pt-1.5">
-            {COLOR_OPTIONS.map(({ value, label, hex }) => (
+            {COLOR_OPTIONS.map(({ value, hex }) => (
               <button
                 key={value}
-                onClick={() => toggle(setSelectedColors)(value)}
-                title={label}
+                onClick={() => toggleList('colors', value)}
+                title={value}
                 className="w-6 h-6 transition-all cursor-pointer rounded-full border-none"
                 style={{
                   backgroundColor: hex,
@@ -240,18 +295,22 @@ export default function FilterPanel() {
           </div>
           {selectedColors.length > 0 && (
             <p className="text-[10px] mt-2 font-medium" style={{ color: 'var(--t3)' }}>
-              {selectedColors.map(v => COLOR_OPTIONS.find(c => c.value === v)?.label).join(', ')}
+              {selectedColors.join(', ')}
             </p>
           )}
         </FilterSection>
 
         <FilterSection title="Loại SIM" defaultOpen={false}>
-          <CheckGroup items={SIM_OPTIONS} selected={selectedSim} onToggle={toggle(setSelectedSim)} />
+          <RadioGroup name="sim" value={activeSim} onChange={v => onChange({ simType: v === 'all' ? undefined : v })} items={SIM_OPTIONS} />
         </FilterSection>
 
         <FilterSection title="Khác">
           <div className="space-y-2">
-            {[[nfc, () => setNfc(v => !v), 'Hỗ trợ NFC'], [onlyAvailable, () => setOnlyAvailable(v => !v), 'Chỉ hàng có sẵn'], [onPromotion, () => setOnPromotion(v => !v), 'Đang khuyến mãi']].map(([val, fn, label]) => (
+            {[
+              [!!filters.nfcSupported, () => onChange({ nfcSupported: !filters.nfcSupported || undefined }), 'Hỗ trợ NFC'],
+              [!!filters.onlyAvailable, () => onChange({ onlyAvailable: !filters.onlyAvailable || undefined }), 'Chỉ hàng có sẵn'],
+              [!!filters.onPromotion, () => onChange({ onPromotion: !filters.onPromotion || undefined }), 'Đang khuyến mãi'],
+            ].map(([val, fn, label]) => (
               <label key={label} className="flex items-center gap-2.5 cursor-pointer group">
                 <input type="checkbox" checked={val} onChange={fn} className="w-4 h-4 cursor-pointer accent-[var(--accent)]" />
                 <span className="text-[12.5px]" style={{ color: val ? 'var(--t1)' : 'var(--t2)' }}>{label}</span>

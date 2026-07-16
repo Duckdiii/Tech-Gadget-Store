@@ -6,12 +6,17 @@ Hệ thống bán lẻ thiết bị công nghệ full-stack (điện thoại, la
 
 | Layer | Công nghệ |
 |---|---|
-| Backend | Java 21, Spring Boot 4, Spring Security (JWT), Spring Data JPA/Hibernate |
+| Backend | Java 21, Spring Boot 4, Spring Security (JWT), Spring Data JPA/Hibernate, Spring WebSocket (STOMP), Spring AMQP |
 | Database | PostgreSQL (Supabase) |
 | Cache / Ephemeral data | Redis (rate limiting, lịch sử xem gần đây, JWT blacklist) |
+| Message Queue | RabbitMQ (xử lý bất đồng bộ sau checkout) |
 | Frontend | React 19, Vite, React Router, Tailwind CSS, Axios |
+| AI | Google Gemini API (`google-genai`) — chatbot tư vấn (function-calling) và tìm kiếm sản phẩm bằng ngôn ngữ tự nhiên |
 | ML Service | Python, `implicit` (Matrix Factorization / ALS), pandas, scipy, psycopg2 |
 | Thanh toán | COD, MoMo, VNPay (tích hợp redirect + IPN webhook) |
+| API Docs | springdoc-openapi (Swagger UI tại `/swagger-ui.html`) |
+| Giám sát & vận hành | Spring Actuator (`health`/`info`/`metrics`), Correlation ID logging (truy vết request qua các service/queue) |
+| Kiểm thử | JUnit 5, Mockito, AssertJ (unit test tầng service, mock repository) |
 
 ## Kiến trúc tổng quan
 
@@ -22,19 +27,21 @@ tech_gadget_store/
 └── ml-service/    Python — huấn luyện & phục vụ model recommendation (offline batch)
 ```
 
-Backend chia theo domain module: `auth`, `catalog`, `order`, `payment`, `loyalty`, `notification`, `review`, `warehouse`. Frontend chia theo vai trò: `customer-shop`, `customer-orders`, `customer-profile`, `staff-*`, `manager-*`.
+Backend chia theo domain module: `auth`, `catalog`, `order`, `payment`, `loyalty`, `notification`, `review`, `warehouse`, `chatbot`. Frontend chia theo vai trò: `customer-shop`, `customer-orders`, `customer-profile`, `staff-*`, `manager-*`.
 
 ## Tính năng chính
 
 ### Khách hàng (Customer)
-- Duyệt/tìm kiếm/lọc sản phẩm, xem chi tiết, flash sale hàng ngày
+- Duyệt/tìm kiếm/lọc sản phẩm (bộ lọc đa tiêu chí: thương hiệu, giá, RAM, dung lượng, màu, chipset...), xem chi tiết, flash sale hàng ngày
+- **Tìm kiếm bằng ngôn ngữ tự nhiên** — gõ câu hỏi tự do (vd. "điện thoại chụp ảnh đẹp dưới 15 triệu"), Gemini dịch thành bộ lọc có cấu trúc rồi chạy lại đúng API filter sẵn có
+- **Trợ lý AI (chatbot)** tư vấn mua sắm, tra cứu sản phẩm/trạng thái đơn hàng, phản hồi streaming qua WebSocket, lưu lịch sử hội thoại
 - Giỏ hàng, chọn dịch vụ đi kèm (bundle service) theo từng item
 - Checkout, thanh toán qua COD / MoMo / VNPay
 - Lịch sử đơn hàng, huỷ đơn, xem/tải hoá đơn PDF
 - Quản lý hồ sơ, địa chỉ, phương thức thanh toán đã lưu
 - Yêu thích sản phẩm (favorites/subscriptions), đánh giá & bình luận sản phẩm
 - Xem hạng thành viên (membership tier) và quyền lợi
-- Thông báo trong ứng dụng
+- Thông báo trong ứng dụng (đẩy real-time qua WebSocket)
 - **Gợi ý sản phẩm cá nhân hoá** (xem chi tiết bên dưới)
 
 ### Nhân viên (Staff)
@@ -48,6 +55,7 @@ Backend chia theo domain module: `auth`, `catalog`, `order`, `payment`, `loyalty
 - Tra cứu bảo hành theo số serial
 - Quản lý đơn hàng toàn hệ thống, log giao dịch thanh toán
 - Quản lý khuyến mãi (kèm báo cáo hiệu quả từng chương trình), hạng thành viên, dịch vụ bundle
+- Báo cáo **A/B test** cho gợi ý "Dành cho bạn" — so sánh CTR giữa MF và rule-based holdout (xem chi tiết bên dưới)
 - Quản lý tài khoản nhân viên/khách hàng, log đăng nhập
 - Báo cáo doanh thu (revenue report, xuất file)
 - **Sao lưu & phục hồi dữ liệu** (backup/restore)
@@ -56,6 +64,9 @@ Backend chia theo domain module: `auth`, `catalog`, `order`, `payment`, `loyalty
 - Xác thực JWT stateless, phân quyền theo route (`CUSTOMER` / `STAFF` / `MANAGER`)
 - Rate-limiting (Redis) cho login/register/forgot-password/reset-password, mã hoá mật khẩu BCrypt
 - Audit log đăng nhập, log thanh toán, log kho — phục vụ truy vết
+- **Correlation ID** gắn vào mọi request (`CorrelationIdFilter`) và propagate xuống cả log của consumer RabbitMQ — truy vết 1 request xuyên suốt nhiều service/queue bằng 1 mã duy nhất
+- **Actuator** (`/actuator/health`, `/actuator/info`, `/actuator/metrics`) cho health check & giám sát
+- **Swagger UI** (`/swagger-ui.html`) tự sinh tài liệu API từ code
 
 ## Hệ thống Recommendation
 
@@ -83,6 +94,25 @@ Customer request → RecommendationService.getForYouRecommendations()
 MF không thay thế lớp rule-based — 2 lớp tồn tại song song: MF phục vụ customer đã có lịch sử mua hàng, rule-based đỡ lưng cho customer mới hoặc khi model chưa kịp retrain (ALS là thuật toán batch/offline, không học liên tục theo thời gian thực — cần chạy lại định kỳ để cập nhật dữ liệu mới).
 
 **Kết quả đo được (precision@6, so với baseline rule-based):** MF vượt trội gấp ~3 lần sau khi mở rộng catalog và tune hyperparameter. Chi tiết đầy đủ về training pipeline, lý do chọn thuật toán, cách đánh giá, và các quyết định kỹ thuật: xem **[ml-service/README.md](ml-service/README.md)**.
+
+### A/B testing MF vs rule-based
+
+Số liệu offline (precision@6) không chứng minh được model tốt hơn *trong thực tế sử dụng* — nên hệ thống tự chạy A/B test ngay trong lúc phục vụ, không cần hạ tầng thử nghiệm riêng:
+
+- Khách hàng có sẵn kết quả MF trong `customer_recommendation_cache` được hash ổn định theo `customerId` để chia đôi: một nửa vẫn nhận MF, nửa còn lại bị giữ lại (`RULE_BASED_HOLDOUT`) và nhận gợi ý rule-based như cũ — cùng 1 khách luôn rơi vào đúng 1 nhóm giữa các lần gọi.
+- Mỗi lần hiển thị gợi ý (impression) và mỗi lượt khách bấm vào đều được ghi vào `RecommendationExperimentLog`.
+- Manager xem báo cáo CTR theo từng nhóm tại `GET /api/manager/recommendation-experiment/summary` (`RecommendationExperimentController`) để biết MF có thực sự đang chuyển đổi tốt hơn rule-based hay không, trước khi quyết định rollout 100%.
+
+## Chatbot & Tìm kiếm bằng ngôn ngữ tự nhiên
+
+Cả 2 tính năng đều dùng chung Google Gemini (`google-genai`), nhưng theo 2 cách khác nhau tuỳ bài toán:
+
+| Tính năng | Cách dùng Gemini | Vì sao |
+|---|---|---|
+| Chatbot tư vấn (`ChatbotService`) | Function-calling — model tự quyết định gọi tool nào (`search_products`, `get_recommendations`, `get_order_status`), kết quả trả về là dữ liệu thật từ DB, model chỉ diễn giải thành câu trả lời | Hội thoại nhiều lượt, cần model tự suy luận nên tra cứu gì |
+| Tìm kiếm tự nhiên (`ProductNlSearchService`) | Structured output (`responseSchema`) — ép model trả về đúng JSON khớp `ProductFilterRequestDto`, ràng buộc `brandNames`/`categoryNames` theo đúng danh sách thật trong DB để tránh bịa | Tác vụ 1 lượt, cần kết quả có cấu trúc để tái sử dụng ngay bộ lọc sản phẩm sẵn có, không cần hạ tầng tìm kiếm/vector DB mới |
+
+Chatbot trả lời theo kiểu streaming qua WebSocket (`ChatWebSocketController`, đẩy từng đoạn vào `/queue/chatbot`), không phải chờ toàn bộ câu trả lời xong mới hiển thị. Cả 2 tính năng đều có fallback an toàn: chatbot từ chối trả lời ngoài phạm vi cửa hàng theo system prompt, tìm kiếm tự nhiên fallback về tìm theo từ khoá thường nếu Gemini lỗi hoặc chưa cấu hình API key.
 
 ## Redis
 
@@ -113,6 +143,16 @@ Chạy RabbitMQ local:
 docker run -d -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 ```
 Management UI xem queue/exchange trực quan tại `http://localhost:15672` (mặc định `guest`/`guest`). Đổi host/port/user/pass qua `RABBITMQ_HOST`/`RABBITMQ_PORT`/`RABBITMQ_USERNAME`/`RABBITMQ_PASSWORD` nếu cần.
+
+## Kiểm thử
+
+Unit test tầng service với JUnit 5 + Mockito (`@ExtendWith(MockitoExtension.class)`, mock toàn bộ repository/client bên ngoài) + AssertJ cho assertion, đặt cạnh code ở `backend/src/test/java`. Có chủ đích không dùng `@SpringBootTest`/`@DataJpaTest` cho các test này — logic nghiệp vụ (tính giá, áp khuyến mãi, phân quyền xoá tài khoản...) không cần DB thật mới verify được, nên chạy nhanh và không phụ thuộc môi trường.
+
+Chạy toàn bộ test:
+```bash
+cd backend
+./mvnw test
+```
 
 ## Dữ liệu giả (seed data)
 
@@ -154,7 +194,7 @@ docker run -d -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 cd backend
 ./mvnw spring-boot:run
 ```
-Mặc định chạy ở port 8080.
+Mặc định chạy ở port 8080. Thêm `GEMINI_API_KEY` vào `.env` để bật chatbot/tìm kiếm AI thật — thiếu biến này cả 2 tính năng vẫn chạy được nhờ fallback (chatbot báo lỗi thân thiện, tìm kiếm AI lùi về tìm theo từ khoá thường).
 
 **Frontend:**
 ```bash

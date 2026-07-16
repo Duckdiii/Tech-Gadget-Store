@@ -4,9 +4,11 @@ import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
 import com.project.tech_gadget_store.modules.catalog.dto.request.ProductFilterRequestDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.FlashSaleProductResponseDto;
+import com.project.tech_gadget_store.modules.catalog.dto.response.NlSearchResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductPageResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
+import com.project.tech_gadget_store.modules.catalog.service.ProductNlSearchService;
 import com.project.tech_gadget_store.modules.catalog.service.ProductService;
 import com.project.tech_gadget_store.modules.catalog.service.ProductViewerTrackerService;
 import com.project.tech_gadget_store.modules.catalog.service.RecommendationService;
@@ -30,16 +32,19 @@ public class ProductController {
     private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
     private final ProductService productService;
+    private final ProductNlSearchService productNlSearchService;
     private final RecommendationService recommendationService;
     private final ProductViewerTrackerService productViewerTrackerService;
     private final CustomerRepository customerRepository;
 
     public ProductController(
             ProductService productService,
+            ProductNlSearchService productNlSearchService,
             RecommendationService recommendationService,
             ProductViewerTrackerService productViewerTrackerService,
             CustomerRepository customerRepository) {
         this.productService = productService;
+        this.productNlSearchService = productNlSearchService;
         this.recommendationService = recommendationService;
         this.productViewerTrackerService = productViewerTrackerService;
         this.customerRepository = customerRepository;
@@ -74,6 +79,15 @@ public class ProductController {
     public ResponseEntity<ProductPageResponseDto> getByFilter(
             @Valid @ModelAttribute ProductFilterRequestDto filter) {
         return ResponseEntity.ok(productService.findProductsByFilter(filter));
+    }
+
+    /**
+     * Tìm kiếm bằng câu hỏi tiếng Việt tự nhiên (vd. "điện thoại chụp ảnh đẹp dưới 15 triệu có
+     * 5G") — model dịch câu hỏi thành bộ lọc có cấu trúc rồi chạy lại {@link #getByFilter}.
+     */
+    @GetMapping("/search-nl")
+    public ResponseEntity<NlSearchResponseDto> searchNaturalLanguage(@RequestParam String q) {
+        return ResponseEntity.ok(productNlSearchService.search(q));
     }
 
     /**

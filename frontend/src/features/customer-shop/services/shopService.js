@@ -49,6 +49,10 @@ export const shopService = {
     return axiosClient.get('/api/products/filter', { params })
   },
 
+  async searchNaturalLanguage(query) {
+    return axiosClient.get('/api/products/search-nl', { params: { q: query } })
+  },
+
   // Recommendation APIs
   async getForYouRecommendations() {
     return axiosClient.get('/api/products/for-you')
