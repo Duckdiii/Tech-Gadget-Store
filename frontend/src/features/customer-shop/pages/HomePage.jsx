@@ -158,12 +158,14 @@ export default function HomePage() {
   // ══ SITE-WIDE STATS, BRANDS, REVIEW HIGHLIGHTS (real data) ══
   const [brandNames, setBrandNames] = useState([])
   const [homeStats, setHomeStats] = useState(null)
+  const [catalogCategories, setCatalogCategories] = useState([])
   const [reviewHighlights, setReviewHighlights] = useState([])
   const [reviewsLoading, setReviewsLoading] = useState(true)
 
   useEffect(() => {
     shopService.getBrandNames().then(setBrandNames).catch(() => setBrandNames([]))
     shopService.getHomeStats().then(setHomeStats).catch(() => setHomeStats(null))
+    shopService.getCategories().then(setCatalogCategories).catch(() => setCatalogCategories([]))
     shopService.getReviewHighlights(3)
       .then(setReviewHighlights)
       .catch(() => setReviewHighlights([]))
@@ -435,6 +437,58 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ══ DANH MỤC SẢN PHẨM ══ */}
+      {catalogCategories.length > 0 && (
+        <section className="max-w-[1300px] mx-auto px-6 md:px-7 mt-12">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-orange-600 mb-1">Danh mục</p>
+              <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#111827', letterSpacing: '-.5px', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                Khám Phá Theo Loại
+              </h2>
+            </div>
+            <button
+              onClick={() => onNavigate('list')}
+              className="text-sm font-semibold text-orange-600 hover:text-orange-700 transition-colors cursor-pointer border-none bg-transparent"
+            >
+              Xem tất cả →
+            </button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {catalogCategories.map(cat => {
+              const iconMap = {
+                'điện thoại': '📱', 'phone': '📱',
+                'laptop': '💻',
+                'màn hình': '🖥️', 'monitor': '🖥️',
+                'tai nghe': '🎧', 'headphone': '🎧',
+                'smartwatch': '⌚', 'đồng hồ': '⌚',
+                'máy tính bảng': '📟', 'tablet': '📟',
+                'phụ kiện': '🔌', 'accessory': '🔌',
+                'loa': '🔊', 'speaker': '🔊',
+              }
+              const key = Object.keys(iconMap).find(k => cat.name.toLowerCase().includes(k))
+              const icon = key ? iconMap[key] : '📦'
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => onNavigate('list', { state: { categoryName: cat.name } })}
+                  className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-gray-100 bg-white hover:border-orange-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
+                >
+                  {cat.imageUrl ? (
+                    <img src={cat.imageUrl} alt={cat.name} className="w-12 h-12 object-contain group-hover:scale-110 transition-transform" />
+                  ) : (
+                    <span className="text-3xl group-hover:scale-110 transition-transform">{icon}</span>
+                  )}
+                  <span className="text-[12.5px] font-bold text-gray-700 group-hover:text-orange-600 transition-colors text-center leading-tight">
+                    {cat.name}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* MAIN CONTENT AREA */}
       <div className="max-w-[1300px] mx-auto px-6 md:px-7">

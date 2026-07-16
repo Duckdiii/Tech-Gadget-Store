@@ -52,6 +52,25 @@ public class ProductFilterRequestDto {
     private Boolean onlyAvailable;
     private Boolean onPromotion;
 
+    // --- Laptop-specific ---
+    private String cpuKeyword;       // substring search on Laptop.cpu
+    private String gpuKeyword;       // substring search on Laptop.gpu
+    private Double minWeight;        // kg, Laptop.weight
+    private Double maxWeight;
+
+    // --- Monitor-specific ---
+    private Integer minRefreshRate;  // Hz, Monitor.refreshRate
+    private Integer maxRefreshRate;
+    private String panelType;        // Monitor.panelType (IPS, VA, OLED, ...)
+
+    // --- Headphones-specific ---
+    private Boolean isWireless;      // Headphones.isWireless
+    private Boolean hasNoiseCancelling; // Headphones.hasNoiseCancelling
+
+    // --- Smartwatch-specific ---
+    private Boolean hasGps;          // Smartwatch.hasGps
+    private Boolean isWaterResistant; // Smartwatch.isWaterResistant
+
     private String sort;
 
     @Min(value = 0, message = "page must not be negative")

@@ -26,4 +26,5 @@ public class ProductResponseDto {
     private boolean hasVariants;
     private Double discountPercent;
     private Integer salesCount;
+    private String specSummary;
 }

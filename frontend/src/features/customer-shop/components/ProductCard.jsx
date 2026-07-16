@@ -157,13 +157,15 @@ export default function ProductCard({ product, onNavigate }) {
           </div>
         )}
 
-        {/* Specs summary (RAM · Storage · Colors) */}
+        {/* Specs summary — uses pre-built specSummary from backend per product type */}
         {(() => {
-          const specs = []
-          if (product.ram) specs.push(`RAM ${product.ram}GB`)
-          if (product.storage) specs.push(`${product.storage}GB`)
-          if (product.color) specs.push(product.color)
-          const specsText = specs.join(' · ')
+          const specsText = product.specSummary ?? (() => {
+            const parts = []
+            if (product.ram) parts.push(`RAM ${product.ram}`)
+            if (product.storage) parts.push(product.storage)
+            if (product.color) parts.push(product.color)
+            return parts.join(' · ')
+          })()
           return specsText ? (
             <p className="text-[10px] text-slate-500 truncate leading-none mt-0.5" title={specsText}>
               {specsText}

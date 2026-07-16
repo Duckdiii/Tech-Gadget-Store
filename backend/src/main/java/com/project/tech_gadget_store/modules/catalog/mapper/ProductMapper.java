@@ -5,12 +5,14 @@ import com.project.tech_gadget_store.modules.catalog.dto.response.ProductDetailR
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductImageResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductVariantResponseDto;
+import com.project.tech_gadget_store.modules.catalog.entity.Headphones;
 import com.project.tech_gadget_store.modules.catalog.entity.Laptop;
 import com.project.tech_gadget_store.modules.catalog.entity.Monitor;
 import com.project.tech_gadget_store.modules.catalog.entity.Phone;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductImage;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
+import com.project.tech_gadget_store.modules.catalog.entity.Smartwatch;
 import com.project.tech_gadget_store.modules.loyalty.dto.response.BundleServiceResponseDto;
 import com.project.tech_gadget_store.modules.loyalty.entity.BundleService;
 import com.project.tech_gadget_store.modules.loyalty.entity.Promotion;
@@ -54,6 +56,7 @@ public class ProductMapper {
                                 .hasVariants(!variants.isEmpty())
                                 .discountPercent(getBestActivePromotionPercent(product))
                                 .salesCount(salesCount)
+                                .specSummary(buildSpecSummary(product, variants))
                                 .build();
         }
 
@@ -221,5 +224,55 @@ public class ProductMapper {
                                 .max(java.util.Comparator.comparing(Promotion::getDiscountPercent))
                                 .map(Promotion::getDiscountPercent)
                                 .orElse(null);
+        }
+
+        /**
+         * Builds a short spec summary string displayed in product card thumbnails.
+         * Tailored per product type so the storefront never needs to know the concrete subtype.
+         */
+        private String buildSpecSummary(Product product, List<ProductVariant> variants) {
+                List<String> parts = new java.util.ArrayList<>();
+                if (product instanceof Phone phone) {
+                        // RAM · Storage · Colors
+                        if (!variants.isEmpty() && variants.get(0).getRamGb() != null)
+                                parts.add("RAM " + variants.get(0).getRamGb() + "GB");
+                        if (!variants.isEmpty() && variants.get(0).getStorageGb() != null)
+                                parts.add(variants.get(0).getStorageGb() + "GB");
+                        String colors = variants.stream()
+                                        .map(ProductVariant::getColor)
+                                        .filter(Objects::nonNull)
+                                        .distinct()
+                                        .collect(Collectors.joining(", "));
+                        if (!colors.isBlank()) parts.add(colors);
+                } else if (product instanceof Laptop laptop) {
+                        if (laptop.getCpu() != null) parts.add(laptop.getCpu());
+                        if (!variants.isEmpty() && variants.get(0).getRamGb() != null)
+                                parts.add("RAM " + variants.get(0).getRamGb() + "GB");
+                        if (!variants.isEmpty() && variants.get(0).getStorageGb() != null)
+                                parts.add(variants.get(0).getStorageGb() + "GB");
+                } else if (product instanceof Monitor monitor) {
+                        if (monitor.getScreenSize() != null)
+                                parts.add(monitor.getScreenSize().intValue() + "\"" );
+                        if (monitor.getResolution() != null) parts.add(monitor.getResolution());
+                        if (monitor.getRefreshRate() != null) parts.add(monitor.getRefreshRate() + "Hz");
+                        if (monitor.getPanelType() != null) parts.add(monitor.getPanelType());
+                } else if (product instanceof Headphones headphones) {
+                        parts.add(Boolean.TRUE.equals(headphones.getIsWireless()) ? "Không dây" : "Có dây");
+                        if (Boolean.TRUE.equals(headphones.getHasNoiseCancelling())) parts.add("Chống ồn ANC");
+                        if (headphones.getBatteryLifeHours() != null)
+                                parts.add(headphones.getBatteryLifeHours() + "h pin");
+                } else if (product instanceof Smartwatch smartwatch) {
+                        if (Boolean.TRUE.equals(smartwatch.getHasGps())) parts.add("GPS");
+                        if (Boolean.TRUE.equals(smartwatch.getIsWaterResistant())) parts.add("Chống nước");
+                        if (smartwatch.getBatteryLifeDays() != null)
+                                parts.add(smartwatch.getBatteryLifeDays() + " ngày pin");
+                } else {
+                        // Generic fallback: RAM · Storage · Colors
+                        if (!variants.isEmpty() && variants.get(0).getRamGb() != null)
+                                parts.add("RAM " + variants.get(0).getRamGb() + "GB");
+                        if (!variants.isEmpty() && variants.get(0).getStorageGb() != null)
+                                parts.add(variants.get(0).getStorageGb() + "GB");
+                }
+                return parts.isEmpty() ? null : String.join(" · ", parts);
         }
 }

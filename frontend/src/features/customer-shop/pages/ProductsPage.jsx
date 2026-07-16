@@ -15,18 +15,19 @@ const SORT_OPTIONS = [
   { label: 'Giá cao đến thấp', value: 'price_desc' },
 ]
 
-const PAGE_SIZE = 9
+const PAGE_SIZE = 12
 
-// Bộ lọc rỗng — cũng là "shape" chuẩn mà FilterPanel dùng để đọc/ghi, khớp trực tiếp với các
-// field của ProductFilterRequestDto ở backend (trừ keyword/sort/page/size do trang này tự quản).
+// Bộ lọc rỗng — shape chuẩn dùng chung với FilterPanel, khớp các field của ProductFilterRequestDto.
 const EMPTY_FILTERS = {
   keyword: '',
   brandNames: [],
+  categoryNames: [],
   minPrice: undefined,
   maxPrice: undefined,
   ramGb: [],
   storageGb: [],
   colors: [],
+  // Phone-specific
   operatingSystem: undefined,
   minScreenSize: undefined,
   maxScreenSize: undefined,
@@ -35,6 +36,22 @@ const EMPTY_FILTERS = {
   chipset: undefined,
   simType: undefined,
   nfcSupported: undefined,
+  // Laptop-specific
+  cpuKeyword: undefined,
+  gpuKeyword: undefined,
+  minWeight: undefined,
+  maxWeight: undefined,
+  // Monitor-specific
+  minRefreshRate: undefined,
+  maxRefreshRate: undefined,
+  panelType: undefined,
+  // Headphones-specific
+  isWireless: undefined,
+  hasNoiseCancelling: undefined,
+  // Smartwatch-specific
+  hasGps: undefined,
+  isWaterResistant: undefined,
+  // Common
   onlyAvailable: undefined,
   onPromotion: undefined,
 }
@@ -42,12 +59,11 @@ const EMPTY_FILTERS = {
 function isFiltersEmpty(filters) {
   return Object.entries(filters).every(([key, value]) => {
     if (key === 'keyword') return !value
-    return Array.isArray(value) ? value.length === 0 : value === undefined || value === false
+    return Array.isArray(value) ? value.length === 0 : value === undefined || value === false || value === null
   })
 }
 
-// Tóm tắt ngắn gọn bộ lọc mà AI đã suy ra, để khách biết hệ thống hiểu câu hỏi của mình như
-// thế nào — quan trọng vì kết quả dựa trên diễn giải của model, có thể không chính xác 100%.
+// Tóm tắt ngắn gọn bộ lọc mà AI đã suy ra
 function describeAiFilter(filter) {
   if (!filter) return null
   const parts = []
@@ -68,6 +84,22 @@ function describeAiFilter(filter) {
   return parts.length ? parts.join(' · ') : null
 }
 
+// Tạo tiêu đề động dựa trên các category đang filter
+function buildPageTitle(categoryNames, aiFilter, aiQuery, keyword) {
+  if (aiFilter) return `✨ Kết quả AI cho "${aiQuery}"`
+  if (keyword) return `Kết quả cho "${keyword}"`
+  if (categoryNames?.length === 1) return categoryNames[0]
+  if (categoryNames?.length > 1) return categoryNames.join(' & ')
+  return 'Tất cả sản phẩm'
+}
+
+function buildPageSubtitle(categoryNames, aiFilter, aiSummary, keyword) {
+  if (aiFilter) return aiSummary ? `Hệ thống hiểu là: ${aiSummary}.` : 'Không tách được tiêu chí cụ thể, đang tìm theo toàn bộ câu hỏi.'
+  if (keyword) return 'Kết quả được sắp xếp theo mức độ liên quan.'
+  if (categoryNames?.length) return `Khám phá những sản phẩm ${categoryNames.join(', ')} mới nhất với ưu đãi trả góp 0% độc quyền tại TechStore.`
+  return 'Khám phá toàn bộ sản phẩm công nghệ mới nhất với các ưu đãi trả góp 0% độc quyền tại TechStore.'
+}
+
 export default function ProductsPage() {
   const onNavigate = useNav()
   const [searchParams] = useSearchParams()
@@ -81,17 +113,40 @@ export default function ProductsPage() {
   const aiInitialResults = location.state?.aiResults || null
   const skipNextFetch = useRef(!!aiInitialResults)
 
+  // Nếu navigate từ category link, pre-select danh mục
+  const initialCategory = location.state?.categoryName || null
+
   const [sort, setSort] = useState('')
   const [page, setPage] = useState(0)
-  const [filters, setFilters] = useState(EMPTY_FILTERS)
+  const [filters, setFilters] = useState(() => ({
+    ...EMPTY_FILTERS,
+    categoryNames: initialCategory ? [initialCategory] : [],
+  }))
   const [products, setProducts] = useState(() => (aiInitialResults?.items ?? []).map(mapApiProduct))
   const [totalItems, setTotalItems] = useState(() => aiInitialResults?.totalItems ?? 0)
   const [totalPages, setTotalPages] = useState(() => aiInitialResults?.totalPages ?? 0)
   const [loading, setLoading] = useState(!aiInitialResults)
   const [error, setError] = useState(null)
 
+  // Data từ API
+  const [categories, setCategories] = useState([])
+  const [brands, setBrands] = useState([])
+
+  // Fetch categories & brands một lần khi mount
+  useEffect(() => {
+    shopService.getCategories()
+      .then(data => setCategories(Array.isArray(data) ? data : []))
+      .catch(() => setCategories([]))
+    shopService.getBrandNames()
+      .then(data => setBrands(Array.isArray(data) ? data : []))
+      .catch(() => setBrands([]))
+  }, [])
+
   const patchFilters = (patch) => setFilters(prev => ({ ...prev, ...patch }))
-  const resetFilters = () => setFilters(EMPTY_FILTERS)
+  const resetFilters = () => setFilters({
+    ...EMPTY_FILTERS,
+    categoryNames: [],
+  })
   const manualFiltersActive = !isFiltersEmpty(filters)
 
   useEffect(() => { setPage(0) }, [keyword, sort, aiFilter, filters])
@@ -103,8 +158,7 @@ export default function ProductsPage() {
     }
     setLoading(true)
     setError(null)
-    // Bộ lọc thủ công (FilterPanel) được ưu tiên cao nhất, sau đó mới đến bộ lọc AI đã diễn
-    // giải, cuối cùng là tìm theo từ khoá thường từ ô tìm kiếm trên navbar.
+
     let params
     if (manualFiltersActive) {
       params = { ...filters, keyword: filters.keyword || keyword || undefined, sort: sort || undefined, page, size: PAGE_SIZE }
@@ -113,6 +167,7 @@ export default function ProductsPage() {
     } else {
       params = { keyword: keyword || undefined, sort: sort || undefined, page, size: PAGE_SIZE }
     }
+
     shopService.getProductsByFilter(params)
       .then(data => {
         setProducts((data.items ?? []).map(mapApiProduct))
@@ -125,12 +180,15 @@ export default function ProductsPage() {
   }, [keyword, sort, page, aiFilter, filters, manualFiltersActive])
 
   const aiSummary = aiFilter ? describeAiFilter(aiFilter) : null
+  const selectedCategories = filters.categoryNames ?? []
+  const pageTitle = buildPageTitle(selectedCategories, aiFilter, aiQuery, keyword)
+  const pageSubtitle = buildPageSubtitle(selectedCategories, aiFilter, aiSummary, keyword)
 
   return (
     <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
       <StoreNavbar />
 
-      {/* Category header — premium dark slate gradient */}
+      {/* Category header */}
       <div
         className="py-12 relative overflow-hidden"
         style={{
@@ -141,18 +199,12 @@ export default function ProductsPage() {
         <div className="absolute top-0 right-0 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(232,66,10,0.08) 0%, transparent 70%)' }} />
         <div className="max-w-screen-2xl mx-auto px-8 relative z-10">
           <p className="text-[11px] font-extrabold tracking-[0.25em] uppercase mb-1.5" style={{ color: 'var(--accent)' }}>
-            Danh mục sản phẩm
+            {selectedCategories.length > 0 ? selectedCategories.join(' · ') : 'Danh mục sản phẩm'}
           </p>
           <h1 className="text-[28px] font-black text-white" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
-            {aiFilter ? `✨ Kết quả AI cho "${aiQuery}"` : keyword ? `Kết quả cho "${keyword}"` : 'Điện thoại di động'}
+            {pageTitle}
           </h1>
-          <p className="text-sm mt-1.5 text-slate-400">
-            {aiFilter
-              ? (aiSummary ? `Hệ thống hiểu là: ${aiSummary}.` : 'Không tách được tiêu chí cụ thể, đang tìm theo toàn bộ câu hỏi.')
-              : keyword
-                ? 'Kết quả được sắp xếp theo mức độ liên quan.'
-                : 'Khám phá những mẫu điện thoại mới nhất với các ưu đãi trả góp 0% độc quyền tại TechStore.'}
-          </p>
+          <p className="text-sm mt-1.5 text-slate-400">{pageSubtitle}</p>
           {aiFilter && (
             <button
               onClick={() => onNavigate('list', { search: '' })}
@@ -177,7 +229,19 @@ export default function ProductsPage() {
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
-          <span style={{ color: 'var(--t1)' }}>Điện thoại di động</span>
+          {selectedCategories.length === 1 ? (
+            <>
+              <button onClick={() => onNavigate('list')} className="transition-colors cursor-pointer hover:text-slate-900">
+                Sản phẩm
+              </button>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              <span style={{ color: 'var(--t1)' }}>{selectedCategories[0]}</span>
+            </>
+          ) : (
+            <span style={{ color: 'var(--t1)' }}>{selectedCategories.length > 0 ? selectedCategories.join(' & ') : 'Tất cả sản phẩm'}</span>
+          )}
         </nav>
 
         {/* Sort bar */}
@@ -211,7 +275,13 @@ export default function ProductsPage() {
 
         {/* Filter + Grid */}
         <div className="flex gap-7 items-start">
-          <FilterPanel filters={filters} onChange={patchFilters} onReset={resetFilters} />
+          <FilterPanel
+            filters={filters}
+            onChange={patchFilters}
+            onReset={resetFilters}
+            categories={categories}
+            brands={brands}
+          />
           <div className="flex-1 min-w-0">
             {error && (
               <div

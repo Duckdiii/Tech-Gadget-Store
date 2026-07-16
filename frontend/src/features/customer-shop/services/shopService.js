@@ -61,6 +61,10 @@ export const shopService = {
     return axiosClient.get('/api/brands')
   },
 
+  async getCategories() {
+    return axiosClient.get('/api/categories')
+  },
+
   async getHomeStats() {
     return axiosClient.get('/api/stats/homepage')
   },

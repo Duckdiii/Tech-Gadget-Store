@@ -16,6 +16,7 @@ export function mapApiProduct(p) {
     ram: p.ramGb != null ? `${p.ramGb}GB` : null,
     storage: p.storageGb != null ? `${p.storageGb}GB` : null,
     color: p.color ?? null,
+    specSummary: p.specSummary ?? null,
     // null when the product has no real photo yet — ProductCard renders a proper
     // placeholder for this instead of loading an ugly text-on-box image.
     image: p.imageUrl ?? null,

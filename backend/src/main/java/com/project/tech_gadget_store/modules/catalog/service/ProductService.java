@@ -6,6 +6,9 @@ import com.project.tech_gadget_store.modules.catalog.dto.response.FlashSaleProdu
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductPageResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
+import com.project.tech_gadget_store.modules.catalog.entity.Headphones;
+import com.project.tech_gadget_store.modules.catalog.entity.Laptop;
+import com.project.tech_gadget_store.modules.catalog.entity.Monitor;
 import com.project.tech_gadget_store.modules.catalog.entity.Phone;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
@@ -301,37 +304,117 @@ public class ProductService {
                 predicates.add(variantColorIn(root, query, cb, f.getColors()));
             }
 
-            if (hasText(f.getOperatingSystem())) {
-                predicates.add(cb.like(cb.lower(cb.treat(root, com.project.tech_gadget_store.modules.catalog.entity.Phone.class).get("operatingSystem")),
-                        "%" + f.getOperatingSystem().trim().toLowerCase() + "%"));
+            // ---- Phone-specific filters (only applied when filtering by Phone category or no category selected) ----
+            boolean isPhoneFilter = !hasItems(f.getCategoryNames())
+                    || f.getCategoryNames().stream().anyMatch(n -> n.toLowerCase().contains("điện thoại") || n.toLowerCase().contains("phone"));
+
+            if (isPhoneFilter) {
+                if (hasText(f.getOperatingSystem())) {
+                    predicates.add(cb.like(
+                            cb.lower(cb.treat(root, Phone.class).get("operatingSystem")),
+                            "%" + f.getOperatingSystem().trim().toLowerCase() + "%"));
+                }
+                if (f.getMinScreenSize() != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(
+                            cb.treat(root, Phone.class).get("screenSize"), f.getMinScreenSize()));
+                }
+                if (f.getMaxScreenSize() != null) {
+                    predicates.add(cb.lessThanOrEqualTo(
+                            cb.treat(root, Phone.class).get("screenSize"), f.getMaxScreenSize()));
+                }
+                if (f.getMinBatteryCapacity() != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(
+                            cb.treat(root, Phone.class).get("batteryCapacity"), f.getMinBatteryCapacity()));
+                }
+                if (f.getMaxBatteryCapacity() != null) {
+                    predicates.add(cb.lessThanOrEqualTo(
+                            cb.treat(root, Phone.class).get("batteryCapacity"), f.getMaxBatteryCapacity()));
+                }
+                if (hasText(f.getChipset())) {
+                    predicates.add(cb.like(
+                            cb.lower(cb.treat(root, Phone.class).get("chipset")),
+                            "%" + f.getChipset().trim().toLowerCase() + "%"));
+                }
+                if (f.getNfcSupported() != null) {
+                    predicates.add(cb.equal(
+                            cb.treat(root, Phone.class).get("nfcSupported"), f.getNfcSupported()));
+                }
+                if (hasText(f.getSimType())) {
+                    predicates.add(cb.like(
+                            cb.lower(cb.treat(root, Phone.class).get("simType")),
+                            "%" + f.getSimType().trim().toLowerCase() + "%"));
+                }
             }
 
-            if (f.getMinScreenSize() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(cb.treat(root, com.project.tech_gadget_store.modules.catalog.entity.Phone.class).get("screenSize"), f.getMinScreenSize()));
-            }
-            if (f.getMaxScreenSize() != null) {
-                predicates.add(cb.lessThanOrEqualTo(cb.treat(root, com.project.tech_gadget_store.modules.catalog.entity.Phone.class).get("screenSize"), f.getMaxScreenSize()));
+            // ---- Laptop-specific filters ----
+            boolean isLaptopFilter = hasItems(f.getCategoryNames())
+                    && f.getCategoryNames().stream().anyMatch(n -> n.toLowerCase().contains("laptop"));
+            if (isLaptopFilter) {
+                if (hasText(f.getCpuKeyword())) {
+                    predicates.add(cb.like(
+                            cb.lower(cb.treat(root, Laptop.class).get("cpu")),
+                            "%" + f.getCpuKeyword().trim().toLowerCase() + "%"));
+                }
+                if (hasText(f.getGpuKeyword())) {
+                    predicates.add(cb.like(
+                            cb.lower(cb.treat(root, Laptop.class).get("gpu")),
+                            "%" + f.getGpuKeyword().trim().toLowerCase() + "%"));
+                }
+                if (f.getMinWeight() != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(
+                            cb.treat(root, Laptop.class).get("weight"), f.getMinWeight()));
+                }
+                if (f.getMaxWeight() != null) {
+                    predicates.add(cb.lessThanOrEqualTo(
+                            cb.treat(root, Laptop.class).get("weight"), f.getMaxWeight()));
+                }
             }
 
-            if (f.getMinBatteryCapacity() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(cb.treat(root, com.project.tech_gadget_store.modules.catalog.entity.Phone.class).get("batteryCapacity"), f.getMinBatteryCapacity()));
-            }
-            if (f.getMaxBatteryCapacity() != null) {
-                predicates.add(cb.lessThanOrEqualTo(cb.treat(root, com.project.tech_gadget_store.modules.catalog.entity.Phone.class).get("batteryCapacity"), f.getMaxBatteryCapacity()));
+            // ---- Monitor-specific filters ----
+            boolean isMonitorFilter = hasItems(f.getCategoryNames())
+                    && f.getCategoryNames().stream().anyMatch(n -> n.toLowerCase().contains("màn hình") || n.toLowerCase().contains("monitor"));
+            if (isMonitorFilter) {
+                if (f.getMinRefreshRate() != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(
+                            cb.treat(root, Monitor.class).get("refreshRate"), f.getMinRefreshRate()));
+                }
+                if (f.getMaxRefreshRate() != null) {
+                    predicates.add(cb.lessThanOrEqualTo(
+                            cb.treat(root, Monitor.class).get("refreshRate"), f.getMaxRefreshRate()));
+                }
+                if (hasText(f.getPanelType())) {
+                    predicates.add(cb.like(
+                            cb.lower(cb.treat(root, Monitor.class).get("panelType")),
+                            "%" + f.getPanelType().trim().toLowerCase() + "%"));
+                }
             }
 
-            if (hasText(f.getChipset())) {
-                predicates.add(cb.like(cb.lower(cb.treat(root, com.project.tech_gadget_store.modules.catalog.entity.Phone.class).get("chipset")),
-                        "%" + f.getChipset().trim().toLowerCase() + "%"));
+            // ---- Headphones-specific filters ----
+            boolean isHeadphonesFilter = hasItems(f.getCategoryNames())
+                    && f.getCategoryNames().stream().anyMatch(n -> n.toLowerCase().contains("tai nghe") || n.toLowerCase().contains("headphone"));
+            if (isHeadphonesFilter) {
+                if (f.getIsWireless() != null) {
+                    predicates.add(cb.equal(
+                            cb.treat(root, Headphones.class).get("isWireless"), f.getIsWireless()));
+                }
+                if (f.getHasNoiseCancelling() != null) {
+                    predicates.add(cb.equal(
+                            cb.treat(root, Headphones.class).get("hasNoiseCancelling"), f.getHasNoiseCancelling()));
+                }
             }
 
-            if (f.getNfcSupported() != null) {
-                predicates.add(cb.equal(cb.treat(root, com.project.tech_gadget_store.modules.catalog.entity.Phone.class).get("nfcSupported"), f.getNfcSupported()));
-            }
-
-            if (hasText(f.getSimType())) {
-                predicates.add(cb.like(cb.lower(cb.treat(root, com.project.tech_gadget_store.modules.catalog.entity.Phone.class).get("simType")),
-                        "%" + f.getSimType().trim().toLowerCase() + "%"));
+            // ---- Smartwatch-specific filters ----
+            boolean isSmartwatchFilter = hasItems(f.getCategoryNames())
+                    && f.getCategoryNames().stream().anyMatch(n -> n.toLowerCase().contains("smartwatch") || n.toLowerCase().contains("đồng hồ"));
+            if (isSmartwatchFilter) {
+                if (f.getHasGps() != null) {
+                    predicates.add(cb.equal(
+                            cb.treat(root, com.project.tech_gadget_store.modules.catalog.entity.Smartwatch.class).get("hasGps"), f.getHasGps()));
+                }
+                if (f.getIsWaterResistant() != null) {
+                    predicates.add(cb.equal(
+                            cb.treat(root, com.project.tech_gadget_store.modules.catalog.entity.Smartwatch.class).get("isWaterResistant"), f.getIsWaterResistant()));
+                }
             }
 
             if (Boolean.TRUE.equals(f.getOnlyAvailable())) {
