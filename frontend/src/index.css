@@ -450,6 +450,18 @@ html.dark body { background-color: var(--ink); }
   display: none;
 }
 
+.rec-arrow {
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.rec-scroll-wrap:hover .rec-arrow {
+  opacity: 1;
+}
+.rec-arrow:hover {
+  transform: translateY(-50%) scale(1.08);
+}
+
 .search-inp:focus {
   outline: none;
   box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.25);
