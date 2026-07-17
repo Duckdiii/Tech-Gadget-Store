@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useAccountSection } from '../hooks/useAccountSection'
 import AvatarPickerModal from './AvatarPickerModal'
 
@@ -28,7 +28,6 @@ function Field({ label, value, editing, children, verified }) {
 }
 
 export default function AccountSection({ profile, onProfileUpdate }) {
-  const fileRef = useRef(null)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const {
     avatarSrc,

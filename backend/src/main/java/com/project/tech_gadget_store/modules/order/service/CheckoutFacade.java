@@ -184,7 +184,7 @@ public class CheckoutFacade {
                         org.springframework.data.domain.PageRequest.of(0, cartItem.getQuantity()));
 
                 for (int i = 0; i < cartItem.getQuantity(); i++) {
-                    ProductVariant unit = availableUnits.get(i);
+                    ProductVariant unit = cartItem.getProductVariant();
                     OrderItem orderItem = new OrderItem(order, unit, 1, cartItem.getUnitPrice());
                     orderItem.setId(java.util.UUID.randomUUID().toString());
                     for (BundleService service : cartItem.getBundleServices()) {

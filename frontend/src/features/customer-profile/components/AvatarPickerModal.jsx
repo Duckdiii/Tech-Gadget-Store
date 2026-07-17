@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 const PREDEFINED_AVATARS = [
   {
@@ -76,8 +76,6 @@ const PREDEFINED_AVATARS = [
 
 export default function AvatarPickerModal({ isOpen, onClose, onSelect, currentAvatar }) {
   const fileInputRef = useRef(null)
-  const [selectedAvatarId, setSelectedAvatarId] = useState('')
-  const [customAvatarSrc, setCustomAvatarSrc] = useState('')
 
   if (!isOpen) return null
 
@@ -105,8 +103,6 @@ export default function AvatarPickerModal({ isOpen, onClose, onSelect, currentAv
   }
 
   const handleSelectPredefined = (avatar) => {
-    setSelectedAvatarId(avatar.id)
-    setCustomAvatarSrc('')
     const dataUrl = getPredefinedDataUrl(avatar)
     onSelect(dataUrl)
     onClose()
@@ -120,8 +116,6 @@ export default function AvatarPickerModal({ isOpen, onClose, onSelect, currentAv
     const reader = new FileReader()
     reader.onload = (event) => {
       const base64 = event.target.result
-      setCustomAvatarSrc(base64)
-      setSelectedAvatarId('custom')
       onSelect(base64)
       onClose()
     }

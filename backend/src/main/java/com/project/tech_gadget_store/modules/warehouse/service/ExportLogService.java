@@ -116,7 +116,7 @@ public class ExportLogService {
                         org.springframework.data.domain.PageRequest.of(0, itemDto.getQuantity())
                 );
                 for (int i = 0; i < itemDto.getQuantity(); i++) {
-                    ProductVariant unitToExport = availableUnits.get(i);
+                    ProductVariant unitToExport = referenceVariant;
                     ExportLogItem exportLogItem = new ExportLogItem(exportLog, unitToExport, 1);
                     exportLogItem.setId(java.util.UUID.randomUUID().toString());
 
