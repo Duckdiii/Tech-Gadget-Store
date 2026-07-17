@@ -5,10 +5,14 @@ function formatPrice(price) {
 }
 
 
-export default function ProductCard({ product, onNavigate, viewMode = 'grid', isCompared = false, onToggleCompare, onQuickView }) {
-  const [wished, setWished] = useState(false)
+export default function ProductCard({ product, onNavigate, viewMode = 'grid', isCompared = false, onToggleCompare, onQuickView, onNotifyBackInStock, isWished = false, onToggleWishlist }) {
+  const [wished, setWished] = useState(isWished)
   const [adding, setAdding] = useState(false)
   const [imgError, setImgError] = useState(false)
+
+  useEffect(() => {
+    setWished(isWished)
+  }, [isWished])
 
   useEffect(() => { setImgError(false) }, [product.image])
 
@@ -128,7 +132,9 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
           <button
             onClick={e => {
               e.stopPropagation()
-              setWished(w => !w)
+              const nextWished = !wished
+              setWished(nextWished)
+              if (onToggleWishlist) onToggleWishlist(product, nextWished)
             }}
             aria-label={wished ? 'Bỏ khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'}
             className="absolute top-3 right-3 z-10 w-7.5 h-7.5 flex items-center justify-center transition-all duration-200"
@@ -318,6 +324,10 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
             </button>
           ) : (
             <button
+              onClick={(e) => {
+                e.stopPropagation()
+                if (onNotifyBackInStock) onNotifyBackInStock(product)
+              }}
               className="flex items-center justify-center gap-1.5 border text-slate-400 bg-white hover:bg-slate-50 font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer w-full"
               style={{ borderColor: 'var(--b1)' }}
             >
@@ -407,7 +417,9 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
         <button
           onClick={e => {
             e.stopPropagation()
-            setWished(w => !w)
+            const nextWished = !wished
+            setWished(nextWished)
+            if (onToggleWishlist) onToggleWishlist(product, nextWished)
           }}
           aria-label={wished ? 'Bỏ khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'}
           className="absolute top-3 right-3 z-10 w-7.5 h-7.5 flex items-center justify-center transition-all duration-200"
@@ -588,7 +600,11 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
             </button>
           ) : (
             <button
-              className="w-9 h-9 flex items-center justify-center border text-slate-400 shrink-0 bg-transparent cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation()
+                if (onNotifyBackInStock) onNotifyBackInStock(product)
+              }}
+              className="w-9 h-9 flex items-center justify-center border text-slate-450 hover:text-[#E8420A] hover:border-[#E8420A]/30 hover:bg-orange-50/20 shrink-0 bg-transparent cursor-pointer transition-colors"
               style={{
                 borderColor: 'var(--b1)',
                 borderRadius: '50%',

@@ -178,14 +178,22 @@ export default function StoreNavbar() {
       .catch(err => console.error('Error fetching orders:', err))
 
     // Fetch favorites count
-    apiFetch('/api/customer/favorites?page=0&size=1')
-      .then(data => setFavoritesCount(data.totalItems ?? 0))
-      .catch(err => console.error('Error fetching favorites:', err))
+    const fetchFavoritesCount = () => {
+      apiFetch('/api/customer/favorites?page=0&size=1')
+        .then(data => setFavoritesCount(data.totalItems ?? 0))
+        .catch(err => console.error('Error fetching favorites:', err))
+    }
+    fetchFavoritesCount()
+    window.addEventListener('favorites_changed', fetchFavoritesCount)
 
     // Fetch coupons count
     apiFetch('/api/customer/coupons/mine')
       .then(data => setCouponsCount(data.length ?? 0))
       .catch(err => console.error('Error fetching coupons:', err))
+
+    return () => {
+      window.removeEventListener('favorites_changed', fetchFavoritesCount)
+    }
   }, [user])
 
   const getMembershipTierLabel = (tier) => {

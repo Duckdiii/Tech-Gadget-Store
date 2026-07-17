@@ -1,11 +1,13 @@
 import StoreNavbar from '../../../components/StoreNavbar'
 import { useCart } from '../hooks/useCart'
+import { useFavorites } from '../../../hooks/useFavorites'
 import CartItem from '../components/CartItem'
 import OrderSummary from '../components/OrderSummary'
 import RecommendationSection from '../components/RecommendationSection'
 import { useCartRecommendations } from '../hooks/useRecommendations'
 
 export default function CartPage() { // hiển thị trang giỏ hàng
+  const { favoritesMap, toggleWishlist } = useFavorites()
   const {
     items,
     loading,
@@ -98,6 +100,8 @@ export default function CartPage() { // hiển thị trang giỏ hàng
             products={cartRecommendations}
             loading={cartRecommendationsLoading}
             onNavigate={onNavigate}
+            favoritesMap={favoritesMap}
+            onToggleWishlist={toggleWishlist}
           />
         )}
       </div>

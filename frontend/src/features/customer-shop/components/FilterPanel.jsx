@@ -54,22 +54,25 @@ function FilterGroupLabel({ children }) {
   return <p className="text-[11px] font-extrabold uppercase tracking-wider mb-2.5 first:mt-0 mt-4" style={{ color: 'var(--t3)' }}>{children}</p>
 }
 
-function CheckGroup({ items, selected, onToggle }) {
+function CheckGroup({ items, selected, onToggle, counts = {} }) {
   return (
     <div className="space-y-2">
-      {items.map(({ value, label }) => (
-        <label key={value} className="flex items-center gap-2.5 cursor-pointer group">
-          <input
-            type="checkbox"
-            checked={selected.includes(value)}
-            onChange={() => onToggle(value)}
-            className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
-          />
-          <span className="text-[12.5px] transition-colors" style={{ color: selected.includes(value) ? 'var(--t1)' : 'var(--t2)' }}>
-            {label}
-          </span>
-        </label>
-      ))}
+      {items.map(({ value, label }) => {
+        const count = counts[value] ?? 0
+        return (
+          <label key={value} className="flex items-center gap-2.5 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={selected.includes(value)}
+              onChange={() => onToggle(value)}
+              className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
+            />
+            <span className="text-[12.5px] transition-colors" style={{ color: selected.includes(value) ? 'var(--t1)' : 'var(--t2)' }}>
+              {label} <span className="text-[10.5px] text-slate-400 font-bold">({count})</span>
+            </span>
+          </label>
+        )
+      })}
     </div>
   )
 }
@@ -173,7 +176,7 @@ function detectCategory(categoryNames) {
   return 'mixed'
 }
 
-export default function FilterPanel({ filters, onChange, onReset, categories = [], brands = [] }) {
+export default function FilterPanel({ filters, onChange, onReset, categories = [], brands = [], facetCounts = {} }) {
   const [keywordText, setKeywordText] = useDebouncedCommit(
     filters.keyword ?? '', (v) => onChange({ keyword: v }))
 
@@ -356,7 +359,7 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
                     className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
                   />
                   <span className="text-[12.5px] transition-colors" style={{ color: selectedCategories.includes(cat.name) ? 'var(--t1)' : 'var(--t2)' }}>
-                    {cat.name}
+                    {cat.name} <span className="text-[10.5px] text-slate-400 font-bold">({facetCounts.categories?.[cat.name] ?? 0})</span>
                   </span>
                 </label>
               ))}
@@ -375,7 +378,9 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
                     onChange={() => toggleList('brandNames', brand)}
                     className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
                   />
-                  <span className="text-[12.5px] transition-colors" style={{ color: selectedBrands.includes(brand) ? 'var(--t1)' : 'var(--t2)' }}>{brand}</span>
+                  <span className="text-[12.5px] transition-colors" style={{ color: selectedBrands.includes(brand) ? 'var(--t1)' : 'var(--t2)' }}>
+                    {brand} <span className="text-[10.5px] text-slate-400 font-bold">({facetCounts.brands?.[brand] ?? 0})</span>
+                  </span>
                 </label>
               ))}
             </div>
@@ -502,9 +507,9 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
         {(isPhoneScope || isLaptopScope) && (
           <FilterDropdown label="RAM / Bộ nhớ" count={selectedRam.length + selectedStorage.length}>
             <FilterGroupLabel>RAM</FilterGroupLabel>
-            <CheckGroup items={RAM_OPTIONS} selected={selectedRam} onToggle={v => toggleList('ramGb', v)} />
+            <CheckGroup items={RAM_OPTIONS} selected={selectedRam} onToggle={v => toggleList('ramGb', v)} counts={facetCounts.ram} />
             <FilterGroupLabel>Bộ nhớ trong</FilterGroupLabel>
-            <CheckGroup items={STORAGE_OPTIONS} selected={selectedStorage} onToggle={v => toggleList('storageGb', v)} />
+            <CheckGroup items={STORAGE_OPTIONS} selected={selectedStorage} onToggle={v => toggleList('storageGb', v)} counts={facetCounts.storage} />
           </FilterDropdown>
         )}
 
@@ -514,7 +519,7 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
               <button
                 key={value}
                 onClick={() => toggleList('colors', value)}
-                title={value}
+                title={`${value} (${facetCounts.colors?.[value] ?? 0})`}
                 className="w-6 h-6 transition-all cursor-pointer rounded-full border-none"
                 style={{
                   backgroundColor: hex,
@@ -528,7 +533,7 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
           </div>
           {selectedColors.length > 0 && (
             <p className="text-[10px] mt-2 font-medium" style={{ color: 'var(--t3)' }}>
-              {selectedColors.join(', ')}
+              {selectedColors.map(c => `${c} (${facetCounts.colors?.[c] ?? 0})`).join(', ')}
             </p>
           )}
         </FilterDropdown>

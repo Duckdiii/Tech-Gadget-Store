@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import StoreNavbar from '../../../components/StoreNavbar'
+import { useFavorites } from '../../../hooks/useFavorites'
 import { useProductDetail } from '../hooks/useProductDetail'
 import { useViewerCount } from '../hooks/useViewerCount'
 import { useProductReviews } from '../hooks/useProductReviews'
@@ -39,6 +40,7 @@ function ProductTabs({ product }) {
 }
 
 export default function ProductDetailPage() {
+  const { favoritesMap, toggleWishlist } = useFavorites()
   const {
     product,
     loading,
@@ -135,12 +137,16 @@ export default function ProductDetailPage() {
           products={similarProducts}
           loading={similarLoading}
           onNavigate={onNavigate}
+          favoritesMap={favoritesMap}
+          onToggleWishlist={toggleWishlist}
         />
         <RecommendationSection
           title="Khách hàng cũng mua"
           products={boughtTogetherProducts}
           loading={boughtTogetherLoading}
           onNavigate={onNavigate}
+          favoritesMap={favoritesMap}
+          onToggleWishlist={toggleWishlist}
         />
       </div>
     </div>

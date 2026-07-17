@@ -51,6 +51,7 @@ public class ProductMapper {
 
                 ProductResponseDto.ProductResponseDtoBuilder builder = ProductResponseDto.builder()
                                 .id(product.getId())
+                                .variantId(first != null ? first.getId() : null)
                                 .name(product.getName())
                                 .brandName(product.getBrand().getName())
                                 .categoryName(product.getCategory().getName())

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNav } from '../../../hooks/useNav'
+import { useFavorites } from '../../../hooks/useFavorites'
 import StoreNavbar from '../../../components/StoreNavbar'
 import { useAuth } from '../../../context/useAuth'
 import RecommendationSection from '../components/RecommendationSection'
@@ -134,6 +135,7 @@ const timeAgo = (dateStr) => {
 export default function HomePage() {
   const onNavigate = useNav()
   const { user } = useAuth()
+  const { favoritesMap, toggleWishlist } = useFavorites()
   const { products: forYouProducts, loading: forYouLoading } = useForYouRecommendations(!!user)
 
   // Chỉ riêng "Dành cho bạn" cần báo cáo click về cho A/B test (xem RecommendationExperimentLog)
@@ -644,6 +646,8 @@ export default function HomePage() {
                 loading={forYouLoading}
                 onNavigate={handleForYouNavigate}
                 hideTitle={true}
+                favoritesMap={favoritesMap}
+                onToggleWishlist={toggleWishlist}
               />
             ) : (
               <RecommendationSection
@@ -652,6 +656,8 @@ export default function HomePage() {
                 loading={historySuggestionsLoading}
                 onNavigate={onNavigate}
                 hideTitle={true}
+                favoritesMap={favoritesMap}
+                onToggleWishlist={toggleWishlist}
               />
             )}
           </section>
@@ -832,7 +838,13 @@ export default function HomePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onNavigate={onNavigate}
+                  isWished={!!favoritesMap[product.id]}
+                  onToggleWishlist={toggleWishlist}
+                />
               ))}
             </div>
           )}
@@ -1013,6 +1025,8 @@ export default function HomePage() {
             products={recentlyViewedProducts}
             loading={recentlyViewedLoading}
             onNavigate={onNavigate}
+            favoritesMap={favoritesMap}
+            onToggleWishlist={toggleWishlist}
           />
         )}
 

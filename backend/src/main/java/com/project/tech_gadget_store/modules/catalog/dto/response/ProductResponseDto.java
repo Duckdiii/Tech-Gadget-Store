@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 public class ProductResponseDto {
 
     private String id;
+    /** The default (first/cheapest) variant's id — favorite/subscribe act on a variant, so card-level UI needs this to call them. */
+    private String variantId;
     private String name;
     private String brandName;
     private String categoryName;

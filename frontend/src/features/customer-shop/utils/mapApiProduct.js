@@ -5,6 +5,7 @@ export function mapApiProduct(p) {
 
   return {
     id: p.id,
+    variantId: p.variantId ?? null,
     brand: p.brandName ?? '',
     category: p.categoryName ?? '',
     name: p.name,

@@ -5,7 +5,7 @@ import ProductCardSkeleton from './ProductCardSkeleton'
 const CARD_WIDTH = 260
 const CARD_GAP = 20
 
-export default function RecommendationSection({ title, products, loading, onNavigate, hideTitle = false }) {
+export default function RecommendationSection({ title, products, loading, onNavigate, hideTitle = false, favoritesMap, onToggleWishlist }) {
   const scrollRef = useRef(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -87,7 +87,12 @@ export default function RecommendationSection({ title, products, loading, onNavi
       >
         {products.map(p => (
           <div key={p.id} className="shrink-0" style={{ width: CARD_WIDTH, scrollSnapAlign: 'start' }}>
-            <ProductCard product={p} onNavigate={onNavigate} />
+            <ProductCard
+              product={p}
+              onNavigate={onNavigate}
+              isWished={!!favoritesMap?.[p.id]}
+              onToggleWishlist={onToggleWishlist}
+            />
           </div>
         ))}
       </div>

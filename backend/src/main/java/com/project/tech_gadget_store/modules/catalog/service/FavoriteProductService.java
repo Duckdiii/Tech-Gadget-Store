@@ -92,8 +92,13 @@ public class FavoriteProductService {
 
         String productName = productVariant.getProduct() != null ? productVariant.getProduct().getName() : productVariantId;
 
+        // The heart button is one action with two effects: favoriting a product also subscribes
+        // the customer to notifications about it (stock/price events — see
+        // CustomerNotificationListener, which only notifies FavoriteProducts with status
+        // SUBSCRIBED), and un-favoriting unsubscribes. They're kept in lockstep here rather than
+        // as independent toggles since there's no separate UI for subscribing without favoriting.
         if (existing.isEmpty()) {
-            FavoriteProduct fp = new FavoriteProduct(productVariant, customer, SubscriptionStatus.UNSUBSCRIBED);
+            FavoriteProduct fp = new FavoriteProduct(productVariant, customer, SubscriptionStatus.SUBSCRIBED);
             fp.setIsFavorite(true);
             favoriteProductRepository.save(fp);
             return FavoriteResponseDto.builder()
@@ -107,6 +112,8 @@ public class FavoriteProductService {
         FavoriteProduct fp = existing.get();
         if (fp.getIsFavorite() == null || !fp.getIsFavorite()) {
             fp.setIsFavorite(true);
+            fp.setStatus(SubscriptionStatus.SUBSCRIBED);
+            fp.setUnsubscribedAt(null);
             return FavoriteResponseDto.builder()
                     .productId(productVariantId)
                     .productName(productName)
@@ -115,6 +122,8 @@ public class FavoriteProductService {
                     .build();
         } else {
             fp.setIsFavorite(false);
+            fp.setStatus(SubscriptionStatus.UNSUBSCRIBED);
+            fp.setUnsubscribedAt(LocalDateTime.now());
             return FavoriteResponseDto.builder()
                     .productId(productVariantId)
                     .productName(productName)

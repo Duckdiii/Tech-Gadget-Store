@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useLocation } from 'react-router-dom'
 import { useNav } from '../../../hooks/useNav'
+import { useFavorites } from '../../../hooks/useFavorites'
 import StoreNavbar from '../../../components/StoreNavbar'
 import ProductCard from '../components/ProductCard'
 import ProductCardSkeleton from '../components/ProductCardSkeleton'
@@ -9,6 +10,7 @@ import Pagination from '../components/Pagination'
 import { mapApiProduct } from '../utils/mapApiProduct'
 import { shopService } from '../services/shopService'
 import QuickViewModal from '../components/QuickViewModal'
+import BackInStockModal from '../components/BackInStockModal'
 
 const SORT_OPTIONS = [
   { label: 'Mới nhất', value: '' },
@@ -157,6 +159,7 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState([])
   const [brands, setBrands] = useState([])
   const [bestsellers, setBestsellers] = useState([])
+  const [allProducts, setAllProducts] = useState([])
 
   const [comparedProducts, setComparedProducts] = useState([])
   const [compareModalOpen, setCompareModalOpen] = useState(false)
@@ -185,6 +188,9 @@ export default function ProductsPage() {
   }
 
   const [quickViewProduct, setQuickViewProduct] = useState(null)
+  const [notifyProduct, setNotifyProduct] = useState(null)
+
+  const { favoritesMap, toggleWishlist: handleToggleWishlist } = useFavorites()
 
   // Fetch categories & brands một lần khi mount
   useEffect(() => {
@@ -197,6 +203,9 @@ export default function ProductsPage() {
     shopService.getBestsellers(4)
       .then(data => setBestsellers(Array.isArray(data) ? data.map(mapApiProduct) : []))
       .catch(() => setBestsellers([]))
+    shopService.getProductsByFilter({ page: 0, size: 1000 })
+      .then(data => setAllProducts(Array.isArray(data?.items) ? data.items.map(mapApiProduct) : []))
+      .catch(() => setAllProducts([]))
   }, [])
 
   const patchFilters = (patch) => setFilters(prev => ({ ...prev, ...patch }))
@@ -205,6 +214,116 @@ export default function ProductsPage() {
     categoryNames: [],
   })
   const manualFiltersActive = !isFiltersEmpty(filters)
+
+  const evaluateProductMatch = (product, activeFilters, excludeKey = null) => {
+    // Check keyword
+    if (excludeKey !== 'keyword' && activeFilters.keyword) {
+      const kw = activeFilters.keyword.toLowerCase()
+      if (!product.name.toLowerCase().includes(kw) && !product.brand?.toLowerCase().includes(kw)) {
+        return false
+      }
+    }
+    // Check brand
+    if (excludeKey !== 'brandNames' && activeFilters.brandNames?.length > 0) {
+      if (!activeFilters.brandNames.includes(product.brand)) {
+        return false
+      }
+    }
+    // Check category
+    if (excludeKey !== 'categoryNames' && activeFilters.categoryNames?.length > 0) {
+      if (!activeFilters.categoryNames.includes(product.category)) {
+        return false
+      }
+    }
+    // Check price
+    if (excludeKey !== 'price') {
+      if (activeFilters.minPrice !== undefined && product.price < activeFilters.minPrice) return false
+      if (activeFilters.maxPrice !== undefined && product.price > activeFilters.maxPrice) return false
+    }
+    // Check ram
+    if (excludeKey !== 'ramGb' && activeFilters.ramGb?.length > 0) {
+      const ramVal = product.ram ? parseInt(product.ram) : null
+      if (!ramVal || !activeFilters.ramGb.includes(ramVal)) return false
+    }
+    // Check storage
+    if (excludeKey !== 'storageGb' && activeFilters.storageGb?.length > 0) {
+      const storageVal = product.storage ? parseInt(product.storage) : null
+      if (!storageVal || !activeFilters.storageGb.includes(storageVal)) return false
+    }
+    // Check colors
+    if (excludeKey !== 'colors' && activeFilters.colors?.length > 0) {
+      if (!product.color || !activeFilters.colors.includes(product.color)) return false
+    }
+
+    // Category-specific filters
+    // Monitor
+    if (excludeKey !== 'monitor') {
+      if (activeFilters.minRefreshRate !== undefined && product.refreshRate < activeFilters.minRefreshRate) return false
+      if (activeFilters.maxRefreshRate !== undefined && product.refreshRate > activeFilters.maxRefreshRate) return false
+      if (activeFilters.panelType && product.panelType !== activeFilters.panelType) return false
+    }
+    // Headphones
+    if (excludeKey !== 'headphones') {
+      if (activeFilters.isWireless !== undefined && product.isWireless !== activeFilters.isWireless) return false
+      if (activeFilters.hasNoiseCancelling !== undefined && product.hasNoiseCancelling !== activeFilters.hasNoiseCancelling) return false
+    }
+    // Smartwatch
+    if (excludeKey !== 'smartwatch') {
+      if (activeFilters.hasGps !== undefined && product.hasGps !== activeFilters.hasGps) return false
+      if (activeFilters.isWaterResistant !== undefined && product.isWaterResistant !== activeFilters.isWaterResistant) return false
+    }
+
+    return true
+  }
+
+  const getBrandCount = (brandName) => {
+    return allProducts.filter(p => evaluateProductMatch(p, filters, 'brandNames') && p.brand === brandName).length
+  }
+
+  const getCategoryCount = (categoryName) => {
+    return allProducts.filter(p => evaluateProductMatch(p, filters, 'categoryNames') && p.category === categoryName).length
+  }
+
+  const getRamCount = (ramGbVal) => {
+    return allProducts.filter(p => {
+      const ramVal = p.ram ? parseInt(p.ram) : null
+      return evaluateProductMatch(p, filters, 'ramGb') && ramVal === ramGbVal
+    }).length
+  }
+
+  const getStorageCount = (storageGbVal) => {
+    return allProducts.filter(p => {
+      const storageVal = p.storage ? parseInt(p.storage) : null
+      return evaluateProductMatch(p, filters, 'storageGb') && storageVal === storageGbVal
+    }).length
+  }
+
+  const getColorCount = (colorName) => {
+    return allProducts.filter(p => evaluateProductMatch(p, filters, 'colors') && p.color === colorName).length
+  }
+
+  const facetCounts = {
+    brands: brands.reduce((acc, brand) => {
+      acc[brand] = getBrandCount(brand)
+      return acc
+    }, {}),
+    categories: categories.reduce((acc, cat) => {
+      acc[cat.name] = getCategoryCount(cat.name)
+      return acc
+    }, {}),
+    ram: [6, 8, 12, 16, 32].reduce((acc, val) => {
+      acc[val] = getRamCount(val)
+      return acc
+    }, {}),
+    storage: [128, 256, 512, 1024].reduce((acc, val) => {
+      acc[val] = getStorageCount(val)
+      return acc
+    }, {}),
+    colors: ['Đen', 'Trắng', 'Xanh', 'Bạc', 'Xám', 'Vàng', 'Đỏ', 'Titan Tự Nhiên', 'Titan Xanh', 'Xanh Navy'].reduce((acc, val) => {
+      acc[val] = getColorCount(val)
+      return acc
+    }, {}),
+  }
 
   useEffect(() => { setPage(0) }, [keyword, sort, aiFilter, filters])
 
@@ -362,6 +481,7 @@ export default function ProductsPage() {
           onReset={resetFilters}
           categories={categories}
           brands={brands}
+          facetCounts={facetCounts}
         />
 
         {/* Grid */}
@@ -441,6 +561,9 @@ export default function ProductsPage() {
                           isCompared={comparedProducts.some(cp => cp.id === p.id)}
                           onToggleCompare={handleToggleCompare}
                           onQuickView={setQuickViewProduct}
+                          onNotifyBackInStock={setNotifyProduct}
+                          isWished={!!favoritesMap[p.id]}
+                          onToggleWishlist={handleToggleWishlist}
                         />
                       ))}
                     </div>
@@ -458,6 +581,9 @@ export default function ProductsPage() {
                     isCompared={comparedProducts.some(cp => cp.id === p.id)}
                     onToggleCompare={handleToggleCompare}
                     onQuickView={setQuickViewProduct}
+                    onNotifyBackInStock={setNotifyProduct}
+                    isWished={!!favoritesMap[p.id]}
+                    onToggleWishlist={handleToggleWishlist}
                   />
                 ))}
               </div>
@@ -638,6 +764,13 @@ export default function ProductsPage() {
           productId={quickViewProduct.id}
           onClose={() => setQuickViewProduct(null)}
           onNavigate={onNavigate}
+        />
+      )}
+      {/* Back-in-Stock Notification Modal */}
+      {notifyProduct && (
+        <BackInStockModal
+          product={notifyProduct}
+          onClose={() => setNotifyProduct(null)}
         />
       )}
     </div>
