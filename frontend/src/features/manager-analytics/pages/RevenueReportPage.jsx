@@ -30,16 +30,6 @@ const PERIOD_OPTIONS = [
 export default function RevenueReportPage() {
   const { data, previousData, loading, filter, setFilter, handleExport } = useRevenueReport()
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex flex-col bg-gray-50 min-h-screen">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
-        </div>
-      </div>
-    )
-  }
-
   const report = data || {
     totalRevenue: 0,
     totalOrders: 0,
@@ -72,8 +62,8 @@ export default function RevenueReportPage() {
   const kpis = [
     {
       label: 'TỔNG DOANH THU',
-      value: fmt(report.totalRevenue),
-      trend: fmtGrowth(revenueGrowth),
+      value: loading ? '...' : fmt(report.totalRevenue),
+      trend: loading ? '…' : fmtGrowth(revenueGrowth),
       trendExtra: ' so với kỳ trước',
       trendUp: (revenueGrowth ?? 0) >= 0,
       iconBg: 'bg-orange-50',
@@ -86,8 +76,8 @@ export default function RevenueReportPage() {
     },
     {
       label: 'TỔNG ĐƠN HÀNG',
-      value: report.totalOrders.toLocaleString(),
-      trend: fmtGrowth(ordersGrowth),
+      value: loading ? '...' : report.totalOrders.toLocaleString(),
+      trend: loading ? '…' : fmtGrowth(ordersGrowth),
       trendExtra: ' so với kỳ trước',
       trendUp: (ordersGrowth ?? 0) >= 0,
       iconBg: 'bg-orange-100',
@@ -100,8 +90,8 @@ export default function RevenueReportPage() {
     },
     {
       label: 'GIÁ TRỊ ĐƠN TB',
-      value: fmt(avgOrderValue),
-      trend: fmtGrowth(avgOrderGrowth),
+      value: loading ? '...' : fmt(avgOrderValue),
+      trend: loading ? '…' : fmtGrowth(avgOrderGrowth),
       trendExtra: ' so với kỳ trước',
       trendUp: (avgOrderGrowth ?? 0) >= 0,
       iconBg: 'bg-amber-100',
@@ -114,8 +104,8 @@ export default function RevenueReportPage() {
     },
     {
       label: 'SẢN PHẨM ĐÃ BÁN',
-      value: report.totalQuantitySold.toLocaleString('vi-VN'),
-      trend: fmtGrowth(quantityGrowth),
+      value: loading ? '...' : report.totalQuantitySold.toLocaleString('vi-VN'),
+      trend: loading ? '…' : fmtGrowth(quantityGrowth),
       trendExtra: ' so với kỳ trước',
       trendUp: (quantityGrowth ?? 0) >= 0,
       iconBg: 'bg-orange-50',
@@ -128,7 +118,7 @@ export default function RevenueReportPage() {
     },
     {
       label: 'TỶ LỆ HỦY ĐƠN',
-      value: `${(report.cancellationRate || 0).toFixed(1)}%`,
+      value: loading ? '...' : `${(report.cancellationRate || 0).toFixed(1)}%`,
       caption: 'Đơn bị hủy hoặc hoàn tiền',
       iconBg: 'bg-red-50',
       iconColor: 'text-red-500',
@@ -223,15 +213,19 @@ export default function RevenueReportPage() {
         {/* Charts row */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5">
           {/* Area Chart */}
-          <div className="bg-white rounded border border-gray-200 px-5 py-5">
+          <div className="bg-white rounded border border-gray-200 px-5 py-5 min-h-[240px] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-gray-800">Xu hướng doanh thu</h2>
             </div>
-            <AreaChart trend={report.trend} />
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center text-xs text-gray-400">Đang tải xu hướng...</div>
+            ) : (
+              <AreaChart trend={report.trend} />
+            )}
           </div>
 
           {/* Donut Chart */}
-          <div className="bg-white rounded border border-gray-200 px-5 py-5 flex flex-col">
+          <div className="bg-white rounded border border-gray-200 px-5 py-5 flex flex-col min-h-[240px]">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-gray-800 leading-tight">
                 Doanh thu theo danh mục
@@ -239,7 +233,9 @@ export default function RevenueReportPage() {
             </div>
 
             <div className="flex-1 flex items-center justify-center py-2">
-              {segments.length > 0 ? (
+              {loading ? (
+                <div className="text-xs text-gray-400">Đang tải phân mục...</div>
+              ) : segments.length > 0 ? (
                 <DonutChart segments={segments} />
               ) : (
                 <p className="text-xs text-gray-400">Không có dữ liệu phân mục</p>
@@ -247,17 +243,19 @@ export default function RevenueReportPage() {
             </div>
 
             {/* Legend */}
-            <div className="space-y-2.5 mt-2">
-              {segments.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2.5 h-2.5 rounded-full`} style={{ backgroundColor: item.color }} />
-                    <span className="text-sm text-gray-700">{item.label}</span>
+            {!loading && segments.length > 0 && (
+              <div className="space-y-2.5 mt-2">
+                {segments.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full`} style={{ backgroundColor: item.color }} />
+                      <span className="text-sm text-gray-700">{item.label}</span>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-700">{Math.round(item.pct * 100)}%</span>
                   </div>
-                  <span className="text-sm font-semibold text-gray-700">{Math.round(item.pct * 100)}%</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -277,7 +275,9 @@ export default function RevenueReportPage() {
           </div>
 
           {/* Table rows */}
-          {report.topSellingProducts.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-10 text-xs text-gray-400">Đang tải dữ liệu sản phẩm...</div>
+          ) : report.topSellingProducts.length === 0 ? (
             <div className="text-center py-10 text-gray-400">Không có dữ liệu sản phẩm</div>
           ) : (
             report.topSellingProducts.map((row, idx) => (
@@ -311,7 +311,9 @@ export default function RevenueReportPage() {
           </div>
 
           {/* Table rows */}
-          {report.topProfitProducts.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-10 text-xs text-gray-400">Đang tải dữ liệu lợi nhuận...</div>
+          ) : report.topProfitProducts.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
               Chưa có dữ liệu giá vốn (nhập kho) để tính lợi nhuận
             </div>
