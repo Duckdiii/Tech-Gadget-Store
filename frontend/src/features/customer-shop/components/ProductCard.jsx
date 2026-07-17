@@ -5,7 +5,7 @@ function formatPrice(price) {
 }
 
 
-export default function ProductCard({ product, onNavigate, viewMode = 'grid' }) {
+export default function ProductCard({ product, onNavigate, viewMode = 'grid', isCompared = false, onToggleCompare }) {
   const [wished, setWished] = useState(false)
   const [adding, setAdding] = useState(false)
   const [imgError, setImgError] = useState(false)
@@ -22,6 +22,10 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid' }) 
   const savings = product.originalPrice ? product.originalPrice - product.price : null
   const savingsPct = savings && product.originalPrice ? Math.round((savings / product.originalPrice) * 100) : null
   const rating = product.rating ?? 0
+
+  const isLowStock = product.availableCount > 0 && product.availableCount <= 3
+  const isBestSeller = product.salesCount >= 10
+  const isHotDeal = product.discountPercent && product.discountPercent >= 15
 
   const getSpecsList = () => {
     const specs = []
@@ -68,13 +72,66 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid' }) 
             borderRight: '1px solid var(--b1)',
           }}
         >
+          {/* Urgency/Marketing Badge */}
+          {(() => {
+            if (isLowStock) {
+              return (
+                <div 
+                  className="absolute top-3 left-3 z-10 px-2.5 py-1 text-[9.5px] font-black text-white flex items-center gap-1 shadow-sm transition-transform duration-200 group-hover:scale-105"
+                  style={{
+                    background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                    borderRadius: '20px',
+                  }}
+                >
+                  <svg className="w-3 h-3 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Chỉ còn {product.availableCount} sp
+                </div>
+              )
+            }
+            if (isHotDeal) {
+              return (
+                <div 
+                  className="absolute top-3 left-3 z-10 px-2.5 py-1 text-[9.5px] font-black text-white flex items-center gap-1 shadow-sm transition-transform duration-200 group-hover:scale-105"
+                  style={{
+                    background: 'linear-gradient(135deg, #F59E0B, #EF4444)',
+                    borderRadius: '20px',
+                  }}
+                >
+                  <svg className="w-3 h-3 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Hot Deal
+                </div>
+              )
+            }
+            if (isBestSeller) {
+              return (
+                <div 
+                  className="absolute top-3 left-3 z-10 px-2.5 py-1 text-[9.5px] font-black text-white flex items-center gap-1 shadow-sm transition-transform duration-200 group-hover:scale-105"
+                  style={{
+                    background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
+                    borderRadius: '20px',
+                  }}
+                >
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                  </svg>
+                  Bán chạy
+                </div>
+              )
+            }
+            return null
+          })()}
+
           <button
             onClick={e => {
               e.stopPropagation()
               setWished(w => !w)
             }}
             aria-label={wished ? 'Bỏ khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'}
-            className="absolute top-3 left-3 z-10 w-7.5 h-7.5 flex items-center justify-center transition-all duration-200"
+            className="absolute top-3 right-3 z-10 w-7.5 h-7.5 flex items-center justify-center transition-all duration-200"
             style={{
               backgroundColor: wished ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.95)',
               border: `1px solid ${wished ? 'rgba(239,68,68,0.25)' : 'var(--b1)'}`,
@@ -114,17 +171,33 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid' }) 
 
         {/* Middle Column: Details & specs */}
         <div className="flex-1 min-w-0 p-4 flex flex-col gap-2 justify-center">
-          <div className="flex items-center gap-1.5 text-[10px] leading-none">
-            <span className="text-[9.5px] font-extrabold uppercase tracking-wider shrink-0" style={{ color: 'var(--accent)' }}>
-              {product.brand}
-            </span>
-            {product.category && (
-              <>
-                <span className="w-0.5 h-0.5 rounded-full shrink-0" style={{ backgroundColor: 'var(--b2)' }} />
-                <span className="text-[9.5px] font-semibold truncate text-slate-500">
-                  {product.category}
-                </span>
-              </>
+          <div className="flex items-center justify-between gap-2 text-[10px] leading-none">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-[9.5px] font-extrabold uppercase tracking-wider shrink-0" style={{ color: 'var(--accent)' }}>
+                {product.brand}
+              </span>
+              {product.category && (
+                <>
+                  <span className="w-0.5 h-0.5 rounded-full shrink-0" style={{ backgroundColor: 'var(--b2)' }} />
+                  <span className="text-[9.5px] font-semibold truncate text-slate-500">
+                    {product.category}
+                  </span>
+                </>
+              )}
+            </div>
+            {onToggleCompare && (
+              <label 
+                onClick={e => e.stopPropagation()} 
+                className="flex items-center gap-1 text-[9.5px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer shrink-0"
+              >
+                <input 
+                  type="checkbox" 
+                  checked={isCompared}
+                  onChange={() => onToggleCompare(product)}
+                  className="w-3 h-3 accent-[var(--accent)] rounded cursor-pointer"
+                />
+                So sánh
+              </label>
             )}
           </div>
 
@@ -267,6 +340,59 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid' }) 
           borderBottom: '1px solid var(--b1)',
         }}
       >
+        {/* Urgency/Marketing Badge */}
+        {(() => {
+          if (isLowStock) {
+            return (
+              <div 
+                className="absolute top-3 left-3 z-10 px-2.5 py-1 text-[9.5px] font-black text-white flex items-center gap-1 shadow-sm transition-transform duration-200 group-hover:scale-105"
+                style={{
+                  background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                  borderRadius: '20px',
+                }}
+              >
+                <svg className="w-3 h-3 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Chỉ còn {product.availableCount} sp
+              </div>
+            )
+          }
+          if (isHotDeal) {
+            return (
+              <div 
+                className="absolute top-3 left-3 z-10 px-2.5 py-1 text-[9.5px] font-black text-white flex items-center gap-1 shadow-sm transition-transform duration-200 group-hover:scale-105"
+                style={{
+                  background: 'linear-gradient(135deg, #F59E0B, #EF4444)',
+                  borderRadius: '20px',
+                }}
+              >
+                <svg className="w-3 h-3 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Hot Deal
+              </div>
+            )
+          }
+          if (isBestSeller) {
+            return (
+              <div 
+                className="absolute top-3 left-3 z-10 px-2.5 py-1 text-[9.5px] font-black text-white flex items-center gap-1 shadow-sm transition-transform duration-200 group-hover:scale-105"
+                style={{
+                  background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
+                  borderRadius: '20px',
+                }}
+              >
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                </svg>
+                Bán chạy
+              </div>
+            )
+          }
+          return null
+        })()}
+
         <button
           onClick={e => {
             e.stopPropagation()
@@ -327,17 +453,34 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid' }) 
               </>
             )}
           </div>
-          {product.available ? (
-            <span className="flex items-center gap-1 text-[9.5px] font-bold text-emerald-600 shrink-0">
-              <span className="w-1.2 h-1.2 rounded-full bg-emerald-500 animate-pulse" />
-              Còn hàng
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-[9.5px] font-bold text-rose-500 shrink-0">
-              <span className="w-1.2 h-1.2 rounded-full bg-rose-500" />
-              Hết hàng
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {onToggleCompare && (
+              <label 
+                onClick={e => e.stopPropagation()} 
+                className="flex items-center gap-0.5 text-[9.5px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+              >
+                <input 
+                  type="checkbox" 
+                  checked={isCompared}
+                  onChange={() => onToggleCompare(product)}
+                  className="w-3 h-3 accent-[var(--accent)] rounded cursor-pointer"
+                />
+                So sánh
+              </label>
+            )}
+            {onToggleCompare && <span className="text-slate-350 text-[8px] font-normal">|</span>}
+            {product.available ? (
+              <span className="flex items-center gap-0.5 text-[9.5px] font-bold text-emerald-600">
+                <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                Còn hàng
+              </span>
+            ) : (
+              <span className="flex items-center gap-0.5 text-[9.5px] font-bold text-rose-500">
+                <span className="w-1 h-1 rounded-full bg-rose-500" />
+                Hết hàng
+              </span>
+            )}
+          </div>
         </div>
 
         <h3

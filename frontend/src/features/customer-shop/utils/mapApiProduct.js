@@ -15,6 +15,7 @@ export function mapApiProduct(p) {
     rating: p.averageRating ?? null,
     reviews: p.reviewCount ?? null,
     available: (p.availableCount ?? 0) > 0,
+    availableCount: p.availableCount ?? 0,
     ram: p.ramGb != null ? `${p.ramGb}GB` : null,
     storage: p.storageGb != null ? `${p.storageGb}GB` : null,
     color: p.color ?? null,

@@ -33,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Runs after {@link CatalogSeeder} (needs products to exist).
  */
 @Component
-@Profile("seed")
 @Order(4)
 @RequiredArgsConstructor
 @Slf4j

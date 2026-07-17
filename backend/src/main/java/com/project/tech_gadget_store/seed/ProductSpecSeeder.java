@@ -41,7 +41,6 @@ import org.springframework.transaction.annotation.Transactional;
  * being seeded (needs variants for price-tier calculation).
  */
 @Component
-@Profile("seed")
 @Order(5)
 @RequiredArgsConstructor
 @Slf4j
