@@ -201,7 +201,7 @@ export default function RevenueReportPage() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-5 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
           {kpis.map((card, i) => (
             <div key={i} className="bg-white rounded border border-gray-200 px-5 py-5">
               <div className="flex items-start justify-between mb-3">
@@ -221,7 +221,7 @@ export default function RevenueReportPage() {
         </div>
 
         {/* Charts row */}
-        <div className="grid grid-cols-[1fr_280px] gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5">
           {/* Area Chart */}
           <div className="bg-white rounded border border-gray-200 px-5 py-5">
             <div className="flex items-center justify-between mb-4">
