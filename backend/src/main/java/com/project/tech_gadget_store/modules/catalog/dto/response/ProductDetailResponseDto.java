@@ -44,6 +44,27 @@ public class ProductDetailResponseDto {
     private Integer batteryCapacity;
     private String simType;
     private String operatingSystem;
+
+    // Laptop
+    private String cpu;
+    private String gpu;
+    private Double weight;
+
+    // Monitor
+    private Integer refreshRate;
+    private String panelType;
+
+    // Headphones
+    private String connectorType;
+    private Boolean isWireless;
+    private Integer batteryLifeHours;
+    private Boolean hasNoiseCancelling;
+
+    // Smartwatch
+    private Integer batteryLifeDays;
+    private Boolean isWaterResistant;
+    private Boolean hasGps;
+
     private Double discountPercent;
     private Integer salesCount;
 }

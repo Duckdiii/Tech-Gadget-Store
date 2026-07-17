@@ -71,6 +71,7 @@ public class CatalogSeeder implements CommandLineRunner {
                                         .save(new Brand(spec.name(), spec.logoUrl(), spec.description())));
                 }
 
+                Random descriptionRandom = new Random(CATALOG_RANDOM_SEED + 1);
                 int productCount = 0;
                 int variantCount = 0;
                 for (CategorySpec categorySpec : categorySpecs()) {
@@ -78,8 +79,16 @@ public class CatalogSeeder implements CommandLineRunner {
                                         .save(new Category(categorySpec.name(), categorySpec.imageUrl()));
                         for (ProductSpec productSpec : categorySpec.products()) {
                                 Brand brand = brands.get(productSpec.brandKey());
+                                String description = ProductDescriptionGenerator.generate(
+                                                categorySpec.name(), brand.getName(), productSpec.name(),
+                                                productSpec.description(),
+                                                productSpec.variants().stream().map(VariantSpec::ramGb).filter(java.util.Objects::nonNull).distinct().toList(),
+                                                productSpec.variants().stream().map(VariantSpec::storageGb).filter(java.util.Objects::nonNull).distinct().toList(),
+                                                productSpec.variants().stream().map(VariantSpec::color).filter(java.util.Objects::nonNull).distinct().toList(),
+                                                productSpec.variants().stream().map(VariantSpec::price).filter(java.util.Objects::nonNull).min(java.util.Comparator.naturalOrder()).orElse(null),
+                                                descriptionRandom);
                                 Product product = ProductFactory.createProduct(category, productSpec.name(),
-                                                productSpec.description(), brand);
+                                                description, brand);
                                 productRepository.save(product);
                                 productCount++;
                                 for (VariantSpec variantSpec : productSpec.variants()) {
@@ -153,9 +162,7 @@ public class CatalogSeeder implements CommandLineRunner {
                                                                 List.of(128, 256, 512, 1024).get(random.nextInt(4)),
                                                                 color, price))
                                                 : List.of(new VariantSpec(null, null, color, price));
-                                extras.add(new ProductSpec(name,
-                                                "Sản phẩm mở rộng danh mục, dùng để tăng độ đa dạng cho recommendation system.",
-                                                brandKey, variants));
+                                extras.add(new ProductSpec(name, null, brandKey, variants));
                         }
                 }
                 return extras;
