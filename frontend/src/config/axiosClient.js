@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getToken } from '../utils/authToken'
+import { getToken, clearToken, clearPersistedUser, getPersistedUser } from '../utils/authToken'
 
 const axiosClient = axios.create({
   headers: {
@@ -40,6 +40,19 @@ axiosClient.interceptors.response.use(
     return response.data
   },
   (error) => {
+    // A 401 while we believe we're logged in means the token expired or was invalidated
+    // server-side. Previously this just rejected silently — callers like useCart() only
+    // console.error it, so the UI ended up showing an empty cart with no explanation,
+    // looking exactly like "my cart disappeared" instead of "please log in again".
+    const isOnAuthPage = window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/portal/login')
+    if (error.response?.status === 401 && getToken() && !isOnAuthPage) {
+      const role = getPersistedUser()?.role
+      const loginPath = (role === 'manager' || role === 'staff') ? '/portal/login' : '/login'
+      clearToken()
+      clearPersistedUser()
+      window.location.href = `${loginPath}?sessionExpired=1`
+    }
+
     // Standardize error message extraction
     const serverMessage = error.response?.data?.message || error.response?.data
     const message = serverMessage || error.message || 'Đã có lỗi xảy ra'

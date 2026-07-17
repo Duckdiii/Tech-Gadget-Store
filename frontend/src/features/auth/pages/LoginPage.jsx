@@ -1,8 +1,10 @@
-import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLogin } from '../hooks/useLogin'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const {
     email,
     setEmail,
@@ -15,6 +17,13 @@ export default function LoginPage() {
     setShowPass,
     handleLogin,
   } = useLogin({ allowedRoles: ['customer'] })
+
+  useEffect(() => {
+    if (searchParams.get('sessionExpired') === '1') {
+      setError('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleLogin()
