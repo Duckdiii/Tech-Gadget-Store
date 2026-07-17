@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useRevenueReport } from '../hooks/useRevenueReport'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
@@ -18,7 +19,8 @@ function fmtGrowth(growth) {
   return `${rounded >= 0 ? '+' : ''}${rounded}%`
 }
 
-import { AreaChart, DonutChart, TrendBadge } from '../components/RevenueReportComponents'
+import { DonutChart, TrendBadge } from '../components/RevenueReportComponents'
+import RevenueChart from '../components/RevenueChart'
 
 const PERIOD_OPTIONS = [
   { value: 'DAILY', label: 'Hôm nay' },
@@ -29,6 +31,7 @@ const PERIOD_OPTIONS = [
 
 export default function RevenueReportPage() {
   const { data, previousData, loading, filter, setFilter, handleExport } = useRevenueReport()
+  const [chartMetric, setChartMetric] = useState('revenue')
 
   const report = data || {
     totalRevenue: 0,
@@ -158,8 +161,25 @@ export default function RevenueReportPage() {
           </div>
         </div>
 
-        {/* Period selector */}
-        <div className="flex items-center gap-3">
+        {/* Period & Metric selector */}
+        <div className="flex items-center gap-4 flex-wrap">
+          {/* Metric Selector */}
+          <div className="flex gap-1 bg-gray-100 p-1 rounded border border-gray-200/50">
+            <button
+              onClick={() => setChartMetric('revenue')}
+              className={`px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer ${chartMetric === 'revenue' ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Doanh thu
+            </button>
+            <button
+              onClick={() => setChartMetric('orders')}
+              className={`px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer ${chartMetric === 'orders' ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Số đơn hàng
+            </button>
+          </div>
+
+          {/* Period Selector */}
           <div className="flex gap-1 bg-gray-100 p-1 rounded">
             {PERIOD_OPTIONS.map((opt) => (
               <button
@@ -215,12 +235,14 @@ export default function RevenueReportPage() {
           {/* Area Chart */}
           <div className="bg-white rounded border border-gray-200 px-5 py-5 min-h-[240px] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-gray-800">Xu hướng doanh thu</h2>
+              <h2 className="text-base font-bold text-gray-800">
+                {chartMetric === 'revenue' ? 'Xu hướng doanh thu' : 'Xu hướng đơn hàng'}
+              </h2>
             </div>
             {loading ? (
               <div className="flex-1 flex items-center justify-center text-xs text-gray-400">Đang tải xu hướng...</div>
             ) : (
-              <AreaChart trend={report.trend} />
+              <RevenueChart data={report.trend} metric={chartMetric} />
             )}
           </div>
 

@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useNav } from '../../../hooks/useNav'
 import { useCustomerManagement } from '../hooks/useCustomerManagement'
 import Avatar from '../components/Avatar'
@@ -27,6 +29,7 @@ function initialsOf(name) {
 
 export default function CustomerManagementPage() {
   const onNavigate = useNav()
+  const location = useLocation()
   const {
     search, setSearch,
     tierFilter, setTierFilter,
@@ -34,6 +37,12 @@ export default function CustomerManagementPage() {
     customers, totalElements, totalPages,
     stats, loading,
   } = useCustomerManagement()
+
+  useEffect(() => {
+    if (location.state?.prefilledSearch !== undefined) {
+      setSearch(location.state.prefilledSearch)
+    }
+  }, [location.state])
 
   const kpiCards = [
     {
@@ -101,7 +110,9 @@ export default function CustomerManagementPage() {
             </svg>
             <input
               type="text"
-              placeholder="Tìm kiếm nhanh..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Tìm tên, email..."
               className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
             />
           </div>
@@ -154,7 +165,7 @@ export default function CustomerManagementPage() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {kpiCards.map((card, i) => (
             <StatCard
               key={i}
@@ -173,20 +184,6 @@ export default function CustomerManagementPage() {
         <div className="bg-white rounded border border-gray-200 overflow-hidden">
           {/* Filter row */}
           <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-            {/* Search */}
-            <div className="relative w-72">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Tìm tên, email..."
-                className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
-              />
-            </div>
-
             {/* Tier filter */}
             <div className="relative">
               <select
@@ -205,75 +202,80 @@ export default function CustomerManagementPage() {
             </div>
           </div>
 
-          {/* Table header */}
-          <div className="grid grid-cols-[3.5rem_1fr_11rem_8rem_10rem_10rem_6rem] gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50">
-            {['STT', 'KHÁCH HÀNG', 'HẠNG THÀNH VIÊN', 'TỔNG ĐƠN', 'TỔNG CHI TIÊU', 'NGÀY ĐĂNG KÝ', 'THAO TÁC'].map((h) => (
-              <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase">
-                {h}
-              </span>
-            ))}
-          </div>
-
-          {/* Table rows */}
-          {loading ? (
-            <div className="px-5 py-12 text-center text-sm text-gray-400">Đang tải...</div>
-          ) : customers.length === 0 ? (
-            <div className="px-5 py-12 text-center text-sm text-gray-400">
-              Không tìm thấy khách hàng nào.
-            </div>
-          ) : (
-            customers.map((customer, idx) => {
-              const tier = TIER_DISPLAY[customer.tier] || { label: customer.tier, bg: 'bg-gray-100', text: 'text-gray-600' }
-              return (
-                <div
-                  key={customer.id}
-                  className="grid grid-cols-[3.5rem_1fr_11rem_8rem_10rem_10rem_6rem] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center"
-                >
-                  {/* STT */}
-                  <span className="text-sm text-gray-500 font-medium">{page * PAGE_SIZE + idx + 1}</span>
-
-                  {/* Khách hàng */}
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      size="xs"
-                      initials={initialsOf(customer.fullName)}
-                      bg={AVATAR_BG_CYCLE[idx % AVATAR_BG_CYCLE.length]}
-                      alt={customer.fullName}
-                    />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{customer.fullName}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{customer.email}</p>
-                    </div>
-                  </div>
-
-                  {/* Hạng thành viên */}
-                  <span className={`inline-flex items-center justify-center px-3 py-1 rounded text-xs font-semibold w-fit ${tier.bg} ${tier.text}`}>
-                    {tier.label}
+          {/* Responsive Table Scroll Wrapper */}
+          <div className="overflow-x-auto">
+            <div className="min-w-[900px]">
+              {/* Table header */}
+              <div className="grid grid-cols-[3.5rem_1fr_11rem_8rem_10rem_10rem_6rem] gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50">
+                {['STT', 'KHÁCH HÀNG', 'HẠNG THÀNH VIÊN', 'TỔNG ĐƠN', 'TỔNG CHI TIÊU', 'NGÀY ĐĂNG KÝ', 'THAO TÁC'].map((h) => (
+                  <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase">
+                    {h}
                   </span>
+                ))}
+              </div>
 
-                  {/* Tổng đơn */}
-                  <span className="text-sm text-gray-700 font-medium">{customer.totalOrders}</span>
-
-                  {/* Tổng chi tiêu */}
-                  <span className="text-sm font-semibold text-gray-800">{fmtMoney(customer.totalSpend)}</span>
-
-                  {/* Ngày đăng ký */}
-                  <span className="text-sm text-gray-600">{fmtDate(customer.joinDate)}</span>
-
-                  {/* Thao tác */}
-                  <button
-                    onClick={() => onNavigate('customerDetail', { search: `?id=${customer.id}` })}
-                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors cursor-pointer"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </button>
+              {/* Table rows */}
+              {loading ? (
+                <div className="px-5 py-12 text-center text-sm text-gray-400">Đang tải...</div>
+              ) : customers.length === 0 ? (
+                <div className="px-5 py-12 text-center text-sm text-gray-400">
+                  Không tìm thấy khách hàng nào.
                 </div>
-              )
-            })
-          )}
+              ) : (
+                customers.map((customer, idx) => {
+                  const tier = TIER_DISPLAY[customer.tier] || { label: customer.tier, bg: 'bg-gray-100', text: 'text-gray-600' }
+                  return (
+                    <div
+                      key={customer.id}
+                      className="grid grid-cols-[3.5rem_1fr_11rem_8rem_10rem_10rem_6rem] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center"
+                    >
+                      {/* STT */}
+                      <span className="text-sm text-gray-500 font-medium">{page * PAGE_SIZE + idx + 1}</span>
+
+                      {/* Khách hàng */}
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          size="xs"
+                          initials={initialsOf(customer.fullName)}
+                          bg={AVATAR_BG_CYCLE[idx % AVATAR_BG_CYCLE.length]}
+                          alt={customer.fullName}
+                        />
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">{customer.fullName}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{customer.email}</p>
+                        </div>
+                      </div>
+
+                      {/* Hạng thành viên */}
+                      <span className={`inline-flex items-center justify-center px-3 py-1 rounded text-xs font-semibold w-fit ${tier.bg} ${tier.text}`}>
+                        {tier.label}
+                      </span>
+
+                      {/* Tổng đơn */}
+                      <span className="text-sm text-gray-700 font-medium">{customer.totalOrders}</span>
+
+                      {/* Tổng chi tiêu */}
+                      <span className="text-sm font-semibold text-gray-800">{fmtMoney(customer.totalSpend)}</span>
+
+                      {/* Ngày đăng ký */}
+                      <span className="text-sm text-gray-600">{fmtDate(customer.joinDate)}</span>
+
+                      {/* Thao tác */}
+                      <button
+                        onClick={() => onNavigate('customerDetail', { search: `?id=${customer.id}` })}
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors cursor-pointer"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
 
           {/* Pagination */}
           <div className="px-5 py-4 flex items-center justify-between border-t border-gray-100">

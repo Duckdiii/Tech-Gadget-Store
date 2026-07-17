@@ -35,6 +35,13 @@ export default function CustomerDetailPage() {
   const onNavigate = useNav()
   const { customer, loading, error } = useCustomerDetail()
   const [activeTab, setActiveTab] = useState(TABS[0])
+  const [headerSearch, setHeaderSearch] = useState('')
+
+  const handleHeaderSearchSubmit = (e) => {
+    if (e.key === 'Enter') {
+      onNavigate('customerManagement', { state: { prefilledSearch: headerSearch } })
+    }
+  }
 
   if (loading) {
     return (
@@ -71,7 +78,10 @@ export default function CustomerDetailPage() {
             </svg>
             <input
               type="text"
-              placeholder="Search customers, orders..."
+              value={headerSearch}
+              onChange={(e) => setHeaderSearch(e.target.value)}
+              onKeyDown={handleHeaderSearchSubmit}
+              placeholder="Tìm kiếm khách hàng..."
               className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
             />
           </div>
@@ -131,7 +141,7 @@ export default function CustomerDetailPage() {
         </div>
 
         {/* Main grid */}
-        <div className="grid grid-cols-[290px_1fr] gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-[290px_1fr] gap-5">
           {/* LEFT: Customer info card */}
           <div className="bg-white rounded border border-gray-200 px-6 py-7 flex flex-col items-center">
             <div className="w-20 h-20 rounded-full bg-[#E8420A] text-white text-2xl font-bold flex items-center justify-center mb-4 ring-4 ring-gray-100">
@@ -197,7 +207,7 @@ export default function CustomerDetailPage() {
           {/* RIGHT section */}
           <div className="flex flex-col gap-4">
             {/* Stat cards */}
-            <div className="flex gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard
                 label="Tổng chi tiêu"
                 value={fmtMoney(customer.totalSpend)}
@@ -256,41 +266,43 @@ export default function CustomerDetailPage() {
               </div>
 
               {activeTab === 'Lịch sử giao dịch' && (
-                <>
-                  <div className="grid grid-cols-[140px_110px_1fr_130px_130px] gap-2 px-5 py-3.5 border-b border-gray-100">
-                    {['MÃ ĐƠN', 'NGÀY ĐẶT', 'TỔNG TIỀN', 'THANH TOÁN', 'TRẠNG THÁI'].map((h) => (
-                      <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase">
-                        {h}
-                      </span>
-                    ))}
-                  </div>
-
-                  {customer.recentOrders.length === 0 ? (
-                    <div className="px-5 py-16 text-center text-sm text-gray-400">
-                      Khách hàng chưa có đơn hàng nào.
+                <div className="overflow-x-auto">
+                  <div className="min-w-[700px]">
+                    <div className="grid grid-cols-[140px_110px_1fr_130px_130px] gap-2 px-5 py-3.5 border-b border-gray-100">
+                      {['MÃ ĐƠN', 'NGÀY ĐẶT', 'TỔNG TIỀN', 'THANH TOÁN', 'TRẠNG THÁI'].map((h) => (
+                        <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase">
+                          {h}
+                        </span>
+                      ))}
                     </div>
-                  ) : (
-                    customer.recentOrders.map((order) => {
-                      const st = STATUS_DISPLAY[order.orderStatus] || { label: order.orderStatus, bg: 'bg-gray-100', text: 'text-gray-500' }
-                      return (
-                        <div
-                          key={order.id}
-                          className="grid grid-cols-[140px_110px_1fr_130px_130px] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center"
-                        >
-                          <span className="text-sm font-mono font-semibold text-gray-700">
-                            {order.id.substring(0, 10).toUpperCase()}
-                          </span>
-                          <span className="text-sm text-gray-600">{fmtDate(order.orderDate)}</span>
-                          <span className="text-sm font-semibold text-gray-800">{fmtMoney(order.total)}</span>
-                          <span className="text-sm text-gray-700">{order.paymentMethod || 'N/A'}</span>
-                          <span className={`inline-flex items-center px-3 py-1 rounded text-xs font-semibold w-fit ${st.bg} ${st.text}`}>
-                            {st.label}
-                          </span>
-                        </div>
-                      )
-                    })
-                  )}
-                </>
+
+                    {customer.recentOrders.length === 0 ? (
+                      <div className="px-5 py-16 text-center text-sm text-gray-400">
+                        Khách hàng chưa có đơn hàng nào.
+                      </div>
+                    ) : (
+                      customer.recentOrders.map((order) => {
+                        const st = STATUS_DISPLAY[order.orderStatus] || { label: order.orderStatus, bg: 'bg-gray-100', text: 'text-gray-500' }
+                        return (
+                          <div
+                            key={order.id}
+                            className="grid grid-cols-[140px_110px_1fr_130px_130px] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center"
+                          >
+                            <span className="text-sm font-mono font-semibold text-gray-700">
+                              {order.id.substring(0, 10).toUpperCase()}
+                            </span>
+                            <span className="text-sm text-gray-600">{fmtDate(order.orderDate)}</span>
+                            <span className="text-sm font-semibold text-gray-800">{fmtMoney(order.total)}</span>
+                            <span className="text-sm text-gray-700">{order.paymentMethod || 'N/A'}</span>
+                            <span className={`inline-flex items-center px-3 py-1 rounded text-xs font-semibold w-fit ${st.bg} ${st.text}`}>
+                              {st.label}
+                            </span>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
               )}
 
               {activeTab !== 'Lịch sử giao dịch' && (
