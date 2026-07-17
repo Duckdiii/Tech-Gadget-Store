@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNav } from '../../../hooks/useNav'
 import { useLowStockProducts } from '../../../hooks/useLowStockProducts'
 import { useAuth } from '../../../context/useAuth'
@@ -171,13 +171,14 @@ function initialsOf(name) {
 export default function ManagerDashboardPage() {
   const onNavigate = useNav()
   const { user } = useAuth()
-  const { items: lowStockItems, totalCount: lowStockCount, threshold: lowStockThreshold, loading: lowStockLoading } = useLowStockProducts(5)
+  const { items: lowStockItems, totalCount: lowStockCount, threshold: lowStockThreshold, loading: lowStockLoading, refetch: refetchLowStock } = useLowStockProducts(5)
   const {
     kpis,
     chartPeriod, setChartPeriod,
     trend, topProducts, chartLoading,
     recentOrders, ordersLoading,
     handleExport, exporting,
+    reload,
   } = useManagerDashboard()
   const { notifications, unreadCount, loading: notifLoading, markAllRead, markRead } = useHeaderNotifications()
 
@@ -190,6 +191,29 @@ export default function ManagerDashboardPage() {
   const [searchResults, setSearchResults] = useState({ products: [], customers: [], navs: [] })
   const [searchLoading, setSearchLoading] = useState(false)
   const commandInputRef = useRef(null)
+
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handleRefreshAll = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      await Promise.allSettled([
+        reload(),
+        refetchLowStock()
+      ])
+    } finally {
+      setRefreshing(false)
+    }
+  }, [reload, refetchLowStock])
+
+  // Auto-refresh every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      reload()
+      refetchLowStock()
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [reload, refetchLowStock])
 
   // Listen for Ctrl+K
   useEffect(() => {
@@ -428,16 +452,29 @@ export default function ManagerDashboardPage() {
               Tổng quan hoạt động hôm nay — {now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2 px-4 rounded text-sm transition-colors cursor-pointer"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            {exporting ? 'Đang xuất...' : `Xuất báo cáo (${PERIOD_LABEL[chartPeriod]})`}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefreshAll}
+              disabled={refreshing}
+              className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2 px-3.5 rounded text-sm transition-all cursor-pointer"
+              title="Làm mới dữ liệu tức thì"
+            >
+              <svg className={`w-4 h-4 text-gray-500 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4" />
+              </svg>
+              {refreshing ? 'Đang làm mới...' : 'Làm mới'}
+            </button>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2 px-4 rounded text-sm transition-colors cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              {exporting ? 'Đang xuất...' : `Xuất báo cáo (${PERIOD_LABEL[chartPeriod]})`}
+            </button>
+          </div>
         </div>
 
         {/* KPI Cards */}

@@ -21,5 +21,5 @@ export function useLowStockProducts(limit = 5) {
     fetchData()
   }, [fetchData])
 
-  return { ...data, loading }
+  return { ...data, loading, refetch: fetchData }
 }

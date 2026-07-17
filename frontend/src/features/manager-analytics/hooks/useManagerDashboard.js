@@ -91,6 +91,14 @@ export function useManagerDashboard() {
   useEffect(() => { fetchChartData() }, [fetchChartData])
   useEffect(() => { fetchRecentOrders() }, [fetchRecentOrders])
 
+  const reload = useCallback(async () => {
+    await Promise.allSettled([
+      fetchKpis(),
+      fetchChartData(),
+      fetchRecentOrders()
+    ])
+  }, [fetchKpis, fetchChartData, fetchRecentOrders])
+
   const handleExport = useCallback(async () => {
     try {
       setExporting(true)
@@ -114,5 +122,6 @@ export function useManagerDashboard() {
     ordersLoading,
     handleExport,
     exporting,
+    reload,
   }
 }
