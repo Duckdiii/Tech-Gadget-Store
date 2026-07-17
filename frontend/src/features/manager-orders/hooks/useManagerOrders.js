@@ -10,7 +10,10 @@ export function useManagerOrders() {
     try {
       setLoading(true)
       const data = await managerOrderService.getManagerOrders(activeFilter)
-      setOrders(data || [])
+      // /api/manager/orders returns a CursorPageResponseDto ({ items, nextCursor, hasNext }),
+      // not a raw array — assigning `data` itself made `orders` a plain object, so
+      // orders.map(...) in OrderListTab threw and the page got stuck on its loading spinner.
+      setOrders(data?.items || [])
     } catch (e) {
       console.error('Lỗi tải đơn hàng manager:', e)
     } finally {

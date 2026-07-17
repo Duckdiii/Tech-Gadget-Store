@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import StoreNavbar from '../../../components/StoreNavbar'
 import OrderListTab from '../components/OrderListTab'
 import PaymentLogTab from '../components/PaymentLogTab'
 
@@ -29,8 +28,6 @@ export default function OrderHistoryPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
-      <StoreNavbar />
-
       {/* Tab bar */}
       <div className="bg-white border-b border-gray-100 px-8">
         <div className="flex items-center gap-1">

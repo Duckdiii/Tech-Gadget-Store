@@ -11,7 +11,10 @@ export function useManagerPaymentLogs() {
     try {
       setLoading(true)
       const data = await managerOrderService.getManagerPaymentLogs()
-      setLogs(data || [])
+      // /api/manager/payment-logs also returns a CursorPageResponseDto ({ items, nextCursor,
+      // hasNext }) — same bug as useManagerOrders: assigning `data` itself made `logs` a plain
+      // object, so logs.filter(...) below threw on every render.
+      setLogs(data?.items || [])
     } catch (e) {
       console.error('Lỗi tải payment logs manager:', e)
     } finally {
