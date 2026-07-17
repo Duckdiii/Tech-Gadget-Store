@@ -10,8 +10,8 @@ import { managerUsersService } from '../../manager-users/services/managerUsersSe
 
 /* ── Static presentation data (icons/colors — not business data) ── */
 const COLOR_MAP = {
-  blue:   { bg: 'bg-orange-50',   icon: 'bg-[#E8420A]',   text: 'text-[#E8420A]'   },
-  indigo: { bg: 'bg-orange-50', icon: 'bg-[#0D0F14]', text: 'text-[#E8420A]' },
+  blue:   { bg: 'bg-blue-50',   icon: 'bg-blue-500',   text: 'text-blue-600'   },
+  indigo: { bg: 'bg-indigo-50', icon: 'bg-indigo-600', text: 'text-indigo-600' },
   green:  { bg: 'bg-green-50',  icon: 'bg-green-500',  text: 'text-green-600'  },
   purple: { bg: 'bg-purple-50', icon: 'bg-purple-500', text: 'text-purple-600' },
   red:    { bg: 'bg-red-50',    icon: 'bg-red-500',    text: 'text-red-600'    },
@@ -124,12 +124,12 @@ const QUICK_ACTIONS = [
 ]
 
 const QA_COLOR = {
-  blue:   { bg: 'bg-orange-50',   icon: 'bg-[#E8420A]',   hover: 'hover:bg-orange-50',   text: 'text-[#C4350A]'   },
+  blue:   { bg: 'bg-blue-50',   icon: 'bg-blue-500',   hover: 'hover:bg-blue-100',   text: 'text-blue-700'   },
   purple: { bg: 'bg-purple-50', icon: 'bg-purple-500', hover: 'hover:bg-purple-100', text: 'text-purple-700' },
   amber:  { bg: 'bg-amber-50',  icon: 'bg-amber-500',  hover: 'hover:bg-amber-100',  text: 'text-amber-700'  },
   green:  { bg: 'bg-green-50',  icon: 'bg-green-500',  hover: 'hover:bg-green-100',  text: 'text-green-700'  },
   red:    { bg: 'bg-red-50',    icon: 'bg-red-500',    hover: 'hover:bg-red-100',    text: 'text-red-700'    },
-  indigo: { bg: 'bg-orange-50', icon: 'bg-[#0D0F14]', hover: 'hover:bg-orange-50', text: 'text-[#C4350A]' },
+  indigo: { bg: 'bg-indigo-50', icon: 'bg-indigo-600', hover: 'hover:bg-indigo-100', text: 'text-indigo-700' },
 }
 
 const PERIOD_LABEL = { week: 'Tuần này', month: 'Tháng này', year: `Năm ${new Date().getFullYear()}` }
