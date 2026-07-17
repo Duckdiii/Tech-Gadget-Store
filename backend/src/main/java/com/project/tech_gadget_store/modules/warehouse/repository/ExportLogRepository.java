@@ -19,8 +19,10 @@ public interface ExportLogRepository extends JpaRepository<ExportLog, String> {
 
     Page<ExportLog> findAllByOrderByExportedAtDesc(Pageable pageable);
 
+    // cursorTimestamp must be cast to timestamp — see SupplyOrderRepository.findSupplyOrdersCursor
+    // for why: Postgres can't infer the type of a bare null parameter under "IS NULL".
     @Query("SELECT el FROM ExportLog el WHERE " +
-           "(:cursorTimestamp IS NULL OR el.exportedAt < :cursorTimestamp OR " +
+           "(cast(:cursorTimestamp as timestamp) IS NULL OR el.exportedAt < :cursorTimestamp OR " +
            "(el.exportedAt = :cursorTimestamp AND el.id < :cursorId)) " +
            "ORDER BY el.exportedAt DESC, el.id DESC")
     List<ExportLog> findExportLogsCursor(

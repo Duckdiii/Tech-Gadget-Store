@@ -16,7 +16,10 @@ export default function LoginLogTab() {
 
   useEffect(() => {
     apiFetch('/api/manager/login-logs')
-      .then(data => setLogs(data.map(log => ({
+      // Returns a CursorPageResponseDto ({ items, nextCursor, hasNext }), not a raw array —
+      // data.map(...) crashed on the plain object (same bug already fixed in
+      // useManagerOrders.js, useManagerPaymentLogs.js, SupplyOrderPage.jsx).
+      .then(data => setLogs((data.items || []).map(log => ({
         id:        log.id,
         email:     log.email,
         roleName:  log.roleName || '—',

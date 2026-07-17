@@ -19,8 +19,10 @@ public interface ImportLogRepository extends JpaRepository<ImportLog, String> {
 
     Page<ImportLog> findAllByOrderByImportedAtDesc(Pageable pageable);
 
+    // cursorTimestamp must be cast to timestamp — see SupplyOrderRepository.findSupplyOrdersCursor
+    // for why: Postgres can't infer the type of a bare null parameter under "IS NULL".
     @Query("SELECT il FROM ImportLog il WHERE " +
-           "(:cursorTimestamp IS NULL OR il.importedAt < :cursorTimestamp OR " +
+           "(cast(:cursorTimestamp as timestamp) IS NULL OR il.importedAt < :cursorTimestamp OR " +
            "(il.importedAt = :cursorTimestamp AND il.id < :cursorId)) " +
            "ORDER BY il.importedAt DESC, il.id DESC")
     List<ImportLog> findImportLogsCursor(

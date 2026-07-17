@@ -69,7 +69,10 @@ export default function SupplyOrderPage() {
   function loadOrders() {
     setLoading(true)
     apiFetch('/api/manager/supply-orders')
-      .then(data => setOrders(data.map(normalizeOrder)))
+      // Returns a CursorPageResponseDto ({ items, nextCursor, hasNext }), not a raw array —
+      // data.map(...) crashed on the plain object (same bug already fixed in useManagerOrders.js
+      // and useManagerPaymentLogs.js).
+      .then(data => setOrders((data.items || []).map(normalizeOrder)))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }

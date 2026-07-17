@@ -16,8 +16,10 @@ public interface LoginLogRepository extends JpaRepository<LoginLog, String> {
 
     void deleteByAccountId(String accountId);
 
+    // cursorTimestamp must be cast to timestamp — see SupplyOrderRepository.findSupplyOrdersCursor
+    // for why: Postgres can't infer the type of a bare null parameter under "IS NULL".
     @Query("SELECT l FROM LoginLog l WHERE " +
-           "(:cursorTimestamp IS NULL OR l.loginTime < :cursorTimestamp OR " +
+           "(cast(:cursorTimestamp as timestamp) IS NULL OR l.loginTime < :cursorTimestamp OR " +
            "(l.loginTime = :cursorTimestamp AND l.id < :cursorId)) " +
            "ORDER BY l.loginTime DESC, l.id DESC")
     List<LoginLog> findLoginLogsCursor(
