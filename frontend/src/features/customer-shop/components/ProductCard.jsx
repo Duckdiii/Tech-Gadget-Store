@@ -5,7 +5,7 @@ function formatPrice(price) {
 }
 
 
-export default function ProductCard({ product, onNavigate, viewMode = 'grid', isCompared = false, onToggleCompare }) {
+export default function ProductCard({ product, onNavigate, viewMode = 'grid', isCompared = false, onToggleCompare, onQuickView }) {
   const [wished, setWished] = useState(false)
   const [adding, setAdding] = useState(false)
   const [imgError, setImgError] = useState(false)
@@ -166,6 +166,17 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
               </div>
               <span className="text-[8.5px] font-bold uppercase tracking-wide">Chưa có ảnh</span>
             </div>
+          )}
+          {onQuickView && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onQuickView(product)
+              }}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 px-3.5 py-1.5 bg-white/95 backdrop-blur-sm text-slate-850 hover:text-orange-605 font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md border border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer whitespace-nowrap transform translate-y-2 group-hover:translate-y-0"
+            >
+              Xem nhanh
+            </button>
           )}
         </div>
 
@@ -434,6 +445,18 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
             </div>
             <span className="text-[8.5px] font-bold uppercase tracking-wide">Chưa có ảnh</span>
           </div>
+        )}
+
+        {onQuickView && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onQuickView(product)
+            }}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 px-3.5 py-1.5 bg-white/95 backdrop-blur-sm text-slate-850 hover:text-orange-605 font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md border border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer whitespace-nowrap transform translate-y-2 group-hover:translate-y-0"
+          >
+            Xem nhanh
+          </button>
         )}
       </div>
 

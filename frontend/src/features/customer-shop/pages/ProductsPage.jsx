@@ -8,6 +8,7 @@ import FilterPanel from '../components/FilterPanel'
 import Pagination from '../components/Pagination'
 import { mapApiProduct } from '../utils/mapApiProduct'
 import { shopService } from '../services/shopService'
+import QuickViewModal from '../components/QuickViewModal'
 
 const SORT_OPTIONS = [
   { label: 'Mới nhất', value: '' },
@@ -182,6 +183,8 @@ export default function ProductsPage() {
   const handleClearCompare = () => {
     setComparedProducts([])
   }
+
+  const [quickViewProduct, setQuickViewProduct] = useState(null)
 
   // Fetch categories & brands một lần khi mount
   useEffect(() => {
@@ -437,6 +440,7 @@ export default function ProductsPage() {
                           viewMode="grid" 
                           isCompared={comparedProducts.some(cp => cp.id === p.id)}
                           onToggleCompare={handleToggleCompare}
+                          onQuickView={setQuickViewProduct}
                         />
                       ))}
                     </div>
@@ -453,6 +457,7 @@ export default function ProductsPage() {
                     viewMode={viewMode} 
                     isCompared={comparedProducts.some(cp => cp.id === p.id)}
                     onToggleCompare={handleToggleCompare}
+                    onQuickView={setQuickViewProduct}
                   />
                 ))}
               </div>
@@ -625,6 +630,15 @@ export default function ProductsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Quick View Modal */}
+      {quickViewProduct && (
+        <QuickViewModal
+          productId={quickViewProduct.id}
+          onClose={() => setQuickViewProduct(null)}
+          onNavigate={onNavigate}
+        />
       )}
     </div>
   )
