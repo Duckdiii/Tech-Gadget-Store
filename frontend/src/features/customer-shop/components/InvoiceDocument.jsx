@@ -63,7 +63,7 @@ export default function InvoiceDocument({ orderId, invoice, onClose }) {
             </div>
             <div className="text-right">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Thông tin đơn hàng</p>
-              <p className="text-slate-600">Ngày xuất: <span className="font-semibold text-slate-800">{invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString('vi-VN') : 'N/A'}</span></p>
+              <p className="text-slate-600">Ngày xuất: <span className="font-semibold text-slate-800">{invoice.issuedAt ? new Date(invoice.issuedAt).toLocaleDateString('vi-VN') : invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString('vi-VN') : 'N/A'}</span></p>
               <p className="text-slate-600 mt-0.5">Thanh toán: <span className="font-semibold text-slate-800">{invoice.paymentMethod || 'N/A'}</span></p>
             </div>
           </div>
@@ -96,7 +96,7 @@ export default function InvoiceDocument({ orderId, invoice, onClose }) {
             <div className="w-64 space-y-2 text-sm">
               <div className="flex justify-between text-slate-500">
                 <span>Tạm tính:</span>
-                <span className="font-semibold">{fmt(invoice.subTotal)}</span>
+                <span className="font-semibold">{fmt(invoice.originalAmount)}</span>
               </div>
               {invoice.discountAmount > 0 && (
                 <div className="flex justify-between text-rose-600">
@@ -111,7 +111,7 @@ export default function InvoiceDocument({ orderId, invoice, onClose }) {
               <div className="border-t border-slate-150 my-2" />
               <div className="flex justify-between text-base font-extrabold text-slate-900">
                 <span>Tổng cộng:</span>
-                <span style={{ color: 'var(--accent)' }}>{fmt(invoice.totalAmount)}</span>
+                <span style={{ color: 'var(--accent)' }}>{fmt(invoice.finalAmount)}</span>
               </div>
             </div>
           </div>

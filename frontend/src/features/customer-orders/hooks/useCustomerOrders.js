@@ -23,7 +23,7 @@ export function useCustomerOrders() {
     try {
       setLoading(true)
       const data = await orderService.getCustomerOrders()
-      setOrders(data || [])
+      setOrders(data?.items || [])
     } catch (e) {
       console.error('Lỗi tải lịch sử đơn hàng:', e)
     } finally {

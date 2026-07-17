@@ -22,5 +22,22 @@ export function mapApiProduct(p) {
     // null when the product has no real photo yet — ProductCard renders a proper
     // placeholder for this instead of loading an ugly text-on-box image.
     image: p.imageUrl ?? null,
+    
+    // Details for List view
+    cpu: p.cpu ?? null,
+    gpu: p.gpu ?? null,
+    screenSize: p.screenSize ?? null,
+    batteryCapacity: p.batteryCapacity ?? null,
+    operatingSystem: p.operatingSystem ?? null,
+    chipset: p.chipset ?? null,
+    resolution: p.resolution ?? null,
+    refreshRate: p.refreshRate ?? null,
+    panelType: p.panelType ?? null,
+    isWireless: p.isWireless ?? null,
+    hasNoiseCancelling: p.hasNoiseCancelling ?? null,
+    batteryLifeHours: p.batteryLifeHours ?? null,
+    batteryLifeDays: p.batteryLifeDays ?? null,
+    hasGps: p.hasGps ?? null,
+    isWaterResistant: p.isWaterResistant ?? null,
   }
 }

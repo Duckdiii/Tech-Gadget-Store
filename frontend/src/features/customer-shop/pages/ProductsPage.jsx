@@ -118,6 +118,7 @@ export default function ProductsPage() {
 
   const [sort, setSort] = useState('')
   const [page, setPage] = useState(0)
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('shop-view-mode') || 'grid')
   const [filters, setFilters] = useState(() => ({
     ...EMPTY_FILTERS,
     categoryNames: initialCategory ? [initialCategory] : [],
@@ -270,6 +271,31 @@ export default function ProductsPage() {
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
+
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 ml-1">
+              <button
+                onClick={() => { setViewMode('grid'); localStorage.setItem('shop-view-mode', 'grid') }}
+                className={`p-1.5 rounded-md transition-all cursor-pointer flex items-center justify-center border-none ${
+                  viewMode === 'grid'
+                    ? 'bg-white text-[#E8420A] shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                }`}
+                title="Dạng lưới"
+              >
+                <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+              </button>
+              <button
+                onClick={() => { setViewMode('list'); localStorage.setItem('shop-view-mode', 'list') }}
+                className={`p-1.5 rounded-md transition-all cursor-pointer flex items-center justify-center border-none ${
+                  viewMode === 'list'
+                    ? 'bg-white text-[#E8420A] shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                }`}
+                title="Dạng danh sách"
+              >
+                <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -298,9 +324,9 @@ export default function ProductsPage() {
               </div>
             )}
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className={viewMode === 'list' ? 'flex flex-col gap-4' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'}>
                 {[...Array(8)].map((_, i) => (
-                  <ProductCardSkeleton key={i} />
+                  <ProductCardSkeleton key={i} viewMode={viewMode} />
                 ))}
               </div>
             ) : products.length === 0 && !error ? (
@@ -314,9 +340,9 @@ export default function ProductsPage() {
                       : 'Rất tiếc! Không có sản phẩm nào đáp ứng bộ lọc của bạn.'}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className={viewMode === 'list' ? 'flex flex-col gap-4' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'}>
                 {products.map(p => (
-                  <ProductCard key={p.id} product={p} onNavigate={onNavigate} />
+                  <ProductCard key={p.id} product={p} onNavigate={onNavigate} viewMode={viewMode} />
                 ))}
               </div>
             )}

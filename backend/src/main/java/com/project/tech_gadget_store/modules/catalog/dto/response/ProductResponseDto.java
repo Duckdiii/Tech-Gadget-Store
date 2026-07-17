@@ -31,4 +31,21 @@ public class ProductResponseDto {
     private Integer reviewCount;
     /** Tổng số serial vật lí có trạng thái IN_STOCK của sản phẩm này. */
     private long availableCount;
+
+    // Spec details for List view
+    private String cpu;
+    private String gpu;
+    private Double screenSize;
+    private Integer batteryCapacity;
+    private String operatingSystem;
+    private String chipset;
+    private String resolution;
+    private Integer refreshRate;
+    private String panelType;
+    private Boolean isWireless;
+    private Boolean hasNoiseCancelling;
+    private Integer batteryLifeHours;
+    private Integer batteryLifeDays;
+    private Boolean hasGps;
+    private Boolean isWaterResistant;
 }

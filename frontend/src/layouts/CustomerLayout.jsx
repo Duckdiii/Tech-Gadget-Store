@@ -19,7 +19,7 @@ const PATH_SIDEBAR = {
   '/product':              'none',
   '/cart':                 'none',
   '/checkout':             'none',
-  '/invoice':              'invoice',
+  '/invoice':              'none',
   '/orders':               'orderHistory',
   '/profile':              'none',
   '/my-orders':            'none',

@@ -123,7 +123,7 @@ export default function UserProfilePage() {
       .finally(() => setMembershipLoading(false))
 
     apiFetch('/api/customer/orders')
-      .then(data => setOrders(data))
+      .then(data => setOrders(data?.items || []))
       .catch(err => console.error('Error fetching orders:', err))
       .finally(() => setOrdersLoading(false))
 

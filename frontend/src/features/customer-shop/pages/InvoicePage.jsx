@@ -53,7 +53,7 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
       
       const payload = {
         orderId: orderId,
-        amount: invoice.totalAmount,
+        amount: invoice.finalAmount,
         orderInfo: `Thanh toán lại đơn hàng #${orderId.substring(0, 8).toUpperCase()}`
       }
       
@@ -153,7 +153,7 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
               </div>
               <div className="text-right">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">TỔNG THANH TOÁN</p>
-                <p className="text-lg font-black mt-1" style={{ color: 'var(--accent)' }}>{fmt(invoice.totalAmount)}</p>
+                <p className="text-lg font-black mt-1" style={{ color: 'var(--accent)' }}>{fmt(invoice.finalAmount)}</p>
               </div>
             </div>
 
@@ -165,7 +165,9 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
               </div>
               <div>
                 <p className="text-gray-400 text-xs">Thời gian đặt</p>
-                <p className="font-semibold text-gray-700 mt-1">{invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleString('vi-VN') : 'N/A'}</p>
+                <p className="font-semibold text-gray-700 mt-1">
+                  {invoice.issuedAt ? new Date(invoice.issuedAt).toLocaleString('vi-VN') : invoice.createdAt ? new Date(invoice.createdAt).toLocaleString('vi-VN') : 'N/A'}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400 text-xs">Số lượng</p>
@@ -190,10 +192,7 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
             )}
 
             {/* Actions bar inside card */}
-            <div className="px-7 py-4 bg-slate-50/50 flex items-center justify-between">
-              <button onClick={() => setShowInvoice(true)} className="text-xs font-bold px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer bg-white transition-colors">
-                Xem hóa đơn chi tiết
-              </button>
+            <div className="px-7 py-4 bg-slate-50/50 flex items-center justify-end">
               <button onClick={() => onNavigate('myOrders')} className="text-xs font-bold px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer bg-white transition-colors">
                 Quản lý đơn hàng
               </button>

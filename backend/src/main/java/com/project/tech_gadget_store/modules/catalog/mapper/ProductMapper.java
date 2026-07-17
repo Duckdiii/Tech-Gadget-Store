@@ -49,7 +49,7 @@ public class ProductMapper {
                 List<ProductImage> images = product.getImages();
                 String imageUrl = images.isEmpty() ? null : images.get(0).getImageUrl();
 
-                return ProductResponseDto.builder()
+                ProductResponseDto.ProductResponseDtoBuilder builder = ProductResponseDto.builder()
                                 .id(product.getId())
                                 .name(product.getName())
                                 .brandName(product.getBrand().getName())
@@ -69,8 +69,35 @@ public class ProductMapper {
                                 .specSummary(buildSpecSummary(product, variants))
                                 .averageRating(averageRating)
                                 .reviewCount(reviewCount)
-                                .availableCount(availableCount)
-                                .build();
+                                .availableCount(availableCount);
+
+                if (product instanceof Phone phone) {
+                        builder.screenSize(phone.getScreenSize());
+                        builder.chipset(phone.getChipset());
+                        builder.batteryCapacity(phone.getBatteryCapacity());
+                        builder.operatingSystem(phone.getOperatingSystem());
+                        builder.resolution(phone.getScreenResolution());
+                } else if (product instanceof Laptop laptop) {
+                        builder.cpu(laptop.getCpu());
+                        builder.gpu(laptop.getGpu());
+                        builder.screenSize(laptop.getScreenSize());
+                        builder.operatingSystem(laptop.getOperatingSystem());
+                } else if (product instanceof Monitor monitor) {
+                        builder.screenSize(monitor.getScreenSize());
+                        builder.resolution(monitor.getResolution());
+                        builder.refreshRate(monitor.getRefreshRate());
+                        builder.panelType(monitor.getPanelType());
+                } else if (product instanceof Headphones headphones) {
+                        builder.isWireless(headphones.getIsWireless());
+                        builder.hasNoiseCancelling(headphones.getHasNoiseCancelling());
+                        builder.batteryLifeHours(headphones.getBatteryLifeHours());
+                } else if (product instanceof Smartwatch smartwatch) {
+                        builder.batteryLifeDays(smartwatch.getBatteryLifeDays());
+                        builder.isWaterResistant(smartwatch.getIsWaterResistant());
+                        builder.hasGps(smartwatch.getHasGps());
+                }
+
+                return builder.build();
         }
 
         public ProductDetailResponseDto toProductDetailResponseDto(Product product, List<ProductVariant> variants, List<BundleService> bundleServices, Integer salesCount) {

@@ -21,7 +21,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
         @Query("SELECT o FROM Order o WHERE " +
                         "(:customerId IS NULL OR o.customer.id = :customerId) AND " +
                         "(:status IS NULL OR o.orderStatus = :status) AND " +
-                        "(:cursorTimestamp IS NULL OR o.orderDate < :cursorTimestamp OR " +
+                        "(cast(:cursorTimestamp as timestamp) IS NULL OR o.orderDate < :cursorTimestamp OR " +
                         "(o.orderDate = :cursorTimestamp AND o.id < :cursorId)) " +
                         "ORDER BY o.orderDate DESC, o.id DESC")
         List<Order> findOrdersCursor(

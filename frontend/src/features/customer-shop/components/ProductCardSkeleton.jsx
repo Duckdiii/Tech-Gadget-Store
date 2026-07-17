@@ -1,4 +1,28 @@
-export default function ProductCardSkeleton() {
+export default function ProductCardSkeleton({ viewMode = 'grid' }) {
+  if (viewMode === 'list') {
+    return (
+      <div
+        className="overflow-hidden flex flex-row items-center relative animate-pulse bg-white border border-gray-200 rounded-2xl p-4 gap-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] h-36"
+      >
+        <div className="w-28 h-28 bg-gray-50 rounded-xl shrink-0 flex items-center justify-center border border-gray-200">
+          <div className="w-8 h-8 bg-gray-200 rounded-xl" />
+        </div>
+        <div className="flex-1 min-w-0 flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <div className="h-3.5 w-16 bg-gray-250 rounded-md" />
+            <div className="h-3.5 w-20 bg-gray-250 rounded-md" />
+          </div>
+          <div className="h-4 w-2/3 bg-gray-250 rounded-md" />
+          <div className="h-3.5 w-1/2 bg-gray-200 rounded-md" />
+        </div>
+        <div className="shrink-0 flex flex-col items-end gap-2 pr-2">
+          <div className="h-5 w-24 bg-gray-250 rounded-md" />
+          <div className="h-9 w-9 bg-gray-250 rounded-full" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className="overflow-hidden flex flex-col relative animate-pulse bg-white border border-gray-200 rounded-2xl h-full shadow-[0_2px_8px_rgba(0,0,0,0.02)]"

@@ -174,7 +174,7 @@ export default function StoreNavbar() {
 
     // Fetch orders count
     apiFetch('/api/customer/orders')
-      .then(data => setOrdersCount(data.length ?? 0))
+      .then(data => setOrdersCount(data?.items?.length ?? 0))
       .catch(err => console.error('Error fetching orders:', err))
 
     // Fetch favorites count
