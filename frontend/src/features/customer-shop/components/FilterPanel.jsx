@@ -192,6 +192,33 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
     maxPriceVnd != null ? String(maxPriceVnd / 1_000_000) : '',
     (v) => onChange({ maxPrice: v.trim() === '' || Number.isNaN(Number(v)) ? undefined : Math.round(Number(v) * 1_000_000) }))
 
+  const [sliderMin, setSliderMin] = useState(() => filters.minPrice != null ? Math.round(filters.minPrice / 1_000_000) : 0)
+  const [sliderMax, setSliderMax] = useState(() => filters.maxPrice != null ? Math.round(filters.maxPrice / 1_000_000) : 100)
+
+  useEffect(() => {
+    setSliderMin(filters.minPrice != null ? Math.round(filters.minPrice / 1_000_000) : 0)
+    setSliderMax(filters.maxPrice != null ? Math.round(filters.maxPrice / 1_000_000) : 100)
+  }, [filters.minPrice, filters.maxPrice])
+
+  const handleMinSlider = (val) => {
+    const nextMin = Math.min(val, sliderMax - 1)
+    setSliderMin(nextMin)
+    setMinPriceText(nextMin === 0 ? '' : String(nextMin))
+  }
+
+  const handleMaxSlider = (val) => {
+    const nextMax = Math.max(val, sliderMin + 1)
+    setSliderMax(nextMax)
+    setMaxPriceText(nextMax === 100 ? '' : String(nextMax))
+  }
+
+  const commitSliderChange = () => {
+    onChange({
+      minPrice: sliderMin === 0 ? undefined : sliderMin * 1_000_000,
+      maxPrice: sliderMax === 100 ? undefined : sliderMax * 1_000_000,
+    })
+  }
+
   const toggleList = (field, value) => {
     const current = filters[field] ?? []
     const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value]
@@ -355,29 +382,121 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
           </FilterDropdown>
         )}
 
-        <FilterDropdown label="Mức giá" count={priceActive ? 1 : 0}>
-          <RadioGroup name="price" value={activePricePreset} onChange={selectPricePreset} items={PRICE_PRESETS} />
-          {activePricePreset === '' && (
-            <div className="flex items-center gap-1.5 mt-3">
-              <input
-                type="text"
-                inputMode="decimal"
-                placeholder="Từ (triệu)"
-                value={minPriceText}
-                onChange={e => setMinPriceText(e.target.value)}
-                className="w-full px-2.5 py-1.5 text-[12px] rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)]"
-              />
-              <span className="text-[11px] shrink-0" style={{ color: 'var(--t3)' }}>–</span>
-              <input
-                type="text"
-                inputMode="decimal"
-                placeholder="Đến (triệu)"
-                value={maxPriceText}
-                onChange={e => setMaxPriceText(e.target.value)}
-                className="w-full px-2.5 py-1.5 text-[12px] rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)]"
-              />
+        <FilterDropdown label="Mức giá" count={priceActive ? 1 : 0} panelClassName="min-w-[280px]">
+          <div className="space-y-4">
+            <div>
+              <FilterGroupLabel>Khoảng giá nhanh</FilterGroupLabel>
+              <RadioGroup name="price" value={activePricePreset} onChange={selectPricePreset} items={PRICE_PRESETS} />
             </div>
-          )}
+
+            <div className="border-t border-slate-100 pt-3">
+              <FilterGroupLabel>Khoảng giá tự chọn</FilterGroupLabel>
+
+              <style>{`
+                .dual-range-input::-webkit-slider-thumb {
+                  pointer-events: auto;
+                  width: 16px;
+                  height: 16px;
+                  border-radius: 50%;
+                  background: #FFFFFF;
+                  border: 2.5px solid var(--accent);
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                  cursor: pointer;
+                  -webkit-appearance: none;
+                  transition: transform 0.1s;
+                }
+                .dual-range-input::-webkit-slider-thumb:hover {
+                  transform: scale(1.15);
+                }
+                .dual-range-input::-webkit-slider-thumb:active {
+                  background: var(--accent);
+                  transform: scale(1.2);
+                }
+                .dual-range-input::-moz-range-thumb {
+                  pointer-events: auto;
+                  width: 16px;
+                  height: 16px;
+                  border-radius: 50%;
+                  background: #FFFFFF;
+                  border: 2.5px solid var(--accent);
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                  cursor: pointer;
+                  transition: transform 0.1s;
+                }
+                .dual-range-input::-moz-range-thumb:hover {
+                  transform: scale(1.15);
+                }
+                .dual-range-input::-moz-range-thumb:active {
+                  background: var(--accent);
+                  transform: scale(1.2);
+                }
+              `}</style>
+
+              <div className="px-1 py-1">
+                {/* Track lines */}
+                <div className="relative w-full h-5 flex items-center mb-2">
+                  <div className="absolute left-0 right-0 h-1 bg-slate-200 rounded-full pointer-events-none" />
+                  <div
+                    className="absolute h-1 rounded-full pointer-events-none"
+                    style={{
+                      left: `${sliderMin}%`,
+                      right: `${100 - sliderMax}%`,
+                      backgroundColor: 'var(--accent)',
+                    }}
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={sliderMin}
+                    onChange={(e) => handleMinSlider(Number(e.target.value))}
+                    onMouseUp={commitSliderChange}
+                    onTouchEnd={commitSliderChange}
+                    className="dual-range-input absolute w-full h-0 pointer-events-none appearance-none outline-none"
+                    style={{ WebkitAppearance: 'none', background: 'none', zIndex: sliderMin > 50 ? 25 : 15 }}
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={sliderMax}
+                    onChange={(e) => handleMaxSlider(Number(e.target.value))}
+                    onMouseUp={commitSliderChange}
+                    onTouchEnd={commitSliderChange}
+                    className="dual-range-input absolute w-full h-0 pointer-events-none appearance-none outline-none"
+                    style={{ WebkitAppearance: 'none', background: 'none', zIndex: sliderMin > 50 ? 15 : 25 }}
+                  />
+                </div>
+
+                {/* Slider values */}
+                <div className="flex justify-between text-[11px] font-bold text-slate-500 mb-3">
+                  <span>{sliderMin} triệu</span>
+                  <span>{sliderMax === 100 ? '100+ triệu' : `${sliderMax} triệu`}</span>
+                </div>
+
+                {/* Text boxes */}
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Từ (triệu)"
+                    value={minPriceText}
+                    onChange={e => setMinPriceText(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-[12px] font-semibold rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)] text-center"
+                  />
+                  <span className="text-[11px] shrink-0" style={{ color: 'var(--t3)' }}>–</span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Đến (triệu)"
+                    value={maxPriceText}
+                    onChange={e => setMaxPriceText(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-[12px] font-semibold rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)] text-center"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </FilterDropdown>
 
         {(isPhoneScope || isLaptopScope) && (
