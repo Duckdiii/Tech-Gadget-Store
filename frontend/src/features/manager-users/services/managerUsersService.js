@@ -19,8 +19,12 @@ export const managerUsersService = {
   },
 
   // Customers
-  getCustomers: () => {
-    return axiosClient.get('/api/manager/customers')
+  getCustomers: ({ search, tier, page, size } = {}) => {
+    return axiosClient.get('/api/manager/customers', { params: { search, tier, page, size } })
+  },
+
+  getCustomerStats: () => {
+    return axiosClient.get('/api/manager/customers/stats')
   },
 
   getCustomerById: (id) => {

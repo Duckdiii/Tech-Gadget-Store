@@ -1,41 +1,64 @@
 import { useState } from 'react'
 import { useNav } from '../../../hooks/useNav'
+import { useCustomerDetail } from '../hooks/useCustomerDetail'
 import StatCard from '../components/StatCard'
 
-const CUSTOMER = {
-  name: 'Nguyễn Văn A',
-  tier: 'VIP',
-  email: 'nguvan@example.com',
-  phone: '090 123 4567',
-  address: 'Ho Chi Minh City',
-  joinDate: '12/03/2022',
-  avatar: 'https://placehold.co/80x80/94a3b8/ffffff?text=NA',
-  totalSpent: 125500000,
-  totalOrders: 42,
-  returns: 2,
-  lastPurchase: '3 days ago',
+// Cùng nhãn/màu với TIER_DISPLAY ở MembershipSection.jsx và CustomerManagementPage.jsx.
+const TIER_DISPLAY = {
+  STANDARD: { label: 'Thành viên', bg: 'bg-gray-50',    border: 'border-gray-200',   text: 'text-gray-700'   },
+  BRONZE:   { label: 'Đồng',       bg: 'bg-amber-50',    border: 'border-amber-200',  text: 'text-amber-800'  },
+  SILVER:   { label: 'Bạc',        bg: 'bg-slate-50',    border: 'border-slate-200',  text: 'text-slate-700'  },
+  GOLD:     { label: 'Vàng',       bg: 'bg-amber-50',    border: 'border-amber-300',  text: 'text-amber-600'  },
+  DIAMOND:  { label: 'Kim Cương',  bg: 'bg-purple-50',   border: 'border-purple-200', text: 'text-purple-700' },
 }
 
-const STATUS_CONFIG = {
-  Completed: { bg: 'bg-green-100',  text: 'text-green-700'  },
-  Shipping:  { bg: 'bg-orange-100', text: 'text-orange-600' },
-  Cancelled: { bg: 'bg-red-100',    text: 'text-red-600'    },
-  Pending:   { bg: 'bg-yellow-100', text: 'text-yellow-700' },
+const STATUS_DISPLAY = {
+  AWAITING_CONFIRMATION: { label: 'Chờ xác nhận',   bg: 'bg-amber-100',  text: 'text-amber-700' },
+  PROCESSING:            { label: 'Đang xử lý',      bg: 'bg-blue-100',   text: 'text-blue-700'  },
+  SHIPPING:              { label: 'Đang giao',       bg: 'bg-orange-100', text: 'text-orange-600' },
+  COMPLETED:             { label: 'Đã hoàn thành',   bg: 'bg-green-100',  text: 'text-green-700' },
+  CANCELLED:             { label: 'Đã hủy',          bg: 'bg-red-100',    text: 'text-red-600'   },
+  REFUNDED:              { label: 'Đã hoàn tiền',    bg: 'bg-red-50',     text: 'text-red-500'   },
 }
 
-const TRANSACTIONS = [
-  { id: '#ORD-2023-8901', date: '24/10/2023', total: 34990000, payment: 'Credit Card', status: 'Completed' },
-  { id: '#ORD-2023-8850', date: '15/09/2023', total: 4500000,  payment: 'MoMo',        status: 'Shipping'  },
-  { id: '#ORD-2023-7522', date: '02/05/2023', total: 55000000, payment: 'Bank Transfer',status: 'Completed' },
-]
+const TABS = ['Lịch sử giao dịch', 'Sản phẩm đã mua', 'Ghi chú']
 
-const TABS = ['Transaction History', 'Purchased Products', 'Notes']
-
+function fmtMoney(n) { return (Number(n) || 0).toLocaleString('vi-VN') + ' đ' }
+function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('vi-VN') : '—' }
+function initialsOf(name) {
+  const trimmed = (name || '').trim()
+  if (!trimmed) return '?'
+  return trimmed.split(/\s+/).map((w) => w[0]).slice(-2).join('').toUpperCase()
+}
 
 export default function CustomerDetailPage() {
   const onNavigate = useNav()
-  const [activeTab, setActiveTab] = useState('Transaction History')
-  const [page, setPage] = useState(1)
+  const { customer, loading, error } = useCustomerDetail()
+  const [activeTab, setActiveTab] = useState(TABS[0])
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
+      </div>
+    )
+  }
+
+  if (error || !customer) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-gray-50 gap-3">
+        <p className="text-sm text-gray-500">{error || 'Không tìm thấy khách hàng.'}</p>
+        <button
+          onClick={() => onNavigate('customerManagement')}
+          className="text-sm text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer"
+        >
+          ← Quay lại danh sách khách hàng
+        </button>
+      </div>
+    )
+  }
+
+  const tier = TIER_DISPLAY[customer.tier] || { label: customer.tier, bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700' }
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
@@ -85,11 +108,11 @@ export default function CustomerDetailPage() {
         <div className="flex items-start justify-between mb-5">
           <div>
             <p className="text-sm text-gray-500 mb-1">
-              <span onClick={() => onNavigate('customerManagement')} className="hover:text-[#E8420A] cursor-pointer">Customers</span>
+              <span onClick={() => onNavigate('customerManagement')} className="hover:text-[#E8420A] cursor-pointer">Khách hàng</span>
               <span className="mx-2">›</span>
-              <span className="text-gray-700 font-medium">{CUSTOMER.name}</span>
+              <span className="text-gray-700 font-medium">{customer.fullName}</span>
             </p>
-            <h1 className="text-3xl font-bold text-gray-900">Customer Detail</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Chi tiết khách hàng</h1>
           </div>
           <div className="flex items-center gap-3 mt-1">
             <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
@@ -111,25 +134,19 @@ export default function CustomerDetailPage() {
         <div className="grid grid-cols-[290px_1fr] gap-5">
           {/* LEFT: Customer info card */}
           <div className="bg-white rounded border border-gray-200 px-6 py-7 flex flex-col items-center">
-            {/* Avatar */}
-            <img
-              src={CUSTOMER.avatar}
-              alt={CUSTOMER.name}
-              className="w-20 h-20 rounded-full object-cover mb-4 ring-4 ring-gray-100"
-            />
+            <div className="w-20 h-20 rounded-full bg-[#E8420A] text-white text-2xl font-bold flex items-center justify-center mb-4 ring-4 ring-gray-100">
+              {initialsOf(customer.fullName)}
+            </div>
 
-            {/* Name */}
-            <h2 className="text-xl font-bold text-gray-900 text-center mb-2">{CUSTOMER.name}</h2>
+            <h2 className="text-xl font-bold text-gray-900 text-center mb-2">{customer.fullName}</h2>
 
-            {/* VIP Badge */}
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 border border-green-200 text-xs font-bold text-green-700 mb-5">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold mb-5 ${tier.bg} ${tier.border} ${tier.text}`}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
-              VIP
+              {tier.label}
             </span>
 
-            {/* Contact info */}
             <div className="w-full space-y-0">
               {[
                 {
@@ -138,7 +155,7 @@ export default function CustomerDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   ),
-                  text: CUSTOMER.email,
+                  text: customer.email,
                 },
                 {
                   icon: (
@@ -146,7 +163,7 @@ export default function CustomerDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                   ),
-                  text: CUSTOMER.phone,
+                  text: customer.phone || 'Chưa cập nhật',
                 },
                 {
                   icon: (
@@ -155,7 +172,7 @@ export default function CustomerDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   ),
-                  text: CUSTOMER.address,
+                  text: customer.address || 'Chưa cập nhật',
                 },
                 {
                   icon: (
@@ -163,7 +180,7 @@ export default function CustomerDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   ),
-                  text: `Joined: ${CUSTOMER.joinDate}`,
+                  text: `Tham gia: ${fmtDate(customer.joinDate)}`,
                 },
               ].map((item, i, arr) => (
                 <div key={i}>
@@ -182,8 +199,8 @@ export default function CustomerDetailPage() {
             {/* Stat cards */}
             <div className="flex gap-4">
               <StatCard
-                label="Total Spent"
-                value={`${CUSTOMER.totalSpent.toLocaleString('vi-VN')} đ`}
+                label="Tổng chi tiêu"
+                value={fmtMoney(customer.totalSpend)}
                 icon={
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -191,8 +208,8 @@ export default function CustomerDetailPage() {
                 }
               />
               <StatCard
-                label="Total Orders"
-                value={CUSTOMER.totalOrders}
+                label="Tổng đơn hàng"
+                value={customer.totalOrders}
                 icon={
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -200,8 +217,8 @@ export default function CustomerDetailPage() {
                 }
               />
               <StatCard
-                label="Returns"
-                value={CUSTOMER.returns}
+                label="Đơn hoàn trả"
+                value={customer.returnedOrders}
                 valueClass="text-red-500"
                 icon={
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,8 +227,8 @@ export default function CustomerDetailPage() {
                 }
               />
               <StatCard
-                label="Last Purchase"
-                value={CUSTOMER.lastPurchase}
+                label="Mua gần nhất"
+                value={fmtDate(customer.lastPurchaseDate)}
                 icon={
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -222,7 +239,6 @@ export default function CustomerDetailPage() {
 
             {/* Tabs + Table */}
             <div className="bg-white rounded border border-gray-200 flex-1 overflow-hidden">
-              {/* Tab navigation */}
               <div className="flex border-b border-gray-200 px-5">
                 {TABS.map((tab) => (
                   <button
@@ -239,88 +255,45 @@ export default function CustomerDetailPage() {
                 ))}
               </div>
 
-              {activeTab === 'Transaction History' && (
+              {activeTab === 'Lịch sử giao dịch' && (
                 <>
-                  {/* Table header */}
-                  <div className="grid grid-cols-[140px_110px_1fr_130px_110px_70px] gap-2 px-5 py-3.5 border-b border-gray-100">
-                    {['ORDER ID', 'DATE', 'TOTAL', 'PAYMENT', 'STATUS', 'ACTI...'].map((h) => (
+                  <div className="grid grid-cols-[140px_110px_1fr_130px_130px] gap-2 px-5 py-3.5 border-b border-gray-100">
+                    {['MÃ ĐƠN', 'NGÀY ĐẶT', 'TỔNG TIỀN', 'THANH TOÁN', 'TRẠNG THÁI'].map((h) => (
                       <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase">
                         {h}
                       </span>
                     ))}
                   </div>
 
-                  {/* Table rows */}
-                  {TRANSACTIONS.map((tx) => {
-                    const st = STATUS_CONFIG[tx.status] || { bg: 'bg-gray-100', text: 'text-gray-500' }
-                    return (
-                      <div
-                        key={tx.id}
-                        className="grid grid-cols-[140px_110px_1fr_130px_110px_70px] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center"
-                      >
-                        {/* Order ID */}
-                        <span className="text-sm font-semibold text-[#E8420A] cursor-pointer hover:underline">
-                          {tx.id}
-                        </span>
-
-                        {/* Date */}
-                        <span className="text-sm text-gray-600">{tx.date}</span>
-
-                        {/* Total */}
-                        <span className="text-sm font-semibold text-gray-800">
-                          {tx.total.toLocaleString('vi-VN')} đ
-                        </span>
-
-                        {/* Payment */}
-                        <span className="text-sm text-gray-700">{tx.payment}</span>
-
-                        {/* Status */}
-                        <span className={`inline-flex items-center px-3 py-1 rounded text-xs font-semibold w-fit ${st.bg} ${st.text}`}>
-                          {tx.status}
-                        </span>
-
-                        {/* Action */}
-                        <button className="p-1.5 text-gray-400 hover:text-[#E8420A] hover:bg-orange-50 rounded transition-colors cursor-pointer">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        </button>
-                      </div>
-                    )
-                  })}
-
-                  {/* Pagination */}
-                  <div className="px-5 py-4 flex items-center justify-between border-t border-gray-100">
-                    <span className="text-sm text-gray-500">Showing 1 to 3 of 42 entries</span>
-                    <div className="flex items-center gap-1">
-                      <button className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                      {[1, 2, 3].map((n) => (
-                        <button
-                          key={n}
-                          onClick={() => setPage(n)}
-                          className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium cursor-pointer transition-colors ${
-                            page === n ? 'bg-[#E8420A] text-white' : 'text-gray-600 hover:bg-gray-100'
-                          }`}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                      <button className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
+                  {customer.recentOrders.length === 0 ? (
+                    <div className="px-5 py-16 text-center text-sm text-gray-400">
+                      Khách hàng chưa có đơn hàng nào.
                     </div>
-                  </div>
+                  ) : (
+                    customer.recentOrders.map((order) => {
+                      const st = STATUS_DISPLAY[order.orderStatus] || { label: order.orderStatus, bg: 'bg-gray-100', text: 'text-gray-500' }
+                      return (
+                        <div
+                          key={order.id}
+                          className="grid grid-cols-[140px_110px_1fr_130px_130px] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center"
+                        >
+                          <span className="text-sm font-mono font-semibold text-gray-700">
+                            {order.id.substring(0, 10).toUpperCase()}
+                          </span>
+                          <span className="text-sm text-gray-600">{fmtDate(order.orderDate)}</span>
+                          <span className="text-sm font-semibold text-gray-800">{fmtMoney(order.total)}</span>
+                          <span className="text-sm text-gray-700">{order.paymentMethod || 'N/A'}</span>
+                          <span className={`inline-flex items-center px-3 py-1 rounded text-xs font-semibold w-fit ${st.bg} ${st.text}`}>
+                            {st.label}
+                          </span>
+                        </div>
+                      )
+                    })
+                  )}
                 </>
               )}
 
-              {activeTab !== 'Transaction History' && (
+              {activeTab !== 'Lịch sử giao dịch' && (
                 <div className="px-5 py-16 text-center text-sm text-gray-400">
                   Không có dữ liệu để hiển thị.
                 </div>

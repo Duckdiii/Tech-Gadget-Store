@@ -111,4 +111,32 @@ public interface OrderRepository extends JpaRepository<Order, String> {
                         "AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED " +
                         "AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.REFUNDED")
         long countActiveOrdersByDateRange(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+        // Batch per-customer order count for the manager customer list/detail — "active" meaning
+        // not cancelled/refunded, same convention as countActiveOrdersByDateRange above.
+        @Query("SELECT o.customer.id, COUNT(DISTINCT o.id) FROM Order o WHERE o.customer.id IN :customerIds " +
+                        "AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED " +
+                        "AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.REFUNDED " +
+                        "GROUP BY o.customer.id")
+        List<Object[]> countActiveOrdersForCustomerIds(@Param("customerIds") List<String> customerIds);
+
+        // Batch per-customer completed spend for the manager customer list — COMPLETED only,
+        // same convention as sumSpentByCustomerIdAndStatus (money actually received, not pending).
+        @Query("SELECT o.customer.id, COALESCE(SUM(i.unitPriceAtOrder * i.quantity), 0) FROM Order o JOIN o.items i " +
+                        "WHERE o.customer.id IN :customerIds " +
+                        "AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED " +
+                        "GROUP BY o.customer.id")
+        List<Object[]> sumCompletedSpendForCustomerIds(@Param("customerIds") List<String> customerIds);
+
+        // Customers with 2+ completed orders — used to compute the "retention rate" KPI on the
+        // Customer Management page (repeat customers / total customers).
+        @Query("SELECT o.customer.id FROM Order o " +
+                        "WHERE o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED " +
+                        "GROUP BY o.customer.id HAVING COUNT(o.id) >= 2")
+        List<String> findRepeatCustomerIds();
+
+        // "Returns" stat card on the customer detail page.
+        @Query("SELECT COUNT(o) FROM Order o WHERE o.customer.id = :customerId " +
+                        "AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.REFUNDED")
+        long countRefundedOrdersByCustomerId(@Param("customerId") String customerId);
 }
