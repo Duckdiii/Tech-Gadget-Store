@@ -130,10 +130,9 @@ class ExportLogServiceTest {
                 when(variant.getStorageGb()).thenReturn(256);
                 when(variant.getColor()).thenReturn("Silver");
 
-                // mock return 3 available units (less than 5 requested)
-                when(productVariantRepository.findAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
-                                .thenReturn(List.of(mock(ProductVariant.class), mock(ProductVariant.class),
-                                                mock(ProductVariant.class)));
+                // mock 3 available units (less than 5 requested)
+                when(productVariantRepository.countAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
+                                .thenReturn(3L);
 
                 IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                                 () -> exportLogService.exportProducts(requestDto));
@@ -161,10 +160,8 @@ class ExportLogServiceTest {
                 when(variant.getStorageGb()).thenReturn(256);
                 when(variant.getColor()).thenReturn("Silver");
 
-                ProductVariant unit1 = mock(ProductVariant.class);
-                ProductVariant unit2 = mock(ProductVariant.class);
-                when(productVariantRepository.findAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
-                                .thenReturn(List.of(unit1, unit2));
+                when(productVariantRepository.countAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
+                                .thenReturn(2L);
 
                 when(exportLogRepository.save(any(ExportLog.class))).thenAnswer(inv -> {
                         ExportLog el = inv.getArgument(0);
@@ -223,9 +220,8 @@ class ExportLogServiceTest {
                 when(variant.getStorageGb()).thenReturn(256);
                 when(variant.getColor()).thenReturn("Silver");
 
-                ProductVariant unit1 = mock(ProductVariant.class);
-                when(productVariantRepository.findAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
-                                .thenReturn(List.of(unit1));
+                when(productVariantRepository.countAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
+                                .thenReturn(1L);
 
                 when(exportLogRepository.save(any(ExportLog.class))).thenAnswer(inv -> {
                         ExportLog el = inv.getArgument(0);
@@ -283,9 +279,8 @@ class ExportLogServiceTest {
                 when(variant.getStorageGb()).thenReturn(256);
                 when(variant.getColor()).thenReturn("Silver");
 
-                ProductVariant unit1 = mock(ProductVariant.class);
-                when(productVariantRepository.findAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
-                                .thenReturn(List.of(unit1));
+                when(productVariantRepository.countAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
+                                .thenReturn(1L);
 
                 when(exportLogRepository.save(any(ExportLog.class))).thenAnswer(inv -> {
                         ExportLog el = inv.getArgument(0);
@@ -337,9 +332,8 @@ class ExportLogServiceTest {
                 when(variant.getStorageGb()).thenReturn(256);
                 when(variant.getColor()).thenReturn("Silver");
 
-                ProductVariant unit1 = mock(ProductVariant.class);
-                when(productVariantRepository.findAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
-                                .thenReturn(List.of(unit1));
+                when(productVariantRepository.countAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
+                                .thenReturn(1L);
 
                 when(exportLogRepository.save(any(ExportLog.class))).thenAnswer(inv -> {
                         ExportLog el = inv.getArgument(0);
@@ -391,9 +385,8 @@ class ExportLogServiceTest {
                 when(variant.getStorageGb()).thenReturn(256);
                 when(variant.getColor()).thenReturn("Silver");
 
-                ProductVariant unit1 = mock(ProductVariant.class);
-                when(productVariantRepository.findAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
-                                .thenReturn(List.of(unit1));
+                when(productVariantRepository.countAvailablePhysicalUnits("product-id", 8, 256, "Silver"))
+                                .thenReturn(1L);
 
                 when(exportLogRepository.save(any(ExportLog.class))).thenAnswer(inv -> {
                         ExportLog el = inv.getArgument(0);

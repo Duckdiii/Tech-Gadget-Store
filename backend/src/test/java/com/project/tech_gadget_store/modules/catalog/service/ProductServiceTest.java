@@ -16,6 +16,7 @@ import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRe
 import com.project.tech_gadget_store.modules.loyalty.entity.Promotion;
 import com.project.tech_gadget_store.modules.loyalty.repository.BundleServiceRepository;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
+import com.project.tech_gadget_store.modules.review.repository.ReviewRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -56,6 +57,9 @@ class ProductServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Mock
+    private ReviewRepository reviewRepository;
 
     @InjectMocks
     private ProductService productService;
@@ -114,7 +118,7 @@ class ProductServiceTest {
         when(productRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
         when(productVariantRepository.findByProductId("prod-1")).thenReturn(List.of());
         when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
-        when(productMapper.toProductResponseDto(eq(product), any(), anyInt())).thenReturn(mapped);
+        when(productMapper.toProductResponseDto(eq(product), any(), anyInt(), any(), any(), anyLong())).thenReturn(mapped);
 
         ProductFilterRequestDto filter = ProductFilterRequestDto.builder().page(0).size(20).build();
         ProductPageResponseDto result = productService.findProductsByFilter(filter);
@@ -146,7 +150,7 @@ class ProductServiceTest {
                 .thenReturn(new PageImpl<>(List.of(product)));
         when(productVariantRepository.findByProductId("prod-1")).thenReturn(List.of());
         when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
-        when(productMapper.toProductResponseDto(eq(product), any(), anyInt())).thenReturn(mapped);
+        when(productMapper.toProductResponseDto(eq(product), any(), anyInt(), any(), any(), anyLong())).thenReturn(mapped);
 
         ProductFilterRequestDto filter = ProductFilterRequestDto.builder()
                 .keyword("iphone").sort("price_asc").page(0).size(20).build();

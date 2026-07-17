@@ -97,8 +97,7 @@ class CartServiceTest {
         when(variant.getStorageGb()).thenReturn(256);
         when(variant.getColor()).thenReturn("Black");
 
-        List<ProductVariant> available = List.of(mock(ProductVariant.class), mock(ProductVariant.class));
-        when(productVariantRepository.findAvailablePhysicalUnits("prod-1", 8, 256, "Black")).thenReturn(available);
+        when(productVariantRepository.countAvailablePhysicalUnits("prod-1", 8, 256, "Black")).thenReturn(5L);
 
         when(cart.getItems()).thenReturn(new ArrayList<>());
         when(cart.getId()).thenReturn("cart-123");
@@ -133,8 +132,7 @@ class CartServiceTest {
         when(variant.getStorageGb()).thenReturn(256);
         when(variant.getColor()).thenReturn("Black");
 
-        List<ProductVariant> available = List.of(mock(ProductVariant.class), mock(ProductVariant.class));
-        when(productVariantRepository.findAvailablePhysicalUnits("prod-1", 8, 256, "Black")).thenReturn(available);
+        when(productVariantRepository.countAvailablePhysicalUnits("prod-1", 8, 256, "Black")).thenReturn(1L);
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
                 cartService.addToCart(req, email));
@@ -163,8 +161,7 @@ class CartServiceTest {
         when(variant.getStorageGb()).thenReturn(256);
         when(variant.getColor()).thenReturn("Black");
 
-        List<ProductVariant> available = List.of(mock(ProductVariant.class), mock(ProductVariant.class));
-        when(productVariantRepository.findAvailablePhysicalUnits("prod-1", 8, 256, "Black")).thenReturn(available);
+        when(productVariantRepository.countAvailablePhysicalUnits("prod-1", 8, 256, "Black")).thenReturn(5L);
 
         when(cart.getId()).thenReturn("cart-123");
         when(cart.calculateTotal()).thenReturn(BigDecimal.ZERO);
