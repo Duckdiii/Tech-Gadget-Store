@@ -40,6 +40,7 @@ public class CartService {
         this.cartMapper = cartMapper;
     }
 
+    @Transactional
     public CartDetailResponseDto getCart(String customerEmail) {
         Customer customer = customerRepository.findByAccountEmail(customerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with email: " + customerEmail));
@@ -59,8 +60,8 @@ public class CartService {
         ProductVariant referenceVariant = productVariantRepository.findById(req.getProductVariantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product variant not found: " + req.getProductVariantId()));
 
-        // Check selected product's availability (available physical units)
-        List<ProductVariant> availableUnits = productVariantRepository.findAvailablePhysicalUnits(
+        // Check selected product's availability (count IN_STOCK serials for this exact variant spec)
+        long availableCount = productVariantRepository.countAvailablePhysicalUnits(
                 referenceVariant.getProduct().getId(),
                 referenceVariant.getRamGb(),
                 referenceVariant.getStorageGb(),
@@ -77,7 +78,7 @@ public class CartService {
         int totalRequestedQuantity = existingQuantity + req.getQuantity();
 
         // Exception Flow 2a: Product is out of stock
-        if (availableUnits.size() < totalRequestedQuantity) {
+        if (availableCount < totalRequestedQuantity) {
             throw new IllegalArgumentException("This product is currently out of stock.");
         }
 
@@ -125,15 +126,15 @@ public class CartService {
 
         ProductVariant referenceVariant = cartItem.getProductVariant();
 
-        // Check stock availability
-        List<ProductVariant> availableUnits = productVariantRepository.findAvailablePhysicalUnits(
+        // Check stock availability (count IN_STOCK serials for this exact variant spec)
+        long availableCount = productVariantRepository.countAvailablePhysicalUnits(
                 referenceVariant.getProduct().getId(),
                 referenceVariant.getRamGb(),
                 referenceVariant.getStorageGb(),
                 referenceVariant.getColor()
         );
 
-        if (availableUnits.size() < quantity) {
+        if (availableCount < quantity) {
             throw new IllegalArgumentException("This product is currently out of stock.");
         }
 

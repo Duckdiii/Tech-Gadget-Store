@@ -106,12 +106,12 @@ public class CheckoutFacade {
 
         // Validate stock availability
         for (CartItem item : matchedItems) {
-            List<ProductVariant> availableUnits = productVariantRepository.findAvailablePhysicalUnits(
+            long availableCount = productVariantRepository.countAvailablePhysicalUnits(
                     item.getProductVariant().getProduct().getId(),
                     item.getProductVariant().getRamGb(),
                     item.getProductVariant().getStorageGb(),
                     item.getProductVariant().getColor());
-            if (availableUnits.size() < item.getQuantity()) {
+            if (availableCount < item.getQuantity()) {
                 throw new IllegalArgumentException(
                         "Some items in your cart are no longer available. Please remove or update them to continue.");
             }
@@ -169,12 +169,12 @@ public class CheckoutFacade {
 
         try {
             for (CartItem cartItem : matchedItems) {
-                List<ProductVariant> availableUnits = productVariantRepository.findAvailablePhysicalUnits(
+                long availableCount = productVariantRepository.countAvailablePhysicalUnits(
                         cartItem.getProductVariant().getProduct().getId(),
                         cartItem.getProductVariant().getRamGb(),
                         cartItem.getProductVariant().getStorageGb(),
                         cartItem.getProductVariant().getColor());
-                if (availableUnits.size() < cartItem.getQuantity()) {
+                if (availableCount < cartItem.getQuantity()) {
                     throw new IllegalStateException("Sản phẩm không đủ số lượng");
                 }
 

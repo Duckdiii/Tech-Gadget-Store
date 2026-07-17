@@ -100,13 +100,13 @@ public class ExportLogService {
                 ProductVariant referenceVariant = productVariantRepository.findById(itemDto.getProductVariantId())
                         .orElseThrow(() -> new ResourceNotFoundException("Product variant not found"));
 
-                List<ProductVariant> availableUnits = productVariantRepository.findAvailablePhysicalUnits(
+                long availableCount = productVariantRepository.countAvailablePhysicalUnits(
                         referenceVariant.getProduct().getId(),
                         referenceVariant.getRamGb(),
                         referenceVariant.getStorageGb(),
                         referenceVariant.getColor());
 
-                if (availableUnits.size() < itemDto.getQuantity()) {
+                if (availableCount < itemDto.getQuantity()) {
                     throw new IllegalArgumentException("Insufficient product quantity in inventory");
                 }
 

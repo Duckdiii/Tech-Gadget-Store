@@ -29,4 +29,6 @@ public class ProductResponseDto {
     private String specSummary;
     private Double averageRating;
     private Integer reviewCount;
+    /** Tổng số serial vật lí có trạng thái IN_STOCK của sản phẩm này. */
+    private long availableCount;
 }

@@ -5,6 +5,18 @@ const axiosClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  paramsSerializer: (params) => {
+    const searchParams = new URLSearchParams()
+    for (const key in params) {
+      if (params[key] === undefined || params[key] === null) continue
+      if (Array.isArray(params[key])) {
+        params[key].forEach(val => searchParams.append(key, val))
+      } else {
+        searchParams.append(key, params[key])
+      }
+    }
+    return searchParams.toString()
+  }
 })
 
 // Request Interceptor to inject JWT token

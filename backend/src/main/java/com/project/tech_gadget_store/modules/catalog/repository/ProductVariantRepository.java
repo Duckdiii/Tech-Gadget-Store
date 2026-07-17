@@ -39,15 +39,52 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
         @Query("SELECT CASE WHEN COUNT(soi) > 0 THEN true ELSE false END FROM SupplyOrderItem soi WHERE soi.product.id = :variantId")
         boolean existsInSupplyOrderItems(@Param("variantId") String variantId);
 
-        @Query("SELECT pv FROM ProductSerial ps JOIN ps.productVariant pv " +
-                        "WHERE pv.product.id = :productId " +
-                        "  AND (pv.ramGb = :ramGb OR (pv.ramGb IS NULL AND :ramGb IS NULL)) " +
-                        "  AND (pv.storageGb = :storageGb OR (pv.storageGb IS NULL AND :storageGb IS NULL)) " +
-                        "  AND (pv.color = :color OR (pv.color IS NULL AND :color IS NULL)) " +
+        @Query("SELECT COUNT(ps) FROM ProductSerial ps " +
+                        "WHERE ps.productVariant.id = :variantId " +
                         "  AND ps.status = com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus.IN_STOCK")
-        List<ProductVariant> findAvailablePhysicalUnits(
-                        @Param("productId") String productId, @Param("ramGb") Integer ramGb,
-                        @Param("storageGb") Integer storageGb, @Param("color") String color);
+        long countAvailablePhysicalUnitsByVariantId(@Param("variantId") String variantId);
+
+        default long countAvailablePhysicalUnits(
+                        String productId, Integer ramGb,
+                        Integer storageGb, String color) {
+                List<ProductVariant> allVariants = findByProductId(productId);
+                ProductVariant matched = allVariants.stream()
+                                .filter(v -> java.util.Objects.equals(v.getRamGb(), ramGb)
+                                                && java.util.Objects.equals(v.getStorageGb(), storageGb)
+                                                && (color == null ? v.getColor() == null : color.equalsIgnoreCase(v.getColor())))
+                                .findFirst()
+                                .orElse(null);
+                if (matched == null) {
+                        return 0L;
+                }
+                return countAvailablePhysicalUnitsByVariantId(matched.getId());
+        }
+
+        /** @deprecated Dùng {@link #countAvailablePhysicalUnits} để đếm số serial thực tế.
+         *  Query này chỉ trả về tối đa 1 ProductVariant dù có nhiều serial IN_STOCK. */
+        @Deprecated
+        @Query("SELECT pv FROM ProductSerial ps JOIN ps.productVariant pv " +
+                        "WHERE pv.id = :variantId " +
+                        "  AND ps.status = com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus.IN_STOCK")
+        List<ProductVariant> findAvailablePhysicalUnitsByVariantId(@Param("variantId") String variantId);
+
+        /** @deprecated Dùng {@link #countAvailablePhysicalUnits} để đếm số serial thực tế. */
+        @Deprecated
+        default List<ProductVariant> findAvailablePhysicalUnits(
+                        String productId, Integer ramGb,
+                        Integer storageGb, String color) {
+                List<ProductVariant> allVariants = findByProductId(productId);
+                ProductVariant matched = allVariants.stream()
+                                .filter(v -> java.util.Objects.equals(v.getRamGb(), ramGb)
+                                                && java.util.Objects.equals(v.getStorageGb(), storageGb)
+                                                && (color == null ? v.getColor() == null : color.equalsIgnoreCase(v.getColor())))
+                                .findFirst()
+                                .orElse(null);
+                if (matched == null) {
+                        return java.util.Collections.emptyList();
+                }
+                return findAvailablePhysicalUnitsByVariantId(matched.getId());
+        }
 
         @Query("SELECT COUNT(ps) FROM ProductSerial ps " +
                         "WHERE ps.productVariant.product.id = :productId " +

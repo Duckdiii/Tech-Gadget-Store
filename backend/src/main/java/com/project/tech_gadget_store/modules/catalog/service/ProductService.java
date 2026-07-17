@@ -87,6 +87,18 @@ public class ProductService {
         return stat != null ? (Integer) stat[1] : 0;
     }
 
+    /**
+     * Batch-load số lượng serial IN_STOCK theo productId để tránh N+1.
+     * Kết quả: [productId -> availableCount]
+     */
+    private Map<String, Long> fetchStockCounts(List<String> productIds) {
+        Map<String, Long> stockMap = new java.util.HashMap<>();
+        for (String pid : productIds) {
+            stockMap.put(pid, productVariantRepository.countAvailablePhysicalUnitsByProductId(pid));
+        }
+        return stockMap;
+    }
+
     /** Top-selling products (by total confirmed order quantity) — used for the homepage "Bán chạy" tab. */
     public List<ProductResponseDto> findBestsellingProducts(int limit) {
         List<Object[]> rows = orderRepository.findBestsellingProductIds(PageRequest.of(0, limit));
@@ -113,6 +125,7 @@ public class ProductService {
             salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
         }
         Map<String, Object[]> ratingMap = fetchRatingStats(pIds);
+        Map<String, Long> stockMap = fetchStockCounts(pIds);
 
         return products.stream()
                 .map(p -> productMapper.toProductResponseDto(
@@ -120,7 +133,8 @@ public class ProductService {
                         productVariantRepository.findByProductId(p.getId()),
                         salesCountMap.getOrDefault(p.getId(), 0),
                         ratingOf(ratingMap, p.getId()),
-                        reviewCountOf(ratingMap, p.getId())))
+                        reviewCountOf(ratingMap, p.getId()),
+                        stockMap.getOrDefault(p.getId(), 0L)))
                 .toList();
     }
 
@@ -274,6 +288,7 @@ public class ProductService {
             salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
         }
         Map<String, Object[]> ratingMap = fetchRatingStats(productIds);
+        Map<String, Long> stockMap = fetchStockCounts(productIds);
 
         List<ProductResponseDto> items = products.stream()
                 .map(product -> productMapper.toProductResponseDto(
@@ -281,7 +296,8 @@ public class ProductService {
                         productVariantRepository.findByProductId(product.getId()),
                         salesCountMap.getOrDefault(product.getId(), 0),
                         ratingOf(ratingMap, product.getId()),
-                        reviewCountOf(ratingMap, product.getId())))
+                        reviewCountOf(ratingMap, product.getId()),
+                        stockMap.getOrDefault(product.getId(), 0L)))
                 .toList();
 
         return ProductPageResponseDto.builder()

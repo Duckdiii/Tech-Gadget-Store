@@ -87,6 +87,15 @@ public class RecommendationService {
         return stat != null ? (Integer) stat[1] : 0;
     }
 
+    /** Batch-load số lượng serial IN_STOCK theo productId. Kết quả: [productId -> availableCount] */
+    private Map<String, Long> fetchStockCounts(List<String> productIds) {
+        Map<String, Long> stockMap = new java.util.HashMap<>();
+        for (String pid : productIds) {
+            stockMap.put(pid, productVariantRepository.countAvailablePhysicalUnitsByProductId(pid));
+        }
+        return stockMap;
+    }
+
     /**
      * Get a list of similar products based on the content-based recommendation algorithm (Product level).
      *
@@ -200,6 +209,7 @@ public class RecommendationService {
             salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
         }
         Map<String, Object[]> ratingMap = fetchRatingStats(topIds);
+        Map<String, Long> stockMap = fetchStockCounts(topIds);
 
         return topScored.stream()
                 .map(sp -> productMapper.toProductResponseDto(
@@ -207,7 +217,8 @@ public class RecommendationService {
                         sp.variants,
                         salesCountMap.getOrDefault(sp.product.getId(), 0),
                         ratingOf(ratingMap, sp.product.getId()),
-                        reviewCountOf(ratingMap, sp.product.getId())))
+                        reviewCountOf(ratingMap, sp.product.getId()),
+                        stockMap.getOrDefault(sp.product.getId(), 0L)))
                 .toList();
     }
 
@@ -451,12 +462,14 @@ public class RecommendationService {
             salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
         }
         Map<String, Object[]> ratingMap = fetchRatingStats(productIds);
+        Map<String, Long> stockMap = fetchStockCounts(productIds);
 
         List<ProductResponseDto> result = new ArrayList<>();
         for (Product p : products) {
             List<ProductVariant> pVariants = variantsByProductId.getOrDefault(p.getId(), Collections.emptyList());
             result.add(productMapper.toProductResponseDto(p, pVariants, salesCountMap.getOrDefault(p.getId(), 0),
-                    ratingOf(ratingMap, p.getId()), reviewCountOf(ratingMap, p.getId())));
+                    ratingOf(ratingMap, p.getId()), reviewCountOf(ratingMap, p.getId()),
+                    stockMap.getOrDefault(p.getId(), 0L)));
         }
         return result;
     }

@@ -6,8 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+
 @SpringBootApplication
 @EnableAsync
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 public class TechGadgetStoreApplication {
 
 	public static void main(String[] args) {

@@ -27,8 +27,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductMapper {
 
+        public ProductResponseDto toProductResponseDto(Product product, List<ProductVariant> variants, Integer salesCount) {
+                return toProductResponseDto(product, variants, salesCount, null, null, 0L);
+        }
+
         public ProductResponseDto toProductResponseDto(Product product, List<ProductVariant> variants, Integer salesCount,
                         Double averageRating, Integer reviewCount) {
+                return toProductResponseDto(product, variants, salesCount, averageRating, reviewCount, 0L);
+        }
+
+        public ProductResponseDto toProductResponseDto(Product product, List<ProductVariant> variants, Integer salesCount,
+                        Double averageRating, Integer reviewCount, long availableCount) {
                 ProductVariant first = variants.isEmpty() ? null : variants.get(0);
 
                 BigDecimal minPrice = variants.stream()
@@ -60,6 +69,7 @@ public class ProductMapper {
                                 .specSummary(buildSpecSummary(product, variants))
                                 .averageRating(averageRating)
                                 .reviewCount(reviewCount)
+                                .availableCount(availableCount)
                                 .build();
         }
 

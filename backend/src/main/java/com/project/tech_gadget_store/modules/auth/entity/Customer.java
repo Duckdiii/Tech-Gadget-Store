@@ -23,7 +23,7 @@ public class Customer extends User {
     @JoinColumn(name = "membership_id", nullable = false)
     private Membership membership;
 
-    @OneToOne(mappedBy = "customer", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private Cart cart;
 
     // Loại cổng thanh toán khách chọn làm mặc định cho lần thanh toán sau (vd. "MOMO"/"VNPAY"/"COD").
