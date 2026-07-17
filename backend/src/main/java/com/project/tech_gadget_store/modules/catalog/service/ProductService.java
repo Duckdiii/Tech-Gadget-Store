@@ -88,13 +88,17 @@ public class ProductService {
     }
 
     /**
-     * Batch-load số lượng serial IN_STOCK theo productId để tránh N+1.
+     * Batch-load số lượng serial IN_STOCK theo productId — 1 query duy nhất thay vì N query.
      * Kết quả: [productId -> availableCount]
      */
     private Map<String, Long> fetchStockCounts(List<String> productIds) {
+        if (productIds == null || productIds.isEmpty()) return Map.of();
         Map<String, Long> stockMap = new java.util.HashMap<>();
-        for (String pid : productIds) {
-            stockMap.put(pid, productVariantRepository.countAvailablePhysicalUnitsByProductId(pid));
+        // Khởi tạo mặc định 0 cho tất cả productId (phòng trường hợp không có serial nào)
+        for (String pid : productIds) stockMap.put(pid, 0L);
+        // 1 query GROUP BY duy nhất thay vì N query riêng lẻ
+        for (Object[] row : productVariantRepository.countAvailablePhysicalUnitsByProductIds(productIds)) {
+            stockMap.put((String) row[0], ((Number) row[1]).longValue());
         }
         return stockMap;
     }

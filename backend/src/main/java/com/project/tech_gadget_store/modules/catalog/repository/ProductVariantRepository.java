@@ -101,4 +101,15 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
                         "HAVING COALESCE(SUM(CASE WHEN ps.status = com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus.IN_STOCK THEN 1L ELSE 0L END), 0L) <= :threshold " +
                         "ORDER BY 2 ASC")
         List<Object[]> findLowStockProductIdsAndCounts(@Param("threshold") long threshold);
+
+        /**
+         * Batch-count IN_STOCK serials grouped by productId in ONE single query.
+         * Trả về [[productId, count], ...] — dùng để tránh N+1 khi load danh sách sản phẩm.
+         */
+        @Query("SELECT pv.product.id, COALESCE(SUM(CASE WHEN ps.status = " +
+                        "com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus.IN_STOCK THEN 1L ELSE 0L END), 0L) " +
+                        "FROM ProductVariant pv LEFT JOIN ProductSerial ps ON ps.productVariant = pv " +
+                        "WHERE pv.product.id IN :productIds " +
+                        "GROUP BY pv.product.id")
+        List<Object[]> countAvailablePhysicalUnitsByProductIds(@Param("productIds") List<String> productIds);
 }

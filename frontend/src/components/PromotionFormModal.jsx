@@ -46,7 +46,11 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
     }
     setLoadingProducts(true)
     getProductsForPromotion()
-      .then((res) => setProducts(res?.content ?? []))
+      // GET /api/products returns a ProductPageResponseDto shaped { items, page, size,
+      // totalItems, totalPages } — not { content }. With the wrong key this always resolved
+      // to [], leaving the product checklist permanently empty and making it impossible to
+      // create/edit a promotion (the form requires >=1 selected product to submit).
+      .then((res) => setProducts(res?.items ?? []))
       .catch(() => setProducts([]))
       .finally(() => setLoadingProducts(false))
   }, [isOpen, initialData, isEdit])
