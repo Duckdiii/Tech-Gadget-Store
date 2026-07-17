@@ -17,6 +17,108 @@ const FEATURED_TAB_PARAMS = {
   sale: { onPromotion: true },
 }
 
+// Line-icon + gradient per category, used on the homepage category tiles whenever a category
+// has no real photo yet (managers can still set a real imageUrl via Brand/Category settings —
+// the seeded placehold.co URL is treated as "no photo" so these icons show instead).
+const CATEGORY_VISUALS = [
+  {
+    keys: ['điện thoại', 'phone'],
+    gradient: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="7" y="2" width="10" height="20" rx="2.5" />
+        <path strokeLinecap="round" d="M11 18h2" />
+      </svg>
+    ),
+  },
+  {
+    keys: ['laptop'],
+    gradient: 'linear-gradient(135deg, #6366f1, #4338ca)',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="4" y="4" width="16" height="11" rx="1.5" />
+        <path strokeLinecap="round" d="M2 19h20" />
+      </svg>
+    ),
+  },
+  {
+    keys: ['màn hình', 'monitor'],
+    gradient: 'linear-gradient(135deg, #06b6d4, #0e7490)',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="3" y="4" width="18" height="12" rx="1.5" />
+        <path strokeLinecap="round" d="M8 20h8M12 16v4" />
+      </svg>
+    ),
+  },
+  {
+    keys: ['tai nghe', 'headphone'],
+    gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path strokeLinecap="round" d="M4 14v-2a8 8 0 0116 0v2" />
+        <rect x="2.5" y="14" width="4" height="6" rx="1.5" />
+        <rect x="17.5" y="14" width="4" height="6" rx="1.5" />
+      </svg>
+    ),
+  },
+  {
+    keys: ['smartwatch', 'đồng hồ'],
+    gradient: 'linear-gradient(135deg, #10b981, #047857)',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="7" y="7" width="10" height="10" rx="2.5" />
+        <path strokeLinecap="round" d="M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M9 17v3a1 1 0 001 1h4a1 1 0 001-1v-3" />
+      </svg>
+    ),
+  },
+  {
+    keys: ['máy tính bảng', 'tablet'],
+    gradient: 'linear-gradient(135deg, #f59e0b, #b45309)',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="4" y="3" width="16" height="18" rx="2.5" />
+        <path strokeLinecap="round" d="M11 18h2" />
+      </svg>
+    ),
+  },
+  {
+    keys: ['loa', 'speaker'],
+    gradient: 'linear-gradient(135deg, #f97316, #c2410c)',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="6" y="2" width="12" height="20" rx="2.5" />
+        <circle cx="12" cy="8" r="1.6" />
+        <circle cx="12" cy="15" r="3.2" />
+      </svg>
+    ),
+  },
+  {
+    keys: ['phụ kiện', 'accessory'],
+    gradient: 'linear-gradient(135deg, #64748b, #334155)',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v4M15 3v4M7 7h10l-1 5a4 4 0 01-8 0L7 7zM12 16v5" />
+      </svg>
+    ),
+  },
+]
+
+const DEFAULT_CATEGORY_VISUAL = {
+  gradient: 'linear-gradient(135deg, #f97316, #ea580c)',
+  icon: (
+    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8" />
+    </svg>
+  ),
+}
+
+const getCategoryVisual = (name) => {
+  const lower = (name || '').toLowerCase()
+  const match = CATEGORY_VISUALS.find(v => v.keys.some(k => lower.includes(k)))
+  return match || DEFAULT_CATEGORY_VISUAL
+}
+
 const avatarInitials = (name) => (name || '?').trim().split(/\s+/).slice(-2).map(w => w[0]).join('').toUpperCase()
 
 const timeAgo = (dateStr) => {
@@ -457,28 +559,23 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {catalogCategories.map(cat => {
-              const iconMap = {
-                'điện thoại': '📱', 'phone': '📱',
-                'laptop': '💻',
-                'màn hình': '🖥️', 'monitor': '🖥️',
-                'tai nghe': '🎧', 'headphone': '🎧',
-                'smartwatch': '⌚', 'đồng hồ': '⌚',
-                'máy tính bảng': '📟', 'tablet': '📟',
-                'phụ kiện': '🔌', 'accessory': '🔌',
-                'loa': '🔊', 'speaker': '🔊',
-              }
-              const key = Object.keys(iconMap).find(k => cat.name.toLowerCase().includes(k))
-              const icon = key ? iconMap[key] : '📦'
+              const hasRealPhoto = cat.imageUrl && !cat.imageUrl.includes('placehold.co')
+              const visual = getCategoryVisual(cat.name)
               return (
                 <button
                   key={cat.id}
                   onClick={() => onNavigate('list', { state: { categoryName: cat.name } })}
                   className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-gray-100 bg-white hover:border-orange-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
                 >
-                  {cat.imageUrl ? (
-                    <img src={cat.imageUrl} alt={cat.name} className="w-12 h-12 object-contain group-hover:scale-110 transition-transform" />
+                  {hasRealPhoto ? (
+                    <img src={cat.imageUrl} alt={cat.name} className="w-12 h-12 rounded-xl object-cover group-hover:scale-110 transition-transform" />
                   ) : (
-                    <span className="text-3xl group-hover:scale-110 transition-transform">{icon}</span>
+                    <span
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm group-hover:scale-110 transition-transform"
+                      style={{ background: visual.gradient }}
+                    >
+                      {visual.icon}
+                    </span>
                   )}
                   <span className="text-[12.5px] font-bold text-gray-700 group-hover:text-orange-600 transition-colors text-center leading-tight">
                     {cat.name}

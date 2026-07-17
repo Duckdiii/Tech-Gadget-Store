@@ -17,6 +17,12 @@ export function useProductDetail() {
   const [selectedColor, setSelectedColor] = useState(null)
   const [selectedVariant, setSelectedVariant] = useState(null)
   const [adding, setAdding] = useState(false)
+  const [toast, setToast] = useState('')
+
+  const showToast = (msg) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 2200)
+  }
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -59,7 +65,7 @@ export function useProductDetail() {
     setAdding(true)
     try {
       await shopService.addCartItem(selectedVariant.id, 1)
-      onNavigate('cart')
+      showToast('Đã thêm vào giỏ hàng')
     } catch (e) {
       alert('Lỗi thêm vào giỏ hàng: ' + e.message)
     } finally {
@@ -79,6 +85,7 @@ export function useProductDetail() {
     setSelectedColor,
     selectedVariant,
     adding,
+    toast,
     handleAddToCart,
     onNavigate,
   }
