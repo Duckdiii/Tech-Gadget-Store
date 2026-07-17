@@ -441,7 +441,7 @@ export default function ManagerDashboardPage() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {kpiCards.map((card) => {
             const c = COLOR_MAP[card.color]
             return (
