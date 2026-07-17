@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNav } from '../../../hooks/useNav'
 import { useLowStockProducts } from '../../../hooks/useLowStockProducts'
 import { useAuth } from '../../../context/useAuth'
 import { useManagerDashboard } from '../hooks/useManagerDashboard'
 import { useHeaderNotifications } from '../hooks/useHeaderNotifications'
 import RevenueChart from '../components/RevenueChart'
+import axiosClient from '../../../config/axiosClient'
+import { managerUsersService } from '../../manager-users/services/managerUsersService'
 
 /* ── Static presentation data (icons/colors — not business data) ── */
 const COLOR_MAP = {
@@ -183,6 +185,78 @@ export default function ManagerDashboardPage() {
   const [notifOpen, setNotifOpen] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
 
+  const [commandMenuOpen, setCommandMenuOpen] = useState(false)
+  const [cmdSearch, setCmdSearch] = useState('')
+  const [searchResults, setSearchResults] = useState({ products: [], customers: [], navs: [] })
+  const [searchLoading, setSearchLoading] = useState(false)
+  const commandInputRef = useRef(null)
+
+  // Listen for Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
+        setCommandMenuOpen(o => !o)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // Auto-focus command palette input when opened
+  useEffect(() => {
+    if (commandMenuOpen && commandInputRef.current) {
+      setTimeout(() => {
+        commandInputRef.current.focus()
+      }, 50)
+    } else {
+      setCmdSearch('')
+      setSearchResults({ products: [], customers: [], navs: [] })
+    }
+  }, [commandMenuOpen])
+
+  // Debounced global search
+  useEffect(() => {
+    if (!cmdSearch.trim()) {
+      setSearchResults({ products: [], customers: [], navs: [] })
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      setSearchLoading(true)
+      try {
+        const q = cmdSearch.trim()
+        
+        // 1. Filter local nav links
+        const matchedNavs = QUICK_ACTIONS.filter(act => 
+          act.label.toLowerCase().includes(q.toLowerCase()) || 
+          act.desc.toLowerCase().includes(q.toLowerCase())
+        )
+
+        // 2. Fetch products and customers in parallel
+        const [prodRes, custRes] = await Promise.allSettled([
+          axiosClient.get('/api/products/filter', { params: { keyword: q, size: 5 } }),
+          managerUsersService.getCustomers({ search: q, size: 5 })
+        ])
+
+        const products = prodRes.status === 'fulfilled' ? (prodRes.value.items || []) : []
+        const customers = custRes.status === 'fulfilled' ? (custRes.value.items || []) : []
+
+        setSearchResults({
+          navs: matchedNavs,
+          products,
+          customers
+        })
+      } catch (err) {
+        console.error('Failed to search globally:', err)
+      } finally {
+        setSearchLoading(false)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [cmdSearch])
+
   const now = new Date()
   const greeting =
     now.getHours() < 12 ? 'Chào buổi sáng' : now.getHours() < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'
@@ -253,18 +327,18 @@ export default function ManagerDashboardPage() {
       {/* Header */}
       <header className="relative bg-white border-b border-gray-100 px-8 py-3 flex items-center gap-4">
         <div className="flex-1 max-w-sm">
-          <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button
+            onClick={() => setCommandMenuOpen(true)}
+            className="w-full flex items-center gap-2.5 px-3 py-2 bg-gray-100 border-0 rounded text-sm text-gray-400 hover:bg-gray-200/50 transition-all text-left cursor-pointer focus:outline-none"
+          >
+            <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm đơn hàng gần đây theo mã hoặc khách hàng..."
-              className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
-            />
-          </div>
+            <span className="flex-1 truncate">Tìm kiếm nhanh hoặc điều hướng...</span>
+            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-bold text-gray-400 bg-white border border-gray-200 rounded shadow-sm">
+              Ctrl K
+            </kbd>
+          </button>
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
@@ -449,11 +523,23 @@ export default function ManagerDashboardPage() {
         <div className="grid grid-cols-[1fr_320px] gap-5">
           {/* Recent Orders */}
           <div className="bg-white rounded border border-gray-200">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-base font-semibold text-gray-800">Đơn hàng gần đây</h2>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 gap-4">
+              <h2 className="text-base font-semibold text-gray-800 shrink-0">Đơn hàng gần đây</h2>
+              <div className="flex-1 max-w-xs relative">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Lọc theo mã hoặc khách hàng..."
+                  className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-xs placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#E8420A] focus:border-[#E8420A]"
+                />
+              </div>
               <button
                 onClick={() => onNavigate('orderHistory')}
-                className="text-sm text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer"
+                className="text-sm text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer shrink-0"
               >
                 Xem tất cả →
               </button>
@@ -564,6 +650,171 @@ export default function ManagerDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Global Command Menu Dialog */}
+      {commandMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-start justify-center pt-[10%] px-4"
+          onClick={() => setCommandMenuOpen(false)}
+        >
+          <div
+            className="bg-white rounded-xl border border-gray-100 shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[420px]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Input Header */}
+            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-gray-100 bg-gray-50/50">
+              <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                ref={commandInputRef}
+                type="text"
+                value={cmdSearch}
+                onChange={(e) => setCmdSearch(e.target.value)}
+                placeholder="Tìm sản phẩm, khách hàng, chức năng..."
+                className="flex-1 bg-transparent border-0 outline-none text-gray-800 placeholder-gray-400 text-sm focus:ring-0 focus:outline-none"
+              />
+              <button
+                onClick={() => setCommandMenuOpen(false)}
+                className="text-[10px] font-bold text-gray-400 hover:text-gray-600 bg-white border border-gray-200 shadow-sm px-2 py-0.5 rounded cursor-pointer"
+              >
+                ESC
+              </button>
+            </div>
+
+            {/* Scrollable Results */}
+            <div className="flex-1 overflow-y-auto p-2 space-y-4">
+              {searchLoading && (
+                <div className="flex items-center justify-center py-8 text-xs text-gray-400 gap-2">
+                  <div className="animate-spin rounded-full h-4.5 w-4.5 border-b-2 border-[#E8420A]"></div>
+                  Đang tìm kiếm...
+                </div>
+              )}
+
+              {!searchLoading && !cmdSearch.trim() && (
+                <div className="space-y-1">
+                  <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Trang chức năng</p>
+                  {QUICK_ACTIONS.map((act) => {
+                    const c = QA_COLOR[act.color]
+                    return (
+                      <button
+                        key={act.id}
+                        onClick={() => {
+                          onNavigate(act.id)
+                          setCommandMenuOpen(false)
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-2 hover:bg-orange-50 hover:text-[#C4350A] rounded text-left text-xs font-semibold text-slate-700 transition-colors cursor-pointer group"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <span className={`w-5 h-5 flex items-center justify-center rounded text-white group-hover:${c.icon} transition-colors bg-slate-300`}>
+                            {act.icon}
+                          </span>
+                          <span>{act.label}</span>
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-normal group-hover:text-orange-600/80">{act.desc}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {!searchLoading && cmdSearch.trim() && (
+                <>
+                  {/* Matching Page Actions */}
+                  {searchResults.navs.length > 0 && (
+                    <div className="space-y-0.5">
+                      <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Trang chức năng</p>
+                      {searchResults.navs.map((act) => (
+                        <button
+                          key={act.id}
+                          onClick={() => {
+                            onNavigate(act.id)
+                            setCommandMenuOpen(false)
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 hover:bg-orange-50 hover:text-[#C4350A] rounded text-left text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <span className="w-4 h-4 text-gray-400 shrink-0">{act.icon}</span>
+                            <span>{act.label}</span>
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-normal">{act.desc}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Matching Products */}
+                  {searchResults.products.length > 0 && (
+                    <div className="space-y-0.5">
+                      <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sản phẩm</p>
+                      {searchResults.products.map((prod) => (
+                        <button
+                          key={prod.id}
+                          onClick={() => {
+                            onNavigate('productManagement', { state: { searchKey: prod.name } })
+                            setCommandMenuOpen(false)
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 hover:bg-orange-50 hover:text-[#C4350A] rounded text-left text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+                        >
+                          <span className="flex items-center gap-3 min-w-0">
+                            {prod.imageUrl ? (
+                              <img src={prod.imageUrl} alt="" className="w-5 h-5 object-contain shrink-0 rounded bg-gray-50 border border-gray-100" />
+                            ) : (
+                              <span className="w-5 h-5 bg-gray-100 border border-gray-200 rounded shrink-0 flex items-center justify-center text-[8px] text-gray-400">sp</span>
+                            )}
+                            <span className="truncate font-semibold">{prod.name}</span>
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                            {prod.brandName || 'Store'} · {prod.minPrice ? `${prod.minPrice.toLocaleString('vi-VN')} đ` : 'Nghiệp vụ'}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Matching Customers */}
+                  {searchResults.customers.length > 0 && (
+                    <div className="space-y-0.5">
+                      <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Khách hàng</p>
+                      {searchResults.customers.map((cust) => (
+                        <button
+                          key={cust.id}
+                          onClick={() => {
+                            onNavigate('customerDetail', { search: `?id=${cust.id}` })
+                            setCommandMenuOpen(false)
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 hover:bg-orange-50 hover:text-[#C4350A] rounded text-left text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2.5 min-w-0">
+                            <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold shrink-0">
+                              {cust.fullName ? cust.fullName.charAt(0).toUpperCase() : '?'}
+                            </span>
+                            <span className="truncate font-semibold">{cust.fullName || 'Ẩn danh'}</span>
+                          </span>
+                          <span className="text-[10px] text-slate-400 shrink-0">{cust.phone || cust.id.substring(0, 8)}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Empty Results */}
+                  {searchResults.navs.length === 0 && searchResults.products.length === 0 && searchResults.customers.length === 0 && (
+                    <div className="text-center py-10 text-xs text-gray-400">
+                      Không tìm thấy kết quả cho "{cmdSearch}"
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Footer tips */}
+            <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 flex justify-between">
+              <span>Mẹo: Tìm tên sản phẩm (vd: iPhone) hoặc khách hàng (vd: Test)</span>
+              <span>Đóng bằng phím ESC</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

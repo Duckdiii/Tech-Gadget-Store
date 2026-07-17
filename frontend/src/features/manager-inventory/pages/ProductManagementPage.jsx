@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { apiFetch } from '../../../services/api'
 
 function normalizeProduct(dto) {
@@ -38,12 +39,19 @@ function Field({ label, error, children }) {
 }
 
 export default function ProductManagementPage() {
+  const location = useLocation()
   const [products, setProducts]   = useState([])
   const [brands, setBrands]       = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState(null)
   const [search, setSearch]       = useState('')
+
+  useEffect(() => {
+    if (location.state?.searchKey) {
+      setSearch(location.state.searchKey)
+    }
+  }, [location.state])
 
   const [panel, setPanel]         = useState(null) // 'add' | 'edit' | null
   const [editingId, setEditingId] = useState(null)
