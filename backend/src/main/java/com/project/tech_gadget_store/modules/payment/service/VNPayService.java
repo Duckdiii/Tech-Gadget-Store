@@ -53,24 +53,22 @@ public class VNPayService {
         params.put("vnp_IpAddr", clientIp != null ? clientIp : "127.0.0.1");
         params.put("vnp_CreateDate", createDate);
 
-        // Build hash data: key=value (value KHÔNG encode) — theo spec VNPay
-        String hashData = params.entrySet().stream()
-                .map(e -> e.getKey() + "=" + e.getValue())
-                .collect(Collectors.joining("&"));
-
-        String secureHash = hmacSHA512(props.getHashSecret(), hashData);
-
-        // Build query string: value URL-encoded cho URL
+        // VNPay ký (và tự kiểm tra lại) trên chuỗi ĐÃ URL-encode từng key=value, không phải giá trị thô
+        // — dùng giá trị thô để tính hash trong khi URL lại chứa giá trị đã encode sẽ khiến hai bên
+        // tính ra chữ ký khác nhau, VNPay trả về lỗi "Sai chữ ký". Nên hash và query phải giống hệt nhau.
         String query = params.entrySet().stream()
                 .map(e -> urlEncode(e.getKey()) + "=" + urlEncode(e.getValue()))
                 .collect(Collectors.joining("&"));
+
+        String secureHash = hmacSHA512(props.getHashSecret(), query);
 
         return props.getPaymentUrl() + "?" + query + "&vnp_SecureHash=" + secureHash;
     }
 
     /**
      * Xác minh chữ ký VNPay từ return URL hoặc IPN.
-     * Spring MVC đã URL-decode các query params trước khi binding, nên dùng giá trị thô.
+     * Spring MVC đã URL-decode các query params trước khi binding, nhưng VNPay tính chữ ký trên
+     * giá trị ĐÃ encode (xem {@link #buildPaymentUrl}) — nên phải encode lại trước khi so khớp.
      */
     public boolean verifyReturnHash(Map<String, String> params) {
         String receivedHash = params.get("vnp_SecureHash");
@@ -83,7 +81,7 @@ public class VNPayService {
         paramsForHash.remove("vnp_SecureHashType");
 
         String hashData = paramsForHash.entrySet().stream()
-                .map(e -> e.getKey() + "=" + e.getValue())
+                .map(e -> urlEncode(e.getKey()) + "=" + urlEncode(e.getValue()))
                 .collect(Collectors.joining("&"));
 
         String expectedHash = hmacSHA512(props.getHashSecret(), hashData);
@@ -107,7 +105,8 @@ public class VNPayService {
         }
     }
 
+    /** VNPay dùng '+' cho khoảng trắng (giống chuẩn application/x-www-form-urlencoded của URLEncoder). */
     private String urlEncode(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 }

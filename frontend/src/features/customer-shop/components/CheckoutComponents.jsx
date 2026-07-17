@@ -104,9 +104,9 @@ export function OrderSummaryCard({ summary, onOrderSubmit, submitting }) {
   if (!summary) return null
 
   return (
-    <div className="sticky top-6 overflow-hidden text-white" style={{ backgroundColor: 'var(--ink)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
-      <div className="px-6 py-4.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <h2 className="text-[15px] font-extrabold uppercase tracking-wide" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>Tóm tắt đơn hàng</h2>
+    <div className="sticky top-6 overflow-hidden" style={{ backgroundColor: 'var(--ink)', borderRadius: '16px', border: '1px solid var(--b1)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+      <div className="px-6 py-4.5" style={{ borderBottom: '1px solid var(--b1)' }}>
+        <h2 className="text-[15px] font-extrabold uppercase tracking-wide" style={{ fontFamily: 'Be Vietnam Pro, sans-serif', color: 'var(--t1)' }}>Tóm tắt đơn hàng</h2>
       </div>
 
       <div className="p-6 space-y-4">
@@ -129,7 +129,7 @@ export function OrderSummaryCard({ summary, onOrderSubmit, submitting }) {
           <span className="font-bold" style={{ color: 'var(--ok)' }}>Miễn phí</span>
         </div>
 
-        <div style={{ borderTop: '1px dashed rgba(255,255,255,0.12)', margin: '6px 0' }} />
+        <div style={{ borderTop: '1px dashed var(--b2)', margin: '6px 0' }} />
 
         <div>
           <span className="text-xs font-semibold" style={{ color: 'var(--t2)' }}>Tổng thanh toán</span>

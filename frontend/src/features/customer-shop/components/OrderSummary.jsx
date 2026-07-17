@@ -11,12 +11,12 @@ export default function OrderSummary({ items }) {
   const total = subtotal + serviceFee
 
   return (
-    <div className="sticky top-6 overflow-hidden text-white" style={{ backgroundColor: 'var(--ink)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+    <div className="sticky top-6 overflow-hidden" style={{ backgroundColor: 'var(--ink)', borderRadius: '16px', border: '1px solid var(--b1)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
       {/* Header */}
-      <div className="px-6 py-4.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="px-6 py-4.5" style={{ borderBottom: '1px solid var(--b1)' }}>
         <div className="flex items-center gap-2">
           <div className="w-[3px] h-5" style={{ backgroundColor: 'var(--accent)' }} />
-          <h2 className="text-[15px] font-extrabold uppercase tracking-wide" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>Tổng quan đơn hàng</h2>
+          <h2 className="text-[15px] font-extrabold uppercase tracking-wide" style={{ fontFamily: 'Be Vietnam Pro, sans-serif', color: 'var(--t1)' }}>Tổng quan đơn hàng</h2>
         </div>
         <p className="text-[11px] mt-1" style={{ color: 'var(--t3)' }}>{totalQty} sản phẩm được chọn</p>
       </div>
@@ -43,7 +43,7 @@ export default function OrderSummary({ items }) {
           <span className="text-[12.5px] font-bold" style={{ color: 'var(--ok)' }}>Miễn phí</span>
         </div>
 
-        <div style={{ borderTop: '1px dashed rgba(255,255,255,0.12)', margin: '6px 0' }} />
+        <div style={{ borderTop: '1px dashed var(--b2)', margin: '6px 0' }} />
 
         <div>
           <div className="flex items-center justify-between mb-1">
