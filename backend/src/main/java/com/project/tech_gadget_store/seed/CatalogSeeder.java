@@ -72,6 +72,7 @@ public class CatalogSeeder implements CommandLineRunner {
                 }
 
                 Random descriptionRandom = new Random(CATALOG_RANDOM_SEED + 1);
+                Random specRandom = new Random(CATALOG_RANDOM_SEED + 2);
                 int productCount = 0;
                 int variantCount = 0;
                 for (CategorySpec categorySpec : categorySpecs()) {
@@ -79,16 +80,19 @@ public class CatalogSeeder implements CommandLineRunner {
                                         .save(new Category(categorySpec.name(), categorySpec.imageUrl()));
                         for (ProductSpec productSpec : categorySpec.products()) {
                                 Brand brand = brands.get(productSpec.brandKey());
+                                BigDecimal minPrice = productSpec.variants().stream().map(VariantSpec::price)
+                                                .filter(java.util.Objects::nonNull).min(java.util.Comparator.naturalOrder()).orElse(null);
                                 String description = ProductDescriptionGenerator.generate(
                                                 categorySpec.name(), brand.getName(), productSpec.name(),
                                                 productSpec.description(),
                                                 productSpec.variants().stream().map(VariantSpec::ramGb).filter(java.util.Objects::nonNull).distinct().toList(),
                                                 productSpec.variants().stream().map(VariantSpec::storageGb).filter(java.util.Objects::nonNull).distinct().toList(),
                                                 productSpec.variants().stream().map(VariantSpec::color).filter(java.util.Objects::nonNull).distinct().toList(),
-                                                productSpec.variants().stream().map(VariantSpec::price).filter(java.util.Objects::nonNull).min(java.util.Comparator.naturalOrder()).orElse(null),
+                                                minPrice,
                                                 descriptionRandom);
                                 Product product = ProductFactory.createProduct(category, productSpec.name(),
                                                 description, brand);
+                                ProductSpecApplier.apply(product, categorySpec.name(), brand.getName(), minPrice, specRandom);
                                 productRepository.save(product);
                                 productCount++;
                                 for (VariantSpec variantSpec : productSpec.variants()) {

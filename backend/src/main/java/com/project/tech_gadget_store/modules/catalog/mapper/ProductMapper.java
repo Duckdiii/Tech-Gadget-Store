@@ -117,6 +117,18 @@ public class ProductMapper {
                 Integer batteryCapacity = null;
                 String simType = null;
                 String operatingSystem = null;
+                String cpu = null;
+                String gpu = null;
+                Double weight = null;
+                Integer refreshRate = null;
+                String panelType = null;
+                String connectorType = null;
+                Boolean isWireless = null;
+                Integer batteryLifeHours = null;
+                Boolean hasNoiseCancelling = null;
+                Integer batteryLifeDays = null;
+                Boolean isWaterResistant = null;
+                Boolean hasGps = null;
 
                 if (product instanceof Phone phone) {
                         screenSize = phone.getScreenSize();
@@ -131,9 +143,23 @@ public class ProductMapper {
                 } else if (product instanceof Laptop laptop) {
                         screenSize = laptop.getScreenSize();
                         operatingSystem = laptop.getOperatingSystem();
+                        cpu = laptop.getCpu();
+                        gpu = laptop.getGpu();
+                        weight = laptop.getWeight();
                 } else if (product instanceof Monitor monitor) {
                         screenSize = monitor.getScreenSize();
                         screenResolution = monitor.getResolution();
+                        refreshRate = monitor.getRefreshRate();
+                        panelType = monitor.getPanelType();
+                } else if (product instanceof Headphones headphones) {
+                        connectorType = headphones.getConnectorType();
+                        isWireless = headphones.getIsWireless();
+                        batteryLifeHours = headphones.getBatteryLifeHours();
+                        hasNoiseCancelling = headphones.getHasNoiseCancelling();
+                } else if (product instanceof Smartwatch smartwatch) {
+                        batteryLifeDays = smartwatch.getBatteryLifeDays();
+                        isWaterResistant = smartwatch.getIsWaterResistant();
+                        hasGps = smartwatch.getHasGps();
                 }
 
                 return ProductDetailResponseDto.builder()
@@ -161,6 +187,18 @@ public class ProductMapper {
                                 .batteryCapacity(batteryCapacity)
                                 .simType(simType)
                                 .operatingSystem(operatingSystem)
+                                .cpu(cpu)
+                                .gpu(gpu)
+                                .weight(weight)
+                                .refreshRate(refreshRate)
+                                .panelType(panelType)
+                                .connectorType(connectorType)
+                                .isWireless(isWireless)
+                                .batteryLifeHours(batteryLifeHours)
+                                .hasNoiseCancelling(hasNoiseCancelling)
+                                .batteryLifeDays(batteryLifeDays)
+                                .isWaterResistant(isWaterResistant)
+                                .hasGps(hasGps)
                                 .discountPercent(getBestActivePromotionPercent(product))
                                 .salesCount(salesCount)
                                 .build();

@@ -10,10 +10,10 @@ import { useSimilarProducts, useFrequentlyBoughtTogether } from '../hooks/useRec
 import { ProductImages, ProductInfo, SpecsTab } from '../components/ProductDetailComponents'
 
 function ProductTabs({ product }) {
-  const [activeTab, setActiveTab] = useState('specs')
+  const [activeTab, setActiveTab] = useState('desc')
   const tabs = [
-    { id: 'specs', label: 'Thông số kỹ thuật' },
     { id: 'desc', label: 'Mô tả sản phẩm' },
+    { id: 'specs', label: 'Thông số kỹ thuật' },
   ]
   return (
     <div className="mt-10">

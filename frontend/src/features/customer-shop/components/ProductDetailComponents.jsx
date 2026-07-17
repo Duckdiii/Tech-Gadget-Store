@@ -227,8 +227,47 @@ export function ProductInfo({
   )
 }
 
-export function SpecsTab({ product }) {
-  const specs = [
+function boolLabel(value, yes = 'Có hỗ trợ', no = 'Không hỗ trợ') {
+  return value == null ? 'N/A' : (value ? yes : no)
+}
+
+function specsFor(product) {
+  const category = (product.categoryName || '').toLowerCase()
+
+  if (category.includes('laptop')) {
+    return [
+      { label: 'Màn hình', value: product.screenSize ? `${product.screenSize} inch` : 'N/A' },
+      { label: 'Vi xử lý (CPU)', value: product.cpu || 'N/A' },
+      { label: 'Card đồ họa (GPU)', value: product.gpu || 'N/A' },
+      { label: 'Trọng lượng', value: product.weight ? `${product.weight} kg` : 'N/A' },
+      { label: 'Hệ điều hành', value: product.operatingSystem || 'N/A' },
+    ]
+  }
+  if (category.includes('màn hình') || category.includes('monitor')) {
+    return [
+      { label: 'Kích thước', value: product.screenSize ? `${product.screenSize} inch` : 'N/A' },
+      { label: 'Độ phân giải', value: product.screenResolution || 'N/A' },
+      { label: 'Tần số quét', value: product.refreshRate ? `${product.refreshRate} Hz` : 'N/A' },
+      { label: 'Tấm nền', value: product.panelType || 'N/A' },
+    ]
+  }
+  if (category.includes('tai nghe') || category.includes('headphone')) {
+    return [
+      { label: 'Kết nối', value: product.connectorType || 'N/A' },
+      { label: 'Không dây', value: boolLabel(product.isWireless) },
+      { label: 'Thời lượng pin', value: product.batteryLifeHours ? `${product.batteryLifeHours} giờ` : 'N/A' },
+      { label: 'Chống ồn', value: boolLabel(product.hasNoiseCancelling) },
+    ]
+  }
+  if (category.includes('đồng hồ') || category.includes('smartwatch')) {
+    return [
+      { label: 'Thời lượng pin', value: product.batteryLifeDays ? `${product.batteryLifeDays} ngày` : 'N/A' },
+      { label: 'Chống nước', value: boolLabel(product.isWaterResistant) },
+      { label: 'GPS', value: boolLabel(product.hasGps) },
+    ]
+  }
+  // Default: điện thoại (phone) and anything unrecognized fall back to the phone shape.
+  return [
     { label: 'Màn hình', value: product.screenSize ? `${product.screenSize} inch, ${product.screenResolution || ''}` : 'N/A' },
     { label: 'Vi xử lý', value: product.chipset || 'N/A' },
     { label: 'Rear Camera', value: product.rearCamera || 'N/A' },
@@ -236,8 +275,12 @@ export function SpecsTab({ product }) {
     { label: 'Pin & Sạc', value: product.batteryCapacity ? `${product.batteryCapacity} mAh` : 'N/A' },
     { label: 'Hệ điều hành', value: product.operatingSystem || 'N/A' },
     { label: 'Sim', value: product.simType || 'N/A' },
-    { label: 'NFC', value: product.nfcSupported ? 'Có hỗ trợ' : 'Không hỗ trợ' }
+    { label: 'NFC', value: boolLabel(product.nfcSupported) },
   ]
+}
+
+export function SpecsTab({ product }) {
+  const specs = specsFor(product)
 
   return (
     <div className="bg-white rounded-2xl p-6" style={{ border: '1.5px solid var(--b1)' }}>
