@@ -203,8 +203,20 @@ export default function ProductsPage() {
     shopService.getBestsellers(4)
       .then(data => setBestsellers(Array.isArray(data) ? data.map(mapApiProduct) : []))
       .catch(() => setBestsellers([]))
-    shopService.getProductsByFilter({ page: 0, size: 1000 })
-      .then(data => setAllProducts(Array.isArray(data?.items) ? data.items.map(mapApiProduct) : []))
+    // Backend caps page size at 100, so fetch all pages and merge for facet counting.
+    const FACET_FETCH_SIZE = 100
+    async function fetchAllProductsForFacets() {
+      const first = await shopService.getProductsByFilter({ page: 0, size: FACET_FETCH_SIZE })
+      const items = Array.isArray(first?.items) ? [...first.items] : []
+      const totalPages = first?.totalPages ?? 1
+      for (let p = 1; p < totalPages; p++) {
+        const next = await shopService.getProductsByFilter({ page: p, size: FACET_FETCH_SIZE })
+        if (Array.isArray(next?.items)) items.push(...next.items)
+      }
+      return items
+    }
+    fetchAllProductsForFacets()
+      .then(items => setAllProducts(items.map(mapApiProduct)))
       .catch(() => setAllProducts([]))
   }, [])
 

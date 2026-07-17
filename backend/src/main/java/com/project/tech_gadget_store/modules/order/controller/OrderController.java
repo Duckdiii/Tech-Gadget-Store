@@ -109,6 +109,24 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/manager/orders/count")
+    public ResponseEntity<com.project.tech_gadget_store.modules.order.dto.response.OrderCountResponseDto> countManagerOrders(
+            @RequestParam String startDate, @RequestParam String endDate) {
+        java.time.LocalDateTime from;
+        java.time.LocalDateTime to;
+        try {
+            from = java.time.LocalDate.parse(startDate.trim()).atStartOfDay();
+            to = java.time.LocalDate.parse(endDate.trim()).atTime(java.time.LocalTime.MAX);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoảng thời gian không hợp lệ");
+        }
+        long count = orderRepository.countActiveOrdersByDateRange(from, to);
+        return ResponseEntity.ok(
+                com.project.tech_gadget_store.modules.order.dto.response.OrderCountResponseDto.builder()
+                        .count(count)
+                        .build());
+    }
+
     @GetMapping("/manager/orders")
     public ResponseEntity<com.project.tech_gadget_store.common.dto.CursorPageResponseDto<OrderHistoryResponseDto>> getManagerOrders(
             @RequestParam(required = false) String status,

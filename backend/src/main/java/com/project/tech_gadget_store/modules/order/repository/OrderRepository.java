@@ -102,4 +102,13 @@ public interface OrderRepository extends JpaRepository<Order, String> {
                         "WHERE pv.product.id IN :productIds AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED " +
                         "GROUP BY pv.product.id")
         List<Object[]> countProductSalesForList(@Param("productIds") List<String> productIds);
+
+        // "Đơn hàng mới" cho manager dashboard: đếm mọi đơn phát sinh trong khoảng thời gian, trừ
+        // đơn đã hủy/hoàn tiền — khớp quy ước loại trừ CANCELLED đã dùng ở các query khác trong
+        // file này (đơn hủy "không phản ánh nhu cầu thực"). Khác với RevenueReportService, vốn
+        // chỉ đếm đơn COMPLETED vì đó là số liệu doanh thu, không phải số liệu khối lượng đơn.
+        @Query("SELECT COUNT(o) FROM Order o WHERE o.orderDate >= :from AND o.orderDate <= :to " +
+                        "AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED " +
+                        "AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.REFUNDED")
+        long countActiveOrdersByDateRange(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

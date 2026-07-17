@@ -1,20 +1,17 @@
 
 const CW = 700, CH = 180, CPAD_B = 36
 
-const REVENUE_DATA = [
-  { label: 'T1', v: 0.45 },
-  { label: 'T2', v: 0.38 },
-  { label: 'T3', v: 0.60 },
-  { label: 'T4', v: 0.52 },
-  { label: 'T5', v: 0.72 },
-  { label: 'T6', v: 0.65 },
-  { label: 'T7', v: 0.88 },
-  { label: 'T8', v: 0.76 },
-  { label: 'T9', v: 0.55 },
-  { label: 'T10', v: 0.82 },
-  { label: 'T11', v: 0.94 },
-  { label: 'T12', v: 0.70 },
-]
+function formatLabel(label) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(label)) {
+    const [, m, d] = label.split('-')
+    return `${d}/${m}`
+  }
+  if (/^\d{4}-\d{2}$/.test(label)) {
+    const [, m] = label.split('-')
+    return `T${Number(m)}`
+  }
+  return label // already "HH:00" (hourly trend)
+}
 
 function catmullPath(pts) {
   const ext = [
@@ -34,16 +31,32 @@ function catmullPath(pts) {
   return d
 }
 
-export default function RevenueChart() {
-  const pts = REVENUE_DATA.map((d, i) => ({
-    x: (i / (REVENUE_DATA.length - 1)) * CW,
-    y: 8 + CH * (1 - d.v),
-    label: d.label,
-    v: d.v,
+/** data: [{ label, revenue }] — real revenue-report trend points from the backend. */
+export default function RevenueChart({ data = [] }) {
+  if (data.length === 0) {
+    return (
+      <div className="w-full h-[180px] flex items-center justify-center text-sm text-gray-400">
+        Không có dữ liệu doanh thu trong khoảng thời gian này
+      </div>
+    )
+  }
+
+  const revenues = data.map((d) => Number(d.revenue) || 0)
+  const maxRevenue = Math.max(...revenues, 0)
+
+  const pts = data.map((d, i) => ({
+    x: data.length > 1 ? (i / (data.length - 1)) * CW : CW / 2,
+    y: 8 + CH * (1 - (maxRevenue > 0 ? revenues[i] / maxRevenue : 0)),
+    label: formatLabel(d.label),
+    revenue: revenues[i],
   }))
-  const linePath = catmullPath(pts)
+
+  const linePath = pts.length > 1 ? catmullPath(pts) : `M 0 ${pts[0].y.toFixed(1)} L ${CW} ${pts[0].y.toFixed(1)}`
   const areaPath = `${linePath} L ${CW} ${CH + 8} L 0 ${CH + 8} Z`
   const gridYs = [CH * 0.25 + 8, CH * 0.5 + 8, CH * 0.75 + 8]
+
+  // Thin out x-axis labels when there are many points (e.g. one per day for a month) to avoid overlap.
+  const labelStep = Math.max(1, Math.ceil(pts.length / 12))
 
   return (
     <svg viewBox={`0 0 ${CW} ${CH + CPAD_B}`} className="w-full h-auto">
@@ -65,10 +78,11 @@ export default function RevenueChart() {
         <g key={i}>
           <circle cx={pt.x} cy={pt.y} r="5" fill="#E8420A" />
           <circle cx={pt.x} cy={pt.y} r="2.5" fill="white" />
+          <title>{`${pt.label}: ${pt.revenue.toLocaleString('vi-VN')} đ`}</title>
         </g>
       ))}
 
-      {pts.map((pt, i) => (
+      {pts.map((pt, i) => (i % labelStep === 0) && (
         <text key={i} x={pt.x} y={CH + CPAD_B - 4} textAnchor="middle" fontSize="11" fill="#9ca3af" fontFamily="system-ui,sans-serif">
           {pt.label}
         </text>

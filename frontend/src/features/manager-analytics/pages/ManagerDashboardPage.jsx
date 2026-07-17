@@ -1,77 +1,12 @@
 import { useState } from 'react'
 import { useNav } from '../../../hooks/useNav'
 import { useLowStockProducts } from '../../../hooks/useLowStockProducts'
+import { useAuth } from '../../../context/useAuth'
+import { useManagerDashboard } from '../hooks/useManagerDashboard'
+import { useHeaderNotifications } from '../hooks/useHeaderNotifications'
 import RevenueChart from '../components/RevenueChart'
 
-/* ── Data ── */
-const KPI_CARDS = [
-  {
-    label: 'Doanh thu hôm nay',
-    value: '48.5',
-    unit: 'tr',
-    change: '+12%',
-    up: true,
-    color: 'blue',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Doanh thu tháng',
-    value: '1.24',
-    unit: 'tỷ',
-    change: '+8%',
-    up: true,
-    color: 'indigo',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Đơn hàng mới',
-    value: '137',
-    unit: '',
-    change: '+23',
-    up: true,
-    color: 'green',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Khách hàng mới',
-    value: '84',
-    unit: '',
-    change: '+31',
-    up: true,
-    color: 'purple',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Cảnh báo tồn kho',
-    value: '9',
-    unit: 'SKU',
-    change: '-2',
-    up: false,
-    color: 'red',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-      </svg>
-    ),
-  },
-]
-
+/* ── Static presentation data (icons/colors — not business data) ── */
 const COLOR_MAP = {
   blue:   { bg: 'bg-orange-50',   icon: 'bg-[#E8420A]',   text: 'text-[#E8420A]'   },
   indigo: { bg: 'bg-orange-50', icon: 'bg-[#0D0F14]', text: 'text-[#E8420A]' },
@@ -80,28 +15,42 @@ const COLOR_MAP = {
   red:    { bg: 'bg-red-50',    icon: 'bg-red-500',    text: 'text-red-600'    },
 }
 
-const RECENT_ORDERS = [
-  { id: 'TG-240601', customer: 'Nguyễn Văn A', product: 'iPhone 15 Pro Max 256GB', total: 32990000, status: 'Hoàn thành', time: '08:12' },
-  { id: 'TG-240602', customer: 'Trần Thị B',   product: 'Samsung Galaxy S24 Ultra', total: 27500000, status: 'Đang giao',  time: '09:05' },
-  { id: 'TG-240603', customer: 'Lê Hoàng C',   product: 'AirPods Pro 2nd Gen',       total: 5990000,  status: 'Chờ xác nhận', time: '09:47' },
-  { id: 'TG-240604', customer: 'Phạm Văn D',   product: 'MacBook Air M3 8GB',        total: 28990000, status: 'Hoàn thành', time: '10:23' },
-  { id: 'TG-240605', customer: 'Hoàng Thị E',  product: 'iPad Pro 11" M4',           total: 21990000, status: 'Đã hủy',    time: '11:00' },
-]
-
-const STATUS_STYLE = {
-  'Hoàn thành':    'bg-green-100 text-green-700',
-  'Đang giao':     'bg-orange-50 text-[#C4350A]',
-  'Chờ xác nhận': 'bg-amber-100 text-amber-700',
-  'Đã hủy':       'bg-red-100 text-red-600',
+const KPI_ICONS = {
+  revenueToday: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  revenueMonth: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+  ),
+  ordersToday: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+    </svg>
+  ),
+  newCustomers: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+    </svg>
+  ),
+  lowStock: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+  ),
 }
 
-const TOP_PRODUCTS = [
-  { name: 'iPhone 15 Pro Max 256GB', sold: 142, revenue: 4678580000, pct: 92 },
-  { name: 'Samsung Galaxy S24 Ultra', sold: 98, revenue: 2695000000, pct: 64 },
-  { name: 'MacBook Air M3 8GB',      sold: 77, revenue: 2232230000, pct: 50 },
-  { name: 'AirPods Pro 2nd Gen',     sold: 205, revenue: 1227950000, pct: 100 },
-  { name: 'iPad Pro 11" M4',         sold: 55, revenue: 1209450000, pct: 36 },
-]
+const STATUS_META = {
+  AWAITING_CONFIRMATION: { label: 'Chờ xác nhận',   className: 'bg-amber-100 text-amber-700' },
+  PROCESSING:            { label: 'Đang xử lý',      className: 'bg-blue-100 text-blue-700'   },
+  SHIPPING:              { label: 'Đang giao',       className: 'bg-orange-50 text-[#C4350A]' },
+  COMPLETED:             { label: 'Đã hoàn thành',   className: 'bg-green-100 text-green-700' },
+  CANCELLED:             { label: 'Đã hủy',          className: 'bg-red-100 text-red-600'     },
+  REFUNDED:              { label: 'Đã hoàn tiền',    className: 'bg-red-50 text-red-500'      },
+}
 
 const QUICK_ACTIONS = [
   {
@@ -181,25 +130,128 @@ const QA_COLOR = {
   indigo: { bg: 'bg-orange-50', icon: 'bg-[#0D0F14]', hover: 'hover:bg-orange-50', text: 'text-[#C4350A]' },
 }
 
+const PERIOD_LABEL = { week: 'Tuần này', month: 'Tháng này', year: `Năm ${new Date().getFullYear()}` }
+const PERIOD_TITLE = { week: 'Doanh thu theo tuần', month: 'Doanh thu theo tháng', year: 'Doanh thu theo năm' }
+
 function fmt(n) {
-  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(2) + ' tỷ'
-  if (n >= 1_000_000)     return (n / 1_000_000).toFixed(1) + ' tr'
-  return n.toLocaleString('vi-VN') + ' đ'
+  const num = Number(n) || 0
+  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2) + ' tỷ'
+  if (num >= 1_000_000)     return (num / 1_000_000).toFixed(1) + ' tr'
+  return num.toLocaleString('vi-VN') + ' đ'
+}
+
+/** Splits a money amount into {value, unit} so KPI cards can style the unit smaller/greyer than the number. */
+function fmtSplit(n) {
+  const num = Number(n) || 0
+  if (num >= 1_000_000_000) return { value: (num / 1_000_000_000).toFixed(2), unit: 'tỷ' }
+  if (num >= 1_000_000)     return { value: (num / 1_000_000).toFixed(1), unit: 'tr' }
+  return { value: num.toLocaleString('vi-VN'), unit: 'đ' }
+}
+
+/** null = no baseline to compare against (previous period was 0) — shown as "Mới" rather than a misleading +∞%. */
+function fmtPct(growth) {
+  if (growth === null || growth === undefined) return 'Mới'
+  const rounded = Math.round(growth * 10) / 10
+  return `${rounded >= 0 ? '+' : ''}${rounded}%`
+}
+
+function fmtDelta(n) {
+  const v = Number(n) || 0
+  return `${v >= 0 ? '+' : ''}${v.toLocaleString('vi-VN')}`
+}
+
+function initialsOf(name) {
+  const trimmed = (name || '').trim()
+  if (!trimmed) return 'QL'
+  return trimmed.split(/\s+/).map((w) => w[0]).slice(-2).join('').toUpperCase()
 }
 
 export default function ManagerDashboardPage() {
   const onNavigate = useNav()
-  const [chartPeriod, setChartPeriod] = useState('year')
+  const { user } = useAuth()
   const { items: lowStockItems, totalCount: lowStockCount, threshold: lowStockThreshold, loading: lowStockLoading } = useLowStockProducts(5)
+  const {
+    kpis,
+    chartPeriod, setChartPeriod,
+    trend, topProducts, chartLoading,
+    recentOrders, ordersLoading,
+    handleExport, exporting,
+  } = useManagerDashboard()
+  const { notifications, unreadCount, loading: notifLoading, markAllRead, markRead } = useHeaderNotifications()
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [avatarOpen, setAvatarOpen] = useState(false)
 
   const now = new Date()
   const greeting =
     now.getHours() < 12 ? 'Chào buổi sáng' : now.getHours() < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'
 
+  const kpiCards = [
+    {
+      key: 'revenueToday',
+      label: 'Doanh thu hôm nay',
+      ...fmtSplit(kpis?.revenueToday ?? 0),
+      change: kpis ? fmtPct(kpis.revenueTodayGrowth) : '…',
+      up: kpis ? (kpis.revenueTodayGrowth ?? 0) >= 0 : true,
+      caption: 'So với hôm qua',
+      color: 'blue',
+    },
+    {
+      key: 'revenueMonth',
+      label: 'Doanh thu tháng này',
+      ...fmtSplit(kpis?.revenueMonth ?? 0),
+      change: kpis ? fmtPct(kpis.revenueMonthGrowth) : '…',
+      up: kpis ? (kpis.revenueMonthGrowth ?? 0) >= 0 : true,
+      caption: 'So với cùng kỳ tháng trước',
+      color: 'indigo',
+    },
+    {
+      key: 'ordersToday',
+      label: 'Đơn hàng mới hôm nay',
+      value: kpis ? kpis.ordersToday.toLocaleString('vi-VN') : '…',
+      unit: '',
+      change: kpis ? fmtDelta(kpis.ordersTodayDelta) : '…',
+      up: kpis ? kpis.ordersTodayDelta >= 0 : true,
+      caption: 'So với hôm qua',
+      color: 'green',
+    },
+    {
+      key: 'newCustomers',
+      label: 'Khách hàng mới hôm nay',
+      value: kpis ? kpis.newCustomersToday.toLocaleString('vi-VN') : '…',
+      unit: '',
+      change: kpis ? fmtDelta(kpis.newCustomersDelta) : '…',
+      up: kpis ? kpis.newCustomersDelta >= 0 : true,
+      caption: 'So với hôm qua',
+      color: 'purple',
+    },
+    {
+      key: 'lowStock',
+      label: 'Cảnh báo tồn kho',
+      value: lowStockLoading ? '…' : lowStockCount,
+      unit: 'SKU',
+      isLowStockCard: true,
+      caption: `Ngưỡng cảnh báo: ${lowStockThreshold}`,
+      color: 'red',
+    },
+  ]
+
+  const filteredOrders = searchTerm.trim()
+    ? recentOrders.filter((o) => {
+        const q = searchTerm.trim().toLowerCase()
+        return o.id.toLowerCase().includes(q) || (o.customerName || '').toLowerCase().includes(q)
+      })
+    : recentOrders
+
+  const maxTopRevenue = Math.max(...topProducts.map((p) => Number(p.revenue) || 0), 0)
+
+  const closeMenus = () => { setNotifOpen(false); setAvatarOpen(false) }
+
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-8 py-3 flex items-center gap-4">
+      <header className="relative bg-white border-b border-gray-100 px-8 py-3 flex items-center gap-4">
         <div className="flex-1 max-w-sm">
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,25 +259,88 @@ export default function ManagerDashboardPage() {
             </svg>
             <input
               type="text"
-              placeholder="Tìm kiếm nhanh..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Tìm đơn hàng gần đây theo mã hoặc khách hàng..."
               className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
-          <button className="relative p-2 hover:bg-gray-100 rounded-full cursor-pointer">
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
-          <img
-            src="https://placehold.co/34x34/f9a8d4/9d174d?text=AD"
-            alt="avatar"
-            className="w-8 h-8 rounded-full object-cover cursor-pointer"
-          />
+          <div className="relative z-20">
+            <button
+              onClick={() => { setNotifOpen((o) => !o); setAvatarOpen(false) }}
+              className="relative p-2 hover:bg-gray-100 rounded-full cursor-pointer"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+              )}
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded shadow-lg z-20 max-h-96 overflow-y-auto">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <span className="text-sm font-semibold text-gray-800">
+                    Thông báo{unreadCount > 0 ? ` (${unreadCount})` : ''}
+                  </span>
+                  {unreadCount > 0 && (
+                    <button onClick={markAllRead} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer">
+                      Đánh dấu tất cả đã đọc
+                    </button>
+                  )}
+                </div>
+                <div className="divide-y divide-gray-50">
+                  {notifLoading ? (
+                    <p className="text-xs text-gray-400 text-center py-6">Đang tải...</p>
+                  ) : notifications.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-6">Không có thông báo nào.</p>
+                  ) : (
+                    notifications.slice(0, 8).map((n) => (
+                      <button
+                        key={n.id}
+                        onClick={() => markRead(n.id)}
+                        className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer ${!n.readAt ? 'bg-orange-50/40' : ''}`}
+                      >
+                        <p className={`text-xs ${!n.readAt ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>{n.title}</p>
+                        <p className="text-[11px] text-gray-500 mt-0.5">{n.message}</p>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="relative z-20">
+            <button
+              onClick={() => { setAvatarOpen((o) => !o); setNotifOpen(false) }}
+              className="w-8 h-8 rounded-full bg-[#E8420A] text-white text-xs font-bold flex items-center justify-center cursor-pointer"
+            >
+              {initialsOf(user?.name)}
+            </button>
+            {avatarOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded shadow-lg z-20">
+                <div className="px-4 py-3 border-b border-gray-100">
+                  <p className="text-sm font-semibold text-gray-800 truncate">{user?.name || 'Quản lý'}</p>
+                  <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                </div>
+                <button
+                  onClick={() => onNavigate('login')}
+                  className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
+        {(notifOpen || avatarOpen) && (
+          <div className="fixed inset-0 z-10" onClick={closeMenus} />
+        )}
       </header>
 
       {/* Content */}
@@ -234,32 +349,34 @@ export default function ManagerDashboardPage() {
         {/* Title */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{greeting}, Admin 👋</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{greeting}, {user?.name || 'Quản lý'} 👋</h1>
             <p className="text-sm text-gray-500 mt-0.5">
               Tổng quan hoạt động hôm nay — {now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm transition-colors cursor-pointer">
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2 px-4 rounded text-sm transition-colors cursor-pointer"
+          >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            Xuất báo cáo
+            {exporting ? 'Đang xuất...' : `Xuất báo cáo (${PERIOD_LABEL[chartPeriod]})`}
           </button>
         </div>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-5 gap-4">
-          {KPI_CARDS.map((card, i) => {
+          {kpiCards.map((card) => {
             const c = COLOR_MAP[card.color]
-            const isLowStockCard = card.label === 'Cảnh báo tồn kho'
-            const value = isLowStockCard ? (lowStockLoading ? '—' : lowStockCount) : card.value
             return (
-              <div key={i} className="bg-white rounded border border-gray-200 p-5 flex flex-col gap-3">
+              <div key={card.key} className="bg-white rounded border border-gray-200 p-5 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <span className={`w-9 h-9 rounded flex items-center justify-center text-white shrink-0 ${c.icon}`}>
-                    {card.icon}
+                    {KPI_ICONS[card.key]}
                   </span>
-                  {!isLowStockCard && (
+                  {!card.isLowStockCard && (
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${card.up ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
                       {card.change}
                     </span>
@@ -268,12 +385,10 @@ export default function ManagerDashboardPage() {
                 <div>
                   <p className="text-xs text-gray-500 font-medium">{card.label}</p>
                   <p className={`text-2xl font-bold mt-0.5 ${c.text}`}>
-                    {value}<span className="text-base font-medium text-gray-400 ml-1">{card.unit}</span>
+                    {card.value}<span className="text-base font-medium text-gray-400 ml-1">{card.unit}</span>
                   </p>
                 </div>
-                <p className="text-[11px] text-gray-400">
-                  {isLowStockCard ? `Ngưỡng cảnh báo: ${lowStockThreshold}` : 'So với hôm qua'}
-                </p>
+                <p className="text-[11px] text-gray-400">{card.caption}</p>
               </div>
             )
           })}
@@ -285,8 +400,8 @@ export default function ManagerDashboardPage() {
           <div className="bg-white rounded border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-base font-semibold text-gray-800">Doanh thu theo tháng</h2>
-                <p className="text-xs text-gray-400 mt-0.5">Năm 2024 · tỷ đồng</p>
+                <h2 className="text-base font-semibold text-gray-800">{PERIOD_TITLE[chartPeriod]}</h2>
+                <p className="text-xs text-gray-400 mt-0.5">{PERIOD_LABEL[chartPeriod]} · di chuột để xem chi tiết</p>
               </div>
               <div className="flex gap-1 bg-gray-100 p-1 rounded">
                 {['week', 'month', 'year'].map((p) => (
@@ -300,7 +415,11 @@ export default function ManagerDashboardPage() {
                 ))}
               </div>
             </div>
-            <RevenueChart />
+            {chartLoading ? (
+              <div className="w-full h-[180px] flex items-center justify-center text-sm text-gray-400">Đang tải...</div>
+            ) : (
+              <RevenueChart data={trend} />
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -340,24 +459,41 @@ export default function ManagerDashboardPage() {
               </button>
             </div>
             <div className="divide-y divide-gray-50">
-              {RECENT_ORDERS.map((order) => (
-                <div key={order.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-semibold text-gray-400">{order.id}</span>
-                      <span className="text-xs text-gray-400">{order.time}</span>
+              {ordersLoading ? (
+                <p className="px-6 py-8 text-xs text-gray-400 text-center">Đang tải...</p>
+              ) : filteredOrders.length === 0 ? (
+                <p className="px-6 py-8 text-xs text-gray-400 text-center">
+                  {searchTerm ? 'Không tìm thấy đơn hàng phù hợp.' : 'Chưa có đơn hàng nào.'}
+                </p>
+              ) : (
+                filteredOrders.map((order) => {
+                  const meta = STATUS_META[order.orderStatus] || STATUS_META.AWAITING_CONFIRMATION
+                  const productSummary = (order.items || [])
+                    .map((it) => `${it.productName}${it.quantity > 1 ? ` x${it.quantity}` : ''}`)
+                    .join(', ') || '—'
+                  const time = order.orderDate
+                    ? new Date(order.orderDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                    : ''
+                  return (
+                    <div key={order.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono font-semibold text-gray-400">{order.id.substring(0, 10).toUpperCase()}</span>
+                          <span className="text-xs text-gray-400">{time}</span>
+                        </div>
+                        <p className="text-sm font-medium text-gray-800 truncate mt-0.5">{productSummary}</p>
+                        <p className="text-xs text-gray-400 truncate">{order.customerName}</p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="text-sm font-semibold text-gray-800">{fmt(order.total)}</p>
+                        <span className={`inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${meta.className}`}>
+                          {meta.label}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-sm font-medium text-gray-800 truncate mt-0.5">{order.product}</p>
-                    <p className="text-xs text-gray-400 truncate">{order.customer}</p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-semibold text-gray-800">{fmt(order.total)}</p>
-                    <span className={`inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLE[order.status]}`}>
-                      {order.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                  )
+                })
+              )}
             </div>
           </div>
 
@@ -367,23 +503,32 @@ export default function ManagerDashboardPage() {
             <div className="bg-white rounded border border-gray-200 p-5 flex-1">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-semibold text-gray-800">Sản phẩm bán chạy</h2>
-                <span className="text-xs text-gray-400">Tháng này</span>
+                <span className="text-xs text-gray-400">{PERIOD_LABEL[chartPeriod]}</span>
               </div>
               <div className="space-y-3">
-                {TOP_PRODUCTS.map((p, i) => (
-                  <div key={i}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-gray-700 truncate pr-2 max-w-[160px]">{p.name}</span>
-                      <span className="text-xs text-gray-500 shrink-0">{p.sold} đã bán</span>
-                    </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#E8420A] to-[#C4350A] rounded-full"
-                        style={{ width: `${p.pct}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                {chartLoading ? (
+                  <p className="text-xs text-gray-400">Đang tải...</p>
+                ) : topProducts.length === 0 ? (
+                  <p className="text-xs text-gray-400">Chưa có dữ liệu bán hàng trong khoảng thời gian này.</p>
+                ) : (
+                  topProducts.map((p) => {
+                    const pct = maxTopRevenue > 0 ? Math.round((Number(p.revenue) / maxTopRevenue) * 100) : 0
+                    return (
+                      <div key={p.productId}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-medium text-gray-700 truncate pr-2 max-w-[160px]">{p.productName}</span>
+                          <span className="text-xs text-gray-500 shrink-0">{p.quantitySold} đã bán</span>
+                        </div>
+                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#E8420A] to-[#C4350A] rounded-full"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
               </div>
             </div>
 

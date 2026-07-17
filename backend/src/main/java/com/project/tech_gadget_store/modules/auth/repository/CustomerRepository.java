@@ -1,6 +1,7 @@
 package com.project.tech_gadget_store.modules.auth.repository;
 
 import com.project.tech_gadget_store.modules.auth.entity.Customer;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,4 +13,6 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
 
     @Query("SELECT c FROM Customer c JOIN c.account a WHERE a.email = :email")
     Optional<Customer> findByAccountEmail(String email);
+
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

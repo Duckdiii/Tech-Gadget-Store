@@ -1,0 +1,118 @@
+import { useState, useEffect, useCallback } from 'react'
+import { dashboardService } from '../services/dashboardService'
+import { todayVsYesterday, monthToDateVsPrevious, chartPeriodToFilter } from '../utils/dateRanges'
+
+/** Percentage growth of current vs. previous. Returns null when there's no baseline to compare against (previous = 0 but current > 0) — the UI shows "Mới" for that case instead of a misleading "+∞%". */
+function pctGrowth(current, previous) {
+  const c = Number(current) || 0
+  const p = Number(previous) || 0
+  if (p === 0) return c === 0 ? 0 : null
+  return ((c - p) / p) * 100
+}
+
+export function useManagerDashboard() {
+  const [kpis, setKpis] = useState(null)
+  const [kpiLoading, setKpiLoading] = useState(true)
+
+  const [chartPeriod, setChartPeriod] = useState('month')
+  const [chartData, setChartData] = useState({ trend: [], topProducts: [] })
+  const [chartLoading, setChartLoading] = useState(true)
+
+  const [recentOrders, setRecentOrders] = useState([])
+  const [ordersLoading, setOrdersLoading] = useState(true)
+
+  const [exporting, setExporting] = useState(false)
+
+  const fetchKpis = useCallback(async () => {
+    try {
+      setKpiLoading(true)
+      const { current: today, previous: yesterday } = todayVsYesterday()
+      const { current: monthToDate, previous: prevMonth } = monthToDateVsPrevious()
+
+      const [
+        todayReport, yesterdayReport, monthReport, prevMonthReport,
+        todayCustomers, yesterdayCustomers, todayOrders, yesterdayOrders,
+      ] = await Promise.all([
+        dashboardService.getRevenueReport({ period: 'CUSTOM', ...today }),
+        dashboardService.getRevenueReport({ period: 'CUSTOM', ...yesterday }),
+        dashboardService.getRevenueReport({ period: 'CUSTOM', ...monthToDate }),
+        dashboardService.getRevenueReport({ period: 'CUSTOM', ...prevMonth }),
+        dashboardService.getCustomerStats(today),
+        dashboardService.getCustomerStats(yesterday),
+        dashboardService.getOrderCount(today),
+        dashboardService.getOrderCount(yesterday),
+      ])
+
+      setKpis({
+        revenueToday: todayReport.totalRevenue,
+        revenueTodayGrowth: pctGrowth(todayReport.totalRevenue, yesterdayReport.totalRevenue),
+        revenueMonth: monthReport.totalRevenue,
+        revenueMonthGrowth: pctGrowth(monthReport.totalRevenue, prevMonthReport.totalRevenue),
+        // Đơn hàng mới = mọi đơn phát sinh hôm nay trừ đơn đã hủy/hoàn tiền (xem
+        // OrderRepository.countActiveOrdersByDateRange) — khác với totalOrders của
+        // revenue-report, vốn chỉ đếm đơn COMPLETED nên không phản ánh đơn vừa đặt trong ngày.
+        ordersToday: todayOrders.count,
+        ordersTodayDelta: todayOrders.count - yesterdayOrders.count,
+        newCustomersToday: todayCustomers.newCustomers,
+        newCustomersDelta: todayCustomers.newCustomers - yesterdayCustomers.newCustomers,
+      })
+    } catch (e) {
+      console.error('Lỗi tải số liệu KPI:', e)
+    } finally {
+      setKpiLoading(false)
+    }
+  }, [])
+
+  const fetchChartData = useCallback(async () => {
+    try {
+      setChartLoading(true)
+      const report = await dashboardService.getRevenueReport(chartPeriodToFilter(chartPeriod))
+      setChartData({ trend: report.trend || [], topProducts: report.topSellingProducts || [] })
+    } catch (e) {
+      console.error('Lỗi tải biểu đồ doanh thu:', e)
+    } finally {
+      setChartLoading(false)
+    }
+  }, [chartPeriod])
+
+  const fetchRecentOrders = useCallback(async () => {
+    try {
+      setOrdersLoading(true)
+      const res = await dashboardService.getRecentOrders(5)
+      setRecentOrders(res.items || [])
+    } catch (e) {
+      console.error('Lỗi tải đơn hàng gần đây:', e)
+    } finally {
+      setOrdersLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchKpis() }, [fetchKpis])
+  useEffect(() => { fetchChartData() }, [fetchChartData])
+  useEffect(() => { fetchRecentOrders() }, [fetchRecentOrders])
+
+  const handleExport = useCallback(async () => {
+    try {
+      setExporting(true)
+      await dashboardService.exportReport(chartPeriodToFilter(chartPeriod))
+    } catch (e) {
+      alert('Lỗi xuất file báo cáo: ' + e.message)
+    } finally {
+      setExporting(false)
+    }
+  }, [chartPeriod])
+
+  return {
+    kpis,
+    kpiLoading,
+    chartPeriod,
+    setChartPeriod,
+    trend: chartData.trend,
+    topProducts: chartData.topProducts,
+    chartLoading,
+    recentOrders,
+    ordersLoading,
+    handleExport,
+    exporting,
+  }
+}
