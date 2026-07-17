@@ -7,6 +7,7 @@ import { useHeaderNotifications } from '../hooks/useHeaderNotifications'
 import RevenueChart from '../components/RevenueChart'
 import axiosClient from '../../../config/axiosClient'
 import { managerUsersService } from '../../manager-users/services/managerUsersService'
+import { managerOrderService } from '../../manager-orders/services/managerOrderService'
 
 /* ── Static presentation data (icons/colors — not business data) ── */
 const COLOR_MAP = {
@@ -205,6 +206,15 @@ export default function ManagerDashboardPage() {
       setRefreshing(false)
     }
   }, [reload, refetchLowStock])
+
+  const handleUpdateOrderStatus = useCallback(async (orderId, newStatus) => {
+    try {
+      await managerOrderService.updateOrderStatus(orderId, newStatus)
+      await handleRefreshAll()
+    } catch (e) {
+      alert('Không thể cập nhật trạng thái đơn hàng: ' + e.message)
+    }
+  }, [handleRefreshAll])
 
   // Auto-refresh every 60 seconds
   useEffect(() => {
@@ -598,7 +608,7 @@ export default function ManagerDashboardPage() {
                     ? new Date(order.orderDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
                     : ''
                   return (
-                    <div key={order.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors">
+                    <div key={order.id} className="group relative flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-mono font-semibold text-gray-400">{order.id.substring(0, 10).toUpperCase()}</span>
@@ -607,11 +617,51 @@ export default function ManagerDashboardPage() {
                         <p className="text-sm font-medium text-gray-800 truncate mt-0.5">{productSummary}</p>
                         <p className="text-xs text-gray-400 truncate">{order.customerName}</p>
                       </div>
-                      <div className="shrink-0 text-right">
+                      <div className="shrink-0 text-right flex flex-col items-end justify-center min-h-[44px]">
                         <p className="text-sm font-semibold text-gray-800">{fmt(order.total)}</p>
-                        <span className={`inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${meta.className}`}>
-                          {meta.label}
-                        </span>
+                        <div className="relative mt-1">
+                          {order.orderStatus === 'AWAITING_CONFIRMATION' ? (
+                            <>
+                              <div className="hidden group-hover:flex items-center gap-1.5 bg-transparent pl-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (window.confirm(`Xác nhận duyệt đơn hàng ${order.id.substring(0, 10).toUpperCase()}?`)) {
+                                      handleUpdateOrderStatus(order.id, 'PROCESSING')
+                                    }
+                                  }}
+                                  className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer border border-transparent hover:border-green-200"
+                                  title="Xác nhận đơn hàng"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (window.confirm(`Bạn có chắc chắn muốn hủy đơn hàng ${order.id.substring(0, 10).toUpperCase()}?`)) {
+                                      handleUpdateOrderStatus(order.id, 'CANCELLED')
+                                    }
+                                  }}
+                                  className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer border border-transparent hover:border-red-200"
+                                  title="Hủy đơn hàng"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                              <span className="inline-block group-hover:hidden text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-500 animate-pulse">
+                                Chờ xác nhận
+                              </span>
+                            </>
+                          ) : (
+                            <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full ${meta.className}`}>
+                              {meta.label}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )

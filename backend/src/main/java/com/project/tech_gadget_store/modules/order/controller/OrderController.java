@@ -13,6 +13,10 @@ import com.project.tech_gadget_store.modules.order.entity.Order;
 import com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus;
 import com.project.tech_gadget_store.modules.order.mapper.InvoiceMapper;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
+import com.project.tech_gadget_store.modules.catalog.repository.ProductSerialRepository;
+import com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus;
+import com.project.tech_gadget_store.modules.catalog.entity.ProductSerial;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -37,17 +41,35 @@ public class OrderController {
     private final InvoiceMapper invoiceMapper;
     private final AddressRepository addressRepository;
     private final AddressMapper addressMapper;
+    private final ProductSerialRepository productSerialRepository;
 
     public OrderController(OrderRepository orderRepository,
                            CustomerRepository customerRepository,
                            InvoiceMapper invoiceMapper,
                            AddressRepository addressRepository,
-                           AddressMapper addressMapper) {
+                           AddressMapper addressMapper,
+                           ProductSerialRepository productSerialRepository) {
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.invoiceMapper = invoiceMapper;
         this.addressRepository = addressRepository;
         this.addressMapper = addressMapper;
+        this.productSerialRepository = productSerialRepository;
+    }
+
+    private void releaseOrderSerials(Order order) {
+        if (order.getItems() != null) {
+            for (com.project.tech_gadget_store.modules.order.entity.OrderItem item : order.getItems()) {
+                List<ProductSerial> serials = productSerialRepository.findByInvoiceItemId(item.getId());
+                if (serials != null && !serials.isEmpty()) {
+                    for (ProductSerial serial : serials) {
+                        serial.setStatus(SerialStatus.IN_STOCK);
+                        serial.setInvoiceItemId(null);
+                    }
+                    productSerialRepository.saveAll(serials);
+                }
+            }
+        }
     }
 
     @GetMapping("/customer/orders")
@@ -86,6 +108,7 @@ public class OrderController {
         return ResponseEntity.ok(new com.project.tech_gadget_store.common.dto.CursorPageResponseDto<>(response, nextCursor, hasNext));
     }
 
+    @Transactional
     @PostMapping("/customer/orders/{orderId}/cancel")
     public ResponseEntity<OrderHistoryResponseDto> cancelCustomerOrder(
             @PathVariable String orderId,
@@ -102,6 +125,7 @@ public class OrderController {
 
         try {
             order.cancel();
+            releaseOrderSerials(order);
             Order savedOrder = orderRepository.save(order);
             return ResponseEntity.ok(mapToHistoryDto(savedOrder));
         } catch (IllegalStateException e) {
@@ -169,6 +193,7 @@ public class OrderController {
         return ResponseEntity.ok(new com.project.tech_gadget_store.common.dto.CursorPageResponseDto<>(response, nextCursor, hasNext));
     }
 
+    @Transactional
     @PutMapping("/manager/orders/{orderId}/status")
     public ResponseEntity<OrderHistoryResponseDto> updateOrderStatus(
             @PathVariable String orderId,
@@ -186,6 +211,9 @@ public class OrderController {
             order.transitionTo(status);
             if (OrderStatus.COMPLETED.equals(status) && !order.isPaid()) {
                 order.markPaid();
+            }
+            if (OrderStatus.CANCELLED.equals(status)) {
+                releaseOrderSerials(order);
             }
             Order savedOrder = orderRepository.save(order);
             return ResponseEntity.ok(mapToHistoryDto(savedOrder));

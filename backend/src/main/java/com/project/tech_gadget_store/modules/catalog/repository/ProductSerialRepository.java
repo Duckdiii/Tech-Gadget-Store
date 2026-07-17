@@ -21,4 +21,6 @@ public interface ProductSerialRepository extends JpaRepository<ProductSerial, St
 
     @Query("SELECT COUNT(ps) FROM ProductSerial ps WHERE ps.productVariant.product.id = :productId AND ps.status = :status")
     long countByProductIdAndStatus(@Param("productId") String productId, @Param("status") SerialStatus status);
+
+    List<ProductSerial> findByInvoiceItemId(String invoiceItemId);
 }
