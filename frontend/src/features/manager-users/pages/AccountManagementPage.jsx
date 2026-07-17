@@ -7,6 +7,12 @@ const STATUS_CFG = {
   pending:  { label:'Chờ duyệt',  bg:'bg-amber-100',  text:'text-amber-700',  dot:'bg-amber-400'  },
 }
 
+const ROLE_CFG = {
+  MANAGER:  { label:'Quản lý',    bg:'bg-orange-50',  text:'text-[#C4350A]' },
+  STAFF:    { label:'Nhân viên',  bg:'bg-blue-50',    text:'text-blue-700'  },
+  CUSTOMER: { label:'Khách hàng', bg:'bg-purple-50',  text:'text-purple-700' },
+}
+
 
 
 /* ══════════════════════════════════════
@@ -21,6 +27,8 @@ export default function AccountManagementPage() {
     setSearch,
     statusFilter,
     setStatusFilter,
+    roleFilter,
+    setRoleFilter,
     selected,
     setSelected,
     toast,
@@ -94,6 +102,12 @@ export default function AccountManagementPage() {
             <option value="active">Hoạt động</option>
             <option value="blocked">Bị khoá</option>
           </select>
+          <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
+            <option value="">Tất cả vai trò</option>
+            <option value="MANAGER">Quản lý</option>
+            <option value="STAFF">Nhân viên</option>
+            <option value="CUSTOMER">Khách hàng</option>
+          </select>
           <span className="ml-auto text-xs text-gray-400 shrink-0">{filtered.length} / {total} tài khoản</span>
         </div>
 
@@ -111,16 +125,17 @@ export default function AccountManagementPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Tài khoản','Ngày tạo','Số lần đăng nhập','Trạng thái',''].map((h,i) => (
+                  {['Tài khoản','Vai trò','Ngày tạo','Số lần đăng nhập','Trạng thái',''].map((h,i) => (
                     <th key={i} className="px-4 py-3.5 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.length === 0
-                  ? <tr><td colSpan={5} className="text-center py-12 text-gray-400">Không tìm thấy tài khoản nào</td></tr>
+                  ? <tr><td colSpan={6} className="text-center py-12 text-gray-400">Không tìm thấy tài khoản nào</td></tr>
                   : filtered.map(acc => {
                     const st = STATUS_CFG[acc.status] || STATUS_CFG.active
+                    const rl = ROLE_CFG[acc.role] || ROLE_CFG.STAFF
                     return (
                       <tr key={acc.id} className="hover:bg-gray-50/70 transition-colors group">
                         <td className="px-4 py-4">
@@ -131,6 +146,11 @@ export default function AccountManagementPage() {
                               <p className="text-[11px] text-gray-400">@{acc.username}</p>
                             </div>
                           </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={`inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full ${rl.bg} ${rl.text}`}>
+                            {rl.label}
+                          </span>
                         </td>
                         <td className="px-4 py-4 text-xs text-gray-500">{acc.createdAt}</td>
                         <td className="px-4 py-4 text-xs text-gray-600 font-medium">{acc.loginCount}</td>

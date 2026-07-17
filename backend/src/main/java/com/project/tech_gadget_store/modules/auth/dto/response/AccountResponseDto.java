@@ -21,5 +21,6 @@ public class AccountResponseDto {
     private String email;
     private AccountStatus status;
     private String userId;
+    private String role;
     private List<String> loginLogsIds;
 }

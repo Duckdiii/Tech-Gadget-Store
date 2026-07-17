@@ -10,6 +10,7 @@ function normalizeAccount(dto, index) {
     name: dto.email,
     username: dto.email.split('@')[0],
     status: (dto.status || '').toLowerCase(),
+    role: dto.role || 'STAFF',
     createdAt: dto.createdAt ? new Date(dto.createdAt).toLocaleDateString('vi-VN') : '—',
     lastLogin: '—',
     loginCount: dto.loginLogsIds?.length ?? 0,
@@ -24,6 +25,7 @@ export function useAccountManagement() {
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [roleFilter, setRoleFilter] = useState('')
   const [selected, setSelected] = useState(null)
   const [toast, setToast] = useState(null)
 
@@ -52,7 +54,8 @@ export function useAccountManagement() {
     const q = search.toLowerCase()
     return (
       (!q || a.email.toLowerCase().includes(q)) &&
-      (!statusFilter || a.status === statusFilter)
+      (!statusFilter || a.status === statusFilter) &&
+      (!roleFilter || a.role === roleFilter)
     )
   })
 
@@ -94,6 +97,8 @@ export function useAccountManagement() {
     setSearch,
     statusFilter,
     setStatusFilter,
+    roleFilter,
+    setRoleFilter,
     selected,
     setSelected,
     toast,

@@ -6,7 +6,10 @@ import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.dto.response.AccountResponseDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.LoginLogResponseDto;
 import com.project.tech_gadget_store.modules.auth.entity.Account;
+import com.project.tech_gadget_store.modules.auth.entity.Customer;
+import com.project.tech_gadget_store.modules.auth.entity.Manager;
 import com.project.tech_gadget_store.modules.auth.entity.Staff;
+import com.project.tech_gadget_store.modules.auth.entity.User;
 import com.project.tech_gadget_store.modules.auth.entity.enums.AccountStatus;
 import com.project.tech_gadget_store.modules.auth.entity.enums.LoginStatus;
 import com.project.tech_gadget_store.modules.auth.repository.AccountRepository;
@@ -14,6 +17,7 @@ import com.project.tech_gadget_store.modules.auth.repository.LoginLogRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -126,7 +130,18 @@ public class AccountService {
                 .email(account.getEmail())
                 .status(account.getStatus())
                 .userId(account.getUser().getId())
+                .role(resolveRole(account.getUser()))
                 .loginLogsIds(account.getLoginLogs().stream().map(log -> log.getId()).toList())
                 .build();
+    }
+
+    // user is a lazy proxy of the abstract User type (JOINED inheritance, no discriminator
+    // column), so a plain `instanceof` check against it fails on the subclass checks below
+    // unless unproxied first — same fix already applied in AccountUserDetails.resolveRole.
+    private static String resolveRole(User user) {
+        Object unproxied = Hibernate.unproxy(user);
+        if (unproxied instanceof Manager) return "MANAGER";
+        if (unproxied instanceof Customer) return "CUSTOMER";
+        return "STAFF";
     }
 }
