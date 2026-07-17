@@ -22,7 +22,7 @@ public class MembershipMapper {
                 .benefit(toBenefitResponseDto(m.getBenefit()))
                 .minSpending(m.getMinSpending())
                 .maxSpending(m.getMaxSpending())
-                .customersIds(m.getCustomers().stream().map(Customer::getId).toList())
+                .customersIds(java.util.Collections.emptyList())
                 .build();
     }
 

@@ -22,7 +22,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return accountRepository.findByEmail(email)
+        // Dùng JOIN FETCH để load Account + User trong 1 query, tránh N+1
+        return accountRepository.findByEmailWithUser(email)
                 .map(AccountUserDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("Account not found: " + email));
     }

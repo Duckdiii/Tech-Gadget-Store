@@ -15,6 +15,11 @@ import org.springframework.data.repository.query.Param;
 public interface AccountRepository extends JpaRepository<Account, String> {
     Optional<Account> findByEmail(String email);
 
+    // JOIN FETCH user để tránh N+1: load Account + User trong 1 query duy nhất
+    // phục vụ JwtAuthFilter / CustomUserDetailsService trên mỗi request
+    @Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.email = :email")
+    Optional<Account> findByEmailWithUser(@Param("email") String email);
+
     boolean existsByEmail(String email);
 
     @Query("SELECT a FROM Account a WHERE TYPE(a.user) IN (Manager, Staff) AND a.status = :status")

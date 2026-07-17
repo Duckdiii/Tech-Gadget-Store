@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import { apiFetch } from '../../../services/api'
 
@@ -46,12 +46,27 @@ export default function ProductManagementPage() {
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState(null)
   const [search, setSearch]       = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [selectedBrand, setSelectedBrand] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [page, setPage]           = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalItems, setTotalItems] = useState(0)
+  const pageSize = 20
 
   useEffect(() => {
-    if (location.state?.searchKey) {
+    if (location.state?.searchKey !== undefined) {
       setSearch(location.state.searchKey)
     }
   }, [location.state])
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search)
+      setPage(0)
+    }, 300)
+    return () => clearTimeout(handler)
+  }, [search])
 
   const [panel, setPanel]         = useState(null) // 'add' | 'edit' | null
   const [editingId, setEditingId] = useState(null)
@@ -73,24 +88,50 @@ export default function ProductManagementPage() {
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(null), 3200) }
 
-  function loadProducts() {
+  const handleBrandChange = (e) => {
+    setSelectedBrand(e.target.value)
+    setPage(0)
+  }
+
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value)
+    setPage(0)
+  }
+
+  const handleClearFilters = () => {
+    setSearch('')
+    setSelectedBrand('')
+    setSelectedCategory('')
+    setPage(0)
+  }
+
+  const loadProducts = useCallback(() => {
     setLoading(true)
-    apiFetch('/api/products?page=0&size=100')
-      .then(data => setProducts((data.items || []).map(normalizeProduct)))
+    const params = new URLSearchParams()
+    if (debouncedSearch) params.append('keyword', debouncedSearch)
+    if (selectedBrand) params.append('brandNames', selectedBrand)
+    if (selectedCategory) params.append('categoryNames', selectedCategory)
+    params.append('page', page)
+    params.append('size', pageSize)
+
+    apiFetch(`/api/products/filter?${params.toString()}`)
+      .then(data => {
+        setProducts((data.items || []).map(normalizeProduct))
+        setTotalPages(data.totalPages || 0)
+        setTotalItems(data.totalItems || 0)
+      })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
-  }
+  }, [debouncedSearch, selectedBrand, selectedCategory, page])
 
   useEffect(() => {
     loadProducts()
+  }, [loadProducts])
+
+  useEffect(() => {
     apiFetch('/api/manager/brands').then(setBrands).catch(() => {})
     apiFetch('/api/manager/categories').then(setCategories).catch(() => {})
   }, [])
-
-  const filtered = products.filter(p => {
-    const q = search.toLowerCase()
-    return !q || p.name.toLowerCase().includes(q) || p.brandName.toLowerCase().includes(q) || p.categoryName.toLowerCase().includes(q)
-  })
 
   const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]'
 
@@ -293,6 +334,13 @@ export default function ProductManagementPage() {
     }
   }
 
+  const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1
+  const rangeEnd = Math.min(totalItems, (page + 1) * pageSize)
+  const pageButtons = []
+  const windowStart = Math.max(0, Math.min(page - 2, totalPages - 5))
+  const windowEnd = Math.min(totalPages, windowStart + 5)
+  for (let p = Math.max(0, windowStart); p < windowEnd; p++) pageButtons.push(p)
+
   const panelOpen = panel === 'add' || panel === 'edit'
 
   return (
@@ -309,12 +357,46 @@ export default function ProductManagementPage() {
           </button>
         </div>
 
-        <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex items-center gap-3">
-          <div className="relative flex-1 max-w-xs">
+        <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:max-w-xs">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên, thương hiệu, danh mục..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm sản phẩm..." className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
-          <span className="ml-auto text-xs text-gray-400 shrink-0">{filtered.length} / {products.length} sản phẩm</span>
+
+          <select
+            value={selectedBrand}
+            onChange={handleBrandChange}
+            className="border border-gray-200 rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
+          >
+            <option value="">Tất cả thương hiệu</option>
+            {brands.map(b => (
+              <option key={b.id} value={b.name}>{b.name}</option>
+            ))}
+          </select>
+
+          <select
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            className="border border-gray-200 rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
+          >
+            <option value="">Tất cả danh mục</option>
+            {categories.map(c => (
+              <option key={c.id} value={c.name}>{c.name}</option>
+            ))}
+          </select>
+
+          {(search || selectedBrand || selectedCategory) && (
+            <button
+              onClick={handleClearFilters}
+              className="text-xs text-gray-500 hover:text-red-500 font-semibold px-2 py-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer border-none bg-transparent"
+            >
+              Xóa bộ lọc
+            </button>
+          )}
+
+          <span className="ml-auto text-xs text-gray-400 shrink-0">
+            {totalItems === 0 ? 'Không có sản phẩm nào' : `Hiển thị ${rangeStart} - ${rangeEnd} trên ${totalItems.toLocaleString('vi-VN')} sản phẩm`}
+          </span>
         </div>
 
         {loading && <div className="bg-white rounded border border-gray-200 py-16 text-center text-gray-400 text-sm">Đang tải dữ liệu...</div>}
@@ -332,9 +414,9 @@ export default function ProductManagementPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {filtered.length === 0
+                  {products.length === 0
                     ? <tr><td colSpan={7} className="text-center py-12 text-gray-400">Không tìm thấy sản phẩm nào</td></tr>
-                    : filtered.map(p => (
+                    : products.map(p => (
                       <tr key={p.id} className="hover:bg-gray-50/70 transition-colors group">
                         <td className="px-4 py-3">
                           {p.imageUrl
@@ -365,6 +447,46 @@ export default function ProductManagementPage() {
                   }
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="px-5 py-4 flex items-center justify-between border-t border-gray-100 bg-white">
+              <span className="text-sm text-gray-500">
+                {totalItems === 0 ? 'Không có sản phẩm nào' : `Hiển thị ${rangeStart} - ${rangeEnd} trên ${totalItems.toLocaleString('vi-VN')}`}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {pageButtons.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium cursor-pointer transition-colors ${
+                      page === p ? 'bg-[#E8420A] text-white' : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    {p + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -14,7 +14,6 @@ function normalizeMembership(dto) {
     discountPercentage: dto.benefit?.discountPercentage ?? 0,
     freeShipping: !!dto.benefit?.freeShipping,
     description: dto.benefit?.description || '',
-    customersCount: dto.customersIds?.length || 0,
   }
 }
 
@@ -154,14 +153,14 @@ export default function MembershipManagementPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Hạng', 'Ngưỡng chi tiêu', 'Giảm giá', 'Miễn ship', 'Mô tả quyền lợi', 'Số khách hàng', ''].map((h, i) => (
+                  {['Hạng', 'Ngưỡng chi tiêu', 'Giảm giá', 'Miễn ship', 'Mô tả quyền lợi', ''].map((h, i) => (
                     <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {items.length === 0
-                  ? <tr><td colSpan={7} className="text-center py-12 text-gray-400">Chưa có hạng thành viên nào</td></tr>
+                  ? <tr><td colSpan={6} className="text-center py-12 text-gray-400">Chưa có hạng thành viên nào</td></tr>
                   : items.map(item => (
                     <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
                       <td className="px-4 py-4 font-semibold text-gray-800">{TIER_LABELS[item.tier] || item.tier}</td>
@@ -175,7 +174,6 @@ export default function MembershipManagementPage() {
                           : <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">Không</span>}
                       </td>
                       <td className="px-4 py-4 text-gray-500 max-w-xs truncate">{item.description || '—'}</td>
-                      <td className="px-4 py-4 text-gray-600">{item.customersCount}</td>
                       <td className="px-4 py-4">
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
                           <button onClick={() => openEdit(item)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
