@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 
 const INITIAL_ITEMS = [
   { id: 1, name: 'iPhone 15 Pro Max 256GB', unit: 'Cái', qty: 50, unitPrice: 28500000 },
@@ -17,8 +18,18 @@ function SearchIcon() {
 }
 
 export default function ImportStockPage() {
+  const location = useLocation()
   const [items, setItems] = useState(INITIAL_ITEMS)
   const [note, setNote] = useState('')
+
+  useEffect(() => {
+    if (location.state?.prefilledProductName) {
+      setItems([
+        { id: 1, name: location.state.prefilledProductName, unit: 'Cái', qty: 50, unitPrice: 0 },
+        { id: 2, name: '', unit: '', qty: 0, unitPrice: 0 }
+      ])
+    }
+  }, [location.state])
 
   const updateItem = (id, field, value) => {
     setItems((prev) =>

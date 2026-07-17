@@ -723,12 +723,24 @@ export default function ManagerDashboardPage() {
                   <p className="text-xs text-gray-400">Không có sản phẩm nào sắp hết hàng.</p>
                 ) : (
                   lowStockItems.map((item) => (
-                    <div key={item.id} className="flex items-center gap-3">
+                    <div key={item.id} className="group flex items-center gap-2.5 py-0.5">
                       <span className={`w-2 h-2 rounded-full shrink-0 ${item.stock === 0 ? 'bg-red-500' : 'bg-amber-400'}`} />
-                      <span className="text-xs text-gray-700 flex-1 truncate">{item.name}</span>
-                      <span className={`text-xs font-bold ${item.stock === 0 ? 'text-red-600' : 'text-amber-600'}`}>
-                        {item.stock === 0 ? 'Hết hàng' : item.stock}
-                      </span>
+                      <span className="text-xs text-gray-700 flex-1 truncate" title={item.name}>{item.name}</span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`text-xs font-bold transition-all group-hover:hidden ${item.stock === 0 ? 'text-red-600' : 'text-amber-600'}`}>
+                          {item.stock === 0 ? 'Hết hàng' : item.stock}
+                        </span>
+                        <button
+                          onClick={() => onNavigate('importStock', { state: { prefilledProductName: item.name } })}
+                          className="hidden group-hover:flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold text-white bg-[#E8420A] hover:bg-[#C4350A] rounded cursor-pointer transition-colors shadow-sm"
+                          title="Tạo phiếu nhập hàng nhanh"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Nhập hàng
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
