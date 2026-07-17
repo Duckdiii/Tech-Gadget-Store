@@ -39,6 +39,34 @@
   --ct3:  #94A3B8;
 }
 
+html.dark {
+  /* Brand override */
+  --ink:       #0F172A;
+
+  /* Surface system — dark */
+  --s1:  #1E293B;
+  --s2:  #0F172A;
+  --s3:  #334155;
+
+  /* Border system — dark */
+  --b1:  #334155;
+  --b2:  #475569;
+  --b3:  #64748B;
+
+  /* Text system — light on dark */
+  --t1:  #F8FAFC;
+  --t2:  #E2E8F0;
+  --t3:  #94A3B8;
+
+  /* Content surface palette */
+  --page: #0B0F19;
+  --card: #1E293B;
+  --cb:   #334155;
+  --ct1:  #F8FAFC;
+  --ct2:  #E2E8F0;
+  --ct3:  #94A3B8;
+}
+
 /* ── Keyframes ── */
 @keyframes bell-ring {
   0%   { transform: rotate(0deg); }

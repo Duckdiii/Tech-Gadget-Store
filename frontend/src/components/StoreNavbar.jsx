@@ -129,6 +129,11 @@ export default function StoreNavbar() {
   const [notifications, setNotifications] = useState([])
   const [cartCount, setCartCount] = useState(0)
 
+  const [membership, setMembership] = useState(null)
+  const [ordersCount, setOrdersCount] = useState(0)
+  const [favoritesCount, setFavoritesCount] = useState(0)
+  const [couponsCount, setCouponsCount] = useState(0)
+
   useEffect(() => {
     const fetchCartCount = async () => {
       if (!user || user.role !== 'customer') {
@@ -152,6 +157,48 @@ export default function StoreNavbar() {
     window.addEventListener('cart_changed', fetchCartCount)
     return () => window.removeEventListener('cart_changed', fetchCartCount)
   }, [user])
+
+  useEffect(() => {
+    if (!user || user.role !== 'customer') {
+      setMembership(null)
+      setOrdersCount(0)
+      setFavoritesCount(0)
+      setCouponsCount(0)
+      return
+    }
+
+    // Fetch membership
+    apiFetch('/api/customer/membership')
+      .then(data => setMembership(data))
+      .catch(err => console.error('Error fetching membership:', err))
+
+    // Fetch orders count
+    apiFetch('/api/customer/orders')
+      .then(data => setOrdersCount(data.length ?? 0))
+      .catch(err => console.error('Error fetching orders:', err))
+
+    // Fetch favorites count
+    apiFetch('/api/customer/favorites?page=0&size=1')
+      .then(data => setFavoritesCount(data.totalItems ?? 0))
+      .catch(err => console.error('Error fetching favorites:', err))
+
+    // Fetch coupons count
+    apiFetch('/api/customer/coupons/mine')
+      .then(data => setCouponsCount(data.length ?? 0))
+      .catch(err => console.error('Error fetching coupons:', err))
+  }, [user])
+
+  const getMembershipTierLabel = (tier) => {
+    switch (tier) {
+      case 'STANDARD': return 'Thành viên Đồng'
+      case 'SILVER':   return 'Thành viên Bạc'
+      case 'GOLD':     return 'Thành viên Vàng'
+      case 'PLATINUM': return 'Thành viên Bạch Kim'
+      default:         return 'Thành viên Đồng'
+    }
+  }
+
+  const points = membership ? Math.floor((membership.totalSpent || 0) / 10000) : 0
 
   const bellRef = useRef(null)
   const userMenuRef = useRef(null)
@@ -527,9 +574,11 @@ export default function StoreNavbar() {
                         style={{ backgroundColor: 'var(--b1)', borderRadius: '3px' }}
                       >
                         <span className="text-[11px] font-medium" style={{ color: 'var(--t2)' }}>
-                          <span style={{ color: 'var(--accent)' }}>★</span> Thành viên Bạc
+                          <span style={{ color: 'var(--accent)' }}>★</span> {getMembershipTierLabel(membership?.tier)}
                         </span>
-                        <span className="text-[11px] font-bold" style={{ color: 'var(--accent)' }}>1.250 điểm</span>
+                        <span className="text-[11px] font-bold" style={{ color: 'var(--accent)' }}>
+                          {points.toLocaleString('vi-VN')} điểm
+                        </span>
                       </div>
                     </div>
 
@@ -537,9 +586,9 @@ export default function StoreNavbar() {
                       <>
                         <div className="p-2" style={{ borderBottom: '1px solid var(--b1)' }}>
                           <NavItem onClick={() => { onNavigate('userProfile'); userMenu.setOpen(false) }} icon={<UserIcon />} label="Trang cá nhân" sub="Xem và chỉnh sửa thông tin" />
-                          <NavItem onClick={() => { onNavigate('customerOrders'); userMenu.setOpen(false) }} icon={<OrderIcon />} label="Đơn hàng của tôi" badge="2" />
-                          <NavItem icon={<HeartIcon />} label="Sản phẩm yêu thích" />
-                          <NavItem icon={<CouponIcon />} label="Mã giảm giá của tôi" badge="5" />
+                          <NavItem onClick={() => { onNavigate('customerOrders'); userMenu.setOpen(false) }} icon={<OrderIcon />} label="Đơn hàng của tôi" badge={ordersCount > 0 ? String(ordersCount) : undefined} />
+                          <NavItem onClick={() => { onNavigate('userProfile', { search: '?tab=wishlist' }); userMenu.setOpen(false) }} icon={<HeartIcon />} label="Sản phẩm yêu thích" badge={favoritesCount > 0 ? String(favoritesCount) : undefined} />
+                          <NavItem onClick={() => { onNavigate('userProfile', { search: '?tab=coupons' }); userMenu.setOpen(false) }} icon={<CouponIcon />} label="Mã giảm giá của tôi" badge={couponsCount > 0 ? String(couponsCount) : undefined} />
                         </div>
                         <div className="p-2" style={{ borderBottom: '1px solid var(--b1)' }}>
                           <NavItem onClick={() => setSubPanel('display')} icon={<DisplayIcon />} label="Màn hình & trợ năng" arrow />

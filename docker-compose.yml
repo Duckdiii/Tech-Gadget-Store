@@ -56,6 +56,10 @@ services: #danh sách các container cần dựng
       # Mặc định cors.allowed-origins chỉ cho localhost:5173 (Vite dev) — frontend Docker
       # phục vụ qua Nginx ở cổng 3000 nên cần khai thêm, không thì bị chặn "Invalid CORS request".
       CORS_ALLOWED_ORIGINS: http://localhost:3000
+      # Mặc định app.frontend-url là localhost:5173 (Vite dev) — dùng để build link redirect
+      # sau khi thanh toán VNPay/MoMo (xem PaymentController). Không khai lại thì redirect sẽ
+      # sai cổng, trang kết quả thanh toán (Invoice) sẽ không bao giờ mở được từ Docker frontend.
+      FRONTEND_URL: http://localhost:3000
       #thông tin kết nối 3 hạ tầng
       DB_URL: jdbc:postgresql://postgres:5432/techstore
       DB_USERNAME: techstore

@@ -12,6 +12,7 @@ import com.project.tech_gadget_store.modules.payment.service.PaymentService;
 import com.project.tech_gadget_store.modules.payment.service.VNPayService;
 import jakarta.validation.Valid;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,15 +28,18 @@ public class PaymentController {
     private final VNPayService vnpayService;
     private final PaymentService paymentService;
     private final PaymentLogRepository paymentLogRepository;
+    private final String frontendUrl;
 
     public PaymentController(MomoService momoService,
             VNPayService vnpayService,
             PaymentService paymentService,
-            PaymentLogRepository paymentLogRepository) {
+            PaymentLogRepository paymentLogRepository,
+            @Value("${app.frontend-url}") String frontendUrl) {
         this.momoService = momoService;
         this.vnpayService = vnpayService;
         this.paymentService = paymentService;
         this.paymentLogRepository = paymentLogRepository;
+        this.frontendUrl = frontendUrl;
     }
 
     /**
@@ -113,13 +117,16 @@ public class PaymentController {
                     : "";
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION,
-                            "http://localhost:5173/invoice?orderId=" + targetOrderId + "&success=true")
+                            frontendUrl + "/invoice?orderId=" + targetOrderId + "&success=true")
                     .build();
         }
 
         paymentService.markFailed(orderId, "VNPay responseCode=" + responseCode);
+        PaymentLog logRecord = paymentLogRepository.findById(orderId).orElse(null);
+        String targetOrderId = logRecord != null && logRecord.getOrder() != null ? logRecord.getOrder().getId()
+                : "";
         return ResponseEntity.status(HttpStatus.FOUND)
-                .header(HttpHeaders.LOCATION, "http://localhost:5173/checkout?error=PaymentFailed")
+                .header(HttpHeaders.LOCATION, frontendUrl + "/invoice?orderId=" + targetOrderId + "&success=false")
                 .build();
     }
 
@@ -141,13 +148,16 @@ public class PaymentController {
                     : "";
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION,
-                            "http://localhost:5173/invoice?orderId=" + targetOrderId + "&success=true")
+                            frontendUrl + "/invoice?orderId=" + targetOrderId + "&success=true")
                     .build();
         }
 
         paymentService.markFailed(orderId, "MoMo resultCode=" + resultCode);
+        PaymentLog logRecord = paymentLogRepository.findById(orderId).orElse(null);
+        String targetOrderId = logRecord != null && logRecord.getOrder() != null ? logRecord.getOrder().getId()
+                : "";
         return ResponseEntity.status(HttpStatus.FOUND)
-                .header(HttpHeaders.LOCATION, "http://localhost:5173/checkout?error=PaymentFailed")
+                .header(HttpHeaders.LOCATION, frontendUrl + "/invoice?orderId=" + targetOrderId + "&success=false")
                 .build();
     }
 }

@@ -7,6 +7,7 @@ export function useInvoice() {
   const onNavigate = useNav()
   const [searchParams] = useSearchParams()
   const orderId = searchParams.get('orderId')
+  const success = searchParams.get('success') !== 'false'
 
   const [invoice, setInvoice] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -42,5 +43,6 @@ export function useInvoice() {
     visible,
     setVisible,
     onNavigate,
+    success,
   }
 }

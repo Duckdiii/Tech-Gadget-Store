@@ -128,4 +128,9 @@ export const shopService = {
   async toggleStockSubscription(productId) {
     return axiosClient.post(`/api/customer/products/${productId}/subscription`)
   },
+
+  // Retry payment for an unpaid order
+  async retryPayment(endpoint, payload) {
+    return axiosClient.post(endpoint, payload)
+  },
 }
