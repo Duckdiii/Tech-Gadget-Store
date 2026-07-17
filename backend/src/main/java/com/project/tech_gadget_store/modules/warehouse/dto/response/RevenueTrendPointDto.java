@@ -15,4 +15,11 @@ import lombok.NoArgsConstructor;
 public class RevenueTrendPointDto {
     private String label;
     private BigDecimal revenue;
+    private long orderCount;
+
+    public RevenueTrendPointDto(String label, BigDecimal revenue) {
+        this.label = label;
+        this.revenue = revenue;
+        this.orderCount = 0;
+    }
 }

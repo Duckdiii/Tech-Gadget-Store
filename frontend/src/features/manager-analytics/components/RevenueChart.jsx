@@ -34,7 +34,7 @@ function catmullPath(pts) {
 }
 
 /** data: [{ label, revenue }] — real revenue-report trend points from the backend. */
-export default function RevenueChart({ data = [] }) {
+export default function RevenueChart({ data = [], metric = 'revenue' }) {
   const [hoveredIndex, setHoveredIndex] = useState(null)
   const [pathLength, setPathLength] = useState(0)
   const pathRef = useRef(null)
@@ -47,24 +47,25 @@ export default function RevenueChart({ data = [] }) {
         console.error('Failed to measure SVG path length:', err)
       }
     }
-  }, [data])
+  }, [data, metric])
 
   if (data.length === 0) {
     return (
       <div className="w-full h-[180px] flex items-center justify-center text-sm text-gray-400">
-        Không có dữ liệu doanh thu trong khoảng thời gian này
+        Không có dữ liệu trong khoảng thời gian này
       </div>
     )
   }
 
-  const revenues = data.map((d) => Number(d.revenue) || 0)
-  const maxRevenue = Math.max(...revenues, 0)
+  const isRevenue = metric === 'revenue'
+  const values = data.map((d) => Number(isRevenue ? d.revenue : (d.orderCount || 0)) || 0)
+  const maxValue = Math.max(...values, 0)
 
   const pts = data.map((d, i) => ({
     x: data.length > 1 ? (i / (data.length - 1)) * CW : CW / 2,
-    y: CHART_TOP_Y + CH * (1 - (maxRevenue > 0 ? revenues[i] / maxRevenue : 0)),
+    y: CHART_TOP_Y + CH * (1 - (maxValue > 0 ? values[i] / maxValue : 0)),
     label: formatLabel(d.label),
-    revenue: revenues[i],
+    value: values[i],
   }))
 
   const linePath = pts.length > 1 ? catmullPath(pts) : `M 0 ${pts[0].y.toFixed(1)} L ${CW} ${pts[0].y.toFixed(1)}`
@@ -234,10 +235,10 @@ export default function RevenueChart({ data = [] }) {
             Thời gian: {activePt.label}
           </div>
           <div className="text-xs font-semibold text-slate-200">
-            Doanh thu
+            {isRevenue ? 'Doanh thu' : 'Số đơn hàng'}
           </div>
           <div className="text-sm font-bold text-[#FF7A45] font-mono">
-            {activePt.revenue.toLocaleString('vi-VN')} đ
+            {isRevenue ? `${activePt.value.toLocaleString('vi-VN')} đ` : `${activePt.value.toLocaleString('vi-VN')} đơn`}
           </div>
         </div>
       )}

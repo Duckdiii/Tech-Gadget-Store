@@ -189,6 +189,7 @@ export default function ManagerDashboardPage() {
 
   const [commandMenuOpen, setCommandMenuOpen] = useState(false)
   const [cmdSearch, setCmdSearch] = useState('')
+  const [chartMetric, setChartMetric] = useState('revenue')
   const [searchResults, setSearchResults] = useState({ products: [], customers: [], navs: [] })
   const [searchLoading, setSearchLoading] = useState(false)
   const commandInputRef = useRef(null)
@@ -519,27 +520,47 @@ export default function ManagerDashboardPage() {
         <div className="grid grid-cols-[1fr_280px] gap-5">
           {/* Revenue Chart */}
           <div className="bg-white rounded border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-5 gap-4 flex-wrap">
               <div>
-                <h2 className="text-base font-semibold text-gray-800">{PERIOD_TITLE[chartPeriod]}</h2>
+                <h2 className="text-base font-semibold text-gray-800">
+                  {chartMetric === 'revenue' ? PERIOD_TITLE[chartPeriod] : `Đơn hàng theo ${chartPeriod === 'week' ? 'tuần' : chartPeriod === 'month' ? 'tháng' : 'năm'}`}
+                </h2>
                 <p className="text-xs text-gray-400 mt-0.5">{PERIOD_LABEL[chartPeriod]} · di chuột để xem chi tiết</p>
               </div>
-              <div className="flex gap-1 bg-gray-100 p-1 rounded">
-                {['week', 'month', 'year'].map((p) => (
+              <div className="flex items-center gap-3">
+                {/* Metric Selector */}
+                <div className="flex gap-1 bg-gray-100 p-1 rounded border border-gray-200/50">
                   <button
-                    key={p}
-                    onClick={() => setChartPeriod(p)}
-                    className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${chartPeriod === p ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => setChartMetric('revenue')}
+                    className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${chartMetric === 'revenue' ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   >
-                    {p === 'week' ? 'Tuần' : p === 'month' ? 'Tháng' : 'Năm'}
+                    Doanh thu
                   </button>
-                ))}
+                  <button
+                    onClick={() => setChartMetric('orders')}
+                    className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${chartMetric === 'orders' ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Số đơn hàng
+                  </button>
+                </div>
+                {/* Period Selector */}
+                <div className="flex gap-1 bg-gray-100 p-1 rounded">
+                  {['week', 'month', 'year'].map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setChartPeriod(p)}
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${chartPeriod === p ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                      {p === 'week' ? 'Tuần' : p === 'month' ? 'Tháng' : 'Năm'}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             {chartLoading ? (
               <div className="w-full h-[180px] flex items-center justify-center text-sm text-gray-400">Đang tải...</div>
             ) : (
-              <RevenueChart data={trend} />
+              <RevenueChart data={trend} metric={chartMetric} />
             )}
           </div>
 

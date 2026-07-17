@@ -409,59 +409,69 @@ public class RevenueReportService {
 
         if (start.equals(end)) {
             // Same day: Hourly trend
-            Map<Integer, BigDecimal> hourlyMap = new HashMap<>();
+            Map<Integer, BigDecimal> hourlyRev = new HashMap<>();
+            Map<Integer, Set<String>> hourlyOrders = new HashMap<>();
             for (int h = 0; h < 24; h++) {
-                hourlyMap.put(h, BigDecimal.ZERO);
+                hourlyRev.put(h, BigDecimal.ZERO);
+                hourlyOrders.put(h, new HashSet<>());
             }
             for (MatchedItem mi : matchedItems) {
                 int hour = mi.order.getOrderDate().getHour();
                 BigDecimal rev = mi.item.calculateTotal();
-                hourlyMap.put(hour, hourlyMap.get(hour).add(rev));
+                hourlyRev.put(hour, hourlyRev.get(hour).add(rev));
+                hourlyOrders.get(hour).add(mi.order.getId());
             }
             for (int h = 0; h < 24; h++) {
-                trend.add(new RevenueTrendPointDto(String.format("%02d:00", h), hourlyMap.get(h)));
+                trend.add(new RevenueTrendPointDto(String.format("%02d:00", h), hourlyRev.get(h), hourlyOrders.get(h).size()));
             }
         } else {
             long days = ChronoUnit.DAYS.between(start, end);
             if (days <= 31) {
                 // Daily trend
-                Map<LocalDate, BigDecimal> dailyMap = new HashMap<>();
+                Map<LocalDate, BigDecimal> dailyRev = new HashMap<>();
+                Map<LocalDate, Set<String>> dailyOrders = new HashMap<>();
                 LocalDate curr = start;
                 while (!curr.isAfter(end)) {
-                    dailyMap.put(curr, BigDecimal.ZERO);
+                    dailyRev.put(curr, BigDecimal.ZERO);
+                    dailyOrders.put(curr, new HashSet<>());
                     curr = curr.plusDays(1);
                 }
                 for (MatchedItem mi : matchedItems) {
                     LocalDate date = mi.order.getOrderDate().toLocalDate();
                     BigDecimal rev = mi.item.calculateTotal();
-                    if (dailyMap.containsKey(date)) {
-                        dailyMap.put(date, dailyMap.get(date).add(rev));
+                    if (dailyRev.containsKey(date)) {
+                        dailyRev.put(date, dailyRev.get(date).add(rev));
+                        dailyOrders.get(date).add(mi.order.getId());
                     }
                 }
                 curr = start;
                 while (!curr.isAfter(end)) {
-                    trend.add(new RevenueTrendPointDto(curr.toString(), dailyMap.get(curr)));
+                    trend.add(new RevenueTrendPointDto(curr.toString(), dailyRev.get(curr), dailyOrders.get(curr).size()));
                     curr = curr.plusDays(1);
                 }
             } else {
                 // Monthly trend
-                Map<String, BigDecimal> monthlyMap = new LinkedHashMap<>();
+                Map<String, BigDecimal> monthlyRev = new LinkedHashMap<>();
+                Map<String, Set<String>> monthlyOrders = new HashMap<>();
                 LocalDate curr = start.withDayOfMonth(1);
                 while (!curr.isAfter(end)) {
                     String monthLabel = String.format("%04d-%02d", curr.getYear(), curr.getMonthValue());
-                    monthlyMap.put(monthLabel, BigDecimal.ZERO);
+                    monthlyRev.put(monthLabel, BigDecimal.ZERO);
+                    monthlyOrders.put(monthLabel, new HashSet<>());
                     curr = curr.plusMonths(1);
                 }
                 for (MatchedItem mi : matchedItems) {
                     LocalDateTime od = mi.order.getOrderDate();
                     String monthLabel = String.format("%04d-%02d", od.getYear(), od.getMonthValue());
                     BigDecimal rev = mi.item.calculateTotal();
-                    if (monthlyMap.containsKey(monthLabel)) {
-                        monthlyMap.put(monthLabel, monthlyMap.get(monthLabel).add(rev));
+                    if (monthlyRev.containsKey(monthLabel)) {
+                        monthlyRev.put(monthLabel, monthlyRev.get(monthLabel).add(rev));
+                        monthlyOrders.get(monthLabel).add(mi.order.getId());
                     }
                 }
-                for (Map.Entry<String, BigDecimal> entry : monthlyMap.entrySet()) {
-                    trend.add(new RevenueTrendPointDto(entry.getKey(), entry.getValue()));
+                for (Map.Entry<String, BigDecimal> entry : monthlyRev.entrySet()) {
+                    String label = entry.getKey();
+                    trend.add(new RevenueTrendPointDto(label, entry.getValue(), monthlyOrders.get(label).size()));
                 }
             }
         }
