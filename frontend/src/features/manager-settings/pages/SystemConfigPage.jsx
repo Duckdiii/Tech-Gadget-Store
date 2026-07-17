@@ -1,21 +1,25 @@
 import { useState } from 'react'
 import Toggle from '../components/Toggle'
 import FormLabel from '../components/FormLabel'
+import { useSystemConfig } from '../hooks/useSystemConfig'
 
 const TABS = ['Thông tin chung', 'Thanh toán', 'Vận chuyển', 'Bảo mật']
 
 export default function SystemConfigPage() {
   const [activeTab, setActiveTab] = useState('Thông tin chung')
-  const [form, setForm] = useState({
-    storeName: 'TechStore Vietnam',
-    email: 'contact@techstore.vn',
-    phone: '1900 1234',
-    address: '123 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh',
-  })
   const [maintenance, setMaintenance] = useState(false)
-  const [allowReview, setAllowReview] = useState(true)
-
-  const handleChange = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
+  const {
+    form,
+    handleChange,
+    allowReview,
+    setAllowReview,
+    loading,
+    saving,
+    error,
+    savedAt,
+    handleSave,
+    handleCancel,
+  } = useSystemConfig()
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-white">
@@ -88,49 +92,55 @@ export default function SystemConfigPage() {
                 <div className="bg-white rounded border border-gray-200 px-6 py-6">
                   <h2 className="text-lg font-bold text-gray-900 mb-5">Thông tin cửa hàng</h2>
 
-                  {/* Tên cửa hàng */}
-                  <div className="mb-4">
-                    <FormLabel>Tên cửa hàng</FormLabel>
-                    <input
-                      type="text"
-                      value={form.storeName}
-                      onChange={handleChange('storeName')}
-                      className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
-                    />
-                  </div>
+                  {loading ? (
+                    <p className="text-sm text-gray-400">Đang tải cấu hình...</p>
+                  ) : (
+                    <>
+                      {/* Tên cửa hàng */}
+                      <div className="mb-4">
+                        <FormLabel>Tên cửa hàng</FormLabel>
+                        <input
+                          type="text"
+                          value={form.storeName}
+                          onChange={handleChange('storeName')}
+                          className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
+                        />
+                      </div>
 
-                  {/* Email + Phone side by side */}
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <FormLabel>Email liên hệ</FormLabel>
-                      <input
-                        type="email"
-                        value={form.email}
-                        onChange={handleChange('email')}
-                        className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <FormLabel>Số điện thoại</FormLabel>
-                      <input
-                        type="text"
-                        value={form.phone}
-                        onChange={handleChange('phone')}
-                        className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
+                      {/* Email + Phone side by side */}
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <FormLabel>Email liên hệ</FormLabel>
+                          <input
+                            type="email"
+                            value={form.contactEmail}
+                            onChange={handleChange('contactEmail')}
+                            className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <FormLabel>Số điện thoại</FormLabel>
+                          <input
+                            type="text"
+                            value={form.contactPhone}
+                            onChange={handleChange('contactPhone')}
+                            className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
+                          />
+                        </div>
+                      </div>
 
-                  {/* Địa chỉ */}
-                  <div>
-                    <FormLabel>Địa chỉ chính</FormLabel>
-                    <input
-                      type="text"
-                      value={form.address}
-                      onChange={handleChange('address')}
-                      className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
-                    />
-                  </div>
+                      {/* Địa chỉ */}
+                      <div>
+                        <FormLabel>Địa chỉ chính</FormLabel>
+                        <input
+                          type="text"
+                          value={form.address}
+                          onChange={handleChange('address')}
+                          className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Thiết lập hiển thị */}
@@ -205,11 +215,23 @@ export default function SystemConfigPage() {
 
             {/* Bottom actions */}
             <div className="border-t border-gray-200 pt-5 flex items-center justify-end gap-3">
-              <button className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-6 rounded text-sm transition-colors cursor-pointer">
+              {error && <p className="text-sm text-red-600 mr-auto">{error}</p>}
+              {!error && savedAt && (
+                <p className="text-sm text-green-600 mr-auto">Đã lưu lúc {savedAt.toLocaleTimeString('vi-VN')}</p>
+              )}
+              <button
+                onClick={handleCancel}
+                disabled={loading || saving}
+                className="border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2.5 px-6 rounded text-sm transition-colors cursor-pointer"
+              >
                 Hủy
               </button>
-              <button className="bg-[#0D0F14] hover:bg-[#0D0F14] text-white font-semibold py-2.5 px-6 rounded text-sm transition-colors cursor-pointer">
-                Lưu thay đổi
+              <button
+                onClick={handleSave}
+                disabled={loading || saving}
+                className="bg-[#0D0F14] hover:bg-[#0D0F14] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-6 rounded text-sm transition-colors cursor-pointer"
+              >
+                {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
               </button>
             </div>
           </>

@@ -11,6 +11,7 @@ import com.project.tech_gadget_store.modules.review.dto.response.ReviewHighlight
 import com.project.tech_gadget_store.modules.review.dto.response.ReviewResponseDto;
 import com.project.tech_gadget_store.modules.review.entity.Review;
 import com.project.tech_gadget_store.modules.review.repository.ReviewRepository;
+import com.project.tech_gadget_store.modules.settings.service.StoreSettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,9 +31,14 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final StoreSettingsService storeSettingsService;
 
     @Transactional
     public ReviewResponseDto createReview(ReviewRequestDto requestDto, String authorUserId) {
+        if (!storeSettingsService.isProductReviewsAllowed()) {
+            throw new ForbiddenException("Tính năng đánh giá sản phẩm hiện đang tạm khoá.");
+        }
+
         Product product = productRepository.findById(requestDto.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + requestDto.getProductId()));
 
