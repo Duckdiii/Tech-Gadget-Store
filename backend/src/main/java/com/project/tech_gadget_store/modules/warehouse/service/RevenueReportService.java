@@ -184,6 +184,7 @@ public class RevenueReportService {
             return RevenueReportResponseDto.builder()
                     .totalRevenue(BigDecimal.ZERO)
                     .totalOrders(0)
+                    .totalQuantitySold(0)
                     .message("No revenue data found for the selected period")
                     .trend(Collections.emptyList())
                     .revenueByCategory(Collections.emptyList())
@@ -305,9 +306,16 @@ public class RevenueReportService {
         // 7. Trend Chart
         List<RevenueTrendPointDto> trend = generateTrend(matchedItems, calculatedStart.toLocalDate(), calculatedEnd.toLocalDate());
 
+        // Total units sold across ALL products, not just the top 5 in topSellingProducts —
+        // that list is capped at 5 so its .length can't be used as a "products sold" count.
+        int totalQuantitySold = productSalesMap.values().stream()
+                .mapToInt(agg -> agg.quantitySold)
+                .sum();
+
         return RevenueReportResponseDto.builder()
                 .totalRevenue(totalRevenue)
                 .totalOrders(totalOrders)
+                .totalQuantitySold(totalQuantitySold)
                 .trend(trend)
                 .revenueByCategory(revenueByCategory)
                 .revenueByBrand(revenueByBrand)

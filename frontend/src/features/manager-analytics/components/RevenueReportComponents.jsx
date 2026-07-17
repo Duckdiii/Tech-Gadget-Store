@@ -2,6 +2,18 @@
 /* ── Area Chart Constants & Helpers ── */
 const CW = 560, CH = 190, CPAD_B = 40
 
+function formatTrendLabel(label) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(label)) {
+    const [, m, d] = label.split('-')
+    return `${d}/${m}`
+  }
+  if (/^\d{4}-\d{2}$/.test(label)) {
+    const [, m] = label.split('-')
+    return `T${Number(m)}`
+  }
+  return label // đã là "HH:00" (xu hướng theo giờ)
+}
+
 function catmullPath(pts) {
   if (pts.length === 0) return ''
   if (pts.length === 1) return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`
@@ -29,7 +41,8 @@ export function AreaChart({ trend }) {
     return {
       x: trend.length > 1 ? (i / (trend.length - 1)) * CW : CW / 2,
       y: 8 + CH * (1 - val),
-      label: d.label,
+      label: formatTrendLabel(d.label),
+      revenue: d.revenue || 0,
     }
   })
 
@@ -40,6 +53,9 @@ export function AreaChart({ trend }) {
   const linePath = catmullPath(pts)
   const areaPath = trend.length > 1 ? `${linePath} L ${CW} ${CH + 8} L 0 ${CH + 8} Z` : ''
   const gridYs = [CH * 0.25 + 8, CH * 0.5 + 8, CH * 0.75 + 8]
+  // Thin out x-axis labels when there are many points (daily-for-a-month, hourly-for-a-day) —
+  // rendering one <text> per point is what caused every label to overlap illegibly.
+  const labelStep = Math.max(1, Math.ceil(pts.length / 10))
 
   return (
     <svg viewBox={`0 0 ${CW} ${CH + CPAD_B}`} className="w-full h-auto">
@@ -66,11 +82,12 @@ export function AreaChart({ trend }) {
         <g key={i}>
           <circle cx={pt.x} cy={pt.y} r="5.5" fill="#111827" />
           <circle cx={pt.x} cy={pt.y} r="2.5" fill="white" />
+          <title>{`${pt.label}: ${pt.revenue.toLocaleString('vi-VN')} đ`}</title>
         </g>
       ))}
 
       {/* X-axis labels */}
-      {pts.map((pt, i) => (
+      {pts.map((pt, i) => (i % labelStep === 0) && (
         <text key={i} x={pt.x} y={CH + CPAD_B - 6} textAnchor="middle" fontSize="13" fill="#9ca3af" fontFamily="system-ui,sans-serif">
           {pt.label}
         </text>

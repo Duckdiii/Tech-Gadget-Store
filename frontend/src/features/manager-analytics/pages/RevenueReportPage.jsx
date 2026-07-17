@@ -1,7 +1,22 @@
-import StoreNavbar from '../../../components/StoreNavbar'
 import { useRevenueReport } from '../hooks/useRevenueReport'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
+
+/** null = no baseline to compare against (previous period was 0) — rendered as "Mới" instead of a misleading +∞%. undefined = previous-period data not available yet. */
+function pctGrowth(current, previous) {
+  if (previous === null || previous === undefined) return undefined
+  const c = Number(current) || 0
+  const p = Number(previous) || 0
+  if (p === 0) return c === 0 ? 0 : null
+  return ((c - p) / p) * 100
+}
+
+function fmtGrowth(growth) {
+  if (growth === undefined) return '…'
+  if (growth === null) return 'Mới'
+  const rounded = Math.round(growth * 10) / 10
+  return `${rounded >= 0 ? '+' : ''}${rounded}%`
+}
 
 import { AreaChart, DonutChart, TrendBadge } from '../components/RevenueReportComponents'
 
@@ -13,12 +28,11 @@ const PERIOD_OPTIONS = [
 ]
 
 export default function RevenueReportPage() {
-  const { data, loading, filter, setFilter, handleExport } = useRevenueReport()
+  const { data, previousData, loading, filter, setFilter, handleExport } = useRevenueReport()
 
   if (loading) {
     return (
       <div className="flex-1 flex flex-col bg-gray-50 min-h-screen">
-        <StoreNavbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
         </div>
@@ -29,6 +43,7 @@ export default function RevenueReportPage() {
   const report = data || {
     totalRevenue: 0,
     totalOrders: 0,
+    totalQuantitySold: 0,
     trend: [],
     revenueByCategory: [],
     topSellingProducts: [],
@@ -44,13 +59,23 @@ export default function RevenueReportPage() {
     setFilter((f) => ({ ...f, period: 'CUSTOM', [key]: value }))
   }
 
+  const avgOrderValue = report.totalOrders > 0 ? report.totalRevenue / report.totalOrders : 0
+  const prevAvgOrderValue = previousData
+    ? (previousData.totalOrders > 0 ? previousData.totalRevenue / previousData.totalOrders : 0)
+    : undefined
+
+  const revenueGrowth = pctGrowth(report.totalRevenue, previousData?.totalRevenue)
+  const ordersGrowth = pctGrowth(report.totalOrders, previousData?.totalOrders)
+  const avgOrderGrowth = pctGrowth(avgOrderValue, prevAvgOrderValue)
+  const quantityGrowth = pctGrowth(report.totalQuantitySold, previousData?.totalQuantitySold)
+
   const kpis = [
     {
       label: 'TỔNG DOANH THU',
       value: fmt(report.totalRevenue),
-      trend: '+12%',
-      trendExtra: ' so với tháng trước',
-      trendUp: true,
+      trend: fmtGrowth(revenueGrowth),
+      trendExtra: ' so với kỳ trước',
+      trendUp: (revenueGrowth ?? 0) >= 0,
       iconBg: 'bg-orange-50',
       iconColor: 'text-[#E8420A]',
       icon: (
@@ -62,9 +87,9 @@ export default function RevenueReportPage() {
     {
       label: 'TỔNG ĐƠN HÀNG',
       value: report.totalOrders.toLocaleString(),
-      trend: '+5%',
-      trendExtra: '',
-      trendUp: true,
+      trend: fmtGrowth(ordersGrowth),
+      trendExtra: ' so với kỳ trước',
+      trendUp: (ordersGrowth ?? 0) >= 0,
       iconBg: 'bg-orange-100',
       iconColor: 'text-orange-500',
       icon: (
@@ -75,10 +100,10 @@ export default function RevenueReportPage() {
     },
     {
       label: 'GIÁ TRỊ ĐƠN TB',
-      value: report.totalOrders > 0 ? fmt(report.totalRevenue / report.totalOrders) : '0 đ',
-      trend: '+3%',
-      trendExtra: '',
-      trendUp: true,
+      value: fmt(avgOrderValue),
+      trend: fmtGrowth(avgOrderGrowth),
+      trendExtra: ' so với kỳ trước',
+      trendUp: (avgOrderGrowth ?? 0) >= 0,
       iconBg: 'bg-amber-100',
       iconColor: 'text-amber-600',
       icon: (
@@ -89,10 +114,10 @@ export default function RevenueReportPage() {
     },
     {
       label: 'SẢN PHẨM ĐÃ BÁN',
-      value: report.topSellingProducts.length.toString(),
-      trend: '+15%',
-      trendExtra: '',
-      trendUp: true,
+      value: report.totalQuantitySold.toLocaleString('vi-VN'),
+      trend: fmtGrowth(quantityGrowth),
+      trendExtra: ' so với kỳ trước',
+      trendUp: (quantityGrowth ?? 0) >= 0,
       iconBg: 'bg-orange-50',
       iconColor: 'text-[#E8420A]',
       icon: (
@@ -128,8 +153,6 @@ export default function RevenueReportPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50 text-gray-800">
-      <StoreNavbar />
-
       {/* Page content */}
       <div className="flex-1 px-8 py-7 space-y-6">
         {/* Title row */}

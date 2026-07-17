@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 public class RevenueReportResponseDto {
     private BigDecimal totalRevenue;
     private int totalOrders;
+    private int totalQuantitySold;
     private String message;
     private List<RevenueTrendPointDto> trend;
     private List<CategoryRevenueDto> revenueByCategory;

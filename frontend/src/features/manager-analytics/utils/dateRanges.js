@@ -57,4 +57,42 @@ export function chartPeriodToFilter(chartPeriod) {
   return { period: 'CUSTOM', startDate: toISODate(yearStart), endDate: toISODate(today) }
 }
 
+/**
+ * Resolves a revenue-report filter (DAILY/WEEKLY/MONTHLY/CUSTOM) to the concrete {startDate,
+ * endDate} it covers — mirroring RevenueReportService.getRevenueReport's own date-resolution
+ * switch exactly, so the "previous period" comparison below lines up with what the backend
+ * actually queried. Returns null for an incomplete CUSTOM filter (dates not chosen yet).
+ */
+export function resolveReportFilterRange(filter) {
+  const today = new Date()
+  const period = (filter?.period || 'MONTHLY').toUpperCase()
+
+  if (period === 'DAILY') {
+    return { startDate: toISODate(today), endDate: toISODate(today) }
+  }
+  if (period === 'WEEKLY') {
+    const day = today.getDay() // 0=Sun..6=Sat
+    const diffToMonday = day === 0 ? 6 : day - 1
+    const monday = addDays(today, -diffToMonday)
+    return { startDate: toISODate(monday), endDate: toISODate(today) }
+  }
+  if (period === 'CUSTOM') {
+    if (!filter.startDate || !filter.endDate) return null
+    return { startDate: filter.startDate, endDate: filter.endDate }
+  }
+  // MONTHLY (and the default fallback, matching the backend's own default-to-MONTHLY behavior)
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
+  return { startDate: toISODate(monthStart), endDate: toISODate(today) }
+}
+
+/** The immediately-preceding window of the same length — e.g. for [Jul 1, Jul 17] (17 days), returns [Jun 14, Jun 30]. */
+export function previousPeriodOf({ startDate, endDate }) {
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const length = daySpan(start, end)
+  const prevEnd = addDays(start, -1)
+  const prevStart = addDays(prevEnd, -(length - 1))
+  return { startDate: toISODate(prevStart), endDate: toISODate(prevEnd) }
+}
+
 export { toISODate }
