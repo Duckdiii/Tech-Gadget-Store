@@ -27,7 +27,9 @@ public class InvoiceController {
             @PathVariable String orderId,
             Authentication authentication) {
         String email = authentication.getName();
-        return ResponseEntity.ok(invoiceService.getOrCreateInvoice(orderId, email));
+        boolean isManagerOrStaff = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER") || a.getAuthority().equals("ROLE_STAFF"));
+        return ResponseEntity.ok(invoiceService.getOrCreateInvoice(orderId, email, isManagerOrStaff));
     }
 
     @GetMapping("/order/{orderId}/pdf")
@@ -35,7 +37,9 @@ public class InvoiceController {
             @PathVariable String orderId,
             Authentication authentication) {
         String email = authentication.getName();
-        byte[] pdfBytes = invoiceService.generateInvoicePdf(orderId, email);
+        boolean isManagerOrStaff = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER") || a.getAuthority().equals("ROLE_STAFF"));
+        byte[] pdfBytes = invoiceService.generateInvoicePdf(orderId, email, isManagerOrStaff);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);

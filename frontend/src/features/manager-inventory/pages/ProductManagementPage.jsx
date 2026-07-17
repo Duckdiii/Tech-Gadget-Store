@@ -322,48 +322,50 @@ export default function ProductManagementPage() {
 
         {!loading && !error && (
           <div className="bg-white rounded border border-gray-200 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  {['Ảnh', 'Tên sản phẩm', 'Thương hiệu', 'Danh mục', 'Giá từ', 'Phiên bản', ''].map((h, i) => (
-                    <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filtered.length === 0
-                  ? <tr><td colSpan={7} className="text-center py-12 text-gray-400">Không tìm thấy sản phẩm nào</td></tr>
-                  : filtered.map(p => (
-                    <tr key={p.id} className="hover:bg-gray-50/70 transition-colors group">
-                      <td className="px-4 py-3">
-                        {p.imageUrl
-                          ? <img src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded object-cover border border-gray-100" />
-                          : <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">N/A</div>}
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-gray-800">{p.name || '—'}</td>
-                      <td className="px-4 py-4 text-gray-600">{p.brandName || '—'}</td>
-                      <td className="px-4 py-4 text-gray-600">{p.categoryName || '—'}</td>
-                      <td className="px-4 py-4 text-gray-600">{formatCurrency(p.minPrice)}</td>
-                      <td className="px-4 py-4">
-                        {p.hasVariants
-                          ? <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Có phiên bản</span>
-                          : <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">Chưa có</span>}
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
-                          <button onClick={() => openEdit(p)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
-                            Sửa →
-                          </button>
-                          <button onClick={() => setDiscontinueId(p.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50">
-                            Ngừng kinh doanh
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[950px]">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    {['Ảnh', 'Tên sản phẩm', 'Thương hiệu', 'Danh mục', 'Giá từ', 'Phiên bản', ''].map((h, i) => (
+                      <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {filtered.length === 0
+                    ? <tr><td colSpan={7} className="text-center py-12 text-gray-400">Không tìm thấy sản phẩm nào</td></tr>
+                    : filtered.map(p => (
+                      <tr key={p.id} className="hover:bg-gray-50/70 transition-colors group">
+                        <td className="px-4 py-3">
+                          {p.imageUrl
+                            ? <img src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded object-cover border border-gray-100" />
+                            : <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">N/A</div>}
+                        </td>
+                        <td className="px-4 py-4 font-semibold text-gray-800">{p.name || '—'}</td>
+                        <td className="px-4 py-4 text-gray-600">{p.brandName || '—'}</td>
+                        <td className="px-4 py-4 text-gray-600">{p.categoryName || '—'}</td>
+                        <td className="px-4 py-4 text-gray-600">{formatCurrency(p.minPrice)}</td>
+                        <td className="px-4 py-4">
+                          {p.hasVariants
+                            ? <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Có phiên bản</span>
+                            : <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">Chưa có</span>}
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
+                            <button onClick={() => openEdit(p)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
+                              Sửa →
+                            </button>
+                            <button onClick={() => setDiscontinueId(p.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50">
+                              Ngừng kinh doanh
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
@@ -371,7 +373,7 @@ export default function ProductManagementPage() {
       {panelOpen && <div className="fixed inset-0 bg-black/30 z-40" onClick={closePanel} />}
 
       {panelOpen && (
-        <div className="fixed top-0 right-0 h-full w-[520px] bg-white shadow-2xl z-50 flex flex-col">
+        <div className="fixed top-0 right-0 h-full w-full sm:w-[520px] bg-white shadow-2xl z-50 flex flex-col">
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <div>
               <h2 className="text-lg font-bold text-gray-900">{panel === 'add' ? 'Thêm sản phẩm mới' : 'Sửa sản phẩm'}</h2>
@@ -507,7 +509,7 @@ export default function ProductManagementPage() {
           <>
             <div className="fixed inset-0 bg-black/50 z-[60]" />
             <div className="fixed inset-0 flex items-center justify-center z-[60]">
-              <div className="bg-white rounded shadow-2xl w-[380px] p-6">
+              <div className="bg-white rounded shadow-2xl w-full max-w-[380px] mx-4 p-6">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>
                 <h3 className="text-lg font-bold text-gray-900 text-center">Ngừng kinh doanh sản phẩm?</h3>
                 <p className="text-sm text-gray-500 text-center mt-2">

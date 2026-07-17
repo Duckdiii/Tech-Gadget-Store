@@ -1,10 +1,14 @@
 import axiosClient from '../../../config/axiosClient'
 
 export const managerOrderService = {
-  async getManagerOrders(status) {
-    const url = status && status !== 'all' 
-      ? `/api/manager/orders?status=${status}` 
-      : '/api/manager/orders'
+  async getManagerOrders(status, cursor, limit = 20) {
+    let url = '/api/manager/orders'
+    const params = new URLSearchParams()
+    if (status && status !== 'all') params.append('status', status)
+    if (cursor) params.append('cursor', cursor)
+    params.append('limit', limit)
+    const queryString = params.toString()
+    if (queryString) url += `?${queryString}`
     return axiosClient.get(url)
   },
 

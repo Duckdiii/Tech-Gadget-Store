@@ -43,14 +43,16 @@ public class InvoiceService {
     }
 
     @Transactional
-    public InvoiceResponseDto getOrCreateInvoice(String orderId, String customerEmail) {
+    public InvoiceResponseDto getOrCreateInvoice(String orderId, String customerEmail, boolean isManagerOrStaff) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại: " + orderId));
 
-        // Security check: Only the customer who placed the order can view the invoice
-        if (order.getCustomer() == null || order.getCustomer().getAccount() == null ||
-                !order.getCustomer().getAccount().getEmail().equals(customerEmail)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xem hoá đơn này");
+        // Security check: Only the customer who placed the order (or a manager/staff) can view the invoice
+        if (!isManagerOrStaff) {
+            if (order.getCustomer() == null || order.getCustomer().getAccount() == null ||
+                    !order.getCustomer().getAccount().getEmail().equals(customerEmail)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xem hoá đơn này");
+            }
         }
 
         // Validate order status
@@ -90,9 +92,9 @@ public class InvoiceService {
     }
 
     @Transactional(readOnly = true)
-    public byte[] generateInvoicePdf(String orderId, String customerEmail) {
+    public byte[] generateInvoicePdf(String orderId, String customerEmail, boolean isManagerOrStaff) {
         // Retrieve or create first to perform security checks and compute amounts
-        InvoiceResponseDto dto = getOrCreateInvoice(orderId, customerEmail);
+        InvoiceResponseDto dto = getOrCreateInvoice(orderId, customerEmail, isManagerOrStaff);
         
         Invoice invoice = invoiceRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hoá đơn"));

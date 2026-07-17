@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNav } from '../../../hooks/useNav'
 import { useManagerOrders } from '../hooks/useManagerOrders'
 import PayIcon from './PayIcon'
+import OrderDetailModal from './OrderDetailModal'
 
 function fmt(n) {
   return (n || 0).toLocaleString('vi-VN') + ' đ'
@@ -19,12 +20,16 @@ const ORDER_FILTER_TABS = [
 export default function OrderListTab() {
   const onNavigate = useNav()
   const [search, setSearch] = useState('')
+  const [selectedOrderId, setSelectedOrderId] = useState(null)
   const {
     orders,
     loading,
+    loadingMore,
+    hasNext,
     activeFilter,
     setActiveFilter,
     handleUpdateStatus,
+    fetchOrders,
   } = useManagerOrders()
 
   const filteredOrders = orders.filter((order) => {
@@ -139,7 +144,7 @@ export default function OrderListTab() {
                       </div>
                       <div className="text-right">
                         <button
-                          onClick={() => onNavigate('invoice', { search: `?orderId=${order.id}` })}
+                          onClick={() => setSelectedOrderId(order.id)}
                           className="text-sm font-medium cursor-pointer text-[#E8420A] hover:underline bg-transparent border-none"
                         >
                           Chi tiết
@@ -149,9 +154,26 @@ export default function OrderListTab() {
                   )
                 })
               )}
+              {hasNext && (
+                <div className="flex justify-center py-4 border-t border-gray-100 bg-gray-50/50">
+                  <button
+                    onClick={() => fetchOrders(false)}
+                    disabled={loadingMore}
+                    className="px-4 py-2 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded cursor-pointer disabled:opacity-60 transition-colors"
+                  >
+                    {loadingMore ? 'Đang tải thêm...' : 'Xem thêm đơn hàng'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
+      )}
+      {selectedOrderId && (
+        <OrderDetailModal
+          orderId={selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
+        />
       )}
     </>
   )
