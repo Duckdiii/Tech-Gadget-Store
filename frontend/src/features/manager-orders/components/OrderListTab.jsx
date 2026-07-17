@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNav } from '../../../hooks/useNav'
 import { useManagerOrders } from '../hooks/useManagerOrders'
 import PayIcon from './PayIcon'
 import OrderDetailModal from './OrderDetailModal'
@@ -18,7 +17,6 @@ const ORDER_FILTER_TABS = [
 ]
 
 export default function OrderListTab() {
-  const onNavigate = useNav()
   const [search, setSearch] = useState('')
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const {

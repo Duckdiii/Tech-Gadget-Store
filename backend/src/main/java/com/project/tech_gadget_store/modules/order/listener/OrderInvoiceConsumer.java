@@ -42,7 +42,10 @@ public class OrderInvoiceConsumer {
             }
 
             String customerEmail = order.getCustomer().getAccount().getEmail();
-            invoiceService.getOrCreateInvoice(order.getId(), customerEmail);
+            // Runs as a background system process (not on behalf of any authenticated caller),
+            // so it skips the customer-ownership check the same way a manager/staff request
+            // would — isManagerOrStaff=true.
+            invoiceService.getOrCreateInvoice(order.getId(), customerEmail, true);
             log.info("Order {} invoice created", order.getId());
         } finally {
             MDC.remove(CorrelationIdFilter.MDC_KEY);
