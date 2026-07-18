@@ -42,7 +42,7 @@ class InvoiceControllerTest {
                 .build();
 
         // Stubbing
-        when(invoiceService.getOrCreateInvoice(eq("order-123"), any())).thenReturn(responseDto);
+        when(invoiceService.getOrCreateInvoice(eq("order-123"), any(), anyBoolean())).thenReturn(responseDto);
 
         mockMvc.perform(get("/api/customer/invoices/order/order-123")
                         .principal(new UsernamePasswordAuthenticationToken("user@example.com", null)))
@@ -55,7 +55,7 @@ class InvoiceControllerTest {
     void downloadInvoicePdf_Success() throws Exception {
         byte[] pdfBytes = "PDF content".getBytes();
 
-        when(invoiceService.generateInvoicePdf(eq("order-123"), any())).thenReturn(pdfBytes);
+        when(invoiceService.generateInvoicePdf(eq("order-123"), any(), anyBoolean())).thenReturn(pdfBytes);
 
         mockMvc.perform(get("/api/customer/invoices/order/order-123/pdf")
                         .principal(new UsernamePasswordAuthenticationToken("user@example.com", null)))

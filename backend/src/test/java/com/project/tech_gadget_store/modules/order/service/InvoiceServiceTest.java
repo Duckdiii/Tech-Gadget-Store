@@ -61,7 +61,7 @@ class InvoiceServiceTest {
         when(orderRepository.findById("invalid-id")).thenReturn(Optional.empty());
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-                invoiceService.getOrCreateInvoice("invalid-id", "user@example.com"));
+                invoiceService.getOrCreateInvoice("invalid-id", "user@example.com", false));
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertTrue(exception.getReason().contains("Đơn hàng không tồn tại"));
@@ -75,7 +75,7 @@ class InvoiceServiceTest {
         when(account.getEmail()).thenReturn("owner@example.com");
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-                invoiceService.getOrCreateInvoice("order-1", "stranger@example.com"));
+                invoiceService.getOrCreateInvoice("order-1", "stranger@example.com", false));
 
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
         assertTrue(exception.getReason().contains("Bạn không có quyền xem hoá đơn này"));
@@ -90,7 +90,7 @@ class InvoiceServiceTest {
         when(order.getOrderStatus()).thenReturn(OrderStatus.CANCELLED);
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-                invoiceService.getOrCreateInvoice("order-1", "owner@example.com"));
+                invoiceService.getOrCreateInvoice("order-1", "owner@example.com", false));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         assertTrue(exception.getReason().contains("Không thể xuất hoá đơn cho đơn hàng đã huỷ"));
@@ -109,7 +109,7 @@ class InvoiceServiceTest {
         when(invoiceRepository.findByOrderId("order-1")).thenReturn(Optional.of(invoice));
         when(invoiceMapper.toInvoiceResponseDto(invoice)).thenReturn(responseDto);
 
-        InvoiceResponseDto result = invoiceService.getOrCreateInvoice("order-1", "owner@example.com");
+        InvoiceResponseDto result = invoiceService.getOrCreateInvoice("order-1", "owner@example.com", false);
 
         assertNotNull(result);
         verify(invoiceRepository, never()).save(any());
@@ -135,7 +135,7 @@ class InvoiceServiceTest {
         when(invoiceRepository.save(any(Invoice.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(invoiceMapper.toInvoiceResponseDto(any(Invoice.class))).thenReturn(responseDto);
 
-        InvoiceResponseDto result = invoiceService.getOrCreateInvoice("order-1", "owner@example.com");
+        InvoiceResponseDto result = invoiceService.getOrCreateInvoice("order-1", "owner@example.com", false);
 
         assertNotNull(result);
         verify(invoiceRepository, times(1)).save(any(Invoice.class));
