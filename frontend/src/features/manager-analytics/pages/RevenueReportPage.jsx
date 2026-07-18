@@ -22,6 +22,7 @@ function fmtGrowth(growth) {
 
 import { DonutChart, TrendBadge } from '../components/RevenueReportComponents'
 import RevenueChart from '../components/RevenueChart'
+import Skeleton from '../components/Skeleton'
 
 const PERIOD_OPTIONS = [
   { value: 'DAILY', label: 'Hôm nay' },
@@ -29,6 +30,14 @@ const PERIOD_OPTIONS = [
   { value: 'MONTHLY', label: 'Tháng này' },
   { value: 'CUSTOM', label: 'Tùy chỉnh' },
 ]
+
+/** Deterministic pseudo-random bar heights (%) for the chart skeleton — varied but stable across re-renders. */
+const CHART_SKELETON_HEIGHTS = [45, 70, 55, 85, 40, 65, 90, 50, 75, 60, 80, 48]
+
+const DONUT_SEGMENT_COLORS = ['#E8420A', '#92400e', '#0ea5e9', '#8b5cf6', '#d1d5db']
+
+/** Table columns shrink on small screens, then widen back to the original sizing at lg — the same breakpoint pattern used for the responsive fix on the Dashboard page. */
+const PRODUCT_TABLE_COLS = 'grid-cols-[2.5rem_1fr_5.5rem_7rem] sm:grid-cols-[3rem_1fr_8rem_10rem] lg:grid-cols-[3rem_1fr_10rem_12rem]'
 
 export default function RevenueReportPage() {
   const location = useLocation()
@@ -41,6 +50,8 @@ export default function RevenueReportPage() {
     totalQuantitySold: 0,
     trend: [],
     revenueByCategory: [],
+    revenueByBrand: [],
+    revenueByPaymentMethod: [],
     topSellingProducts: [],
     topProfitProducts: [],
     cancellationRate: 0,
@@ -146,12 +157,24 @@ export default function RevenueReportPage() {
     }
   })
 
+  // Payment method donut segments
+  const totalPaymentRevenue = (report.revenueByPaymentMethod || []).reduce((s, p) => s + (p.revenue || 0), 0)
+  const paymentSegments = (report.revenueByPaymentMethod || []).map((p, i) => ({
+    pct: totalPaymentRevenue > 0 ? (p.revenue || 0) / totalPaymentRevenue : 0,
+    color: DONUT_SEGMENT_COLORS[i] || DONUT_SEGMENT_COLORS[DONUT_SEGMENT_COLORS.length - 1],
+    label: p.paymentMethodName,
+  }))
+
+  // Brand revenue bars, sorted highest first
+  const sortedBrands = [...(report.revenueByBrand || [])].sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
+  const maxBrandRevenue = Math.max(...sortedBrands.map((b) => Number(b.revenue) || 0), 0)
+
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50 text-gray-800">
       {/* Page content */}
-      <div className="flex-1 px-8 py-7 space-y-6">
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-7 space-y-6">
         {/* Title row */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h1 className="text-3xl font-bold text-gray-900">Báo cáo doanh thu</h1>
           <div className="flex items-center gap-3">
             <button onClick={handleExport} className="flex items-center gap-2 bg-[#0D0F14] hover:bg-slate-900 text-white font-semibold py-2 px-5 rounded text-sm transition-colors cursor-pointer border-none">
@@ -214,22 +237,35 @@ export default function RevenueReportPage() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-          {kpis.map((card, i) => (
-            <div key={i} className="bg-white rounded border border-gray-200 px-5 py-5">
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-xs font-bold text-gray-400 tracking-wider">{card.label}</span>
-                <span className={`w-9 h-9 flex items-center justify-center rounded ${card.iconBg} ${card.iconColor}`}>
-                  {card.icon}
-                </span>
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="bg-white rounded border border-gray-200 px-5 py-5">
+                <div className="flex items-start justify-between mb-3">
+                  <Skeleton className="w-20 h-3" />
+                  <Skeleton className="w-9 h-9" />
+                </div>
+                <Skeleton className="w-24 h-7 mb-3" />
+                <Skeleton className="w-28 h-3" />
               </div>
-              <p className="text-2xl font-black text-gray-900 leading-tight mb-3">{card.value}</p>
-              {card.caption ? (
-                <p className="text-[11px] text-gray-400">{card.caption}</p>
-              ) : (
-                <TrendBadge trend={card.trend} trendExtra={card.trendExtra} trendUp={card.trendUp} />
-              )}
-            </div>
-          ))}
+            ))
+          ) : (
+            kpis.map((card, i) => (
+              <div key={i} className="bg-white rounded border border-gray-200 px-5 py-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-xs font-bold text-gray-400 tracking-wider">{card.label}</span>
+                  <span className={`w-9 h-9 flex items-center justify-center rounded ${card.iconBg} ${card.iconColor}`}>
+                    {card.icon}
+                  </span>
+                </div>
+                <p className="text-2xl font-black text-gray-900 leading-tight mb-3">{card.value}</p>
+                {card.caption ? (
+                  <p className="text-[11px] text-gray-400">{card.caption}</p>
+                ) : (
+                  <TrendBadge trend={card.trend} trendExtra={card.trendExtra} trendUp={card.trendUp} />
+                )}
+              </div>
+            ))
+          )}
         </div>
 
         {/* Charts row */}
@@ -242,7 +278,11 @@ export default function RevenueReportPage() {
               </h2>
             </div>
             {loading ? (
-              <div className="flex-1 flex items-center justify-center text-xs text-gray-400">Đang tải xu hướng...</div>
+              <div className="flex-1 flex items-end gap-2 h-[190px]">
+                {CHART_SKELETON_HEIGHTS.map((h, i) => (
+                  <Skeleton key={i} className="flex-1 rounded-t" style={{ height: `${h}%` }} />
+                ))}
+              </div>
             ) : (
               <RevenueChart data={report.trend} metric={chartMetric} />
             )}
@@ -258,7 +298,7 @@ export default function RevenueReportPage() {
 
             <div className="flex-1 flex items-center justify-center py-2">
               {loading ? (
-                <div className="text-xs text-gray-400">Đang tải phân mục...</div>
+                <Skeleton className="w-[170px] h-[170px] rounded-full" />
               ) : segments.length > 0 ? (
                 <DonutChart segments={segments} />
               ) : (
@@ -267,12 +307,100 @@ export default function RevenueReportPage() {
             </div>
 
             {/* Legend */}
-            {!loading && segments.length > 0 && (
+            {loading ? (
+              <div className="space-y-2.5 mt-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <Skeleton className="w-20 h-3" />
+                    <Skeleton className="w-8 h-3" />
+                  </div>
+                ))}
+              </div>
+            ) : segments.length > 0 && (
               <div className="space-y-2.5 mt-2">
                 {segments.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className={`w-2.5 h-2.5 rounded-full`} style={{ backgroundColor: item.color }} />
+                      <span className="text-sm text-gray-700">{item.label}</span>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-700">{Math.round(item.pct * 100)}%</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Brand & Payment method breakdown */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5">
+          {/* Revenue by Brand */}
+          <div className="bg-white rounded border border-gray-200 px-5 py-5">
+            <h2 className="text-base font-bold text-gray-800 mb-4">Doanh thu theo thương hiệu</h2>
+            <div className="space-y-3">
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i}>
+                    <div className="flex items-center justify-between mb-1">
+                      <Skeleton className="w-24 h-3" />
+                      <Skeleton className="w-16 h-3" />
+                    </div>
+                    <Skeleton className="w-full h-1.5 rounded-full" />
+                  </div>
+                ))
+              ) : sortedBrands.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-6">Không có dữ liệu thương hiệu</p>
+              ) : (
+                sortedBrands.map((b) => {
+                  const pct = maxBrandRevenue > 0 ? Math.round((Number(b.revenue) / maxBrandRevenue) * 100) : 0
+                  return (
+                    <div key={b.brandId}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700 truncate pr-2">{b.brandName}</span>
+                        <span className="text-sm text-gray-500 shrink-0">{fmt(b.revenue)}</span>
+                      </div>
+                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#E8420A] to-[#C4350A] rounded-full"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Revenue by Payment Method */}
+          <div className="bg-white rounded border border-gray-200 px-5 py-5 flex flex-col min-h-[240px]">
+            <h2 className="text-base font-bold text-gray-800 mb-4 leading-tight">Phương thức thanh toán</h2>
+
+            <div className="flex-1 flex items-center justify-center py-2">
+              {loading ? (
+                <Skeleton className="w-[170px] h-[170px] rounded-full" />
+              ) : paymentSegments.length > 0 ? (
+                <DonutChart segments={paymentSegments} />
+              ) : (
+                <p className="text-xs text-gray-400">Không có dữ liệu thanh toán</p>
+              )}
+            </div>
+
+            {loading ? (
+              <div className="space-y-2.5 mt-2">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <Skeleton className="w-20 h-3" />
+                    <Skeleton className="w-8 h-3" />
+                  </div>
+                ))}
+              </div>
+            ) : paymentSegments.length > 0 && (
+              <div className="space-y-2.5 mt-2">
+                {paymentSegments.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                       <span className="text-sm text-gray-700">{item.label}</span>
                     </div>
                     <span className="text-sm font-semibold text-gray-700">{Math.round(item.pct * 100)}%</span>
@@ -290,7 +418,7 @@ export default function RevenueReportPage() {
           </div>
 
           {/* Table header */}
-          <div className="grid grid-cols-[3rem_1fr_10rem_12rem] gap-3 px-5 py-3 border-b border-gray-100">
+          <div className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3 border-b border-gray-100`}>
             {['STT', 'TÊN SẢN PHẨM', 'SỐ LƯỢNG ĐÃ BÁN', 'TỔNG DOANH THU'].map((h) => (
               <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase text-left last:text-right">
                 {h}
@@ -300,15 +428,22 @@ export default function RevenueReportPage() {
 
           {/* Table rows */}
           {loading ? (
-            <div className="text-center py-10 text-xs text-gray-400">Đang tải dữ liệu sản phẩm...</div>
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center`}>
+                <Skeleton className="w-5 h-3" />
+                <Skeleton className="w-32 h-3" />
+                <Skeleton className="w-8 h-3" />
+                <Skeleton className="w-16 h-3 ml-auto" />
+              </div>
+            ))
           ) : report.topSellingProducts.length === 0 ? (
             <div className="text-center py-10 text-gray-400">Không có dữ liệu sản phẩm</div>
           ) : (
             report.topSellingProducts.map((row, idx) => (
-              <div key={row.productId} className="grid grid-cols-[3rem_1fr_10rem_12rem] gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left">
+              <div key={row.productId} className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left`}>
                 <span className="text-sm text-gray-500 font-medium">{idx + 1}</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-gray-800">{row.productName}</span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-sm font-semibold text-gray-800 truncate">{row.productName}</span>
                 </div>
                 <span className="text-sm text-gray-700 font-medium">{row.quantitySold}</span>
                 <span className="text-sm font-bold text-[#E8420A] text-right">
@@ -326,7 +461,7 @@ export default function RevenueReportPage() {
           </div>
 
           {/* Table header */}
-          <div className="grid grid-cols-[3rem_1fr_10rem_12rem] gap-3 px-5 py-3 border-b border-gray-100">
+          <div className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3 border-b border-gray-100`}>
             {['STT', 'TÊN SẢN PHẨM', 'SỐ LƯỢNG ĐÃ BÁN', 'LỢI NHUẬN'].map((h) => (
               <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase text-left last:text-right">
                 {h}
@@ -336,17 +471,24 @@ export default function RevenueReportPage() {
 
           {/* Table rows */}
           {loading ? (
-            <div className="text-center py-10 text-xs text-gray-400">Đang tải dữ liệu lợi nhuận...</div>
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center`}>
+                <Skeleton className="w-5 h-3" />
+                <Skeleton className="w-32 h-3" />
+                <Skeleton className="w-8 h-3" />
+                <Skeleton className="w-16 h-3 ml-auto" />
+              </div>
+            ))
           ) : report.topProfitProducts.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
               Chưa có dữ liệu giá vốn (nhập kho) để tính lợi nhuận
             </div>
           ) : (
             report.topProfitProducts.map((row, idx) => (
-              <div key={row.productId} className="grid grid-cols-[3rem_1fr_10rem_12rem] gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left">
+              <div key={row.productId} className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left`}>
                 <span className="text-sm text-gray-500 font-medium">{idx + 1}</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-gray-800">{row.productName}</span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-sm font-semibold text-gray-800 truncate">{row.productName}</span>
                 </div>
                 <span className="text-sm text-gray-700 font-medium">{row.quantitySold}</span>
                 <span className="text-sm font-bold text-[#E8420A] text-right">

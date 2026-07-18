@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/useAuth'
 import { useManagerDashboard } from '../hooks/useManagerDashboard'
 import { useHeaderNotifications } from '../hooks/useHeaderNotifications'
 import RevenueChart from '../components/RevenueChart'
+import Skeleton from '../components/Skeleton'
 import axiosClient from '../../../config/axiosClient'
 import { managerUsersService } from '../../manager-users/services/managerUsersService'
 import { managerOrderService } from '../../manager-orders/services/managerOrderService'
@@ -174,10 +175,6 @@ function initialsOf(name) {
   const trimmed = (name || '').trim()
   if (!trimmed) return 'QL'
   return trimmed.split(/\s+/).map((w) => w[0]).slice(-2).join('').toUpperCase()
-}
-
-function Skeleton({ className = '', style }) {
-  return <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={style} />
 }
 
 /** Deterministic pseudo-random bar heights (%) for the chart skeleton — varied but stable across re-renders. */
