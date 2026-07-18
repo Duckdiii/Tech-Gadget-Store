@@ -31,6 +31,19 @@ export const managerUsersService = {
     return axiosClient.get(`/api/manager/customers/${id}`)
   },
 
+  // Customer Notes
+  addCustomerNote: (customerId, content) => {
+    return axiosClient.post(`/api/manager/customers/${customerId}/notes`, { content })
+  },
+
+  updateCustomerNote: (noteId, content) => {
+    return axiosClient.put(`/api/manager/customers/notes/${noteId}`, { content })
+  },
+
+  deleteCustomerNote: (noteId) => {
+    return axiosClient.delete(`/api/manager/customers/notes/${noteId}`)
+  },
+
   // Staffs
   getStaffs: () => {
     return axiosClient.get('/api/manager/staffs')

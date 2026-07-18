@@ -31,4 +31,5 @@ public class CustomerDetailResponseDto {
     private String accountId;
     private String accountStatus;
     private List<PurchasedProductDto> purchasedProducts;
+    private List<CustomerNoteResponseDto> notes;
 }

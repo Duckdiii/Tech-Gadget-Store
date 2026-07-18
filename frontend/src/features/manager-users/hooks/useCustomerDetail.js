@@ -28,5 +28,5 @@ export function useCustomerDetail() {
     fetchDetail()
   }, [fetchDetail])
 
-  return { customer, loading, error }
+  return { customer, loading, error, refetch: fetchDetail }
 }

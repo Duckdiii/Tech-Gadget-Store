@@ -42,12 +42,20 @@ public class CustomerManagementService {
     private final CustomerRepository customerRepository;
     private final OrderRepository orderRepository;
     private final InvoiceMapper invoiceMapper;
+    private final com.project.tech_gadget_store.modules.auth.repository.AccountRepository accountRepository;
+    private final com.project.tech_gadget_store.modules.auth.repository.CustomerNoteRepository customerNoteRepository;
 
-    public CustomerManagementService(CustomerRepository customerRepository, OrderRepository orderRepository,
-            InvoiceMapper invoiceMapper) {
+    public CustomerManagementService(
+            CustomerRepository customerRepository, 
+            OrderRepository orderRepository,
+            InvoiceMapper invoiceMapper,
+            com.project.tech_gadget_store.modules.auth.repository.AccountRepository accountRepository,
+            com.project.tech_gadget_store.modules.auth.repository.CustomerNoteRepository customerNoteRepository) {
         this.customerRepository = customerRepository;
         this.orderRepository = orderRepository;
         this.invoiceMapper = invoiceMapper;
+        this.accountRepository = accountRepository;
+        this.customerNoteRepository = customerNoteRepository;
     }
 
     public CustomerPageResponseDto listCustomers(
@@ -182,6 +190,12 @@ public class CustomerManagementService {
         }
         List<com.project.tech_gadget_store.modules.auth.dto.response.PurchasedProductDto> purchasedProducts = new java.util.ArrayList<>(grouped.values());
 
+        // Query notes history
+        List<com.project.tech_gadget_store.modules.auth.dto.response.CustomerNoteResponseDto> notes = customerNoteRepository.findByCustomerIdOrderByCreatedAtDesc(id)
+                .stream()
+                .map(this::toNoteResponseDto)
+                .toList();
+
         return CustomerDetailResponseDto.builder()
                 .id(customer.getId())
                 .fullName(customer.getFullName())
@@ -198,6 +212,50 @@ public class CustomerManagementService {
                 .accountId(customer.getAccount().getId())
                 .accountStatus(customer.getAccount().getStatus().name())
                 .purchasedProducts(purchasedProducts)
+                .notes(notes)
+                .build();
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public com.project.tech_gadget_store.modules.auth.dto.response.CustomerNoteResponseDto addNote(String customerId, String email, String content) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + customerId));
+        com.project.tech_gadget_store.modules.auth.entity.Account authorAccount = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Author account not found with email: " + email));
+        
+        com.project.tech_gadget_store.modules.auth.entity.CustomerNote note = new com.project.tech_gadget_store.modules.auth.entity.CustomerNote(customer, content, authorAccount.getUser().getFullName());
+        note = customerNoteRepository.save(note);
+        return toNoteResponseDto(note);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public com.project.tech_gadget_store.modules.auth.dto.response.CustomerNoteResponseDto updateNote(String noteId, String email, String content) {
+        com.project.tech_gadget_store.modules.auth.entity.CustomerNote note = customerNoteRepository.findById(noteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Note not found with id: " + noteId));
+        
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("Content must not be blank");
+        }
+        
+        note.setContent(content);
+        note = customerNoteRepository.save(note);
+        return toNoteResponseDto(note);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteNote(String noteId) {
+        com.project.tech_gadget_store.modules.auth.entity.CustomerNote note = customerNoteRepository.findById(noteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Note not found with id: " + noteId));
+        customerNoteRepository.delete(note);
+    }
+
+    private com.project.tech_gadget_store.modules.auth.dto.response.CustomerNoteResponseDto toNoteResponseDto(com.project.tech_gadget_store.modules.auth.entity.CustomerNote note) {
+        return com.project.tech_gadget_store.modules.auth.dto.response.CustomerNoteResponseDto.builder()
+                .id(note.getId())
+                .content(note.getContent())
+                .authorName(note.getAuthorName())
+                .createdAt(note.getCreatedAt())
+                .updatedAt(note.getUpdatedAt())
                 .build();
     }
 

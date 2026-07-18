@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;
 
 
 /**
@@ -54,5 +60,27 @@ public class CustomerManagementController {
     @GetMapping("/{id}")
     public ResponseEntity<CustomerDetailResponseDto> getCustomerDetail(@PathVariable String id) {
         return ResponseEntity.ok(customerManagementService.getCustomerDetail(id));
+    }
+
+    @PostMapping("/{customerId}/notes")
+    public ResponseEntity<com.project.tech_gadget_store.modules.auth.dto.response.CustomerNoteResponseDto> addNote(
+            @PathVariable String customerId,
+            @Valid @RequestBody com.project.tech_gadget_store.modules.auth.dto.request.CustomerNoteRequestDto request,
+            Authentication authentication) {
+        return ResponseEntity.ok(customerManagementService.addNote(customerId, authentication.getName(), request.getContent()));
+    }
+
+    @PutMapping("/notes/{noteId}")
+    public ResponseEntity<com.project.tech_gadget_store.modules.auth.dto.response.CustomerNoteResponseDto> updateNote(
+            @PathVariable String noteId,
+            @Valid @RequestBody com.project.tech_gadget_store.modules.auth.dto.request.CustomerNoteRequestDto request,
+            Authentication authentication) {
+        return ResponseEntity.ok(customerManagementService.updateNote(noteId, authentication.getName(), request.getContent()));
+    }
+
+    @DeleteMapping("/notes/{noteId}")
+    public ResponseEntity<Void> deleteNote(@PathVariable String noteId) {
+        customerManagementService.deleteNote(noteId);
+        return ResponseEntity.ok().build();
     }
 }

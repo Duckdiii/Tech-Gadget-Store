@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNav } from '../../../hooks/useNav'
 import { useCustomerDetail } from '../hooks/useCustomerDetail'
 import StatCard from '../components/StatCard'
+import { managerUsersService } from '../services/managerUsersService'
 
 // Cùng nhãn/màu với TIER_DISPLAY ở MembershipSection.jsx và CustomerManagementPage.jsx.
 const TIER_DISPLAY = {
@@ -33,13 +34,50 @@ function initialsOf(name) {
 
 export default function CustomerDetailPage() {
   const onNavigate = useNav()
-  const { customer, loading, error } = useCustomerDetail()
+  const { customer, loading, error, refetch } = useCustomerDetail()
   const [activeTab, setActiveTab] = useState(TABS[0])
   const [headerSearch, setHeaderSearch] = useState('')
+
+  const [newNoteContent, setNewNoteContent] = useState('')
+  const [editingNoteId, setEditingNoteId] = useState(null)
+  const [editingNoteContent, setEditingNoteContent] = useState('')
 
   const handleHeaderSearchSubmit = (e) => {
     if (e.key === 'Enter') {
       onNavigate('customerManagement', { state: { prefilledSearch: headerSearch } })
+    }
+  }
+
+  const handleAddNote = async () => {
+    if (!newNoteContent.trim()) return
+    try {
+      await managerUsersService.addCustomerNote(customer.id, newNoteContent)
+      setNewNoteContent('')
+      refetch()
+    } catch (e) {
+      alert('Không thể lưu ghi chú: ' + (e.message || e))
+    }
+  }
+
+  const handleUpdateNote = async (noteId) => {
+    if (!editingNoteContent.trim()) return
+    try {
+      await managerUsersService.updateCustomerNote(noteId, editingNoteContent)
+      setEditingNoteId(null)
+      refetch()
+    } catch (e) {
+      alert('Không thể cập nhật ghi chú: ' + (e.message || e))
+    }
+  }
+
+  const handleDeleteNote = async (noteId) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa ghi chú này không?')) {
+      try {
+        await managerUsersService.deleteCustomerNote(noteId)
+        refetch()
+      } catch (e) {
+        alert('Không thể xóa ghi chú: ' + (e.message || e))
+      }
     }
   }
 
@@ -369,8 +407,104 @@ export default function CustomerDetailPage() {
               )}
 
               {activeTab === 'Ghi chú' && (
-                <div className="px-5 py-16 text-center text-sm text-gray-400">
-                  Chưa có ghi chú nào cho khách hàng này.
+                <div className="px-5 py-6">
+                  {/* Form to Add Note */}
+                  <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                      Thêm ghi chú mới
+                    </label>
+                    <textarea
+                      value={newNoteContent}
+                      onChange={(e) => setNewNoteContent(e.target.value)}
+                      placeholder="Nhập ghi chú nội bộ về khách hàng (ví dụ: thói quen mua sắm, yêu cầu đặc biệt...)"
+                      rows={3}
+                      className="w-full border border-gray-300 rounded p-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white resize-none"
+                    />
+                    <div className="flex justify-end mt-2">
+                      <button
+                        onClick={handleAddNote}
+                        disabled={!newNoteContent.trim()}
+                        className="bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-50 text-white font-semibold py-2 px-4 rounded text-xs transition-colors cursor-pointer"
+                      >
+                        Lưu ghi chú
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* List of Notes */}
+                  <div className="space-y-4">
+                    {!customer.notes || customer.notes.length === 0 ? (
+                      <p className="py-8 text-center text-sm text-gray-400">
+                        Chưa có ghi chú nào về khách hàng này.
+                      </p>
+                    ) : (
+                      customer.notes.map((note) => {
+                        const isEditing = editingNoteId === note.id
+                        return (
+                          <div
+                            key={note.id}
+                            className="p-4 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow transition-shadow flex flex-col gap-2"
+                          >
+                            {/* Author name & date */}
+                            <div className="flex items-center justify-between text-xs text-gray-400">
+                              <span className="font-semibold text-gray-600">{note.authorName}</span>
+                              <span>{fmtDate(note.createdAt)}</span>
+                            </div>
+
+                            {/* Content or Edit Textarea */}
+                            {isEditing ? (
+                              <div className="flex flex-col gap-2 mt-1">
+                                <textarea
+                                  value={editingNoteContent}
+                                  onChange={(e) => setEditingNoteContent(e.target.value)}
+                                  rows={2}
+                                  className="w-full border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white resize-none"
+                                />
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    onClick={() => setEditingNoteId(null)}
+                                    className="border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 py-1 px-3 rounded text-xs transition-colors cursor-pointer"
+                                  >
+                                    Hủy
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateNote(note.id)}
+                                    disabled={!editingNoteContent.trim()}
+                                    className="bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-50 text-white py-1 px-3 rounded text-xs transition-colors cursor-pointer"
+                                  >
+                                    Cập nhật
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                <p className="text-sm text-gray-700 whitespace-pre-line mt-1">
+                                  {note.content}
+                                </p>
+                                <div className="flex justify-end gap-3 mt-1 pt-2 border-t border-gray-50">
+                                  <button
+                                    onClick={() => {
+                                      setEditingNoteId(note.id)
+                                      setEditingNoteContent(note.content)
+                                    }}
+                                    className="text-xs text-gray-400 hover:text-[#E8420A] transition-colors cursor-pointer"
+                                  >
+                                    Sửa
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteNote(note.id)}
+                                    className="text-xs text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
+                                  >
+                                    Xóa
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
                 </div>
               )}
             </div>
