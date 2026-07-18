@@ -52,6 +52,12 @@ public class ProductFilterRequestDto {
     private Boolean onlyAvailable;
     private Boolean onPromotion;
 
+    /**
+     * Bộ lọc KPI đặc biệt chỉ dành cho màn hình quản trị.
+     * Giá trị hợp lệ: "outOfStock" | "noVariants" | "noImages"
+     */
+    private String stockFilter;
+
     // --- Laptop-specific ---
     private String cpuKeyword;       // substring search on Laptop.cpu
     private String gpuKeyword;       // substring search on Laptop.gpu

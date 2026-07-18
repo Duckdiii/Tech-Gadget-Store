@@ -4,13 +4,14 @@ import { apiFetch } from '../../../services/api'
 
 function normalizeProduct(dto) {
   return {
-    id:           dto.id,
-    name:         dto.name || '',
-    brandName:    dto.brandName || '',
-    categoryName: dto.categoryName || '',
-    minPrice:     dto.minPrice,
-    imageUrl:     dto.imageUrl || '',
-    hasVariants:  !!dto.hasVariants,
+    id:             dto.id,
+    name:           dto.name || '',
+    brandName:      dto.brandName || '',
+    categoryName:   dto.categoryName || '',
+    minPrice:       dto.minPrice,
+    imageUrl:       dto.imageUrl || '',
+    hasVariants:    !!dto.hasVariants,
+    availableCount: dto.availableCount ?? 0,
   }
 }
 
@@ -86,6 +87,10 @@ export default function ProductManagementPage() {
   const [discontinuing, setDiscontinuing] = useState(false)
   const [toast, setToast]         = useState(null)
 
+  // ── KPI stats ──────────────────────────────────────────────────
+  const [stats, setStats]         = useState(null)
+  const [activeKpi, setActiveKpi] = useState(null) // null | 'outOfStock' | 'noVariants' | 'noImages'
+
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(null), 3200) }
 
   const handleBrandChange = (e) => {
@@ -102,6 +107,7 @@ export default function ProductManagementPage() {
     setSearch('')
     setSelectedBrand('')
     setSelectedCategory('')
+    setActiveKpi(null)
     setPage(0)
   }
 
@@ -111,6 +117,7 @@ export default function ProductManagementPage() {
     if (debouncedSearch) params.append('keyword', debouncedSearch)
     if (selectedBrand) params.append('brandNames', selectedBrand)
     if (selectedCategory) params.append('categoryNames', selectedCategory)
+    if (activeKpi) params.append('stockFilter', activeKpi)
     params.append('page', page)
     params.append('size', pageSize)
 
@@ -122,7 +129,7 @@ export default function ProductManagementPage() {
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
-  }, [debouncedSearch, selectedBrand, selectedCategory, page])
+  }, [debouncedSearch, selectedBrand, selectedCategory, activeKpi, page])
 
   useEffect(() => {
     loadProducts()
@@ -131,6 +138,7 @@ export default function ProductManagementPage() {
   useEffect(() => {
     apiFetch('/api/manager/brands').then(setBrands).catch(() => {})
     apiFetch('/api/manager/categories').then(setCategories).catch(() => {})
+    apiFetch('/api/manager/products/stats').then(setStats).catch(() => {})
   }, [])
 
   const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]'
@@ -357,6 +365,93 @@ export default function ProductManagementPage() {
           </button>
         </div>
 
+        {/* ── KPI Cards ─────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              key: null,
+              label: 'ĐANG KINH DOANH',
+              value: stats?.totalActive ?? '—',
+              sub: 'Tổng sản phẩm active',
+              icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 10V11" />
+                </svg>
+              ),
+              color: 'blue',
+            },
+            {
+              key: 'outOfStock',
+              label: 'HẾT HÀNG',
+              value: stats?.outOfStock ?? '—',
+              sub: 'Có variant, tồn kho = 0',
+              icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+              ),
+              color: 'red',
+            },
+            {
+              key: 'noVariants',
+              label: 'CHƯA CÓ PHIÊN BẢN',
+              value: stats?.noVariants ?? '—',
+              sub: 'Cần thêm RAM/bộ nhớ/màu',
+              icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              ),
+              color: 'amber',
+            },
+            {
+              key: 'noImages',
+              label: 'CHƯA CÓ HÌNH ẢNH',
+              value: stats?.noImages ?? '—',
+              sub: 'Cần thêm ảnh sản phẩm',
+              icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              ),
+              color: 'violet',
+            },
+          ].map((card) => {
+            const isActive = activeKpi === card.key
+            const colorMap = {
+              blue:   { bg: 'bg-blue-50',   icon: 'bg-blue-100 text-blue-600',   val: 'text-blue-700',   ring: 'ring-blue-400'   },
+              red:    { bg: 'bg-red-50',    icon: 'bg-red-100 text-red-600',    val: 'text-red-700',    ring: 'ring-red-400'    },
+              amber:  { bg: 'bg-amber-50',  icon: 'bg-amber-100 text-amber-600', val: 'text-amber-700',  ring: 'ring-amber-400'  },
+              violet: { bg: 'bg-violet-50', icon: 'bg-violet-100 text-violet-600', val: 'text-violet-700', ring: 'ring-violet-400' },
+            }
+            const c = colorMap[card.color]
+            return (
+              <button
+                key={card.label}
+                onClick={() => {
+                  if (card.key === null) { setActiveKpi(null); setPage(0); return }
+                  setActiveKpi(isActive ? null : card.key)
+                  setPage(0)
+                }}
+                className={`text-left w-full bg-white rounded-xl border-2 px-5 py-4 flex items-start gap-4 transition-all cursor-pointer ${
+                  isActive
+                    ? `border-transparent ring-2 ${c.ring} shadow-md`
+                    : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${c.icon}`}>
+                  {card.icon}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">{card.label}</p>
+                  <p className={`text-2xl font-black mt-0.5 ${c.val}`}>{card.value?.toLocaleString?.('vi-VN') ?? card.value}</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5 truncate">{card.sub}</p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+
         <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:max-w-xs">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -385,7 +480,7 @@ export default function ProductManagementPage() {
             ))}
           </select>
 
-          {(search || selectedBrand || selectedCategory) && (
+          {(search || selectedBrand || selectedCategory || activeKpi) && (
             <button
               onClick={handleClearFilters}
               className="text-xs text-gray-500 hover:text-red-500 font-semibold px-2 py-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer border-none bg-transparent"
@@ -408,14 +503,14 @@ export default function ProductManagementPage() {
               <table className="w-full text-sm min-w-[950px]">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    {['Ảnh', 'Tên sản phẩm', 'Thương hiệu', 'Danh mục', 'Giá từ', 'Phiên bản', ''].map((h, i) => (
+                    {['Ảnh', 'Tên sản phẩm', 'Thương hiệu', 'Danh mục', 'Giá từ', 'Tồn kho', 'Phiên bản', ''].map((h, i) => (
                       <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {products.length === 0
-                    ? <tr><td colSpan={7} className="text-center py-12 text-gray-400">Không tìm thấy sản phẩm nào</td></tr>
+                    ? <tr><td colSpan={8} className="text-center py-12 text-gray-400">Không tìm thấy sản phẩm nào</td></tr>
                     : products.map(p => (
                       <tr key={p.id} className="hover:bg-gray-50/70 transition-colors group">
                         <td className="px-4 py-3">
@@ -427,6 +522,36 @@ export default function ProductManagementPage() {
                         <td className="px-4 py-4 text-gray-600">{p.brandName || '—'}</td>
                         <td className="px-4 py-4 text-gray-600">{p.categoryName || '—'}</td>
                         <td className="px-4 py-4 text-gray-600">{formatCurrency(p.minPrice)}</td>
+                        <td className="px-4 py-4">
+                          {(() => {
+                            const n = p.availableCount
+                            if (!p.hasVariants) {
+                              return <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">—</span>
+                            }
+                            if (n === 0) {
+                              return (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                                  Hết hàng
+                                </span>
+                              )
+                            }
+                            if (n <= 5) {
+                              return (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+                                  Sắp hết ({n})
+                                </span>
+                              )
+                            }
+                            return (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                                Còn {n}
+                              </span>
+                            )
+                          })()}
+                        </td>
                         <td className="px-4 py-4">
                           {p.hasVariants
                             ? <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Có phiên bản</span>

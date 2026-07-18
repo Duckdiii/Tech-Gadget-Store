@@ -5,6 +5,7 @@ import com.project.tech_gadget_store.modules.catalog.dto.request.ProductRequestD
 import com.project.tech_gadget_store.modules.catalog.dto.request.ProductVariantRequestDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductImageResponseDto;
+import com.project.tech_gadget_store.modules.catalog.dto.response.ProductStatsResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductVariantResponseDto;
 import com.project.tech_gadget_store.modules.catalog.service.ProductManagementService;
 import jakarta.validation.Valid;
@@ -20,6 +21,11 @@ import org.springframework.web.bind.annotation.*;
 public class ProductManagementController {
 
     private final ProductManagementService productManagementService;
+
+    @GetMapping("/stats")
+    public ResponseEntity<ProductStatsResponseDto> getStats() {
+        return ResponseEntity.ok(productManagementService.getProductStats());
+    }
 
     @PostMapping
     public ResponseEntity<ProductDetailResponseDto> createProduct(@Valid @RequestBody ProductRequestDto dto) {

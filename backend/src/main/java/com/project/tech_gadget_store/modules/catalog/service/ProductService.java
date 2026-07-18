@@ -11,7 +11,10 @@ import com.project.tech_gadget_store.modules.catalog.entity.Laptop;
 import com.project.tech_gadget_store.modules.catalog.entity.Monitor;
 import com.project.tech_gadget_store.modules.catalog.entity.Phone;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
+import com.project.tech_gadget_store.modules.catalog.entity.ProductImage;
+import com.project.tech_gadget_store.modules.catalog.entity.ProductSerial;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
+import com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus;
 import com.project.tech_gadget_store.modules.catalog.mapper.ProductMapper;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
@@ -474,6 +477,42 @@ public class ProductService {
 
             if (Boolean.TRUE.equals(f.getOnPromotion())) {
                 predicates.add(hasActivePromotion(root, query, cb));
+            }
+
+            // ---- KPI stockFilter (manager-only) ----
+            if (f.getStockFilter() != null) {
+                switch (f.getStockFilter()) {
+                    case "noVariants" -> {
+                        Subquery<String> noVarSq = query.subquery(String.class);
+                        Root<ProductVariant> vRoot = noVarSq.from(ProductVariant.class);
+                        noVarSq.select(vRoot.get("id"));
+                        noVarSq.where(cb.equal(vRoot.get("product"), root));
+                        predicates.add(cb.not(cb.exists(noVarSq)));
+                    }
+                    case "noImages" -> {
+                        // ProductImage has no @ManyToOne back to Product; use the collection path
+                        predicates.add(cb.isEmpty(root.get("images")));
+                    }
+                    case "outOfStock" -> {
+                        // Has at least 1 variant...
+                        Subquery<String> hasSq = query.subquery(String.class);
+                        Root<ProductVariant> hvRoot = hasSq.from(ProductVariant.class);
+                        hasSq.select(hvRoot.get("id"));
+                        hasSq.where(cb.equal(hvRoot.get("product"), root));
+                        predicates.add(cb.exists(hasSq));
+                        // ...but no IN_STOCK serial
+                        Subquery<String> stockSq = query.subquery(String.class);
+                        Root<ProductSerial> psRoot = stockSq.from(ProductSerial.class);
+                        stockSq.select(psRoot.get("id"));
+                        Join<ProductSerial, ProductVariant> psJoin = psRoot.join("productVariant");
+                        stockSq.where(
+                            cb.equal(psJoin.get("product"), root),
+                            cb.equal(psRoot.get("status"), SerialStatus.IN_STOCK)
+                        );
+                        predicates.add(cb.not(cb.exists(stockSq)));
+                    }
+                    default -> {} // ignore unknown values
+                }
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

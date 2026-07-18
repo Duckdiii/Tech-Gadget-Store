@@ -9,6 +9,7 @@ import com.project.tech_gadget_store.modules.catalog.dto.request.ProductRequestD
 import com.project.tech_gadget_store.modules.catalog.dto.request.ProductVariantRequestDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductDetailResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductImageResponseDto;
+import com.project.tech_gadget_store.modules.catalog.dto.response.ProductStatsResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductVariantResponseDto;
 import com.project.tech_gadget_store.modules.catalog.entity.Brand;
 import com.project.tech_gadget_store.modules.catalog.entity.Category;
@@ -49,6 +50,15 @@ public class ProductManagementService {
     private final BundleServiceRepository bundleServiceRepository;
     private final OrderRepository orderRepository;
     private final ProductMapper productMapper;
+
+    public ProductStatsResponseDto getProductStats() {
+        return ProductStatsResponseDto.builder()
+                .totalActive(productRepository.countAllActive())
+                .outOfStock(productRepository.countActiveOutOfStock())
+                .noVariants(productRepository.countActiveWithNoVariants())
+                .noImages(productRepository.countActiveWithNoImages())
+                .build();
+    }
 
     @Transactional
     public ProductDetailResponseDto createProduct(ProductRequestDto dto) {

@@ -132,4 +132,40 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
                         "ORDER BY ts_rank(p.search_vector, websearch_to_tsquery('simple', :keyword)) DESC " +
                         "LIMIT :limit", nativeQuery = true)
         List<String> searchProductIdsByKeyword(@Param("keyword") String keyword, @Param("limit") int limit);
+
+        /** Tổng sản phẩm đang kinh doanh (active). */
+        @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true")
+        long countAllActive();
+
+        /**
+         * Sản phẩm đang kinh doanh nhưng chưa có phiên bản nào.
+         * Dùng NOT EXISTS thay vì LEFT JOIN để tránh Cartesian product.
+         */
+        @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true " +
+               "AND NOT EXISTS (SELECT 1 FROM ProductVariant v WHERE v.product = p)")
+        long countActiveWithNoVariants();
+
+        /**
+         * Sản phẩm đang kinh doanh nhưng chưa có hình ảnh nào.
+         */
+        @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true " +
+               "AND NOT EXISTS (SELECT 1 FROM ProductImage i WHERE i.product = p)")
+        long countActiveWithNoImages();
+
+        /**
+         * Sản phẩm đang kinh doanh, có ít nhất một variant,
+         * nhưng tổng serial IN_STOCK = 0 trên tất cả variants.
+         * Dùng native query để JOIN với bảng product_serials.
+         */
+        @Query(value =
+               "SELECT COUNT(DISTINCT p.id) FROM products p " +
+               "WHERE p.is_active = true " +
+               "  AND EXISTS (SELECT 1 FROM product_variants pv WHERE pv.product_id = p.id) " +
+               "  AND NOT EXISTS (" +
+               "      SELECT 1 FROM product_variants pv2 " +
+               "      JOIN product_serials ps ON ps.product_variant_id = pv2.id " +
+               "      WHERE pv2.product_id = p.id AND ps.status = 'IN_STOCK'" +
+               "  )",
+               nativeQuery = true)
+        long countActiveOutOfStock();
 }
