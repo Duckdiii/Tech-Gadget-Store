@@ -44,18 +44,21 @@ public class CustomerManagementService {
     private final InvoiceMapper invoiceMapper;
     private final com.project.tech_gadget_store.modules.auth.repository.AccountRepository accountRepository;
     private final com.project.tech_gadget_store.modules.auth.repository.CustomerNoteRepository customerNoteRepository;
+    private final com.project.tech_gadget_store.modules.loyalty.repository.MembershipRepository membershipRepository;
 
     public CustomerManagementService(
             CustomerRepository customerRepository, 
             OrderRepository orderRepository,
             InvoiceMapper invoiceMapper,
             com.project.tech_gadget_store.modules.auth.repository.AccountRepository accountRepository,
-            com.project.tech_gadget_store.modules.auth.repository.CustomerNoteRepository customerNoteRepository) {
+            com.project.tech_gadget_store.modules.auth.repository.CustomerNoteRepository customerNoteRepository,
+            com.project.tech_gadget_store.modules.loyalty.repository.MembershipRepository membershipRepository) {
         this.customerRepository = customerRepository;
         this.orderRepository = orderRepository;
         this.invoiceMapper = invoiceMapper;
         this.accountRepository = accountRepository;
         this.customerNoteRepository = customerNoteRepository;
+        this.membershipRepository = membershipRepository;
     }
 
     public CustomerPageResponseDto listCustomers(
@@ -196,6 +199,26 @@ public class CustomerManagementService {
                 .map(this::toNoteResponseDto)
                 .toList();
 
+        // Membership progression
+        com.project.tech_gadget_store.modules.loyalty.entity.Membership current = customer.getMembership();
+        BigDecimal currentMin = current.getMinSpending() == null ? BigDecimal.ZERO : current.getMinSpending();
+        BigDecimal finalTotalSpend = totalSpend == null ? BigDecimal.ZERO : totalSpend;
+
+        com.project.tech_gadget_store.modules.loyalty.entity.Membership next = membershipRepository.findAll().stream()
+                .filter(m -> (m.getMinSpending() == null ? BigDecimal.ZERO : m.getMinSpending()).compareTo(currentMin) > 0)
+                .min(java.util.Comparator.comparing(m -> m.getMinSpending() == null ? BigDecimal.ZERO : m.getMinSpending()))
+                .orElse(null);
+
+        BigDecimal amountToNextTier = null;
+        MembershipTier nextTier = null;
+        BigDecimal nextTierMinSpending = null;
+
+        if (next != null) {
+            nextTier = next.getTier();
+            nextTierMinSpending = next.getMinSpending();
+            amountToNextTier = next.getMinSpending().subtract(finalTotalSpend).max(BigDecimal.ZERO);
+        }
+
         return CustomerDetailResponseDto.builder()
                 .id(customer.getId())
                 .fullName(customer.getFullName())
@@ -213,6 +236,11 @@ public class CustomerManagementService {
                 .accountStatus(customer.getAccount().getStatus().name())
                 .purchasedProducts(purchasedProducts)
                 .notes(notes)
+                .minSpending(current.getMinSpending())
+                .maxSpending(current.getMaxSpending())
+                .nextTier(nextTier)
+                .nextTierMinSpending(nextTierMinSpending)
+                .amountToNextTier(amountToNextTier)
                 .build();
     }
 

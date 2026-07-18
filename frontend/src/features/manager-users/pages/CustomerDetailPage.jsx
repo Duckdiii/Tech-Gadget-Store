@@ -188,12 +188,38 @@ export default function CustomerDetailPage() {
 
             <h2 className="text-xl font-bold text-gray-900 text-center mb-2">{customer.fullName}</h2>
 
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold mb-5 ${tier.bg} ${tier.border} ${tier.text}`}>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold mb-4 ${tier.bg} ${tier.border} ${tier.text}`}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
               {tier.label}
             </span>
+
+            {/* Progression Bar */}
+            {customer.nextTier ? (
+              <div className="w-full mb-5 p-3.5 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="flex justify-between items-center text-xs font-semibold text-gray-500 mb-1.5">
+                  <span>Hạng hiện tại</span>
+                  <span>Kế tiếp: <strong className="text-[#E8420A]">{TIER_DISPLAY[customer.nextTier]?.label || customer.nextTier}</strong></span>
+                </div>
+                <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden mb-2">
+                  <div 
+                    className="bg-gradient-to-r from-amber-500 to-[#E8420A] h-full transition-all duration-500"
+                    style={{ width: `${Math.min(100, Math.max(0, (customer.totalSpend / (customer.nextTierMinSpending || 1)) * 100))}%` }}
+                  />
+                </div>
+                <div className="text-[11px] text-gray-400 leading-normal">
+                  Đã tích lũy: <strong className="text-gray-700">{fmtMoney(customer.totalSpend)}</strong>
+                  <br />
+                  Cần thêm <strong className="text-[#E8420A]">{fmtMoney(customer.amountToNextTier)}</strong> để thăng hạng
+                </div>
+              </div>
+            ) : (
+              <div className="w-full mb-5 p-3 bg-amber-50/50 rounded border border-amber-200/50 text-center">
+                <p className="text-xs font-bold text-amber-700">★ Hạng Kim Cương tối đa</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">Khách hàng đã đạt thứ hạng cao nhất</p>
+              </div>
+            )}
 
             <div className="w-full space-y-0">
               {[

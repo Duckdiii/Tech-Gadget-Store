@@ -32,4 +32,9 @@ public class CustomerDetailResponseDto {
     private String accountStatus;
     private List<PurchasedProductDto> purchasedProducts;
     private List<CustomerNoteResponseDto> notes;
+    private BigDecimal minSpending;
+    private BigDecimal maxSpending;
+    private MembershipTier nextTier;
+    private BigDecimal nextTierMinSpending;
+    private BigDecimal amountToNextTier;
 }
