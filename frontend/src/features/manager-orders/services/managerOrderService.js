@@ -23,4 +23,8 @@ export const managerOrderService = {
   async getManagerPaymentLogs() {
     return axiosClient.get('/api/manager/payment-logs')
   },
+
+  async getManagerOrderStats() {
+    return axiosClient.get('/api/manager/orders/stats')
+  },
 }

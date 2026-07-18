@@ -160,6 +160,28 @@ public class OrderController {
                         .build());
     }
 
+    @GetMapping("/manager/orders/stats")
+    public ResponseEntity<com.project.tech_gadget_store.modules.order.dto.response.OrderListStatsDto> getManagerOrderStats() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
+        LocalDateTime startOfMonth = now.toLocalDate().withDayOfMonth(1).atStartOfDay();
+
+        long pending = orderRepository.countByOrderStatus(OrderStatus.AWAITING_CONFIRMATION);
+        long shipping = orderRepository.countByOrderStatus(OrderStatus.SHIPPING);
+        java.math.BigDecimal todayRev = orderRepository.sumCompletedOrdersRevenueSince(startOfDay);
+        
+        long cancelled = orderRepository.countCancelledOrdersSince(startOfMonth);
+        long total = orderRepository.countTotalOrdersSince(startOfMonth);
+        double cancelRate = total > 0 ? ((double) cancelled / total) * 100.0 : 0.0;
+
+        return ResponseEntity.ok(com.project.tech_gadget_store.modules.order.dto.response.OrderListStatsDto.builder()
+                .pendingCount(pending)
+                .shippingCount(shipping)
+                .todayRevenue(todayRev)
+                .cancellationRate(cancelRate)
+                .build());
+    }
+
     @GetMapping("/manager/orders")
     public ResponseEntity<com.project.tech_gadget_store.common.dto.CursorPageResponseDto<OrderHistoryResponseDto>> getManagerOrders(
             @RequestParam(required = false) String status,

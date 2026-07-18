@@ -178,4 +178,16 @@ public interface OrderRepository extends JpaRepository<Order, String> {
         // "Đơn chờ xác nhận" badge on the manager dashboard — total count regardless of date,
         // so a backlog spanning multiple days isn't undercounted.
         long countByOrderStatus(OrderStatus orderStatus);
+
+        @Query("SELECT COALESCE(SUM(oi.unitPriceAtOrder * oi.quantity), 0) FROM Order o JOIN o.items oi " +
+                        "WHERE o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED " +
+                        "AND o.orderDate >= :startOfDay")
+        BigDecimal sumCompletedOrdersRevenueSince(@Param("startOfDay") LocalDateTime startOfDay);
+
+        @Query("SELECT COUNT(o) FROM Order o WHERE o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED " +
+                        "AND o.orderDate >= :startOfMonth")
+        long countCancelledOrdersSince(@Param("startOfMonth") LocalDateTime startOfMonth);
+
+        @Query("SELECT COUNT(o) FROM Order o WHERE o.orderDate >= :startOfMonth")
+        long countTotalOrdersSince(@Param("startOfMonth") LocalDateTime startOfMonth);
 }

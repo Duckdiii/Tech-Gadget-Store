@@ -14,6 +14,16 @@ export function useManagerOrders(initialFilter = 'all') {
   const [customStartDate, setCustomStartDate] = useState('')
   const [customEndDate, setCustomEndDate] = useState('')
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('all')
+  const [stats, setStats] = useState(null)
+
+  const fetchStats = async () => {
+    try {
+      const data = await managerOrderService.getManagerOrderStats()
+      setStats(data)
+    } catch (e) {
+      console.error('Lỗi tải thống kê đơn hàng:', e)
+    }
+  }
 
   const fetchOrders = async (reset = true) => {
     let sDate = ''
@@ -41,6 +51,7 @@ export function useManagerOrders(initialFilter = 'all') {
     try {
       if (reset) {
         setLoading(true)
+        fetchStats()
         const data = await managerOrderService.getManagerOrders({
           status: activeFilter,
           cursor: null,
@@ -105,6 +116,7 @@ export function useManagerOrders(initialFilter = 'all') {
     setCustomEndDate,
     paymentMethodFilter,
     setPaymentMethodFilter,
+    stats,
     handleUpdateStatus,
     fetchOrders,
   }

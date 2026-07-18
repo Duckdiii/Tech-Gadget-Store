@@ -37,12 +37,81 @@ export default function OrderListTab() {
     setCustomEndDate,
     paymentMethodFilter,
     setPaymentMethodFilter,
+    stats,
     handleUpdateStatus,
     fetchOrders,
   } = useManagerOrders(location.state?.filter)
 
   return (
     <>
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-7 text-gray-800 animate-fade-in">
+        {/* Đơn chờ xác nhận */}
+        <div
+          onClick={() => setActiveFilter('AWAITING_CONFIRMATION')}
+          className={`bg-white p-5 rounded-xl border transition-all cursor-pointer hover:shadow-md flex items-center justify-between ${
+            activeFilter === 'AWAITING_CONFIRMATION'
+              ? 'border-[#E8420A] ring-1 ring-[#E8420A]/50 bg-amber-50/5'
+              : 'border-gray-200'
+          }`}
+        >
+          <div>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Đơn chờ xác nhận</p>
+            <p className="text-2xl font-black text-gray-900 mt-1">{stats?.pendingCount ?? 0}</p>
+          </div>
+          <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center font-bold">
+            ⌛
+          </div>
+        </div>
+
+        {/* Đang giao hàng */}
+        <div
+          onClick={() => setActiveFilter('SHIPPING')}
+          className={`bg-white p-5 rounded-xl border transition-all cursor-pointer hover:shadow-md flex items-center justify-between ${
+            activeFilter === 'SHIPPING'
+              ? 'border-[#E8420A] ring-1 ring-[#E8420A]/50 bg-amber-50/5'
+              : 'border-gray-200'
+          }`}
+        >
+          <div>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Đang giao hàng</p>
+            <p className="text-2xl font-black text-gray-900 mt-1">{stats?.shippingCount ?? 0}</p>
+          </div>
+          <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold">
+            🚚
+          </div>
+        </div>
+
+        {/* Doanh thu hôm nay */}
+        <div className="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Doanh thu hôm nay</p>
+            <p className="text-lg font-black text-green-600 mt-1.5">{fmt(stats?.todayRevenue ?? 0)}</p>
+          </div>
+          <div className="w-10 h-10 bg-green-50 text-green-600 rounded-lg flex items-center justify-center font-bold">
+            💰
+          </div>
+        </div>
+
+        {/* Tỷ lệ hủy đơn */}
+        <div
+          onClick={() => setActiveFilter('CANCELLED')}
+          className={`bg-white p-5 rounded-xl border transition-all cursor-pointer hover:shadow-md flex items-center justify-between ${
+            activeFilter === 'CANCELLED'
+              ? 'border-[#E8420A] ring-1 ring-[#E8420A]/50 bg-amber-50/5'
+              : 'border-gray-200'
+          }`}
+        >
+          <div>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Tỷ lệ hủy tháng này</p>
+            <p className="text-2xl font-black text-red-600 mt-1">{(stats?.cancellationRate ?? 0).toFixed(1)}%</p>
+          </div>
+          <div className="w-10 h-10 bg-red-50 text-red-600 rounded-lg flex items-center justify-center font-bold">
+            ✕
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-4 mb-5 text-gray-800">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
