@@ -31,6 +31,25 @@ public interface OrderRepository extends JpaRepository<Order, String> {
                         @Param("cursorId") String cursorId,
                         Pageable pageable);
 
+        @Query("SELECT o FROM Order o WHERE " +
+                        "(:status IS NULL OR o.orderStatus = :status) AND " +
+                        "(:search IS NULL OR LOWER(o.id) LIKE LOWER(:search) OR LOWER(o.customer.fullName) LIKE LOWER(:search)) AND " +
+                        "(cast(:startDate as timestamp) IS NULL OR o.orderDate >= :startDate) AND " +
+                        "(cast(:endDate as timestamp) IS NULL OR o.orderDate <= :endDate) AND " +
+                        "(:paymentMethod IS NULL OR o.selectedPaymentMethod.name = :paymentMethod) AND " +
+                        "(cast(:cursorTimestamp as timestamp) IS NULL OR o.orderDate < :cursorTimestamp OR " +
+                        "(o.orderDate = :cursorTimestamp AND o.id < :cursorId)) " +
+                        "ORDER BY o.orderDate DESC, o.id DESC")
+        List<Order> findOrdersCursorForManager(
+                        @Param("status") OrderStatus status,
+                        @Param("search") String search,
+                        @Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate,
+                        @Param("paymentMethod") String paymentMethod,
+                        @Param("cursorTimestamp") LocalDateTime cursorTimestamp,
+                        @Param("cursorId") String cursorId,
+                        Pageable pageable);
+
         @Query("SELECT o FROM Order o WHERE o.customer.id = :customerId " +
                         "AND o.orderDate >= :from AND o.orderDate <= :to " +
                         "ORDER BY o.orderDate DESC")

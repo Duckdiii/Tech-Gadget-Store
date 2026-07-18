@@ -19,7 +19,6 @@ const ORDER_FILTER_TABS = [
 
 export default function OrderListTab() {
   const location = useLocation()
-  const [search, setSearch] = useState('')
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const {
     orders,
@@ -28,37 +27,99 @@ export default function OrderListTab() {
     hasNext,
     activeFilter,
     setActiveFilter,
+    search,
+    setSearch,
+    dateFilter,
+    setDateFilter,
+    customStartDate,
+    setCustomStartDate,
+    customEndDate,
+    setCustomEndDate,
+    paymentMethodFilter,
+    setPaymentMethodFilter,
     handleUpdateStatus,
     fetchOrders,
   } = useManagerOrders(location.state?.filter)
 
-  const filteredOrders = orders.filter((order) => {
-    const orderId = (order.id || '').toLowerCase()
-    const customerName = (order.customerName || '').toLowerCase()
-    const query = search.toLowerCase()
-    return orderId.includes(query) || customerName.includes(query)
-  })
-
   return (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 text-gray-800">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quản lý Đơn hàng</h1>
-          <p className="text-xs text-gray-500 mt-1">
-            Tìm thấy {filteredOrders.length} đơn hàng trong bộ lọc này
-          </p>
+      <div className="flex flex-col gap-4 mb-5 text-gray-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Quản lý Đơn hàng</h1>
+            <p className="text-xs text-gray-500 mt-1">
+              Hiển thị {orders.length} đơn hàng trong bộ lọc này
+            </p>
+          </div>
+          <div className="relative w-full sm:w-72">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Tìm mã đơn, tên khách hàng..."
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white"
+            />
+          </div>
         </div>
-        <div className="relative w-full sm:w-72">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm mã đơn, tên khách..."
-            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white"
-          />
+
+        {/* Filter controls row */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Date range filter */}
+          <div className="relative min-w-[160px]">
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="w-full appearance-none border border-gray-300 rounded px-3 py-2 pr-9 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
+            >
+              <option value="all">Tất cả thời gian</option>
+              <option value="today">Hôm nay</option>
+              <option value="week">7 ngày qua</option>
+              <option value="month">30 ngày qua</option>
+              <option value="custom">Khoảng tùy chỉnh</option>
+            </select>
+            <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+
+          {/* Custom Date inputs */}
+          {dateFilter === 'custom' && (
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white cursor-pointer"
+              />
+              <span className="text-gray-400 text-sm">đến</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white cursor-pointer"
+              />
+            </div>
+          )}
+
+          {/* Payment Method filter */}
+          <div className="relative min-w-[180px]">
+            <select
+              value={paymentMethodFilter}
+              onChange={(e) => setPaymentMethodFilter(e.target.value)}
+              className="w-full appearance-none border border-gray-300 rounded px-3 py-2 pr-9 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
+            >
+              <option value="all">Mọi phương thức thanh toán</option>
+              <option value="COD">Tiền mặt (COD)</option>
+              <option value="VNPAY">Ví điện tử VNPAY</option>
+              <option value="BANK_TRANSFER">Chuyển khoản Ngân hàng</option>
+            </select>
+            <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
       </div>
 
@@ -94,16 +155,16 @@ export default function OrderListTab() {
                   </span>
                 ))}
               </div>
-              {filteredOrders.length === 0 ? (
+              {orders.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">Không tìm thấy đơn hàng nào</div>
               ) : (
-                filteredOrders.map((order, i) => {
+                orders.map((order, i) => {
                   const isCancelled = order.orderStatus === 'CANCELLED'
                   return (
                     <div
                       key={order.id}
                       className={`grid grid-cols-[150px_120px_130px_1fr_130px_160px_100px] px-6 py-4 items-center ${
-                        i < filteredOrders.length - 1 ? 'border-b border-gray-50' : ''
+                        i < orders.length - 1 ? 'border-b border-gray-50' : ''
                       } hover:bg-gray-50/50`}
                     >
                       <span className={`text-sm font-mono font-semibold ${isCancelled ? 'text-gray-400' : 'text-gray-800'}`}>

@@ -163,6 +163,10 @@ public class OrderController {
     @GetMapping("/manager/orders")
     public ResponseEntity<com.project.tech_gadget_store.common.dto.CursorPageResponseDto<OrderHistoryResponseDto>> getManagerOrders(
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String paymentMethod,
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "10") int limit) {
         OrderStatus orderStatus = null;
@@ -172,6 +176,42 @@ public class OrderController {
             } catch (Exception e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái đơn hàng không hợp lệ");
             }
+        }
+
+        String searchParam = null;
+        if (search != null && !search.isBlank()) {
+            searchParam = "%" + search.trim() + "%";
+        }
+
+        LocalDateTime start = null;
+        if (startDate != null && !startDate.isBlank()) {
+            try {
+                if (startDate.length() == 10) {
+                    start = java.time.LocalDate.parse(startDate).atStartOfDay();
+                } else {
+                    start = LocalDateTime.parse(startDate);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+        LocalDateTime end = null;
+        if (endDate != null && !endDate.isBlank()) {
+            try {
+                if (endDate.length() == 10) {
+                    end = java.time.LocalDate.parse(endDate).atTime(23, 59, 59, 999_999_999);
+                } else {
+                    end = LocalDateTime.parse(endDate);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+        String pmParam = null;
+        if (paymentMethod != null && !paymentMethod.isBlank() && !paymentMethod.equalsIgnoreCase("all")) {
+            pmParam = paymentMethod.trim();
         }
 
         LocalDateTime cursorTimestamp = null;
@@ -184,7 +224,8 @@ public class OrderController {
         }
 
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit + 1);
-        List<Order> orders = orderRepository.findOrdersCursor(null, orderStatus, cursorTimestamp, cursorId, pageable);
+        List<Order> orders = orderRepository.findOrdersCursorForManager(
+                orderStatus, searchParam, start, end, pmParam, cursorTimestamp, cursorId, pageable);
 
         boolean hasNext = orders.size() > limit;
         List<Order> resultOrders = hasNext ? orders.subList(0, limit) : orders;
