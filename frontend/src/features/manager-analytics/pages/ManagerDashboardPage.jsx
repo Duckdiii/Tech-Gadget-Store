@@ -178,8 +178,10 @@ export default function ManagerDashboardPage() {
     chartPeriod, setChartPeriod,
     trend, topProducts, chartLoading,
     recentOrders, ordersLoading,
+    ordersLoadingMore, ordersHasNext, loadMoreOrders,
     handleExport, exporting,
     reload,
+    lastUpdated,
   } = useManagerDashboard()
   const { notifications, unreadCount, loading: notifLoading, markAllRead, markRead } = useHeaderNotifications()
 
@@ -207,6 +209,28 @@ export default function ManagerDashboardPage() {
       setRefreshing(false)
     }
   }, [reload, refetchLowStock])
+
+  const handleKpiClick = useCallback((key) => {
+    switch (key) {
+      case 'revenueToday':
+        onNavigate('revenueReport', { state: { filter: { period: 'DAILY' } } })
+        break
+      case 'revenueMonth':
+        onNavigate('revenueReport', { state: { filter: { period: 'MONTHLY' } } })
+        break
+      case 'ordersToday':
+        onNavigate('orderHistory')
+        break
+      case 'newCustomers':
+        onNavigate('customerManagement')
+        break
+      case 'lowStock':
+        onNavigate('inventory')
+        break
+      default:
+        break
+    }
+  }, [onNavigate])
 
   const handleUpdateOrderStatus = useCallback(async (orderId, newStatus) => {
     try {
@@ -464,6 +488,11 @@ export default function ManagerDashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {lastUpdated && (
+              <span className="text-xs text-gray-400 mr-1">
+                Cập nhật lúc {lastUpdated.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
             <button
               onClick={handleRefreshAll}
               disabled={refreshing}
@@ -493,7 +522,11 @@ export default function ManagerDashboardPage() {
           {kpiCards.map((card) => {
             const c = COLOR_MAP[card.color]
             return (
-              <div key={card.key} className="bg-white rounded border border-gray-200 p-5 flex flex-col gap-3">
+              <button
+                key={card.key}
+                onClick={() => handleKpiClick(card.key)}
+                className="bg-white rounded border border-gray-200 p-5 flex flex-col gap-3 text-left cursor-pointer hover:border-gray-300 hover:shadow-sm transition-all"
+              >
                 <div className="flex items-center justify-between">
                   <span className={`w-9 h-9 rounded flex items-center justify-center text-white shrink-0 ${c.icon}`}>
                     {KPI_ICONS[card.key]}
@@ -511,7 +544,7 @@ export default function ManagerDashboardPage() {
                   </p>
                 </div>
                 <p className="text-[11px] text-gray-400">{card.caption}</p>
-              </div>
+              </button>
             )
           })}
         </div>
@@ -689,6 +722,17 @@ export default function ManagerDashboardPage() {
                 })
               )}
             </div>
+            {!searchTerm.trim() && ordersHasNext && (
+              <div className="px-6 py-3 border-t border-gray-50">
+                <button
+                  onClick={loadMoreOrders}
+                  disabled={ordersLoadingMore}
+                  className="w-full text-center text-sm text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed py-1"
+                >
+                  {ordersLoadingMore ? 'Đang tải thêm...' : 'Xem thêm'}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Right column */}

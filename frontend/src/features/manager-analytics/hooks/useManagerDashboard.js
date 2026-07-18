@@ -10,6 +10,8 @@ function pctGrowth(current, previous) {
   return ((c - p) / p) * 100
 }
 
+const RECENT_ORDERS_PAGE_SIZE = 5
+
 export function useManagerDashboard() {
   const [kpis, setKpis] = useState(null)
   const [kpiLoading, setKpiLoading] = useState(true)
@@ -20,8 +22,13 @@ export function useManagerDashboard() {
 
   const [recentOrders, setRecentOrders] = useState([])
   const [ordersLoading, setOrdersLoading] = useState(true)
+  const [ordersLoadingMore, setOrdersLoadingMore] = useState(false)
+  const [ordersNextCursor, setOrdersNextCursor] = useState(null)
+  const [ordersHasNext, setOrdersHasNext] = useState(false)
 
   const [exporting, setExporting] = useState(false)
+
+  const [lastUpdated, setLastUpdated] = useState(null)
 
   const fetchKpis = useCallback(async ({ silent = false } = {}) => {
     try {
@@ -60,6 +67,7 @@ export function useManagerDashboard() {
       console.error('Lỗi tải số liệu KPI:', e)
     } finally {
       if (!silent) setKpiLoading(false)
+      setLastUpdated(new Date())
     }
   }, [])
 
@@ -72,20 +80,39 @@ export function useManagerDashboard() {
       console.error('Lỗi tải biểu đồ doanh thu:', e)
     } finally {
       if (!silent) setChartLoading(false)
+      setLastUpdated(new Date())
     }
   }, [chartPeriod])
 
   const fetchRecentOrders = useCallback(async ({ silent = false } = {}) => {
     try {
       if (!silent) setOrdersLoading(true)
-      const res = await dashboardService.getRecentOrders(5)
+      const res = await dashboardService.getRecentOrders(RECENT_ORDERS_PAGE_SIZE)
       setRecentOrders(res.items || [])
+      setOrdersNextCursor(res.nextCursor || null)
+      setOrdersHasNext(!!res.hasNext)
     } catch (e) {
       console.error('Lỗi tải đơn hàng gần đây:', e)
     } finally {
       if (!silent) setOrdersLoading(false)
+      setLastUpdated(new Date())
     }
   }, [])
+
+  const loadMoreOrders = useCallback(async () => {
+    if (!ordersNextCursor || ordersLoadingMore) return
+    try {
+      setOrdersLoadingMore(true)
+      const res = await dashboardService.getRecentOrders(RECENT_ORDERS_PAGE_SIZE, ordersNextCursor)
+      setRecentOrders((prev) => [...prev, ...(res.items || [])])
+      setOrdersNextCursor(res.nextCursor || null)
+      setOrdersHasNext(!!res.hasNext)
+    } catch (e) {
+      console.error('Lỗi tải thêm đơn hàng:', e)
+    } finally {
+      setOrdersLoadingMore(false)
+    }
+  }, [ordersNextCursor, ordersLoadingMore])
 
   useEffect(() => { fetchKpis() }, [fetchKpis])
   useEffect(() => { fetchChartData() }, [fetchChartData])
@@ -120,8 +147,12 @@ export function useManagerDashboard() {
     chartLoading,
     recentOrders,
     ordersLoading,
+    ordersLoadingMore,
+    ordersHasNext,
+    loadMoreOrders,
     handleExport,
     exporting,
     reload,
+    lastUpdated,
   }
 }

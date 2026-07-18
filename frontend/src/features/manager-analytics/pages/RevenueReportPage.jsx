@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useRevenueReport } from '../hooks/useRevenueReport'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
@@ -30,7 +31,8 @@ const PERIOD_OPTIONS = [
 ]
 
 export default function RevenueReportPage() {
-  const { data, previousData, loading, filter, setFilter, handleExport } = useRevenueReport()
+  const location = useLocation()
+  const { data, previousData, loading, filter, setFilter, handleExport } = useRevenueReport(location.state?.filter)
   const [chartMetric, setChartMetric] = useState('revenue')
 
   const report = data || {

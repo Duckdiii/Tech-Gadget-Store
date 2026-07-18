@@ -11,8 +11,8 @@ export const dashboardService = {
   getOrderCount: ({ startDate, endDate }) =>
     axiosClient.get('/api/manager/orders/count', { params: { startDate, endDate } }),
 
-  getRecentOrders: (limit = 5) =>
-    axiosClient.get('/api/manager/orders', { params: { limit } }),
+  getRecentOrders: (limit = 5, cursor = null) =>
+    axiosClient.get('/api/manager/orders', { params: { limit, cursor } }),
 
   async exportReport(filter) {
     const token = getToken()

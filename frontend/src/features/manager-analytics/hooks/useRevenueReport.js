@@ -5,8 +5,8 @@ import { resolveReportFilterRange, previousPeriodOf } from '../utils/dateRanges'
 
 const DEFAULT_FILTER = { period: 'MONTHLY' }
 
-export function useRevenueReport() {
-  const [filter, setFilter] = useState(DEFAULT_FILTER)
+export function useRevenueReport(initialFilter) {
+  const [filter, setFilter] = useState(initialFilter || DEFAULT_FILTER)
   const [data, setData] = useState(null)
   // Report for the equivalent-length window immediately preceding `filter`'s range, used to
   // compute real growth % on the KPI cards. Null while unavailable (loading, or an incomplete
