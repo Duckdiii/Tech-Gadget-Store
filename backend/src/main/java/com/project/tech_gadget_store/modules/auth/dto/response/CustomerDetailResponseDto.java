@@ -37,4 +37,5 @@ public class CustomerDetailResponseDto {
     private MembershipTier nextTier;
     private BigDecimal nextTierMinSpending;
     private BigDecimal amountToNextTier;
+    private List<BigDecimal> monthlySpending;
 }

@@ -147,6 +147,15 @@ public interface OrderRepository extends JpaRepository<Order, String> {
                         "ORDER BY o.orderDate DESC")
         List<Object[]> findAllPurchasedItemsWithDate(@Param("customerId") String customerId);
 
+        // Fetch monthly spending for a customer in a specific year
+        @Query("SELECT MONTH(o.orderDate), COALESCE(SUM(oi.unitPriceAtOrder * oi.quantity), 0) " +
+                        "FROM Order o JOIN o.items oi " +
+                        "WHERE o.customer.id = :customerId " +
+                        "AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED " +
+                        "AND YEAR(o.orderDate) = :year " +
+                        "GROUP BY MONTH(o.orderDate)")
+        List<Object[]> getMonthlySpendingForCustomer(@Param("customerId") String customerId, @Param("year") int year);
+
         // "Đơn chờ xác nhận" badge on the manager dashboard — total count regardless of date,
         // so a backlog spanning multiple days isn't undercounted.
         long countByOrderStatus(OrderStatus orderStatus);

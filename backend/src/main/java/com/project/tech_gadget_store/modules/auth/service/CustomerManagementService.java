@@ -219,6 +219,18 @@ public class CustomerManagementService {
             amountToNextTier = next.getMinSpending().subtract(finalTotalSpend).max(BigDecimal.ZERO);
         }
 
+        // Monthly spending for the current year (12 months)
+        List<BigDecimal> monthlySpending = new java.util.ArrayList<>(java.util.Collections.nCopies(12, BigDecimal.ZERO));
+        int currentYear = LocalDate.now().getYear();
+        List<Object[]> monthlyData = orderRepository.getMonthlySpendingForCustomer(id, currentYear);
+        for (Object[] row : monthlyData) {
+            int month = ((Number) row[0]).intValue();
+            BigDecimal sum = (BigDecimal) row[1];
+            if (month >= 1 && month <= 12) {
+                monthlySpending.set(month - 1, sum);
+            }
+        }
+
         return CustomerDetailResponseDto.builder()
                 .id(customer.getId())
                 .fullName(customer.getFullName())
@@ -241,6 +253,7 @@ public class CustomerManagementService {
                 .nextTier(nextTier)
                 .nextTierMinSpending(nextTierMinSpending)
                 .amountToNextTier(amountToNextTier)
+                .monthlySpending(monthlySpending)
                 .build();
     }
 

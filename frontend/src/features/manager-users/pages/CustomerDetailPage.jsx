@@ -24,6 +24,8 @@ const STATUS_DISPLAY = {
 
 const TABS = ['Lịch sử giao dịch', 'Sản phẩm đã mua', 'Ghi chú']
 
+const MONTH_NAMES = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12']
+
 function fmtMoney(n) { return (Number(n) || 0).toLocaleString('vi-VN') + ' đ' }
 function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('vi-VN') : '—' }
 function initialsOf(name) {
@@ -41,6 +43,7 @@ export default function CustomerDetailPage() {
   const [newNoteContent, setNewNoteContent] = useState('')
   const [editingNoteId, setEditingNoteId] = useState(null)
   const [editingNoteContent, setEditingNoteContent] = useState('')
+  const [hoveredMonth, setHoveredMonth] = useState(null)
 
   const handleHeaderSearchSubmit = (e) => {
     if (e.key === 'Enter') {
@@ -309,6 +312,66 @@ export default function CustomerDetailPage() {
                   </svg>
                 }
               />
+            </div>
+
+            {/* Spending Trends Card */}
+            <div className="bg-white rounded border border-gray-200 p-5 flex flex-col">
+              <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center justify-between">
+                <span>Biểu đồ chi tiêu năm {new Date().getFullYear()}</span>
+                {hoveredMonth !== null && (
+                  <span className="text-xs font-semibold text-gray-500">
+                    Tháng {hoveredMonth + 1}: <strong className="text-[#E8420A]">{fmtMoney(customer.monthlySpending?.[hoveredMonth] || 0)}</strong>
+                  </span>
+                )}
+              </h3>
+              
+              {/* Bars container */}
+              <div className="h-32 flex items-end justify-between gap-2.5 px-2.5 border-b border-gray-200 pb-2">
+                {MONTH_NAMES.map((name, idx) => {
+                  const spent = customer.monthlySpending?.[idx] || 0
+                  const maxSpent = Math.max(...(customer.monthlySpending || []), 1)
+                  const heightPercent = maxSpent > 0 ? (spent / maxSpent) * 100 : 0
+                  const isHovered = hoveredMonth === idx
+
+                  return (
+                    <div 
+                      key={idx} 
+                      className="flex-1 flex flex-col items-center h-full group relative"
+                      onMouseEnter={() => setHoveredMonth(idx)}
+                      onMouseLeave={() => setHoveredMonth(null)}
+                    >
+                      {/* Bar fill wrapper */}
+                      <div className="w-full flex-1 flex items-end">
+                        <div 
+                          className={`w-full rounded-t-sm transition-all duration-300 ${
+                            isHovered ? 'bg-[#E8420A]' : 'bg-gradient-to-t from-amber-400 to-[#E8420A]/80'
+                          }`}
+                          style={{ height: `${Math.max(4, heightPercent)}%` }}
+                        />
+                      </div>
+                      
+                      {/* Tooltip on hover */}
+                      <div className="absolute bottom-full mb-1.5 hidden group-hover:block z-10 bg-gray-900 text-white text-[10px] py-1 px-1.5 rounded whitespace-nowrap pointer-events-none shadow-md">
+                        {fmtMoney(spent)}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Labels container */}
+              <div className="flex justify-between gap-2.5 px-2.5 pt-1.5">
+                {MONTH_NAMES.map((name, idx) => (
+                  <span 
+                    key={idx} 
+                    className={`flex-1 text-center text-[10px] font-semibold ${
+                      hoveredMonth === idx ? 'text-[#E8420A] font-bold' : 'text-gray-400'
+                    }`}
+                  >
+                    {name}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* Tabs + Table */}
