@@ -21,6 +21,11 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
+import java.io.IOException;
+import jakarta.servlet.http.HttpServletResponse;
+import com.project.tech_gadget_store.modules.order.entity.OrderItem;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -263,6 +268,100 @@ public class OrderController {
         }
 
         return ResponseEntity.ok(new com.project.tech_gadget_store.common.dto.CursorPageResponseDto<>(response, nextCursor, hasNext));
+    }
+
+    @Transactional
+    @PostMapping("/manager/orders/bulk-confirm")
+    public ResponseEntity<Map<String, Object>> bulkConfirmOrders(@RequestBody List<String> orderIds) {
+        if (orderIds == null || orderIds.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh sách ID đơn hàng trống");
+        }
+        int updatedCount = 0;
+        for (String id : orderIds) {
+            Optional<Order> opt = orderRepository.findById(id);
+            if (opt.isPresent()) {
+                Order order = opt.get();
+                if (order.getOrderStatus() == OrderStatus.AWAITING_CONFIRMATION) {
+                    order.transitionTo(OrderStatus.PROCESSING);
+                    orderRepository.save(order);
+                    updatedCount++;
+                }
+            }
+        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("updatedCount", updatedCount);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/manager/orders/export")
+    public void exportOrdersToCsv(@RequestBody List<String> orderIds, HttpServletResponse response) throws IOException {
+        if (orderIds == null || orderIds.isEmpty()) {
+            response.sendError(400, "Danh sách ID đơn hàng trống");
+            return;
+        }
+
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=van-don-hang-loat.csv");
+
+        try (java.io.PrintWriter writer = response.getWriter()) {
+            writer.write('\ufeff'); // UTF-8 BOM
+            writer.println("MÃ ĐƠN HÀNG,TÊN NGƯỜI NHẬN,SỐ ĐIỆN THOẠI,ĐỊA CHỈ GIAO HÀNG,TIỀN COD (ĐỒNG),TRỌNG LƯỢNG (KG)");
+
+            for (String id : orderIds) {
+                Optional<Order> opt = orderRepository.findById(id);
+                if (opt.isPresent()) {
+                    Order o = opt.get();
+                    
+                    String recipientName = o.getAddress() != null && o.getAddress().getName() != null 
+                            ? o.getAddress().getName() 
+                             : (o.getCustomer() != null ? o.getCustomer().getFullName() : "");
+                    
+                    String phone = o.getAddress() != null && o.getAddress().getPhone() != null 
+                            ? o.getAddress().getPhone() 
+                            : (o.getCustomer() != null ? o.getCustomer().getPhone() : "");
+
+                    String fullAddr = "";
+                    if (o.getAddress() != null) {
+                        fullAddr = String.format("%s, %s, %s, %s", 
+                                o.getAddress().getStreet(), 
+                                o.getAddress().getWard(), 
+                                o.getAddress().getDistrict(), 
+                                o.getAddress().getProvince());
+                    }
+
+                    java.math.BigDecimal codAmount = java.math.BigDecimal.ZERO;
+                    if (o.getSelectedPaymentMethod() != null) {
+                        String pmName = o.getSelectedPaymentMethod().getName();
+                        if (pmName != null && (pmName.toUpperCase().contains("COD") || pmName.toUpperCase().contains("TIỀN MẶT") || pmName.toUpperCase().contains("CASH"))) {
+                            codAmount = o.calculateTotal();
+                        }
+                    }
+
+                    double totalWeight = 0.0;
+                    if (o.getItems() != null) {
+                        for (OrderItem item : o.getItems()) {
+                            double itemWeight = 0.5;
+                            if (item.getProductVariant() != null && item.getProductVariant().getProduct() instanceof com.project.tech_gadget_store.modules.catalog.entity.Laptop) {
+                                com.project.tech_gadget_store.modules.catalog.entity.Laptop laptop = (com.project.tech_gadget_store.modules.catalog.entity.Laptop) item.getProductVariant().getProduct();
+                                if (laptop.getWeight() != null) {
+                                    itemWeight = laptop.getWeight();
+                                }
+                            }
+                            totalWeight += itemWeight * (item.getQuantity() != null ? item.getQuantity() : 1);
+                        }
+                    }
+
+                    writer.println(String.format("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%.2f\"",
+                            o.getId().toUpperCase(),
+                            recipientName.replace("\"", "\"\""),
+                            phone.replace("\"", "\"\""),
+                            fullAddr.replace("\"", "\"\""),
+                            codAmount.toPlainString(),
+                            totalWeight
+                    ));
+                }
+            }
+        }
     }
 
     @Transactional

@@ -27,4 +27,14 @@ export const managerOrderService = {
   async getManagerOrderStats() {
     return axiosClient.get('/api/manager/orders/stats')
   },
+
+  async bulkConfirmOrders(orderIds) {
+    return axiosClient.post('/api/manager/orders/bulk-confirm', orderIds)
+  },
+
+  async exportOrders(orderIds) {
+    return axiosClient.post('/api/manager/orders/export', orderIds, {
+      responseType: 'blob'
+    })
+  },
 }

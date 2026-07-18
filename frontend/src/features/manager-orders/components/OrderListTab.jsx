@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useManagerOrders } from '../hooks/useManagerOrders'
+import { managerOrderService } from '../services/managerOrderService'
 import PayIcon from './PayIcon'
 import OrderDetailModal from './OrderDetailModal'
 
@@ -41,6 +42,67 @@ export default function OrderListTab() {
     handleUpdateStatus,
     fetchOrders,
   } = useManagerOrders(location.state?.filter)
+
+  const [selectedIds, setSelectedIds] = useState([])
+
+  // Clear selections when filters update
+  useEffect(() => {
+    setSelectedIds([])
+  }, [activeFilter, search, dateFilter, customStartDate, customEndDate, paymentMethodFilter])
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(orders.map(o => o.id))
+    } else {
+      setSelectedIds([])
+    }
+  }
+
+  const handleSelectRow = (orderId) => {
+    setSelectedIds(prev =>
+      prev.includes(orderId)
+        ? prev.filter(id => id !== orderId)
+        : [...prev, orderId]
+    )
+  }
+
+  const handleBulkConfirm = async () => {
+    if (selectedIds.length === 0) return
+    const countToConfirm = orders.filter(o => selectedIds.includes(o.id) && o.orderStatus === 'AWAITING_CONFIRMATION').length
+    if (countToConfirm === 0) {
+      alert("Không có đơn hàng nào được chọn ở trạng thái 'Chờ xác nhận' để duyệt.")
+      return
+    }
+
+    if (!window.confirm(`Bạn có chắc muốn duyệt hàng loạt ${countToConfirm} đơn hàng chờ xác nhận đã chọn?`)) return
+    
+    try {
+      const res = await managerOrderService.bulkConfirmOrders(selectedIds)
+      alert(`Đã duyệt thành công ${res.updatedCount} đơn hàng chờ xác nhận!`)
+      fetchOrders(true)
+      setSelectedIds([])
+    } catch (err) {
+      alert("Duyệt hàng loạt thất bại: " + err.message)
+    }
+  }
+
+  const handleBulkExport = async () => {
+    if (selectedIds.length === 0) return
+    try {
+      const blob = await managerOrderService.exportOrders(selectedIds)
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `van-don-${new Date().getTime()}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      setSelectedIds([])
+    } catch (err) {
+      alert("Xuất vận đơn thất bại: " + err.message)
+    }
+  }
 
   return (
     <>
@@ -217,7 +279,15 @@ export default function OrderListTab() {
         <div className="bg-white rounded border border-gray-200 overflow-hidden text-gray-800">
           <div className="overflow-x-auto">
             <div className="min-w-[950px]">
-              <div className="grid grid-cols-[150px_120px_130px_1fr_130px_160px_100px] px-6 py-3.5 border-b border-gray-100 bg-gray-50">
+              <div className="grid grid-cols-[50px_140px_110px_120px_1fr_120px_150px_80px] px-6 py-3.5 border-b border-gray-100 bg-gray-50 items-center">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={orders.length > 0 && selectedIds.length === orders.length}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 text-[#E8420A] focus:ring-[#E8420A] border-gray-300 rounded cursor-pointer"
+                  />
+                </div>
                 {['MÃ ĐƠN', 'NGÀY ĐẶT', 'KHÁCH HÀNG', 'THANH TOÁN', 'TỔNG TIỀN', 'TRẠNG THÁI', 'ACT'].map((h, i) => (
                   <span key={i} className={`text-[11px] font-bold text-gray-400 uppercase tracking-wide ${i === 6 ? 'text-right' : ''}`}>
                     {h}
@@ -232,10 +302,18 @@ export default function OrderListTab() {
                   return (
                     <div
                       key={order.id}
-                      className={`grid grid-cols-[150px_120px_130px_1fr_130px_160px_100px] px-6 py-4 items-center ${
+                      className={`grid grid-cols-[50px_140px_110px_120px_1fr_120px_150px_80px] px-6 py-4 items-center ${
                         i < orders.length - 1 ? 'border-b border-gray-50' : ''
-                      } hover:bg-gray-50/50`}
+                      } hover:bg-gray-50/50 ${selectedIds.includes(order.id) ? 'bg-amber-50/20' : ''}`}
                     >
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(order.id)}
+                          onChange={() => handleSelectRow(order.id)}
+                          className="w-4 h-4 text-[#E8420A] focus:ring-[#E8420A] border-gray-300 rounded cursor-pointer"
+                        />
+                      </div>
                       <span className={`text-sm font-mono font-semibold ${isCancelled ? 'text-gray-400' : 'text-gray-800'}`}>
                         {order.id.substring(0, 10).toUpperCase()}
                       </span>
@@ -304,6 +382,42 @@ export default function OrderListTab() {
           orderId={selectedOrderId}
           onClose={() => setSelectedOrderId(null)}
         />
+      )}
+
+      {/* Floating Bulk Actions Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur text-white px-6 py-4 rounded-xl shadow-2xl border border-gray-800 flex items-center gap-6 z-40 transition-all duration-300">
+          <div className="text-sm font-semibold border-r border-gray-700 pr-6">
+            Đã chọn: <span className="text-[#E8420A] text-base font-bold">{selectedIds.length}</span> đơn hàng
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleBulkConfirm}
+              className="bg-[#E8420A] hover:bg-[#C4350A] text-white px-4 py-2 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              Duyệt đơn hàng loạt
+            </button>
+            
+            <button
+              onClick={handleBulkExport}
+              className="border border-gray-700 hover:bg-gray-800 text-gray-200 px-4 py-2 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Xuất vận đơn (Excel)
+            </button>
+          </div>
+          <button
+            onClick={() => setSelectedIds([])}
+            className="text-gray-400 hover:text-white transition-colors pl-4 border-l border-gray-700 cursor-pointer"
+            title="Bỏ chọn tất cả"
+          >
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       )}
     </>
   )
