@@ -217,10 +217,10 @@ export default function ManagerDashboardPage() {
     }
   }, [handleRefreshAll])
 
-  // Auto-refresh every 60 seconds
+  // Auto-refresh every 60 seconds — silent so the charts/tables don't blank out mid-view
   useEffect(() => {
     const interval = setInterval(() => {
-      reload()
+      reload({ silent: true })
       refetchLowStock()
     }, 60000)
     return () => clearInterval(interval)

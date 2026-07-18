@@ -23,9 +23,9 @@ export function useManagerDashboard() {
 
   const [exporting, setExporting] = useState(false)
 
-  const fetchKpis = useCallback(async () => {
+  const fetchKpis = useCallback(async ({ silent = false } = {}) => {
     try {
-      setKpiLoading(true)
+      if (!silent) setKpiLoading(true)
       const { current: today, previous: yesterday } = todayVsYesterday()
       const { current: monthToDate, previous: prevMonth } = monthToDateVsPrevious()
 
@@ -59,31 +59,31 @@ export function useManagerDashboard() {
     } catch (e) {
       console.error('Lỗi tải số liệu KPI:', e)
     } finally {
-      setKpiLoading(false)
+      if (!silent) setKpiLoading(false)
     }
   }, [])
 
-  const fetchChartData = useCallback(async () => {
+  const fetchChartData = useCallback(async ({ silent = false } = {}) => {
     try {
-      setChartLoading(true)
+      if (!silent) setChartLoading(true)
       const report = await dashboardService.getRevenueReport(chartPeriodToFilter(chartPeriod))
       setChartData({ trend: report.trend || [], topProducts: report.topSellingProducts || [] })
     } catch (e) {
       console.error('Lỗi tải biểu đồ doanh thu:', e)
     } finally {
-      setChartLoading(false)
+      if (!silent) setChartLoading(false)
     }
   }, [chartPeriod])
 
-  const fetchRecentOrders = useCallback(async () => {
+  const fetchRecentOrders = useCallback(async ({ silent = false } = {}) => {
     try {
-      setOrdersLoading(true)
+      if (!silent) setOrdersLoading(true)
       const res = await dashboardService.getRecentOrders(5)
       setRecentOrders(res.items || [])
     } catch (e) {
       console.error('Lỗi tải đơn hàng gần đây:', e)
     } finally {
-      setOrdersLoading(false)
+      if (!silent) setOrdersLoading(false)
     }
   }, [])
 
@@ -91,11 +91,11 @@ export function useManagerDashboard() {
   useEffect(() => { fetchChartData() }, [fetchChartData])
   useEffect(() => { fetchRecentOrders() }, [fetchRecentOrders])
 
-  const reload = useCallback(async () => {
+  const reload = useCallback(async ({ silent = false } = {}) => {
     await Promise.allSettled([
-      fetchKpis(),
-      fetchChartData(),
-      fetchRecentOrders()
+      fetchKpis({ silent }),
+      fetchChartData({ silent }),
+      fetchRecentOrders({ silent })
     ])
   }, [fetchKpis, fetchChartData, fetchRecentOrders])
 
