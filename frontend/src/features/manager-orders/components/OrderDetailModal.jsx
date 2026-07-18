@@ -56,6 +56,54 @@ export default function OrderDetailModal({ orderId, onClose }) {
     }
   }
 
+  const getTimelineSteps = () => {
+    if (!invoice) return []
+    const status = invoice.orderStatus
+    const createdStr = invoice.createdAt ? new Date(invoice.createdAt).toLocaleString('vi-VN') : ''
+    const updatedStr = invoice.updatedAt ? new Date(invoice.updatedAt).toLocaleString('vi-VN') : ''
+
+    const steps = [
+      { key: 'CREATED', label: 'Đặt đơn', time: createdStr, done: true },
+      { key: 'CONFIRMED', label: 'Xác nhận', time: '', done: false },
+      { key: 'SHIPPING', label: 'Đang giao', time: '', done: false },
+      { key: 'COMPLETED', label: 'Hoàn thành', time: '', done: false }
+    ]
+
+    if (status === 'AWAITING_CONFIRMATION') {
+      // only first step done
+    } else if (status === 'PROCESSING') {
+      steps[1].done = true
+      steps[1].time = updatedStr
+    } else if (status === 'SHIPPING') {
+      steps[1].done = true
+      steps[1].time = createdStr
+      steps[2].done = true
+      steps[2].time = updatedStr
+    } else if (status === 'COMPLETED') {
+      steps[1].done = true
+      steps[1].time = createdStr
+      steps[2].done = true
+      steps[2].time = createdStr
+      steps[3].done = true
+      steps[3].time = updatedStr
+    } else if (status === 'CANCELLED') {
+      return [
+        { key: 'CREATED', label: 'Đặt đơn', time: createdStr, done: true },
+        { key: 'CANCELLED', label: 'Đã hủy', time: updatedStr, done: true, isError: true }
+      ]
+    } else if (status === 'REFUNDED') {
+      return [
+        { key: 'CREATED', label: 'Đặt đơn', time: createdStr, done: true },
+        { key: 'COMPLETED', label: 'Đã hoàn thành', time: createdStr, done: true },
+        { key: 'REFUNDED', label: 'Đã hoàn tiền', time: updatedStr, done: true, isError: true }
+      ]
+    }
+
+    return steps
+  }
+
+  const timelineSteps = getTimelineSteps()
+
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-50 animate-fade-in" onClick={onClose} />
@@ -91,6 +139,49 @@ export default function OrderDetailModal({ orderId, onClose }) {
               <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
                 {/* Left section: Ordered items */}
                 <div className="space-y-4">
+                  {/* Timeline */}
+                  <div className="bg-gray-50 border border-gray-100 rounded-xl p-5 mb-3 text-gray-800">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Trạng thái đơn hàng</h3>
+                    <div className="flex items-center justify-between relative pl-4 pr-4">
+                      {/* Connecting Line */}
+                      <div className="absolute top-4 left-10 right-10 h-0.5 bg-gray-200 z-0">
+                        <div 
+                          className="h-full bg-green-500 transition-all duration-500" 
+                          style={{
+                            width: `${(timelineSteps.filter(s => s.done).length - 1) / (timelineSteps.length - 1) * 100}%`
+                          }}
+                        />
+                      </div>
+
+                      {timelineSteps.map((step, idx) => (
+                        <div key={idx} className="flex flex-col items-center relative z-10 flex-1">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border ${
+                            step.done 
+                              ? step.isError 
+                                ? 'bg-red-50 text-red-650 border-red-200'
+                                : 'bg-green-50 text-green-650 border-green-200'
+                              : 'bg-white text-gray-400 border-gray-200'
+                          }`}>
+                            {step.done 
+                              ? step.isError ? '✕' : '✓'
+                              : idx + 1
+                            }
+                          </div>
+                          <span className={`text-[11px] font-bold mt-2 ${
+                            step.done 
+                              ? step.isError ? 'text-red-600' : 'text-green-700'
+                              : 'text-gray-400'
+                          }`}>
+                            {step.label}
+                          </span>
+                          <span className="text-[9px] text-gray-400 mt-0.5 text-center leading-tight max-w-[100px] h-3.5">
+                            {step.time || '...'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sản phẩm đã mua</h3>
                   <div className="border border-gray-100 rounded overflow-hidden">
                     <div className="grid grid-cols-[1fr_80px_110px_110px] bg-gray-50 px-4 py-2.5 text-xs font-bold text-gray-400 border-b border-gray-100">
@@ -143,6 +234,20 @@ export default function OrderDetailModal({ orderId, onClose }) {
                         <p className="text-gray-700 leading-snug">{invoice.shippingAddress || 'N/A'}</p>
                       </div>
                     </div>
+                    {/* Copy Address Button */}
+                    <button
+                      onClick={() => {
+                        const text = `${invoice.customerName || ''} - ${invoice.customerPhone || ''} - ${invoice.shippingAddress || ''}`;
+                        navigator.clipboard.writeText(text);
+                        alert("Đã sao chép thông tin giao hàng!");
+                      }}
+                      className="w-full mt-3 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded cursor-pointer transition-colors border-none"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-5 4h5m-5 4h5m-9 4h9" />
+                      </svg>
+                      Sao chép địa chỉ nhanh
+                    </button>
                   </div>
 
                   {/* Payment Method */}

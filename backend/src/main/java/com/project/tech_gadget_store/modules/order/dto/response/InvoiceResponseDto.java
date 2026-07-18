@@ -28,6 +28,7 @@ public class InvoiceResponseDto {
     private String customerName;
     private String customerPhone;
     private String shippingAddress;
+    private String orderStatus;
     private List<InvoiceItemResponseDto> items;
 }
 

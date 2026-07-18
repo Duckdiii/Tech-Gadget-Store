@@ -60,6 +60,7 @@ public class InvoiceMapper {
                 .customerName(customerName)
                 .customerPhone(customerPhone)
                 .shippingAddress(shippingAddress)
+                .orderStatus(invoice.getOrder() != null && invoice.getOrder().getOrderStatus() != null ? invoice.getOrder().getOrderStatus().name() : null)
                 .items(itemDtos)
                 .build();
     }
