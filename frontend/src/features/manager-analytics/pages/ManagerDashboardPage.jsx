@@ -176,6 +176,13 @@ function initialsOf(name) {
   return trimmed.split(/\s+/).map((w) => w[0]).slice(-2).join('').toUpperCase()
 }
 
+function Skeleton({ className = '', style }) {
+  return <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={style} />
+}
+
+/** Deterministic pseudo-random bar heights (%) for the chart skeleton — varied but stable across re-renders. */
+const CHART_SKELETON_HEIGHTS = [45, 70, 55, 85, 40, 65, 90, 50, 75, 60, 80, 48]
+
 export default function ManagerDashboardPage() {
   const onNavigate = useNav()
   const { user } = useAuth()
@@ -345,6 +352,7 @@ export default function ManagerDashboardPage() {
       up: kpis ? (kpis.revenueTodayGrowth ?? 0) >= 0 : true,
       caption: 'So với hôm qua',
       color: 'blue',
+      isLoading: !kpis,
     },
     {
       key: 'revenueMonth',
@@ -354,6 +362,7 @@ export default function ManagerDashboardPage() {
       up: kpis ? (kpis.revenueMonthGrowth ?? 0) >= 0 : true,
       caption: 'So với cùng kỳ tháng trước',
       color: 'indigo',
+      isLoading: !kpis,
     },
     {
       key: 'ordersToday',
@@ -364,6 +373,7 @@ export default function ManagerDashboardPage() {
       up: kpis ? kpis.ordersTodayDelta >= 0 : true,
       caption: 'So với hôm qua',
       color: 'green',
+      isLoading: !kpis,
     },
     {
       key: 'newCustomers',
@@ -374,6 +384,7 @@ export default function ManagerDashboardPage() {
       up: kpis ? kpis.newCustomersDelta >= 0 : true,
       caption: 'So với hôm qua',
       color: 'purple',
+      isLoading: !kpis,
     },
     {
       key: 'lowStock',
@@ -383,6 +394,7 @@ export default function ManagerDashboardPage() {
       isLowStockCard: true,
       caption: `Ngưỡng cảnh báo: ${lowStockThreshold}`,
       color: 'red',
+      isLoading: lowStockLoading,
     },
   ]
 
@@ -400,7 +412,7 @@ export default function ManagerDashboardPage() {
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="relative bg-white border-b border-gray-100 px-8 py-3 flex items-center gap-4">
+      <header className="relative bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-4">
         <div className="flex-1 max-w-sm">
           <button
             onClick={() => setCommandMenuOpen(true)}
@@ -493,17 +505,17 @@ export default function ManagerDashboardPage() {
       </header>
 
       {/* Content */}
-      <div className="flex-1 px-8 py-7 space-y-6">
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-7 space-y-6">
 
         {/* Title */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{greeting}, {user?.name || 'Quản lý'} 👋</h1>
             <p className="text-sm text-gray-500 mt-0.5">
               Tổng quan hoạt động hôm nay — {now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {lastUpdated && (
               <span className="text-xs text-gray-400 mr-1">
                 Cập nhật lúc {lastUpdated.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
@@ -558,6 +570,21 @@ export default function ManagerDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {kpiCards.map((card) => {
             const c = COLOR_MAP[card.color]
+            if (card.isLoading) {
+              return (
+                <div key={card.key} className="bg-white rounded border border-gray-200 p-5 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="w-9 h-9" />
+                    <Skeleton className="w-10 h-4 rounded-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="w-24 h-3" />
+                    <Skeleton className="w-16 h-6" />
+                  </div>
+                  <Skeleton className="w-28 h-3" />
+                </div>
+              )
+            }
             return (
               <button
                 key={card.key}
@@ -587,7 +614,7 @@ export default function ManagerDashboardPage() {
         </div>
 
         {/* Chart + Quick Actions */}
-        <div className="grid grid-cols-[1fr_280px] gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5">
           {/* Revenue Chart */}
           <div className="bg-white rounded border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-5 gap-4 flex-wrap">
@@ -597,7 +624,7 @@ export default function ManagerDashboardPage() {
                 </h2>
                 <p className="text-xs text-gray-400 mt-0.5">{periodLabel} · di chuột để xem chi tiết</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 {/* Metric Selector */}
                 <div className="flex gap-1 bg-gray-100 p-1 rounded border border-gray-200/50">
                   <button
@@ -647,7 +674,11 @@ export default function ManagerDashboardPage() {
             {chartPeriod === 'custom' && !chartFilterReady ? (
               <div className="w-full h-[180px] flex items-center justify-center text-sm text-gray-400">Chọn khoảng ngày để xem biểu đồ</div>
             ) : chartLoading ? (
-              <div className="w-full h-[180px] flex items-center justify-center text-sm text-gray-400">Đang tải...</div>
+              <div className="w-full h-[180px] flex items-end gap-2">
+                {CHART_SKELETON_HEIGHTS.map((h, i) => (
+                  <Skeleton key={i} className="flex-1 rounded-t" style={{ height: `${h}%` }} />
+                ))}
+              </div>
             ) : (
               <RevenueChart data={trend} metric={chartMetric} />
             )}
@@ -677,7 +708,7 @@ export default function ManagerDashboardPage() {
         </div>
 
         {/* Recent Orders + Top Products + Low Stock */}
-        <div className="grid grid-cols-[1fr_320px] gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5">
           {/* Recent Orders */}
           <div className="bg-white rounded border border-gray-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 gap-4">
@@ -703,7 +734,19 @@ export default function ManagerDashboardPage() {
             </div>
             <div className="divide-y divide-gray-50">
               {ordersLoading ? (
-                <p className="px-6 py-8 text-xs text-gray-400 text-center">Đang tải...</p>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 px-6 py-3.5">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="w-32 h-3" />
+                      <Skeleton className="w-48 h-3.5" />
+                      <Skeleton className="w-24 h-3" />
+                    </div>
+                    <div className="shrink-0 flex flex-col items-end gap-2">
+                      <Skeleton className="w-16 h-3.5" />
+                      <Skeleton className="w-14 h-4 rounded-full" />
+                    </div>
+                  </div>
+                ))
               ) : filteredOrders.length === 0 ? (
                 <p className="px-6 py-8 text-xs text-gray-400 text-center">
                   {searchTerm ? 'Không tìm thấy đơn hàng phù hợp.' : 'Chưa có đơn hàng nào.'}
@@ -801,7 +844,15 @@ export default function ManagerDashboardPage() {
               </div>
               <div className="space-y-3">
                 {chartLoading ? (
-                  <p className="text-xs text-gray-400">Đang tải...</p>
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i}>
+                      <div className="flex items-center justify-between mb-1">
+                        <Skeleton className="w-24 h-3" />
+                        <Skeleton className="w-14 h-3" />
+                      </div>
+                      <Skeleton className="w-full h-1.5 rounded-full" />
+                    </div>
+                  ))
                 ) : topProducts.length === 0 ? (
                   <p className="text-xs text-gray-400">Chưa có dữ liệu bán hàng trong khoảng thời gian này.</p>
                 ) : (
@@ -839,7 +890,13 @@ export default function ManagerDashboardPage() {
               </div>
               <div className="space-y-2.5">
                 {lowStockLoading ? (
-                  <p className="text-xs text-gray-400">Đang tải...</p>
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-2.5 py-0.5">
+                      <Skeleton className="w-2 h-2 rounded-full" />
+                      <Skeleton className="flex-1 h-3" />
+                      <Skeleton className="w-8 h-3" />
+                    </div>
+                  ))
                 ) : lowStockItems.length === 0 ? (
                   <p className="text-xs text-gray-400">Không có sản phẩm nào sắp hết hàng.</p>
                 ) : (
