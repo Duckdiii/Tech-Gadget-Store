@@ -4,6 +4,7 @@ import com.project.tech_gadget_store.modules.auth.dto.response.CustomerDetailRes
 import com.project.tech_gadget_store.modules.auth.dto.response.CustomerListStatsDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.CustomerPageResponseDto;
 import com.project.tech_gadget_store.modules.auth.service.CustomerManagementService;
+import java.math.BigDecimal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,9 +33,17 @@ public class CustomerManagementController {
     public ResponseEntity<CustomerPageResponseDto> listCustomers(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String tier,
+            @RequestParam(required = false) String joinStartDate,
+            @RequestParam(required = false) String joinEndDate,
+            @RequestParam(required = false) BigDecimal minSpend,
+            @RequestParam(required = false) BigDecimal maxSpend,
+            @RequestParam(required = false) Boolean onlyRepeat,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(customerManagementService.listCustomers(search, tier, page, size));
+        return ResponseEntity.ok(customerManagementService.listCustomers(
+                search, tier, joinStartDate, joinEndDate, minSpend, maxSpend, onlyRepeat, sortBy, sortDir, page, size));
     }
 
     @GetMapping("/stats")

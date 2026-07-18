@@ -22,4 +22,6 @@ public class CustomerSummaryDto {
     private long totalOrders;
     private BigDecimal totalSpend;
     private LocalDateTime joinDate;
+    private String accountId;
+    private String accountStatus;
 }

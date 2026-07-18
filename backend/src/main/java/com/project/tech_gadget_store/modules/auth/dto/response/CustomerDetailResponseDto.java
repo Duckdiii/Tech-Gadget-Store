@@ -28,4 +28,7 @@ public class CustomerDetailResponseDto {
     private LocalDateTime lastPurchaseDate;
     private LocalDateTime joinDate;
     private List<OrderHistoryResponseDto> recentOrders;
+    private String accountId;
+    private String accountStatus;
+    private List<PurchasedProductDto> purchasedProducts;
 }

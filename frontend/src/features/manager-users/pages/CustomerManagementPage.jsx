@@ -4,6 +4,7 @@ import { useNav } from '../../../hooks/useNav'
 import { useCustomerManagement } from '../hooks/useCustomerManagement'
 import Avatar from '../components/Avatar'
 import StatCard from '../components/StatCard'
+import { managerUsersService } from '../services/managerUsersService'
 
 // Cùng nhãn/màu với TIER_DISPLAY ở MembershipSection.jsx và TIER_LABELS ở
 // MembershipManagementPage.jsx — giữ nhất quán cách hiển thị hạng thành viên trong toàn app.
@@ -33,9 +34,17 @@ export default function CustomerManagementPage() {
   const {
     search, setSearch,
     tierFilter, setTierFilter,
+    joinDateRange, setJoinDateRange,
+    customStartDate, setCustomStartDate,
+    customEndDate, setCustomEndDate,
+    spendFilter, setSpendFilter,
+    onlyRepeat, setOnlyRepeat,
+    sortBy, setSortBy,
+    sortDir, setSortDir,
     page, setPage,
     customers, totalElements, totalPages,
     stats, loading,
+    refetch,
   } = useCustomerManagement()
 
   useEffect(() => {
@@ -44,11 +53,60 @@ export default function CustomerManagementPage() {
     }
   }, [location.state])
 
+  const handleToggleBlock = async (customer) => {
+    const isBlocked = customer.accountStatus === 'BLOCKED'
+    const actionText = isBlocked ? 'mở khóa' : 'khóa'
+    if (window.confirm(`Bạn có chắc chắn muốn ${actionText} tài khoản của khách hàng ${customer.fullName}?`)) {
+      try {
+        if (isBlocked) {
+          await managerUsersService.unblockAccount(customer.accountId)
+        } else {
+          await managerUsersService.blockAccount(customer.accountId)
+        }
+        refetch()
+      } catch (e) {
+        alert(`Lỗi khi ${actionText} tài khoản: ` + (e.message || e))
+      }
+    }
+  }
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortDir('desc')
+    }
+  }
+
+  const renderSortHeader = (label, field) => {
+    const isActive = sortBy === field
+    return (
+      <button
+        onClick={() => handleSort(field)}
+        className="flex items-center gap-1 text-xs font-bold text-gray-400 tracking-wider uppercase hover:text-gray-700 transition-colors focus:outline-none cursor-pointer text-left"
+      >
+        {label}
+        <span className="text-[10px] text-gray-500">
+          {isActive ? (sortDir === 'asc' ? '▲' : '▼') : '↕'}
+        </span>
+      </button>
+    )
+  }
+
   const kpiCards = [
     {
       label: 'TỔNG KHÁCH HÀNG',
       value: stats ? stats.totalCustomers.toLocaleString('vi-VN') : '…',
       valueClass: 'text-gray-900',
+      active: !tierFilter && !joinDateRange && !spendFilter && !onlyRepeat && !search,
+      onClick: () => {
+        setTierFilter('')
+        setJoinDateRange('')
+        setSpendFilter('')
+        setOnlyRepeat(false)
+        setSearch('')
+      },
       icon: (
         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -61,6 +119,13 @@ export default function CustomerManagementPage() {
       valueSuffix: ' tháng này',
       valueClass: 'text-green-600',
       suffixClass: 'text-gray-500 text-base font-normal',
+      active: joinDateRange === 'month' && !tierFilter && !spendFilter && !onlyRepeat,
+      onClick: () => {
+        setTierFilter('')
+        setJoinDateRange('month')
+        setSpendFilter('')
+        setOnlyRepeat(false)
+      },
       icon: (
         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -71,6 +136,13 @@ export default function CustomerManagementPage() {
       label: 'KHÁCH HÀNG VIP',
       value: stats ? stats.vipCustomers.toLocaleString('vi-VN') : '…',
       valueClass: 'text-orange-500',
+      active: tierFilter === 'GOLD' && !joinDateRange && !spendFilter && !onlyRepeat,
+      onClick: () => {
+        setTierFilter('GOLD')
+        setJoinDateRange('')
+        setSpendFilter('')
+        setOnlyRepeat(false)
+      },
       icon: (
         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -81,6 +153,13 @@ export default function CustomerManagementPage() {
       label: 'TỶ LỆ QUAY LẠI',
       value: stats ? `${stats.retentionRate.toFixed(1)}%` : '…',
       valueClass: 'text-orange-500',
+      active: onlyRepeat && !tierFilter && !joinDateRange && !spendFilter,
+      onClick: () => {
+        setTierFilter('')
+        setJoinDateRange('')
+        setSpendFilter('')
+        setOnlyRepeat(true)
+      },
       icon: (
         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -176,6 +255,8 @@ export default function CustomerManagementPage() {
               valueClass={card.valueClass}
               suffixClass={card.suffixClass}
               padding="px-5 py-5"
+              onClick={card.onClick}
+              active={card.active}
             />
           ))}
         </div>
@@ -183,13 +264,13 @@ export default function CustomerManagementPage() {
         {/* Table card */}
         <div className="bg-white rounded border border-gray-200 overflow-hidden">
           {/* Filter row */}
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+          <div className="flex flex-wrap items-center gap-4 px-5 py-4 border-b border-gray-100">
             {/* Tier filter */}
-            <div className="relative">
+            <div className="relative min-w-[150px]">
               <select
                 value={tierFilter}
                 onChange={(e) => setTierFilter(e.target.value)}
-                className="appearance-none border border-gray-300 rounded px-4 py-2.5 pr-9 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer min-w-[150px]"
+                className="w-full appearance-none border border-gray-300 rounded px-3 py-2 pr-9 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
               >
                 <option value="">Tất cả hạng</option>
                 {Object.entries(TIER_DISPLAY).map(([value, { label }]) => (
@@ -200,18 +281,74 @@ export default function CustomerManagementPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </div>
+
+            {/* Date range filter */}
+            <div className="relative min-w-[170px]">
+              <select
+                value={joinDateRange}
+                onChange={(e) => setJoinDateRange(e.target.value)}
+                className="w-full appearance-none border border-gray-300 rounded px-3 py-2 pr-9 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
+              >
+                <option value="">Tất cả ngày đăng ký</option>
+                <option value="week">Đăng ký tuần này</option>
+                <option value="month">Đăng ký tháng này</option>
+                <option value="custom">Khoảng tùy chỉnh...</option>
+              </select>
+              <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+
+            {/* Custom Date Inputs */}
+            {joinDateRange === 'custom' && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white cursor-pointer"
+                />
+                <span className="text-gray-400 text-sm">đến</span>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white cursor-pointer"
+                />
+              </div>
+            )}
+
+            {/* Spending filter */}
+            <div className="relative min-w-[180px]">
+              <select
+                value={spendFilter}
+                onChange={(e) => setSpendFilter(e.target.value)}
+                className="w-full appearance-none border border-gray-300 rounded px-3 py-2 pr-9 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
+              >
+                <option value="">Tất cả mức chi tiêu</option>
+                <option value="zero">Chưa mua sản phẩm nào (0 đ)</option>
+                <option value="gt10m">Chi tiêu trên 10 triệu</option>
+                <option value="gt50m">Chi tiêu trên 50 triệu</option>
+              </select>
+              <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
 
           {/* Responsive Table Scroll Wrapper */}
           <div className="overflow-x-auto">
-            <div className="min-w-[900px]">
+            <div className="min-w-[1000px]">
               {/* Table header */}
-              <div className="grid grid-cols-[3.5rem_1fr_11rem_8rem_10rem_10rem_6rem] gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50">
-                {['STT', 'KHÁCH HÀNG', 'HẠNG THÀNH VIÊN', 'TỔNG ĐƠN', 'TỔNG CHI TIÊU', 'NGÀY ĐĂNG KÝ', 'THAO TÁC'].map((h) => (
-                  <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase">
-                    {h}
-                  </span>
-                ))}
+              <div className="grid grid-cols-[3.5rem_1fr_11rem_8rem_10rem_10rem_9rem_6rem] gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50 items-center">
+                <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">STT</span>
+                <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">KHÁCH HÀNG</span>
+                <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">HẠNG THÀNH VIÊN</span>
+                {renderSortHeader('TỔNG ĐƠN', 'totalOrders')}
+                {renderSortHeader('TỔNG CHI TIÊU', 'totalSpend')}
+                {renderSortHeader('NGÀY ĐĂNG KÝ', 'createdAt')}
+                <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">TRẠNG THÁI</span>
+                <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">THAO TÁC</span>
               </div>
 
               {/* Table rows */}
@@ -227,7 +364,7 @@ export default function CustomerManagementPage() {
                   return (
                     <div
                       key={customer.id}
-                      className="grid grid-cols-[3.5rem_1fr_11rem_8rem_10rem_10rem_6rem] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center"
+                      className="grid grid-cols-[3.5rem_1fr_11rem_8rem_10rem_10rem_9rem_6rem] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center"
                     >
                       {/* STT */}
                       <span className="text-sm text-gray-500 font-medium">{page * PAGE_SIZE + idx + 1}</span>
@@ -260,16 +397,47 @@ export default function CustomerManagementPage() {
                       {/* Ngày đăng ký */}
                       <span className="text-sm text-gray-600">{fmtDate(customer.joinDate)}</span>
 
+                      {/* Trạng thái tài khoản */}
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold w-fit ${
+                        customer.accountStatus === 'ACTIVE' 
+                          ? 'bg-green-50 text-green-700 border border-green-200' 
+                          : 'bg-red-50 text-red-700 border border-red-200'
+                      }`}>
+                        {customer.accountStatus === 'ACTIVE' ? 'Hoạt động' : 'Bị khóa'}
+                      </span>
+
                       {/* Thao tác */}
-                      <button
-                        onClick={() => onNavigate('customerDetail', { search: `?id=${customer.id}` })}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors cursor-pointer"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => onNavigate('customerDetail', { search: `?id=${customer.id}` })}
+                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors cursor-pointer"
+                          title="Xem chi tiết"
+                        >
+                          <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleToggleBlock(customer)}
+                          className={`p-1.5 rounded transition-colors cursor-pointer ${
+                            customer.accountStatus === 'ACTIVE' 
+                              ? 'text-gray-400 hover:text-red-600 hover:bg-red-50' 
+                              : 'text-red-500 hover:text-green-600 hover:bg-green-50'
+                          }`}
+                          title={customer.accountStatus === 'ACTIVE' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
+                        >
+                          {customer.accountStatus === 'ACTIVE' ? (
+                            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4.5m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )
                 })

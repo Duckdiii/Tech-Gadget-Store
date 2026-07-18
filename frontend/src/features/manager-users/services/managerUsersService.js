@@ -19,8 +19,8 @@ export const managerUsersService = {
   },
 
   // Customers
-  getCustomers: ({ search, tier, page, size } = {}) => {
-    return axiosClient.get('/api/manager/customers', { params: { search, tier, page, size } })
+  getCustomers: ({ search, tier, joinStartDate, joinEndDate, minSpend, maxSpend, onlyRepeat, sortBy, sortDir, page, size } = {}) => {
+    return axiosClient.get('/api/manager/customers', { params: { search, tier, joinStartDate, joinEndDate, minSpend, maxSpend, onlyRepeat, sortBy, sortDir, page, size } })
   },
 
   getCustomerStats: () => {

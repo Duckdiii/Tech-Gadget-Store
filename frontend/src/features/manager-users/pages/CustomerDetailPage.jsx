@@ -305,9 +305,72 @@ export default function CustomerDetailPage() {
                 </div>
               )}
 
-              {activeTab !== 'Lịch sử giao dịch' && (
+              {activeTab === 'Sản phẩm đã mua' && (
+                <div className="overflow-x-auto">
+                  <div className="min-w-[700px]">
+                    <div className="grid grid-cols-[1fr_150px_100px_140px] gap-2 px-5 py-3.5 border-b border-gray-100 bg-gray-50 items-center">
+                      {['TÊN SẢN PHẨM', 'PHÂN LOẠI', 'SỐ LƯỢNG', 'MUA GẦN NHẤT'].map((h) => (
+                        <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase">
+                          {h}
+                        </span>
+                      ))}
+                    </div>
+
+                    {!customer.purchasedProducts || customer.purchasedProducts.length === 0 ? (
+                      <div className="px-5 py-16 text-center text-sm text-gray-400">
+                        Khách hàng chưa mua sản phẩm nào.
+                      </div>
+                    ) : (
+                      customer.purchasedProducts.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="grid grid-cols-[1fr_150px_100px_140px] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center hover:bg-gray-50 transition-colors"
+                        >
+                          {/* Tên sản phẩm + Hình ảnh */}
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center flex-shrink-0">
+                              {item.productImageUrl ? (
+                                <img
+                                  src={item.productImageUrl}
+                                  alt={item.productName}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900 line-clamp-1">{item.productName}</p>
+                              <p className="text-xs text-gray-400 mt-0.5">ID: {item.productId}</p>
+                            </div>
+                          </div>
+
+                          {/* Phân loại */}
+                          <span className="text-sm text-gray-600 font-medium">
+                            {item.variantName || 'Mặc định'}
+                          </span>
+
+                          {/* Số lượng */}
+                          <span className="text-sm text-gray-800 font-bold bg-gray-100 px-2 py-0.5 rounded w-fit">
+                            {item.quantity}
+                          </span>
+
+                          {/* Ngày mua gần nhất */}
+                          <span className="text-sm text-gray-500">
+                            {fmtDate(item.lastPurchaseDate)}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'Ghi chú' && (
                 <div className="px-5 py-16 text-center text-sm text-gray-400">
-                  Không có dữ liệu để hiển thị.
+                  Chưa có ghi chú nào cho khách hàng này.
                 </div>
               )}
             </div>

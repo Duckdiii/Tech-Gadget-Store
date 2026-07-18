@@ -50,20 +50,63 @@ public class CustomerManagementService {
         this.invoiceMapper = invoiceMapper;
     }
 
-    public CustomerPageResponseDto listCustomers(String search, String tierParam, int page, int size) {
+    public CustomerPageResponseDto listCustomers(
+            String search, 
+            String tierParam, 
+            String joinStartDateStr, 
+            String joinEndDateStr, 
+            BigDecimal minSpend, 
+            BigDecimal maxSpend, 
+            Boolean onlyRepeat,
+            String sortBy,
+            String sortDir,
+            int page, 
+            int size) {
         MembershipTier tier = parseTier(tierParam);
         String normalizedSearch = (search == null || search.isBlank()) ? null : search.trim();
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1),
-                Sort.by(Sort.Direction.DESC, "createdAt"));
+        
+        Sort sort;
+        String direction = "asc".equalsIgnoreCase(sortDir) ? "ASC" : "DESC";
+        if ("totalOrders".equals(sortBy)) {
+            sort = Sort.by(Sort.Direction.fromString(direction), "totalOrders");
+        } else if ("totalSpend".equals(sortBy)) {
+            sort = Sort.by(Sort.Direction.fromString(direction), "totalSpend");
+        } else {
+            sort = Sort.by(Sort.Direction.fromString(direction), "createdAt");
+        }
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), sort);
 
-        Page<Customer> customerPage = customerRepository.searchCustomers(normalizedSearch, tier, pageable);
+        LocalDateTime joinStartDate = parseDateTime(joinStartDateStr, false);
+        LocalDateTime joinEndDate = parseDateTime(joinEndDateStr, true);
 
-        List<String> ids = customerPage.getContent().stream().map(Customer::getId).toList();
-        Map<String, Long> orderCounts = toLongMap(orderRepository.countActiveOrdersForCustomerIds(ids));
-        Map<String, BigDecimal> spends = toBigDecimalMap(orderRepository.sumCompletedSpendForCustomerIds(ids));
+        Page<Object[]> customerPage = customerRepository.searchCustomers(
+                normalizedSearch, 
+                tier, 
+                joinStartDate, 
+                joinEndDate, 
+                minSpend, 
+                maxSpend, 
+                onlyRepeat,
+                pageable);
 
         List<CustomerSummaryDto> items = customerPage.getContent().stream()
-                .map(c -> toSummaryDto(c, orderCounts, spends))
+                .map(row -> {
+                    Customer c = (Customer) row[0];
+                    Long totalOrders = (Long) row[1];
+                    BigDecimal totalSpend = (BigDecimal) row[2];
+                    return CustomerSummaryDto.builder()
+                            .id(c.getId())
+                            .fullName(c.getFullName())
+                            .email(c.getAccount().getEmail())
+                            .phone(c.getPhone())
+                            .tier(c.getMembership().getTier())
+                            .totalOrders(totalOrders != null ? totalOrders : 0L)
+                            .totalSpend(totalSpend != null ? totalSpend : BigDecimal.ZERO)
+                            .joinDate(c.getCreatedAt())
+                            .accountId(c.getAccount().getId())
+                            .accountStatus(c.getAccount().getStatus().name())
+                            .build();
+                })
                 .toList();
 
         return CustomerPageResponseDto.builder()
@@ -73,6 +116,22 @@ public class CustomerManagementService {
                 .totalElements(customerPage.getTotalElements())
                 .totalPages(customerPage.getTotalPages())
                 .build();
+    }
+
+    private LocalDateTime parseDateTime(String dateStr, boolean isEnd) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
+        try {
+            if (dateStr.contains("T")) {
+                return LocalDateTime.parse(dateStr.trim());
+            } else {
+                LocalDate date = LocalDate.parse(dateStr.trim());
+                return isEnd ? date.atTime(23, 59, 59, 999999999) : date.atStartOfDay();
+            }
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Định dạng ngày không hợp lệ: " + dateStr);
+        }
     }
 
     public CustomerDetailResponseDto getCustomerDetail(String id) {
@@ -92,6 +151,37 @@ public class CustomerManagementService {
         // any) is simply the most recent order placed — that's what "last purchase" means here.
         LocalDateTime lastPurchaseDate = recentOrders.isEmpty() ? null : recentOrders.get(0).getOrderDate();
 
+        // Query purchased items history
+        List<Object[]> rawItems = orderRepository.findAllPurchasedItemsWithDate(id);
+        Map<String, com.project.tech_gadget_store.modules.auth.dto.response.PurchasedProductDto> grouped = new java.util.LinkedHashMap<>();
+        for (Object[] row : rawItems) {
+            com.project.tech_gadget_store.modules.order.entity.OrderItem oi = (com.project.tech_gadget_store.modules.order.entity.OrderItem) row[0];
+            LocalDateTime orderDate = (LocalDateTime) row[1];
+            com.project.tech_gadget_store.modules.catalog.entity.ProductVariant pv = oi.getProductVariant();
+            if (pv != null && pv.getProduct() != null) {
+                String pvId = pv.getId();
+                com.project.tech_gadget_store.modules.auth.dto.response.PurchasedProductDto dto = grouped.get(pvId);
+                if (dto == null) {
+                    String imageUrl = null;
+                    if (pv.getProduct().getImages() != null && !pv.getProduct().getImages().isEmpty()) {
+                        imageUrl = pv.getProduct().getImages().get(0).getImageUrl();
+                    }
+                    dto = com.project.tech_gadget_store.modules.auth.dto.response.PurchasedProductDto.builder()
+                            .productId(pv.getProduct().getId())
+                            .productName(pv.getProduct().getName())
+                            .productImageUrl(imageUrl)
+                            .variantName(pv.getDisplayName())
+                            .quantity(oi.getQuantity())
+                            .lastPurchaseDate(orderDate)
+                            .build();
+                    grouped.put(pvId, dto);
+                } else {
+                    dto.setQuantity(dto.getQuantity() + oi.getQuantity());
+                }
+            }
+        }
+        List<com.project.tech_gadget_store.modules.auth.dto.response.PurchasedProductDto> purchasedProducts = new java.util.ArrayList<>(grouped.values());
+
         return CustomerDetailResponseDto.builder()
                 .id(customer.getId())
                 .fullName(customer.getFullName())
@@ -105,6 +195,9 @@ public class CustomerManagementService {
                 .lastPurchaseDate(lastPurchaseDate)
                 .joinDate(customer.getCreatedAt())
                 .recentOrders(recentOrderDtos)
+                .accountId(customer.getAccount().getId())
+                .accountStatus(customer.getAccount().getStatus().name())
+                .purchasedProducts(purchasedProducts)
                 .build();
     }
 

@@ -140,6 +140,13 @@ public interface OrderRepository extends JpaRepository<Order, String> {
                         "AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.REFUNDED")
         long countRefundedOrdersByCustomerId(@Param("customerId") String customerId);
 
+        // Fetch all purchased order items (excluding cancelled and refunded orders) for a customer with order date
+        @Query("SELECT oi, o.orderDate FROM Order o JOIN o.items oi WHERE o.customer.id = :customerId " +
+                        "AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED " +
+                        "AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.REFUNDED " +
+                        "ORDER BY o.orderDate DESC")
+        List<Object[]> findAllPurchasedItemsWithDate(@Param("customerId") String customerId);
+
         // "Đơn chờ xác nhận" badge on the manager dashboard — total count regardless of date,
         // so a backlog spanning multiple days isn't undercounted.
         long countByOrderStatus(OrderStatus orderStatus);

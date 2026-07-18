@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.modules.auth.repository;
 
 import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.loyalty.entity.enums.MembershipTier;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -21,18 +22,43 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
 
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
-    // Manager customer list: search by name/email (optional) + filter by membership tier
-    // (optional). Both filters are nullable so the same query serves "no filter" and "filtered"
-    // calls alike. :search must be CAST to string — with a bare "LOWER(:search)" and a null
-    // value, Postgres can't infer the parameter's type and fails with "function lower(bytea)
-    // does not exist" (same class of issue as the cast(:cursorTimestamp as timestamp) in
-    // OrderRepository.findOrdersCursor).
-    @Query("SELECT c FROM Customer c JOIN c.account a JOIN c.membership m WHERE " +
+    // Manager customer list: search by name/email/phone (optional) + filter by membership tier
+    // (optional) + filter by registration date range (optional) + filter by completed spending range (optional).
+    // Both filters are nullable so the same query serves "no filter" and "filtered"
+    // calls alike. :search must be CAST to string.
+    @Query(value = "SELECT c, " +
+            "(SELECT COUNT(DISTINCT o.id) FROM Order o WHERE o.customer.id = c.id AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.CANCELLED AND o.orderStatus <> com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.REFUNDED) as totalOrders, " +
+            "(SELECT COALESCE(SUM(oi.unitPriceAtOrder * oi.quantity), 0) FROM Order o JOIN o.items oi WHERE o.customer.id = c.id AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED) as totalSpend " +
+            "FROM Customer c JOIN c.account a JOIN c.membership m WHERE " +
             "(CAST(:search as string) IS NULL " +
-            "OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', CAST(:search as string), '%')) " +
-            "OR LOWER(a.email) LIKE LOWER(CONCAT('%', CAST(:search as string), '%'))) " +
-            "AND (:tier IS NULL OR m.tier = :tier)")
-    Page<Customer> searchCustomers(@Param("search") String search, @Param("tier") MembershipTier tier,
+            "  OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', CAST(:search as string), '%')) " +
+            "  OR LOWER(a.email) LIKE LOWER(CONCAT('%', CAST(:search as string), '%')) " +
+            "  OR LOWER(c.phone) LIKE LOWER(CONCAT('%', CAST(:search as string), '%'))) " +
+            "AND (:tier IS NULL OR m.tier = :tier) " +
+            "AND (cast(:joinStartDate as timestamp) IS NULL OR c.createdAt >= :joinStartDate) " +
+            "AND (cast(:joinEndDate as timestamp) IS NULL OR c.createdAt <= :joinEndDate) " +
+            "AND (:minSpend IS NULL OR (SELECT COALESCE(SUM(oi.unitPriceAtOrder * oi.quantity), 0) FROM Order o JOIN o.items oi WHERE o.customer.id = c.id AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED) >= :minSpend) " +
+            "AND (:maxSpend IS NULL OR (SELECT COALESCE(SUM(oi.unitPriceAtOrder * oi.quantity), 0) FROM Order o JOIN o.items oi WHERE o.customer.id = c.id AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED) <= :maxSpend) " +
+            "AND (:onlyRepeat IS NULL OR :onlyRepeat = false OR (SELECT COUNT(o.id) FROM Order o WHERE o.customer.id = c.id AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED) >= 2)",
+            countQuery = "SELECT COUNT(c) FROM Customer c JOIN c.account a JOIN c.membership m WHERE " +
+            "(CAST(:search as string) IS NULL " +
+            "  OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', CAST(:search as string), '%')) " +
+            "  OR LOWER(a.email) LIKE LOWER(CONCAT('%', CAST(:search as string), '%')) " +
+            "  OR LOWER(c.phone) LIKE LOWER(CONCAT('%', CAST(:search as string), '%'))) " +
+            "AND (:tier IS NULL OR m.tier = :tier) " +
+            "AND (cast(:joinStartDate as timestamp) IS NULL OR c.createdAt >= :joinStartDate) " +
+            "AND (cast(:joinEndDate as timestamp) IS NULL OR c.createdAt <= :joinEndDate) " +
+            "AND (:minSpend IS NULL OR (SELECT COALESCE(SUM(oi.unitPriceAtOrder * oi.quantity), 0) FROM Order o JOIN o.items oi WHERE o.customer.id = c.id AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED) >= :minSpend) " +
+            "AND (:maxSpend IS NULL OR (SELECT COALESCE(SUM(oi.unitPriceAtOrder * oi.quantity), 0) FROM Order o JOIN o.items oi WHERE o.customer.id = c.id AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED) <= :maxSpend) " +
+            "AND (:onlyRepeat IS NULL OR :onlyRepeat = false OR (SELECT COUNT(o.id) FROM Order o WHERE o.customer.id = c.id AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.COMPLETED) >= 2)")
+    Page<Object[]> searchCustomers(
+            @Param("search") String search, 
+            @Param("tier") MembershipTier tier,
+            @Param("joinStartDate") LocalDateTime joinStartDate,
+            @Param("joinEndDate") LocalDateTime joinEndDate,
+            @Param("minSpend") BigDecimal minSpend,
+            @Param("maxSpend") BigDecimal maxSpend,
+            @Param("onlyRepeat") Boolean onlyRepeat,
             Pageable pageable);
 
     @Query("SELECT COUNT(c) FROM Customer c WHERE c.membership.tier IN :tiers")
