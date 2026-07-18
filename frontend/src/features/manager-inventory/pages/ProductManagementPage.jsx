@@ -514,9 +514,28 @@ export default function ProductManagementPage() {
                     : products.map(p => (
                       <tr key={p.id} className="hover:bg-gray-50/70 transition-colors group">
                         <td className="px-4 py-3">
-                          {p.imageUrl
-                            ? <img src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded object-cover border border-gray-100" />
-                            : <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">N/A</div>}
+                          {p.imageUrl ? (
+                            <div className="relative group/img w-fit">
+                              <img
+                                src={p.imageUrl}
+                                alt={p.name}
+                                className="w-10 h-10 rounded object-cover border border-gray-100 cursor-zoom-in"
+                              />
+                              {/* Hover preview tooltip */}
+                              <div className="pointer-events-none absolute left-12 top-1/2 -translate-y-1/2 z-50
+                                              opacity-0 group-hover/img:opacity-100 transition-opacity duration-150
+                                              bg-white border border-gray-200 rounded-xl shadow-2xl p-2">
+                                <img
+                                  src={p.imageUrl}
+                                  alt={p.name}
+                                  className="w-[150px] h-[150px] object-contain rounded-lg"
+                                />
+                                <p className="text-[10px] text-gray-400 text-center mt-1.5 max-w-[150px] truncate">{p.name}</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">N/A</div>
+                          )}
                         </td>
                         <td className="px-4 py-4 font-semibold text-gray-800">{p.name || '—'}</td>
                         <td className="px-4 py-4 text-gray-600">{p.brandName || '—'}</td>
@@ -733,6 +752,32 @@ export default function ProductManagementPage() {
                     <input placeholder="Tên ảnh (tùy chọn)" value={imageForm.name} onChange={e => setImageForm(f => ({ ...f, name: e.target.value }))} className={`${inp} text-xs px-2 py-1.5 col-span-1`} />
                     <input placeholder="URL ảnh" value={imageForm.imageUrl} onChange={e => setImageForm(f => ({ ...f, imageUrl: e.target.value }))} className={`${inp} text-xs px-2 py-1.5 col-span-2`} />
                   </div>
+                  {/* Live URL preview */}
+                  {imageForm.imageUrl.trim() && (
+                    <div className="mt-2 flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-lg p-2.5">
+                      <div className="w-16 h-16 rounded border border-gray-200 overflow-hidden shrink-0 bg-white flex items-center justify-center">
+                        <img
+                          src={imageForm.imageUrl.trim()}
+                          alt="preview"
+                          className="w-full h-full object-contain"
+                          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+                          onLoad={e => { e.target.style.display = 'block'; e.target.nextSibling.style.display = 'none' }}
+                        />
+                        <div className="hidden w-full h-full items-center justify-center text-gray-300">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="min-w-0 flex-1 pt-0.5">
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Preview URL</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5 break-all leading-relaxed">{imageForm.imageUrl.trim()}</p>
+                        {imageForm.name.trim() && (
+                          <p className="text-[10px] text-gray-600 font-medium mt-1">🏷️ {imageForm.name.trim()}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <button onClick={handleAddImage} disabled={subSaving} className="mt-2 w-full py-1.5 border border-dashed border-gray-300 rounded text-xs font-medium text-gray-500 hover:border-[#E8420A] hover:text-[#E8420A] cursor-pointer disabled:opacity-60">
                     + Thêm ảnh
                   </button>
