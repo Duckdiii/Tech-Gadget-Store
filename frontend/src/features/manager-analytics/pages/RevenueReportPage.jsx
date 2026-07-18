@@ -1,8 +1,16 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useNav } from '../../../hooks/useNav'
 import { useRevenueReport } from '../hooks/useRevenueReport'
+import { resolveReportFilterRange, previousPeriodOf } from '../utils/dateRanges'
 
 function fmt(price) { return (price || 0).toLocaleString('vi-VN') + ' đ' }
+
+function fmtDateVN(iso) {
+  if (!iso) return ''
+  const [, m, d] = iso.split('-')
+  return `${d}/${m}`
+}
 
 /** null = no baseline to compare against (previous period was 0) — rendered as "Mới" instead of a misleading +∞%. undefined = previous-period data not available yet. */
 function pctGrowth(current, previous) {
@@ -39,10 +47,74 @@ const DONUT_SEGMENT_COLORS = ['#E8420A', '#92400e', '#0ea5e9', '#8b5cf6', '#d1d5
 /** Table columns shrink on small screens, then widen back to the original sizing at lg — the same breakpoint pattern used for the responsive fix on the Dashboard page. */
 const PRODUCT_TABLE_COLS = 'grid-cols-[2.5rem_1fr_5.5rem_7rem] sm:grid-cols-[3rem_1fr_8rem_10rem] lg:grid-cols-[3rem_1fr_10rem_12rem]'
 
+const BEST_SELLER_HEADERS = [
+  { label: 'STT' },
+  { label: 'TÊN SẢN PHẨM' },
+  { label: 'SỐ LƯỢNG ĐÃ BÁN', sortKey: 'quantitySold' },
+  { label: 'TỔNG DOANH THU', sortKey: 'revenue' },
+]
+const TOP_PROFIT_HEADERS = [
+  { label: 'STT' },
+  { label: 'TÊN SẢN PHẨM' },
+  { label: 'SỐ LƯỢNG ĐÃ BÁN', sortKey: 'quantitySold' },
+  { label: 'LỢI NHUẬN', sortKey: 'profit' },
+]
+
+function sortRows(rows, key, dir) {
+  return [...rows].sort((a, b) => {
+    const diff = (Number(a[key]) || 0) - (Number(b[key]) || 0)
+    return dir === 'asc' ? diff : -diff
+  })
+}
+
+function SortHeaderCell({ label, sortKey, activeSort, onSort }) {
+  if (!sortKey) {
+    return (
+      <span className="text-xs font-bold text-gray-400 tracking-wider uppercase text-left last:text-right">
+        {label}
+      </span>
+    )
+  }
+  const isActive = activeSort.key === sortKey
+  return (
+    <button
+      onClick={() => onSort(sortKey)}
+      className="flex items-center gap-1 text-xs font-bold text-gray-400 tracking-wider uppercase text-left last:justify-end cursor-pointer hover:text-gray-600 transition-colors bg-transparent border-0 p-0"
+    >
+      {label}
+      <span className={isActive ? 'text-[#E8420A]' : 'text-gray-300'}>
+        {isActive && activeSort.dir === 'asc' ? '▲' : '▼'}
+      </span>
+    </button>
+  )
+}
+
 export default function RevenueReportPage() {
   const location = useLocation()
+  const onNavigate = useNav()
   const { data, previousData, loading, filter, setFilter, handleExport } = useRevenueReport(location.state?.filter)
   const [chartMetric, setChartMetric] = useState('revenue')
+  const [bestSellersSort, setBestSellersSort] = useState({ key: 'revenue', dir: 'desc' })
+  const [topProfitSort, setTopProfitSort] = useState({ key: 'profit', dir: 'desc' })
+
+  const handleProductClick = (productName) => {
+    onNavigate('productManagement', { state: { searchKey: productName } })
+  }
+
+  const toggleSort = (setSort, key) => {
+    setSort((s) => (s.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: 'desc' }))
+  }
+
+  // Date range the "so với kỳ trước" comparisons are actually measured against — null for an
+  // incomplete CUSTOM range (mirrors useRevenueReport's own resolution so the label always
+  // matches what previousData was really fetched for).
+  const currentRange = resolveReportFilterRange(filter)
+  const comparisonRange = currentRange ? previousPeriodOf(currentRange) : null
+  const comparisonLabel = comparisonRange
+    ? comparisonRange.startDate === comparisonRange.endDate
+      ? fmtDateVN(comparisonRange.startDate)
+      : `${fmtDateVN(comparisonRange.startDate)} – ${fmtDateVN(comparisonRange.endDate)}`
+    : null
 
   const report = data || {
     totalRevenue: 0,
@@ -169,6 +241,9 @@ export default function RevenueReportPage() {
   const sortedBrands = [...(report.revenueByBrand || [])].sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
   const maxBrandRevenue = Math.max(...sortedBrands.map((b) => Number(b.revenue) || 0), 0)
 
+  const sortedBestSellers = sortRows(report.topSellingProducts, bestSellersSort.key, bestSellersSort.dir)
+  const sortedTopProfit = sortRows(report.topProfitProducts, topProfitSort.key, topProfitSort.dir)
+
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50 text-gray-800">
       {/* Page content */}
@@ -234,6 +309,12 @@ export default function RevenueReportPage() {
             </div>
           )}
         </div>
+
+        {comparisonLabel && (
+          <p className="text-xs text-gray-400 -mt-4">
+            Các chỉ số "so với kỳ trước" được so sánh với: <span className="font-medium text-gray-500">{comparisonLabel}</span>
+          </p>
+        )}
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
@@ -419,10 +500,14 @@ export default function RevenueReportPage() {
 
           {/* Table header */}
           <div className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3 border-b border-gray-100`}>
-            {['STT', 'TÊN SẢN PHẨM', 'SỐ LƯỢNG ĐÃ BÁN', 'TỔNG DOANH THU'].map((h) => (
-              <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase text-left last:text-right">
-                {h}
-              </span>
+            {BEST_SELLER_HEADERS.map((h) => (
+              <SortHeaderCell
+                key={h.label}
+                label={h.label}
+                sortKey={h.sortKey}
+                activeSort={bestSellersSort}
+                onSort={(key) => toggleSort(setBestSellersSort, key)}
+              />
             ))}
           </div>
 
@@ -436,14 +521,18 @@ export default function RevenueReportPage() {
                 <Skeleton className="w-16 h-3 ml-auto" />
               </div>
             ))
-          ) : report.topSellingProducts.length === 0 ? (
+          ) : sortedBestSellers.length === 0 ? (
             <div className="text-center py-10 text-gray-400">Không có dữ liệu sản phẩm</div>
           ) : (
-            report.topSellingProducts.map((row, idx) => (
-              <div key={row.productId} className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left`}>
+            sortedBestSellers.map((row, idx) => (
+              <div
+                key={row.productId}
+                onClick={() => handleProductClick(row.productName)}
+                className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left cursor-pointer hover:bg-gray-50 transition-colors`}
+              >
                 <span className="text-sm text-gray-500 font-medium">{idx + 1}</span>
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-sm font-semibold text-gray-800 truncate">{row.productName}</span>
+                  <span className="text-sm font-semibold text-gray-800 truncate hover:text-[#E8420A]">{row.productName}</span>
                 </div>
                 <span className="text-sm text-gray-700 font-medium">{row.quantitySold}</span>
                 <span className="text-sm font-bold text-[#E8420A] text-right">
@@ -462,10 +551,14 @@ export default function RevenueReportPage() {
 
           {/* Table header */}
           <div className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3 border-b border-gray-100`}>
-            {['STT', 'TÊN SẢN PHẨM', 'SỐ LƯỢNG ĐÃ BÁN', 'LỢI NHUẬN'].map((h) => (
-              <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase text-left last:text-right">
-                {h}
-              </span>
+            {TOP_PROFIT_HEADERS.map((h) => (
+              <SortHeaderCell
+                key={h.label}
+                label={h.label}
+                sortKey={h.sortKey}
+                activeSort={topProfitSort}
+                onSort={(key) => toggleSort(setTopProfitSort, key)}
+              />
             ))}
           </div>
 
@@ -479,16 +572,20 @@ export default function RevenueReportPage() {
                 <Skeleton className="w-16 h-3 ml-auto" />
               </div>
             ))
-          ) : report.topProfitProducts.length === 0 ? (
+          ) : sortedTopProfit.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
               Chưa có dữ liệu giá vốn (nhập kho) để tính lợi nhuận
             </div>
           ) : (
-            report.topProfitProducts.map((row, idx) => (
-              <div key={row.productId} className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left`}>
+            sortedTopProfit.map((row, idx) => (
+              <div
+                key={row.productId}
+                onClick={() => handleProductClick(row.productName)}
+                className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left cursor-pointer hover:bg-gray-50 transition-colors`}
+              >
                 <span className="text-sm text-gray-500 font-medium">{idx + 1}</span>
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-sm font-semibold text-gray-800 truncate">{row.productName}</span>
+                  <span className="text-sm font-semibold text-gray-800 truncate hover:text-[#E8420A]">{row.productName}</span>
                 </div>
                 <span className="text-sm text-gray-700 font-medium">{row.quantitySold}</span>
                 <span className="text-sm font-bold text-[#E8420A] text-right">
