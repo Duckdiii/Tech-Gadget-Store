@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useManagerOrders } from '../hooks/useManagerOrders'
 import PayIcon from './PayIcon'
 import OrderDetailModal from './OrderDetailModal'
@@ -17,6 +18,7 @@ const ORDER_FILTER_TABS = [
 ]
 
 export default function OrderListTab() {
+  const location = useLocation()
   const [search, setSearch] = useState('')
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const {
@@ -28,7 +30,7 @@ export default function OrderListTab() {
     setActiveFilter,
     handleUpdateStatus,
     fetchOrders,
-  } = useManagerOrders()
+  } = useManagerOrders(location.state?.filter)
 
   const filteredOrders = orders.filter((order) => {
     const orderId = (order.id || '').toLowerCase()

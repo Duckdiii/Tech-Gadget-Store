@@ -139,4 +139,8 @@ public interface OrderRepository extends JpaRepository<Order, String> {
         @Query("SELECT COUNT(o) FROM Order o WHERE o.customer.id = :customerId " +
                         "AND o.orderStatus = com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus.REFUNDED")
         long countRefundedOrdersByCustomerId(@Param("customerId") String customerId);
+
+        // "Đơn chờ xác nhận" badge on the manager dashboard — total count regardless of date,
+        // so a backlog spanning multiple days isn't undercounted.
+        long countByOrderStatus(OrderStatus orderStatus);
 }

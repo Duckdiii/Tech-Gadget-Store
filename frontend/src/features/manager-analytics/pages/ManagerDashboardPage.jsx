@@ -135,6 +135,13 @@ const QA_COLOR = {
 
 const PERIOD_LABEL = { week: 'Tuần này', month: 'Tháng này', year: `Năm ${new Date().getFullYear()}` }
 const PERIOD_TITLE = { week: 'Doanh thu theo tuần', month: 'Doanh thu theo tháng', year: 'Doanh thu theo năm' }
+const PERIOD_METRIC_NOUN = { week: 'tuần', month: 'tháng', year: 'năm', custom: 'khoảng tùy chỉnh' }
+
+function fmtDateVN(iso) {
+  if (!iso) return ''
+  const [, m, d] = iso.split('-')
+  return `${d}/${m}`
+}
 
 function fmt(n) {
   const num = Number(n) || 0
@@ -176,9 +183,11 @@ export default function ManagerDashboardPage() {
   const {
     kpis,
     chartPeriod, setChartPeriod,
+    customRange, setCustomRange, chartFilterReady,
     trend, topProducts, chartLoading,
     recentOrders, ordersLoading,
     ordersLoadingMore, ordersHasNext, loadMoreOrders,
+    pendingOrdersCount,
     handleExport, exporting,
     reload,
     lastUpdated,
@@ -319,6 +328,13 @@ export default function ManagerDashboardPage() {
   const now = new Date()
   const greeting =
     now.getHours() < 12 ? 'Chào buổi sáng' : now.getHours() < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'
+
+  const periodLabel = chartPeriod === 'custom'
+    ? (customRange.startDate && customRange.endDate
+        ? `${fmtDateVN(customRange.startDate)} - ${fmtDateVN(customRange.endDate)}`
+        : 'Chọn khoảng ngày')
+    : PERIOD_LABEL[chartPeriod]
+  const periodTitle = chartPeriod === 'custom' ? 'Doanh thu theo khoảng tùy chỉnh' : PERIOD_TITLE[chartPeriod]
 
   const kpiCards = [
     {
@@ -506,16 +522,37 @@ export default function ManagerDashboardPage() {
             </button>
             <button
               onClick={handleExport}
-              disabled={exporting}
+              disabled={exporting || !chartFilterReady}
               className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2 px-4 rounded text-sm transition-colors cursor-pointer"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              {exporting ? 'Đang xuất...' : `Xuất báo cáo (${PERIOD_LABEL[chartPeriod]})`}
+              {exporting ? 'Đang xuất...' : `Xuất báo cáo (${periodLabel})`}
             </button>
           </div>
         </div>
+
+        {/* Pending confirmation alert */}
+        {pendingOrdersCount > 0 && (
+          <button
+            onClick={() => onNavigate('orderHistory', { state: { filter: 'AWAITING_CONFIRMATION' } })}
+            className="w-full flex items-center gap-3 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded px-4 py-3 text-left cursor-pointer transition-colors"
+          >
+            <span className="w-8 h-8 rounded-full bg-amber-400 text-white flex items-center justify-center shrink-0 font-bold text-sm">
+              {pendingOrdersCount}
+            </span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-amber-800">
+                {pendingOrdersCount} đơn hàng đang chờ xác nhận
+              </p>
+              <p className="text-xs text-amber-600">Bấm để xem và xử lý ngay</p>
+            </div>
+            <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -556,9 +593,9 @@ export default function ManagerDashboardPage() {
             <div className="flex items-center justify-between mb-5 gap-4 flex-wrap">
               <div>
                 <h2 className="text-base font-semibold text-gray-800">
-                  {chartMetric === 'revenue' ? PERIOD_TITLE[chartPeriod] : `Đơn hàng theo ${chartPeriod === 'week' ? 'tuần' : chartPeriod === 'month' ? 'tháng' : 'năm'}`}
+                  {chartMetric === 'revenue' ? periodTitle : `Đơn hàng theo ${PERIOD_METRIC_NOUN[chartPeriod]}`}
                 </h2>
-                <p className="text-xs text-gray-400 mt-0.5">{PERIOD_LABEL[chartPeriod]} · di chuột để xem chi tiết</p>
+                <p className="text-xs text-gray-400 mt-0.5">{periodLabel} · di chuột để xem chi tiết</p>
               </div>
               <div className="flex items-center gap-3">
                 {/* Metric Selector */}
@@ -578,19 +615,38 @@ export default function ManagerDashboardPage() {
                 </div>
                 {/* Period Selector */}
                 <div className="flex gap-1 bg-gray-100 p-1 rounded">
-                  {['week', 'month', 'year'].map((p) => (
+                  {['week', 'month', 'year', 'custom'].map((p) => (
                     <button
                       key={p}
                       onClick={() => setChartPeriod(p)}
                       className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${chartPeriod === p ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                     >
-                      {p === 'week' ? 'Tuần' : p === 'month' ? 'Tháng' : 'Năm'}
+                      {p === 'week' ? 'Tuần' : p === 'month' ? 'Tháng' : p === 'year' ? 'Năm' : 'Tuỳ chỉnh'}
                     </button>
                   ))}
                 </div>
+                {chartPeriod === 'custom' && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={customRange.startDate}
+                      onChange={(e) => setCustomRange((r) => ({ ...r, startDate: e.target.value }))}
+                      className="border border-gray-300 rounded px-2 py-1.5 text-xs text-gray-700"
+                    />
+                    <span className="text-xs text-gray-400">đến</span>
+                    <input
+                      type="date"
+                      value={customRange.endDate}
+                      onChange={(e) => setCustomRange((r) => ({ ...r, endDate: e.target.value }))}
+                      className="border border-gray-300 rounded px-2 py-1.5 text-xs text-gray-700"
+                    />
+                  </div>
+                )}
               </div>
             </div>
-            {chartLoading ? (
+            {chartPeriod === 'custom' && !chartFilterReady ? (
+              <div className="w-full h-[180px] flex items-center justify-center text-sm text-gray-400">Chọn khoảng ngày để xem biểu đồ</div>
+            ) : chartLoading ? (
               <div className="w-full h-[180px] flex items-center justify-center text-sm text-gray-400">Đang tải...</div>
             ) : (
               <RevenueChart data={trend} metric={chartMetric} />
@@ -741,7 +797,7 @@ export default function ManagerDashboardPage() {
             <div className="bg-white rounded border border-gray-200 p-5 flex-1">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-semibold text-gray-800">Sản phẩm bán chạy</h2>
-                <span className="text-xs text-gray-400">{PERIOD_LABEL[chartPeriod]}</span>
+                <span className="text-xs text-gray-400">{periodLabel}</span>
               </div>
               <div className="space-y-3">
                 {chartLoading ? (

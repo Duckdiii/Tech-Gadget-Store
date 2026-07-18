@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { managerOrderService } from '../services/managerOrderService'
 
-export function useManagerOrders() {
+export function useManagerOrders(initialFilter = 'all') {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [nextCursor, setNextCursor] = useState(null)
   const [hasNext, setHasNext] = useState(false)
-  const [activeFilter, setActiveFilter] = useState('all')
+  const [activeFilter, setActiveFilter] = useState(initialFilter)
 
   const fetchOrders = async (reset = true) => {
     try {

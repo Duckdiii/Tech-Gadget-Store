@@ -11,6 +11,9 @@ export const dashboardService = {
   getOrderCount: ({ startDate, endDate }) =>
     axiosClient.get('/api/manager/orders/count', { params: { startDate, endDate } }),
 
+  getPendingOrdersCount: () =>
+    axiosClient.get('/api/manager/orders/pending-count'),
+
   getRecentOrders: (limit = 5, cursor = null) =>
     axiosClient.get('/api/manager/orders', { params: { limit, cursor } }),
 

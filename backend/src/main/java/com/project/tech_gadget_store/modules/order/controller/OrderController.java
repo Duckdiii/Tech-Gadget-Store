@@ -151,6 +151,15 @@ public class OrderController {
                         .build());
     }
 
+    @GetMapping("/manager/orders/pending-count")
+    public ResponseEntity<com.project.tech_gadget_store.modules.order.dto.response.OrderCountResponseDto> countPendingOrders() {
+        long count = orderRepository.countByOrderStatus(OrderStatus.AWAITING_CONFIRMATION);
+        return ResponseEntity.ok(
+                com.project.tech_gadget_store.modules.order.dto.response.OrderCountResponseDto.builder()
+                        .count(count)
+                        .build());
+    }
+
     @GetMapping("/manager/orders")
     public ResponseEntity<com.project.tech_gadget_store.common.dto.CursorPageResponseDto<OrderHistoryResponseDto>> getManagerOrders(
             @RequestParam(required = false) String status,

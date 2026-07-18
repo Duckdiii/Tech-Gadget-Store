@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { dashboardService } from '../services/dashboardService'
 import { todayVsYesterday, monthToDateVsPrevious, chartPeriodToFilter } from '../utils/dateRanges'
 
@@ -16,7 +16,8 @@ export function useManagerDashboard() {
   const [kpis, setKpis] = useState(null)
   const [kpiLoading, setKpiLoading] = useState(true)
 
-  const [chartPeriod, setChartPeriod] = useState('month')
+  const [chartPeriod, setChartPeriod] = useState('month') // 'week' | 'month' | 'year' | 'custom'
+  const [customRange, setCustomRange] = useState({ startDate: '', endDate: '' })
   const [chartData, setChartData] = useState({ trend: [], topProducts: [] })
   const [chartLoading, setChartLoading] = useState(true)
 
@@ -26,9 +27,27 @@ export function useManagerDashboard() {
   const [ordersNextCursor, setOrdersNextCursor] = useState(null)
   const [ordersHasNext, setOrdersHasNext] = useState(false)
 
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0)
+
   const [exporting, setExporting] = useState(false)
 
   const [lastUpdated, setLastUpdated] = useState(null)
+
+  // null while a 'custom' period is missing one of its two dates — callers skip fetching in that case.
+  const chartFilter = useMemo(() => {
+    if (chartPeriod === 'custom') {
+      if (!customRange.startDate || !customRange.endDate) return null
+      return { period: 'CUSTOM', startDate: customRange.startDate, endDate: customRange.endDate }
+    }
+    return chartPeriodToFilter(chartPeriod)
+  }, [chartPeriod, customRange])
+
+  // Tracks the currently-active chart filter so an in-flight request for a period the user has
+  // since navigated away from (e.g. a silent auto-refresh still bound to the old period/date
+  // range) can detect it's stale and skip applying its response — otherwise it can resolve after
+  // a newer request and overwrite the chart with outdated data.
+  const chartFilterRef = useRef(chartFilter)
+  useEffect(() => { chartFilterRef.current = chartFilter }, [chartFilter])
 
   const fetchKpis = useCallback(async ({ silent = false } = {}) => {
     try {
@@ -72,17 +91,31 @@ export function useManagerDashboard() {
   }, [])
 
   const fetchChartData = useCallback(async ({ silent = false } = {}) => {
+    const requestFilter = chartFilter
+    if (!requestFilter) return // 'custom' period with an incomplete date range — nothing to fetch yet
     try {
       if (!silent) setChartLoading(true)
-      const report = await dashboardService.getRevenueReport(chartPeriodToFilter(chartPeriod))
+      const report = await dashboardService.getRevenueReport(requestFilter)
+      if (chartFilterRef.current !== requestFilter) return // superseded by a newer period/range — discard
       setChartData({ trend: report.trend || [], topProducts: report.topSellingProducts || [] })
     } catch (e) {
       console.error('Lỗi tải biểu đồ doanh thu:', e)
     } finally {
-      if (!silent) setChartLoading(false)
-      setLastUpdated(new Date())
+      if (chartFilterRef.current === requestFilter) {
+        if (!silent) setChartLoading(false)
+        setLastUpdated(new Date())
+      }
     }
-  }, [chartPeriod])
+  }, [chartFilter])
+
+  const fetchPendingCount = useCallback(async () => {
+    try {
+      const res = await dashboardService.getPendingOrdersCount()
+      setPendingOrdersCount(res.count || 0)
+    } catch (e) {
+      console.error('Lỗi tải số đơn chờ xác nhận:', e)
+    }
+  }, [])
 
   const fetchRecentOrders = useCallback(async ({ silent = false } = {}) => {
     try {
@@ -117,31 +150,37 @@ export function useManagerDashboard() {
   useEffect(() => { fetchKpis() }, [fetchKpis])
   useEffect(() => { fetchChartData() }, [fetchChartData])
   useEffect(() => { fetchRecentOrders() }, [fetchRecentOrders])
+  useEffect(() => { fetchPendingCount() }, [fetchPendingCount])
 
   const reload = useCallback(async ({ silent = false } = {}) => {
     await Promise.allSettled([
       fetchKpis({ silent }),
       fetchChartData({ silent }),
-      fetchRecentOrders({ silent })
+      fetchRecentOrders({ silent }),
+      fetchPendingCount()
     ])
-  }, [fetchKpis, fetchChartData, fetchRecentOrders])
+  }, [fetchKpis, fetchChartData, fetchRecentOrders, fetchPendingCount])
 
   const handleExport = useCallback(async () => {
+    if (!chartFilter) return
     try {
       setExporting(true)
-      await dashboardService.exportReport(chartPeriodToFilter(chartPeriod))
+      await dashboardService.exportReport(chartFilter)
     } catch (e) {
       alert('Lỗi xuất file báo cáo: ' + e.message)
     } finally {
       setExporting(false)
     }
-  }, [chartPeriod])
+  }, [chartFilter])
 
   return {
     kpis,
     kpiLoading,
     chartPeriod,
     setChartPeriod,
+    customRange,
+    setCustomRange,
+    chartFilterReady: !!chartFilter,
     trend: chartData.trend,
     topProducts: chartData.topProducts,
     chartLoading,
@@ -150,6 +189,7 @@ export function useManagerDashboard() {
     ordersLoadingMore,
     ordersHasNext,
     loadMoreOrders,
+    pendingOrdersCount,
     handleExport,
     exporting,
     reload,
