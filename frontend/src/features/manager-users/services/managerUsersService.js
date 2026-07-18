@@ -44,6 +44,19 @@ export const managerUsersService = {
     return axiosClient.delete(`/api/manager/customers/notes/${noteId}`)
   },
 
+  // Bulk Actions
+  bulkUpdateStatus: (accountIds, status) => {
+    return axiosClient.post('/api/manager/customers/bulk-status', { accountIds, status })
+  },
+
+  bulkSendPromotion: (customerIds, message) => {
+    return axiosClient.post('/api/manager/customers/bulk-promotion', { customerIds, message })
+  },
+
+  exportCustomers: (customerIds) => {
+    return axiosClient.post('/api/manager/customers/export', customerIds, { responseType: 'blob' })
+  },
+
   // Staffs
   getStaffs: () => {
     return axiosClient.get('/api/manager/staffs')

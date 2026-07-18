@@ -83,4 +83,53 @@ public class CustomerManagementController {
         customerManagementService.deleteNote(noteId);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/bulk-status")
+    public ResponseEntity<Void> bulkUpdateStatus(@Valid @RequestBody com.project.tech_gadget_store.modules.auth.dto.request.BulkStatusRequestDto request) {
+        customerManagementService.bulkUpdateStatus(request.getAccountIds(), request.getStatus());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/bulk-promotion")
+    public ResponseEntity<java.util.Map<String, String>> bulkSendPromotion(@Valid @RequestBody com.project.tech_gadget_store.modules.auth.dto.request.BulkPromotionRequestDto request) {
+        String resultMsg = customerManagementService.bulkSendPromotion(request.getCustomerIds(), request.getMessage());
+        return ResponseEntity.ok(java.util.Map.of("message", resultMsg));
+    }
+
+    @PostMapping("/export")
+    public ResponseEntity<byte[]> exportCustomers(@RequestBody java.util.List<String> customerIds) {
+        StringBuilder csv = new StringBuilder();
+        csv.append("\uFEFF"); // UTF-8 BOM
+        csv.append("Mã KH,Họ tên,Email,Số điện thoại,Hạng,Tổng chi tiêu,Tổng đơn hàng,Ngày đăng ký\n");
+
+        for (String id : customerIds) {
+            try {
+                CustomerDetailResponseDto detail = customerManagementService.getCustomerDetail(id);
+                csv.append(detail.getId()).append(",")
+                   .append(escapeCsv(detail.getFullName())).append(",")
+                   .append(escapeCsv(detail.getEmail())).append(",")
+                   .append(escapeCsv(detail.getPhone())).append(",")
+                   .append(detail.getTier()).append(",")
+                   .append(detail.getTotalSpend()).append(",")
+                   .append(detail.getTotalOrders()).append(",")
+                   .append(detail.getJoinDate()).append("\n");
+            } catch (Exception e) {
+                // skip if not found
+            }
+        }
+
+        byte[] bytes = csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=danh_sach_khach_hang.csv")
+                .contentType(org.springframework.http.MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .body(bytes);
+    }
+
+    private String escapeCsv(String val) {
+        if (val == null) return "";
+        if (val.contains(",") || val.contains("\"") || val.contains("\n")) {
+            return "\"" + val.replace("\"", "\"\"") + "\"";
+        }
+        return val;
+    }
 }

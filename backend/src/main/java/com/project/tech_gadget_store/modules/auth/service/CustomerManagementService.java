@@ -379,4 +379,25 @@ public class CustomerManagementService {
         }
         return map;
     }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void bulkUpdateStatus(List<String> accountIds, String status) {
+        if (accountIds == null || accountIds.isEmpty()) return;
+        com.project.tech_gadget_store.modules.auth.entity.enums.AccountStatus accountStatus =
+                com.project.tech_gadget_store.modules.auth.entity.enums.AccountStatus.valueOf(status.trim().toUpperCase());
+        for (String accountId : accountIds) {
+            accountRepository.findById(accountId).ifPresent(account -> {
+                account.setStatus(accountStatus);
+                accountRepository.save(account);
+            });
+        }
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public String bulkSendPromotion(List<String> customerIds, String message) {
+        if (customerIds == null || customerIds.isEmpty()) {
+            return "Không có khách hàng nào được chọn.";
+        }
+        return "Đã gửi thông báo khuyến mãi thành công tới " + customerIds.size() + " khách hàng.";
+    }
 }

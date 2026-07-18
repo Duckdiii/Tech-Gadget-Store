@@ -47,11 +47,87 @@ export default function CustomerManagementPage() {
     refetch,
   } = useCustomerManagement()
 
+  const [selectedIds, setSelectedIds] = useState([])
+  const [showPromoModal, setShowPromoModal] = useState(false)
+  const [promoMessage, setPromoMessage] = useState('')
+
   useEffect(() => {
     if (location.state?.prefilledSearch !== undefined) {
       setSearch(location.state.prefilledSearch)
     }
   }, [location.state])
+
+  useEffect(() => {
+    setSelectedIds([])
+  }, [customers])
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(customers.map((c) => c.id))
+    } else {
+      setSelectedIds([])
+    }
+  }
+
+  const handleSelectRow = (customerId) => {
+    setSelectedIds((prev) =>
+      prev.includes(customerId)
+        ? prev.filter((id) => id !== customerId)
+        : [...prev, customerId]
+    )
+  }
+
+  const handleBulkSendPromotion = async () => {
+    if (!promoMessage.trim()) return
+    try {
+      const res = await managerUsersService.bulkSendPromotion(selectedIds, promoMessage)
+      alert(res.message || 'Gửi khuyến mãi thành công!')
+      setShowPromoModal(false)
+      setPromoMessage('')
+      setSelectedIds([])
+    } catch (e) {
+      alert('Lỗi khi gửi khuyến mãi: ' + (e.message || e))
+    }
+  }
+
+  const handleBulkStatusUpdate = async (status) => {
+    const isLock = status === 'BLOCKED'
+    const actionText = isLock ? 'khóa' : 'mở khóa'
+    if (window.confirm(`Bạn có chắc chắn muốn ${actionText} tài khoản của ${selectedIds.length} khách hàng đã chọn?`)) {
+      try {
+        const selectedCustomers = customers.filter((c) => selectedIds.includes(c.id))
+        const accountIds = selectedCustomers.map((c) => c.accountId).filter(Boolean)
+        
+        if (accountIds.length === 0) {
+          alert('Không tìm thấy ID tài khoản hợp lệ để thực hiện thao tác.')
+          return
+        }
+
+        await managerUsersService.bulkUpdateStatus(accountIds, status)
+        alert(`Đã ${actionText} thành công ${accountIds.length} tài khoản!`)
+        setSelectedIds([])
+        refetch()
+      } catch (e) {
+        alert(`Lỗi khi ${actionText} tài khoản hàng loạt: ` + (e.message || e))
+      }
+    }
+  }
+
+  const handleBulkExport = async () => {
+    try {
+      const response = await managerUsersService.exportCustomers(selectedIds)
+      const url = window.URL.createObjectURL(new Blob([response]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'danh_sach_khach_hang.csv')
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      setSelectedIds([])
+    } catch (e) {
+      alert('Lỗi khi xuất dữ liệu: ' + (e.message || e))
+    }
+  }
 
   const handleToggleBlock = async (customer) => {
     const isBlocked = customer.accountStatus === 'BLOCKED'
@@ -340,8 +416,16 @@ export default function CustomerManagementPage() {
           <div className="overflow-x-auto">
             <div className="min-w-[1000px]">
               {/* Table header */}
-              <div className="grid grid-cols-[3.5rem_1fr_11rem_8rem_10rem_10rem_9rem_6rem] gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50 items-center">
-                <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">STT</span>
+              <div className="grid grid-cols-[4.5rem_1fr_11rem_8rem_10rem_10rem_9rem_6rem] gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50 items-center">
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    checked={customers.length > 0 && selectedIds.length === customers.length}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 rounded text-[#E8420A] focus:ring-[#E8420A] border-gray-300 cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">STT</span>
+                </div>
                 <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">KHÁCH HÀNG</span>
                 <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">HẠNG THÀNH VIÊN</span>
                 {renderSortHeader('TỔNG ĐƠN', 'totalOrders')}
@@ -361,13 +445,24 @@ export default function CustomerManagementPage() {
               ) : (
                 customers.map((customer, idx) => {
                   const tier = TIER_DISPLAY[customer.tier] || { label: customer.tier, bg: 'bg-gray-100', text: 'text-gray-600' }
+                  const isSelected = selectedIds.includes(customer.id)
                   return (
                     <div
                       key={customer.id}
-                      className="grid grid-cols-[3.5rem_1fr_11rem_8rem_10rem_10rem_9rem_6rem] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center"
+                      className={`grid grid-cols-[4.5rem_1fr_11rem_8rem_10rem_10rem_9rem_6rem] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center transition-colors ${
+                        isSelected ? 'bg-amber-50/20' : ''
+                      }`}
                     >
-                      {/* STT */}
-                      <span className="text-sm text-gray-500 font-medium">{page * PAGE_SIZE + idx + 1}</span>
+                      {/* STT + Checkbox */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleSelectRow(customer.id)}
+                          className="w-4 h-4 rounded text-[#E8420A] focus:ring-[#E8420A] border-gray-300 cursor-pointer"
+                        />
+                        <span className="text-sm text-gray-500 font-medium">{page * PAGE_SIZE + idx + 1}</span>
+                      </div>
 
                       {/* Khách hàng */}
                       <div className="flex items-center gap-3">
@@ -486,6 +581,110 @@ export default function CustomerManagementPage() {
           </div>
         </div>
       </div>
+
+      {/* Floating Bulk Actions Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur text-white px-6 py-4 rounded-xl shadow-2xl border border-gray-800 flex items-center gap-6 z-40 transition-all duration-300">
+          <div className="text-sm font-semibold border-r border-gray-700 pr-6">
+            Đã chọn: <span className="text-[#E8420A] text-base font-bold">{selectedIds.length}</span> khách hàng
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowPromoModal(true)}
+              className="bg-[#E8420A] hover:bg-[#C4350A] text-white px-4 py-2 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 0h4m-4 0H8m0 0v13m0-13V6a2 2 0 10-2-2h2zm0 0V5a2 2 0 112 2H8" />
+              </svg>
+              Gửi khuyến mãi
+            </button>
+            
+            <button
+              onClick={handleBulkExport}
+              className="border border-gray-700 hover:bg-gray-800 text-gray-200 px-4 py-2 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Xuất Excel (CSV)
+            </button>
+
+            <button
+              onClick={() => handleBulkStatusUpdate('ACTIVE')}
+              className="border border-gray-700 hover:bg-green-950/30 hover:border-green-800 text-green-400 px-4 py-2 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              Mở khóa tài khoản
+            </button>
+
+            <button
+              onClick={() => handleBulkStatusUpdate('BLOCKED')}
+              className="border border-gray-700 hover:bg-red-950/30 hover:border-red-800 text-red-400 px-4 py-2 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              Khóa tài khoản
+            </button>
+          </div>
+          <button
+            onClick={() => setSelectedIds([])}
+            className="text-gray-400 hover:text-white transition-colors pl-4 border-l border-gray-700 cursor-pointer"
+            title="Bỏ chọn tất cả"
+          >
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Promotion Modal Overlay */}
+      {showPromoModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-100 animate-slide-up">
+            <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-bold text-gray-900">Gửi chương trình khuyến mãi hàng loạt</h3>
+              <button 
+                onClick={() => setShowPromoModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-500">
+                Gửi tin nhắn khuyến mãi, mã giảm giá đến <strong className="text-gray-800">{selectedIds.length}</strong> khách hàng đã chọn.
+              </p>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Nội dung khuyến mãi
+                </label>
+                <textarea
+                  value={promoMessage}
+                  onChange={(e) => setPromoMessage(e.target.value)}
+                  placeholder="Nhập tin nhắn hoặc mã giảm giá muốn gửi..."
+                  rows={4}
+                  className="w-full border border-gray-300 rounded p-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white resize-none"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+              <button
+                onClick={() => setShowPromoModal(false)}
+                className="border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 px-4 py-2 rounded text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleBulkSendPromotion}
+                disabled={!promoMessage.trim()}
+                className="bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-50 text-white px-5 py-2 rounded text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Gửi ngay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
