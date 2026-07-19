@@ -60,7 +60,7 @@ export default function BundleServiceManagementPage() {
     try {
       await handleBulkUpdateActive(selectedIds, newActive)
       setSelectedIds([])
-    } catch (err) {
+    } catch {
       // toast shown by hook
     } finally {
       setUpdatingBulk(false)

@@ -58,7 +58,7 @@ export default function CustomerManagementPage() {
     if (location.state?.prefilledTier !== undefined) {
       setTierFilter(location.state.prefilledTier)
     }
-  }, [location.state])
+  }, [location.state, setSearch, setTierFilter])
 
   useEffect(() => {
     setSelectedIds([])
