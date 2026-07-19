@@ -51,6 +51,7 @@ export default function InventoryPage() {
     importLogs,
     exportLogs,
     loadingLogs,
+    kpiCounts,
   } = useInventory()
 
   return (
@@ -112,6 +113,7 @@ export default function InventoryPage() {
               setStatusFilter={setStatusFilter}
               loading={loadingProducts}
               pageSize={pageSize}
+              kpiCounts={kpiCounts}
             />
           )}
           {activeTab === 'import' && <ImportLogTab logsList={importLogs} loading={loadingLogs} />}

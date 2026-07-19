@@ -18,6 +18,7 @@ export default function InventoryTab({
   setStatusFilter,
   loading,
   pageSize,
+  kpiCounts = { total: 0, outOfStock: 0, noVariants: 0, noImages: 0 },
 }) {
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1
   const rangeEnd   = Math.min((page + 1) * pageSize, totalItems)
@@ -48,6 +49,61 @@ export default function InventoryTab({
         </div>
       </div>
 
+      {/* Hàng thẻ Thống kê KPI Kho hàng thông minh */}
+      <div className="grid grid-cols-4 gap-4 mb-5">
+        {[
+          {
+            id: '',
+            label: 'Tổng sản phẩm',
+            value: kpiCounts.total,
+            color: 'from-blue-500 to-indigo-600',
+            textColor: 'text-blue-100',
+            desc: 'Tổng số mặt hàng trong hệ thống'
+          },
+          {
+            id: 'het_hang',
+            label: 'Sản phẩm hết hàng',
+            value: kpiCounts.outOfStock,
+            color: 'from-red-500 to-rose-600',
+            textColor: 'text-red-100',
+            desc: 'Không có serial sẵn sàng bán'
+          },
+          {
+            id: 'no_variants',
+            label: 'Chưa có biến thể',
+            value: kpiCounts.noVariants,
+            color: 'from-amber-500 to-orange-600',
+            textColor: 'text-amber-100',
+            desc: 'Sản phẩm trống thông tin phân loại'
+          },
+          {
+            id: 'no_images',
+            label: 'Thiếu hình ảnh',
+            value: kpiCounts.noImages,
+            color: 'from-slate-500 to-zinc-700',
+            textColor: 'text-slate-200',
+            desc: 'Mặt hàng chưa cập nhật ảnh đại diện'
+          }
+        ].map(card => {
+          const isSelected = statusFilter === card.id
+          return (
+            <button
+              key={card.label}
+              onClick={() => setStatusFilter(card.id)}
+              className={`text-left p-5 rounded-xl bg-gradient-to-br ${card.color} text-white shadow-md transition-all hover:shadow-lg cursor-pointer border-none relative overflow-hidden ${
+                isSelected ? 'ring-4 ring-offset-2 ring-orange-500 scale-[1.02]' : ''
+              }`}
+            >
+              <div className="flex justify-between items-start">
+                <span className="text-xs font-bold uppercase tracking-wider opacity-85">{card.label}</span>
+                <span className="text-2xl font-black">{card.value.toLocaleString('vi-VN')}</span>
+              </div>
+              <p className="text-[10px] mt-2 opacity-75 font-medium leading-relaxed">{card.desc}</p>
+            </button>
+          )
+        })}
+      </div>
+
       {/* Filters */}
       <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex flex-wrap items-center gap-3 mb-4">
         <div className="relative w-full sm:max-w-xs">
@@ -68,9 +124,11 @@ export default function InventoryTab({
           className="border border-gray-200 rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
         >
           <option value="">Trạng thái kho</option>
-          <option value="sap_het">Sắp hết</option>
           <option value="con_hang">Còn hàng</option>
           <option value="het_hang">Hết hàng</option>
+          <option value="sap_het">Sắp hết</option>
+          <option value="no_variants">Chưa có biến thể</option>
+          <option value="no_images">Chưa có ảnh</option>
         </select>
 
         {(search || statusFilter) && (

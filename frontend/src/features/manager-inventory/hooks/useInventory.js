@@ -64,6 +64,34 @@ export function useInventory() {
   const [statusFilter,   setStatusFilter]  = useState('')
   const [loadingProducts, setLoadingProducts] = useState(true)
 
+  // ── KPI Counts ────────────────────────────────────────
+  const [kpiCounts, setKpiCounts] = useState({
+    total: 0,
+    outOfStock: 0,
+    noVariants: 0,
+    noImages: 0
+  })
+
+  const loadKpis = useCallback(() => {
+    Promise.all([
+      apiFetch('/api/products/filter?size=1'),
+      apiFetch('/api/products/filter?stockFilter=outOfStock&size=1'),
+      apiFetch('/api/products/filter?stockFilter=noVariants&size=1'),
+      apiFetch('/api/products/filter?stockFilter=noImages&size=1')
+    ]).then(([resTotal, resOut, resNoVar, resNoImg]) => {
+      setKpiCounts({
+        total: resTotal.totalItems || 0,
+        outOfStock: resOut.totalItems || 0,
+        noVariants: resNoVar.totalItems || 0,
+        noImages: resNoImg.totalItems || 0
+      })
+    }).catch(err => console.error('Failed to load inventory KPI counts', err))
+  }, [])
+
+  useEffect(() => {
+    loadKpis()
+  }, [loadKpis])
+
   // ── Logs ──────────────────────────────────────────────
   const [importLogs, setImportLogs] = useState([])
   const [exportLogs, setExportLogs] = useState([])
@@ -78,11 +106,28 @@ export function useInventory() {
     return () => clearTimeout(handler)
   }, [search])
 
+  // Reset page về 0 khi đổi bộ lọc trạng thái
+  useEffect(() => {
+    setPage(0)
+  }, [statusFilter])
+
   // Tải sản phẩm — 1 request duy nhất từ /api/products/filter
   const loadProducts = useCallback(() => {
     setLoadingProducts(true)
     const params = new URLSearchParams()
     if (debouncedSearch) params.append('keyword', debouncedSearch)
+
+    // Server-side stock filtering
+    if (statusFilter === 'het_hang') {
+      params.append('stockFilter', 'outOfStock')
+    } else if (statusFilter === 'con_hang') {
+      params.append('stockFilter', 'inStock')
+    } else if (statusFilter === 'no_variants') {
+      params.append('stockFilter', 'noVariants')
+    } else if (statusFilter === 'no_images') {
+      params.append('stockFilter', 'noImages')
+    }
+
     params.append('page', page)
     params.append('size', PAGE_SIZE)
 
@@ -94,7 +139,7 @@ export function useInventory() {
       })
       .catch(err => console.error('Failed to load inventory products', err))
       .finally(() => setLoadingProducts(false))
-  }, [debouncedSearch, page])
+  }, [debouncedSearch, page, statusFilter])
 
   useEffect(() => { loadProducts() }, [loadProducts])
 
@@ -117,9 +162,9 @@ export function useInventory() {
     }
   }, [activeTab, loadLogs])
 
-  // Lọc theo trạng thái kho (client-side, đã có data theo trang)
-  const filteredProducts = statusFilter
-    ? productsList.filter(p => p.status === statusFilter)
+  // Lọc theo trạng thái kho (chỉ lọc client-side cho trường hợp "sap_het" vì backend chưa hỗ trợ trực tiếp)
+  const filteredProducts = statusFilter === 'sap_het'
+    ? productsList.filter(p => p.status === 'sap_het')
     : productsList
 
   return {
@@ -138,6 +183,7 @@ export function useInventory() {
     setStatusFilter,
     loadingProducts,
     pageSize: PAGE_SIZE,
+    kpiCounts,
 
     // Logs
     importLogs,
