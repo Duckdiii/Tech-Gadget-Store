@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { apiFetch } from '../../../services/api'
 import Field from '../components/Field'
 
 function normalizeBrand(dto) {
-  return { id: dto.id, name: dto.name || '', logoUrl: dto.logoUrl || '', description: dto.description || '' }
+  return { id: dto.id, name: dto.name || '', logoUrl: dto.logoUrl || '', description: dto.description || '', productCount: dto.productCount || 0 }
 }
 
 function normalizeCategory(dto) {
-  return { id: dto.id, name: dto.name || '', imageUrl: dto.imageUrl || '' }
+  return { id: dto.id, name: dto.name || '', imageUrl: dto.imageUrl || '', productCount: dto.productCount || 0 }
 }
 
 const EMPTY_BRAND_FORM = { name: '', logoUrl: '', description: '' }
@@ -347,14 +348,14 @@ export default function BrandCategoryManagementPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {(tab === 'brands' ? ['Ảnh', 'Tên thương hiệu', 'Mô tả', ''] : ['Ảnh', 'Tên danh mục', '']).map((h, i) => (
+                  {(tab === 'brands' ? ['Ảnh', 'Tên thương hiệu', 'Số sản phẩm', 'Mô tả', ''] : ['Ảnh', 'Tên danh mục', 'Số sản phẩm', '']).map((h, i) => (
                     <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.length === 0
-                  ? <tr><td colSpan={4} className="text-center py-12 text-gray-400">Không tìm thấy dữ liệu nào</td></tr>
+                  ? <tr><td colSpan={tab === 'brands' ? 5 : 4} className="text-center py-12 text-gray-400">Không tìm thấy dữ liệu nào</td></tr>
                   : filtered.map(item => (
                     <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
                       <td className="px-4 py-3">
@@ -363,6 +364,21 @@ export default function BrandCategoryManagementPage() {
                           : <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">N/A</div>}
                       </td>
                       <td className="px-4 py-4 font-semibold text-gray-800">{item.name || '—'}</td>
+                      <td className="px-4 py-4">
+                        {item.productCount > 0 ? (
+                          <Link
+                            to={`/products-management?${tab === 'brands' ? 'brand' : 'category'}=${encodeURIComponent(item.name)}`}
+                            className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                            title="Nhấp để xem các sản phẩm liên kết"
+                          >
+                            {item.productCount} sản phẩm
+                          </Link>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-gray-50 text-gray-400">
+                            0 sản phẩm
+                          </span>
+                        )}
+                      </td>
                       {tab === 'brands' && <td className="px-4 py-4 text-gray-500 max-w-sm truncate">{item.description || '—'}</td>}
                       <td className="px-4 py-4">
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
@@ -439,18 +455,56 @@ export default function BrandCategoryManagementPage() {
         <>
           <div className="fixed inset-0 bg-black/50 z-[60]" />
           <div className="fixed inset-0 flex items-center justify-center z-[60]">
-            <div className="bg-white rounded shadow-2xl w-[380px] p-6">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>
-              <h3 className="text-lg font-bold text-gray-900 text-center">{tab === 'brands' ? 'Xóa thương hiệu?' : 'Xóa danh mục?'}</h3>
-              <p className="text-sm text-gray-500 text-center mt-2">
-                Bạn có chắc muốn xóa{target ? ` "${target.name}"` : ''}? Hành động này không thể hoàn tác
-              </p>
-              <div className="flex gap-3 mt-6">
-                <button onClick={() => setDeleteId(null)} disabled={removing} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer">Hủy</button>
-                <button onClick={() => handleRemove(deleteId)} disabled={removing} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
-                  {removing ? 'Đang xóa...' : 'Xác nhận'}
-                </button>
-              </div>
+            <div className="bg-white rounded shadow-2xl w-[400px] p-6">
+              {target && target.productCount > 0 ? (
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900">Không thể xóa!</h3>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Mục <strong>"{target.name}"</strong> đang liên kết với <strong>{target.productCount} sản phẩm</strong>.
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                    Bạn phải chuyển các sản phẩm này sang thương hiệu/danh mục khác hoặc xóa chúng trước khi thực hiện xóa mục này.
+                  </p>
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={() => setDeleteId(null)}
+                      className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
+                    >
+                      Đóng
+                    </button>
+                    <Link
+                      to={`/products-management?${tab === 'brands' ? 'brand' : 'category'}=${encodeURIComponent(target.name)}`}
+                      onClick={() => setDeleteId(null)}
+                      className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-semibold text-center transition-colors inline-block leading-normal"
+                    >
+                      Xem sản phẩm
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 text-center">{tab === 'brands' ? 'Xóa thương hiệu?' : 'Xóa danh mục?'}</h3>
+                  <p className="text-sm text-gray-500 text-center mt-2">
+                    Bạn có chắc muốn xóa{target ? ` "${target.name}"` : ''}? Hành động này không thể hoàn tác
+                  </p>
+                  <div className="flex gap-3 mt-6">
+                    <button onClick={() => setDeleteId(null)} disabled={removing} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer">Hủy</button>
+                    <button onClick={() => handleRemove(deleteId)} disabled={removing} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+                      {removing ? 'Đang xóa...' : 'Xác nhận'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </>

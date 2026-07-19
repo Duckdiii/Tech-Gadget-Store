@@ -21,4 +21,5 @@ public class BrandResponseDto {
     private String logoUrl;
     private String description;
     private List<String> productsIds;
+    private Long productCount;
 }

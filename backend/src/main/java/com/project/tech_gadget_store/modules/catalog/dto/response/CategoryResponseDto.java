@@ -20,4 +20,5 @@ public class CategoryResponseDto {
     private String name;
     private String imageUrl;
     private List<String> productsIds;
+    private Long productCount;
 }

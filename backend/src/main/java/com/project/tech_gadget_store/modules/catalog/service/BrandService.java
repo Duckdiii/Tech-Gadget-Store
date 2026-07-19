@@ -62,6 +62,7 @@ public class BrandService {
     }
 
     private BrandResponseDto toResponseDto(Brand brand) {
+        long count = productRepository.countByBrandId(brand.getId());
         return BrandResponseDto.builder()
                 .id(brand.getId())
                 .createdAt(brand.getCreatedAt())
@@ -69,6 +70,7 @@ public class BrandService {
                 .name(brand.getName())
                 .logoUrl(brand.getLogoUrl())
                 .description(brand.getDescription())
+                .productCount(count)
                 .build();
     }
 }

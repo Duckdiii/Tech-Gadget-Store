@@ -29,6 +29,10 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
 
         boolean existsByCategoryId(String categoryId);
 
+        long countByBrandId(String brandId);
+
+        long countByCategoryId(String categoryId);
+
         @Query("SELECT DISTINCT p FROM Product p JOIN FETCH p.category JOIN FETCH p.brand " +
                         "WHERE p.category.id = :categoryId AND p.id <> :productId AND p.isActive = true")
         List<Product> findCandidatesForRecommendation(

@@ -61,12 +61,14 @@ public class CategoryService {
     }
 
     private CategoryResponseDto toResponseDto(Category category) {
+        long count = productRepository.countByCategoryId(category.getId());
         return CategoryResponseDto.builder()
                 .id(category.getId())
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
                 .name(category.getName())
                 .imageUrl(category.getImageUrl())
+                .productCount(count)
                 .build();
     }
 }

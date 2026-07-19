@@ -63,6 +63,14 @@ export default function ProductManagementPage() {
   }, [location.state])
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search)
+    const brand = searchParams.get('brand')
+    const category = searchParams.get('category')
+    if (brand) setSelectedBrand(brand)
+    if (category) setSelectedCategory(category)
+  }, [location.search])
+
+  useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search)
       setPage(0)
