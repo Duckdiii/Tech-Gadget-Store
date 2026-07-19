@@ -13,6 +13,183 @@ function normalizeCategory(dto) {
 const EMPTY_BRAND_FORM = { name: '', logoUrl: '', description: '' }
 const EMPTY_CATEGORY_FORM = { name: '', imageUrl: '' }
 
+const INP_CLASS = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]'
+
+function ImageUploader({ value, onChange, label, error }) {
+  const [uploading, setUploading] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [showManualInput, setShowManualInput] = useState(false)
+  const [uploadError, setUploadError] = useState(null)
+
+  const handleFile = async (file) => {
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Chỉ chấp nhận tệp tin hình ảnh')
+      return
+    }
+    
+    setUploading(true)
+    setUploadError(null)
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const data = await apiFetch('/api/manager/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      if (data && data.url) {
+        onChange(data.url)
+      } else {
+        setUploadError('Không nhận được URL ảnh từ server')
+      }
+    } catch (err) {
+      setUploadError(err.message || 'Lỗi khi tải ảnh lên')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const onDragOver = (e) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const onDragLeave = () => {
+    setIsDragOver(false)
+  }
+
+  const onDrop = (e) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    const files = e.dataTransfer.files
+    if (files.length) {
+      handleFile(files[0])
+    }
+  }
+
+  const onFileSelect = (e) => {
+    const files = e.target.files
+    if (files.length) {
+      handleFile(files[0])
+    }
+  }
+
+  return (
+    <Field label={label} error={error || uploadError}>
+      {showManualInput ? (
+        <div className="space-y-1.5">
+          <div className="flex gap-2">
+            <input
+              value={value}
+              onChange={e => onChange(e.target.value)}
+              placeholder="https://..."
+              className={INP_CLASS}
+            />
+            <button
+              type="button"
+              onClick={() => setShowManualInput(false)}
+              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded cursor-pointer shrink-0 transition-colors"
+            >
+              Chọn file
+            </button>
+          </div>
+          <p className="text-[10px] text-gray-400">Dán link ảnh trực tiếp từ bên ngoài.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {value ? (
+            <div className="flex items-center gap-3 p-3 border border-gray-200 rounded bg-gray-50/50">
+              <img
+                src={value}
+                alt="Preview"
+                className="w-16 h-16 rounded object-cover border border-gray-100 bg-white"
+                onError={(e) => {
+                  e.target.onerror = null
+                  e.target.src = 'https://placehold.co/100x100?text=Error'
+                }}
+              />
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-gray-500 font-mono truncate max-w-[220px]">{value}</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <label className="text-xs text-[#E8420A] hover:text-[#C4350A] font-semibold cursor-pointer">
+                    Thay ảnh
+                    <input type="file" accept="image/*" className="hidden" onChange={onFileSelect} disabled={uploading} />
+                  </label>
+                  <span className="text-gray-300 text-xs">|</span>
+                  <button
+                    type="button"
+                    onClick={() => onChange('')}
+                    className="text-xs text-red-500 hover:text-red-700 font-semibold cursor-pointer bg-transparent border-none p-0"
+                  >
+                    Xóa
+                  </button>
+                  <span className="text-gray-300 text-xs">|</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualInput(true)}
+                    className="text-xs text-gray-500 hover:text-gray-700 font-semibold cursor-pointer bg-transparent border-none p-0"
+                  >
+                    Nhập URL
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              className={`border-2 border-dashed rounded-lg p-5 transition-all text-center flex flex-col items-center justify-center cursor-pointer ${
+                isDragOver ? 'border-[#E8420A] bg-orange-50/40' : 'border-gray-300 hover:border-gray-400 bg-gray-50/20'
+              }`}
+              onClick={() => document.getElementById(`file-input-${label}`).click()}
+            >
+              <input
+                id={`file-input-${label}`}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={onFileSelect}
+                disabled={uploading}
+              />
+              {uploading ? (
+                <div className="flex flex-col items-center space-y-2 py-2">
+                  <svg className="animate-spin h-6 w-6 text-[#E8420A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="text-xs text-gray-500 font-medium">Đang tải ảnh lên...</span>
+                </div>
+              ) : (
+                <>
+                  <svg className="w-8 h-8 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-xs text-gray-600 font-medium">
+                    Kéo thả ảnh vào đây hoặc <span className="text-[#E8420A] underline hover:text-[#C4350A]">chọn từ thiết bị</span>
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-1">Hỗ trợ PNG, JPG, JPEG, GIF...</p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowManualInput(true)
+                    }}
+                    className="text-[11px] text-gray-500 hover:text-gray-700 font-semibold underline mt-3 bg-transparent border-none p-0 cursor-pointer"
+                  >
+                    Nhập URL thủ công
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </Field>
+  )
+}
+
 export default function BrandCategoryManagementPage() {
   const [tab, setTab] = useState('brands') // 'brands' | 'categories'
 
@@ -49,7 +226,7 @@ export default function BrandCategoryManagementPage() {
   const items = tab === 'brands' ? brands : categories
   const filtered = items.filter(x => !search || x.name.toLowerCase().includes(search.toLowerCase()))
 
-  const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]'
+  const inp = INP_CLASS
 
   function openAdd() {
     setBrandForm(EMPTY_BRAND_FORM)
@@ -72,11 +249,11 @@ export default function BrandCategoryManagementPage() {
     const errs = {}
     if (tab === 'brands') {
       if (!brandForm.name.trim()) errs.name = 'Vui lòng nhập tên thương hiệu'
-      if (!brandForm.logoUrl.trim()) errs.logoUrl = 'Vui lòng nhập URL logo'
+      if (!brandForm.logoUrl.trim()) errs.logoUrl = 'Vui lòng chọn hoặc tải ảnh logo'
       if (!brandForm.description.trim()) errs.description = 'Vui lòng nhập mô tả'
     } else {
       if (!categoryForm.name.trim()) errs.name = 'Vui lòng nhập tên danh mục'
-      if (!categoryForm.imageUrl.trim()) errs.imageUrl = 'Vui lòng nhập URL ảnh'
+      if (!categoryForm.imageUrl.trim()) errs.imageUrl = 'Vui lòng chọn hoặc tải ảnh danh mục'
     }
     return errs
   }
@@ -225,9 +402,12 @@ export default function BrandCategoryManagementPage() {
                 <Field label="Tên thương hiệu *" error={formErrors.name}>
                   <input value={brandForm.name} onChange={e => setBrandForm(f => ({ ...f, name: e.target.value }))} placeholder="Apple" className={inp} />
                 </Field>
-                <Field label="URL logo *" error={formErrors.logoUrl}>
-                  <input value={brandForm.logoUrl} onChange={e => setBrandForm(f => ({ ...f, logoUrl: e.target.value }))} placeholder="https://..." className={inp} />
-                </Field>
+                <ImageUploader
+                  label="Logo thương hiệu *"
+                  value={brandForm.logoUrl}
+                  onChange={url => setBrandForm(f => ({ ...f, logoUrl: url }))}
+                  error={formErrors.logoUrl}
+                />
                 <Field label="Mô tả *" error={formErrors.description}>
                   <textarea value={brandForm.description} onChange={e => setBrandForm(f => ({ ...f, description: e.target.value }))} rows={3} className={inp} />
                 </Field>
@@ -237,9 +417,12 @@ export default function BrandCategoryManagementPage() {
                 <Field label="Tên danh mục *" error={formErrors.name}>
                   <input value={categoryForm.name} onChange={e => setCategoryForm(f => ({ ...f, name: e.target.value }))} placeholder="Điện thoại" className={inp} />
                 </Field>
-                <Field label="URL ảnh *" error={formErrors.imageUrl}>
-                  <input value={categoryForm.imageUrl} onChange={e => setCategoryForm(f => ({ ...f, imageUrl: e.target.value }))} placeholder="https://..." className={inp} />
-                </Field>
+                <ImageUploader
+                  label="Ảnh danh mục *"
+                  value={categoryForm.imageUrl}
+                  onChange={url => setCategoryForm(f => ({ ...f, imageUrl: url }))}
+                  error={formErrors.imageUrl}
+                />
               </>
             )}
           </div>

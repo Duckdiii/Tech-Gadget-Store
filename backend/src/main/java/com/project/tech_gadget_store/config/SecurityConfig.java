@@ -93,6 +93,7 @@ public class SecurityConfig {
                         .hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.GET, "/api/chatbot/**").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/payment/vnpay/return", "/api/payment/momo/return")
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()

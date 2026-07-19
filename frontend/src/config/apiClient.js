@@ -2,13 +2,16 @@ import { getToken } from '../utils/authToken'
 
 export async function apiFetch(path, options = {}) {
   const token = getToken()
+  const headers = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  }
+  if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json'
+  }
   const res = await fetch(path, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
+    headers,
   })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
