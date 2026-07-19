@@ -348,8 +348,8 @@ export default function BrandCategoryManagementPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {(tab === 'brands' ? ['Ảnh', 'Tên thương hiệu', 'Số sản phẩm', 'Mô tả', ''] : ['Ảnh', 'Tên danh mục', 'Số sản phẩm', '']).map((h, i) => (
-                    <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                  {(tab === 'brands' ? ['Ảnh', 'Tên thương hiệu', 'Số sản phẩm', 'Mô tả', 'Thao tác'] : ['Ảnh', 'Tên danh mục', 'Số sản phẩm', 'Thao tác']).map((h, i) => (
+                    <th key={i} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -380,13 +380,25 @@ export default function BrandCategoryManagementPage() {
                         )}
                       </td>
                       {tab === 'brands' && <td className="px-4 py-4 text-gray-500 max-w-sm truncate">{item.description || '—'}</td>}
-                      <td className="px-4 py-4">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
-                          <button onClick={() => openEdit(item)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
-                            Sửa →
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => openEdit(item)}
+                            className="p-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-[#E8420A] rounded transition-colors cursor-pointer border-none"
+                            title="Chỉnh sửa"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
                           </button>
-                          <button onClick={() => setDeleteId(item.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50">
-                            Xóa
+                          <button
+                            onClick={() => setDeleteId(item.id)}
+                            className="p-1.5 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded transition-colors cursor-pointer border-none"
+                            title="Xóa"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                           </button>
                         </div>
                       </td>
