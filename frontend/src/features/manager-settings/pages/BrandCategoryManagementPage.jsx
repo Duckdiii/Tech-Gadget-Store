@@ -209,6 +209,53 @@ export default function BrandCategoryManagementPage() {
   const [deleteId, setDeleteId]     = useState(null)
   const [removing, setRemoving]     = useState(false)
   const [toast, setToast]           = useState(null)
+  const [selectedIds, setSelectedIds] = useState([])
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
+
+  const items = tab === 'brands' ? brands : categories
+  const filtered = items.filter(x => !search || x.name.toLowerCase().includes(search.toLowerCase()))
+
+  const handleSelectAllToggle = () => {
+    const allFilteredIds = filtered.map(x => x.id)
+    const isAllSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => selectedIds.includes(id))
+    if (isAllSelected) {
+      setSelectedIds(prev => prev.filter(id => !allFilteredIds.includes(id)))
+    } else {
+      setSelectedIds(prev => [...new Set([...prev, ...allFilteredIds])])
+    }
+  }
+
+  const handleSelectRowToggle = (id) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    )
+  }
+
+  const selectedItems = items.filter(x => selectedIds.includes(x.id))
+  const deletableItems = selectedItems.filter(x => x.productCount === 0)
+  const nonDeletableItems = selectedItems.filter(x => x.productCount > 0)
+
+  async function handleBulkRemove() {
+    setRemoving(true)
+    const isBrand = tab === 'brands'
+    const base = isBrand ? '/api/manager/brands' : '/api/manager/categories'
+    const idsToDelete = deletableItems.map(x => x.id)
+    try {
+      await Promise.all(idsToDelete.map(id => apiFetch(`${base}/${id}`, { method: 'DELETE' })))
+      if (isBrand) {
+        setBrands(p => p.filter(x => !idsToDelete.includes(x.id)))
+      } else {
+        setCategories(p => p.filter(x => !idsToDelete.includes(x.id)))
+      }
+      showToast(isBrand ? `Đã xóa ${idsToDelete.length} thương hiệu` : `Đã xóa ${idsToDelete.length} danh mục`)
+      setSelectedIds([])
+      setShowBulkDeleteModal(false)
+    } catch (err) {
+      showToast(err.message || 'Lỗi khi xóa hàng loạt')
+    } finally {
+      setRemoving(false)
+    }
+  }
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(null), 3200) }
 
@@ -223,9 +270,6 @@ export default function BrandCategoryManagementPage() {
   }
 
   useEffect(() => { loadAll() }, [])
-
-  const items = tab === 'brands' ? brands : categories
-  const filtered = items.filter(x => !search || x.name.toLowerCase().includes(search.toLowerCase()))
 
   const inp = INP_CLASS
 
@@ -324,10 +368,10 @@ export default function BrandCategoryManagementPage() {
         </div>
 
         <div className="flex items-center gap-2 border-b border-gray-200">
-          <button onClick={() => { setTab('brands'); setSearch('') }} className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${tab === 'brands' ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+          <button onClick={() => { setTab('brands'); setSearch(''); setSelectedIds([]) }} className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${tab === 'brands' ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
             Thương hiệu ({brands.length})
           </button>
-          <button onClick={() => { setTab('categories'); setSearch('') }} className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${tab === 'categories' ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+          <button onClick={() => { setTab('categories'); setSearch(''); setSelectedIds([]) }} className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${tab === 'categories' ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
             Danh mục ({categories.length})
           </button>
         </div>
@@ -340,6 +384,27 @@ export default function BrandCategoryManagementPage() {
           <span className="ml-auto text-xs text-gray-400 shrink-0">{filtered.length} / {items.length}</span>
         </div>
 
+        {selectedIds.length > 0 && (
+          <div className="bg-orange-50 border border-orange-200 rounded px-5 py-3 flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2 text-gray-700">
+              <span className="font-semibold">Đã chọn {selectedIds.length} mục</span>
+              <span className="text-gray-300">|</span>
+              <button
+                onClick={() => setSelectedIds([])}
+                className="text-xs text-[#E8420A] hover:underline font-semibold bg-transparent border-none p-0 cursor-pointer"
+              >
+                Bỏ chọn tất cả
+              </button>
+            </div>
+            <button
+              onClick={() => setShowBulkDeleteModal(true)}
+              className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold cursor-pointer transition-colors border-none"
+            >
+              Xóa các mục đã chọn
+            </button>
+          </div>
+        )}
+
         {loading && <div className="bg-white rounded border border-gray-200 py-16 text-center text-gray-400 text-sm">Đang tải dữ liệu...</div>}
         {error && !loading && <div className="bg-red-50 border border-red-200 rounded px-5 py-4 text-red-600 text-sm">{error}</div>}
 
@@ -348,6 +413,14 @@ export default function BrandCategoryManagementPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
+                  <th className="px-4 py-3.5 w-10 text-left">
+                    <input
+                      type="checkbox"
+                      checked={filtered.length > 0 && filtered.every(x => selectedIds.includes(x.id))}
+                      onChange={handleSelectAllToggle}
+                      className="rounded border-gray-300 text-[#E8420A] focus:ring-[#E8420A] cursor-pointer"
+                    />
+                  </th>
                   {(tab === 'brands' ? ['Ảnh', 'Tên thương hiệu', 'Số sản phẩm', 'Mô tả', 'Thao tác'] : ['Ảnh', 'Tên danh mục', 'Số sản phẩm', 'Thao tác']).map((h, i) => (
                     <th key={i} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
@@ -355,9 +428,17 @@ export default function BrandCategoryManagementPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.length === 0
-                  ? <tr><td colSpan={tab === 'brands' ? 5 : 4} className="text-center py-12 text-gray-400">Không tìm thấy dữ liệu nào</td></tr>
+                  ? <tr><td colSpan={tab === 'brands' ? 6 : 5} className="text-center py-12 text-gray-400">Không tìm thấy dữ liệu nào</td></tr>
                   : filtered.map(item => (
                     <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
+                      <td className="px-4 py-3 w-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(item.id)}
+                          onChange={() => handleSelectRowToggle(item.id)}
+                          className="rounded border-gray-300 text-[#E8420A] focus:ring-[#E8420A] cursor-pointer"
+                        />
+                      </td>
                       <td className="px-4 py-3">
                         {(tab === 'brands' ? item.logoUrl : item.imageUrl)
                           ? <img src={tab === 'brands' ? item.logoUrl : item.imageUrl} alt={item.name} className="w-10 h-10 rounded object-cover border border-gray-100" />
@@ -517,6 +598,60 @@ export default function BrandCategoryManagementPage() {
                   </div>
                 </>
               )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {showBulkDeleteModal && (
+        <>
+          <div className="fixed inset-0 bg-black/50 z-[60]" />
+          <div className="fixed inset-0 flex items-center justify-center z-[60]">
+            <div className="bg-white rounded shadow-2xl w-[420px] p-6">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 text-center">Xác nhận xóa hàng loạt</h3>
+              
+              <div className="mt-4 space-y-3 text-sm text-gray-600">
+                <p>Bạn đã chọn tổng cộng <strong>{selectedItems.length}</strong> mục.</p>
+                
+                {deletableItems.length > 0 && (
+                  <p className="text-gray-600">
+                    ✅ Có <strong>{deletableItems.length}</strong> mục sẵn sàng để xóa.
+                  </p>
+                )}
+                
+                {nonDeletableItems.length > 0 && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs leading-relaxed space-y-1">
+                    <p className="font-semibold">⚠️ Không thể xóa {nonDeletableItems.length} mục sau do có sản phẩm liên kết:</p>
+                    <ul className="list-disc pl-4 space-y-0.5 max-h-[100px] overflow-y-auto">
+                      {nonDeletableItems.map(x => (
+                        <li key={x.id}>{x.name} ({x.productCount} sản phẩm)</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowBulkDeleteModal(false)}
+                  disabled={removing}
+                  className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleBulkRemove}
+                  disabled={removing || deletableItems.length === 0}
+                  className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded text-sm font-semibold cursor-pointer transition-colors"
+                >
+                  {removing ? 'Đang xóa...' : deletableItems.length > 0 ? `Xóa ${deletableItems.length} mục` : 'Không thể xóa'}
+                </button>
+              </div>
             </div>
           </div>
         </>
