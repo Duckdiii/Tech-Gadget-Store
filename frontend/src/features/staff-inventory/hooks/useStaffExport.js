@@ -25,7 +25,7 @@ export function useStaffExport(user) {
         setLoading(true)
         const rawProducts = await staffInventoryService.getProducts()
         const detailed = await Promise.all(
-          rawProducts.map(async (p) => {
+          (rawProducts.items || []).map(async (p) => {
             try {
               return await staffInventoryService.getProductById(p.id)
             } catch {

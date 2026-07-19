@@ -40,7 +40,7 @@ export function useStaffImport(user) {
       setLoading(true)
       const raw = await staffInventoryService.getProducts()
       const detailed = await Promise.all(
-        raw.map(async (p) => {
+        (raw.items || []).map(async (p) => {
           try {
             return await staffInventoryService.getProductById(p.id)
           } catch {

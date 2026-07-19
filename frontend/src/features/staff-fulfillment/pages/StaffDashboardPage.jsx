@@ -81,6 +81,9 @@ export default function StaffDashboardPage() {
   const [loadingOrders,  setLoadingOrders]  = useState(true)
   const [loadingRecent,  setLoadingRecent]  = useState(true)
 
+  // ── Progress tracker states ─────────────────────────────────────────────────
+  const [progressStats, setProgressStats] = useState(null) // null = loading
+
   // ── Real-time meta ──────────────────────────────────────────────────────────
   const [lastUpdated,  setLastUpdated]  = useState(null)   // Date object
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -98,33 +101,40 @@ export default function StaffDashboardPage() {
 
     try {
       // Chạy song song tất cả requests
-      const [importLogs, exportLogs, pendingData, ordersData, allLogs] = await Promise.allSettled([
+      const [importLogs, exportLogs, pendingData, ordersData, allLogs, orderStats] = await Promise.allSettled([
         apiFetch(`/api/manager/warehouse-logs?type=IMPORT&${params}`),
         apiFetch(`/api/manager/warehouse-logs?type=EXPORT&${params}`),
         apiFetch('/api/manager/orders/pending-count'),
         apiFetch('/api/manager/orders?limit=5'),
         apiFetch('/api/manager/warehouse-logs'),
+        apiFetch('/api/manager/orders/stats'),
       ])
 
       // KPI: import count
+      let importCountVal = 0
       if (importLogs.status === 'fulfilled') {
         const logs = importLogs.value ?? []
-        setImportCount(new Set(logs.map(l => l.logId)).size)
+        importCountVal = new Set(logs.map(l => l.logId)).size
+        setImportCount(importCountVal)
       } else {
         setImportCount(prev => prev ?? 0)
       }
 
       // KPI: export count
+      let exportCountVal = 0
       if (exportLogs.status === 'fulfilled') {
         const logs = exportLogs.value ?? []
-        setExportCount(new Set(logs.map(l => l.logId)).size)
+        exportCountVal = new Set(logs.map(l => l.logId)).size
+        setExportCount(exportCountVal)
       } else {
         setExportCount(prev => prev ?? 0)
       }
 
       // KPI: pending orders count
+      let pendingCountVal = 0
       if (pendingData.status === 'fulfilled') {
-        setPendingCount(pendingData.value?.count ?? 0)
+        pendingCountVal = pendingData.value?.count ?? 0
+        setPendingCount(pendingCountVal)
       } else {
         setPendingCount(prev => prev ?? 0)
       }
@@ -138,6 +148,31 @@ export default function StaffDashboardPage() {
       if (allLogs.status === 'fulfilled') {
         setRecentReceipts(groupLogsToRecent(allLogs.value ?? [], 4))
       }
+
+      // ── Progress tracker ──────────────────────────────────────────────────
+      // Đơn hàng: lấy shippingCount từ stats (đã được xử lý/đang giao) làm "done"
+      // Total = done + pending (chờ xử lý)
+      let ordersDone  = 0
+      let ordersTotal = 0
+      if (orderStats.status === 'fulfilled') {
+        const stats = orderStats.value ?? {}
+        ordersDone  = Number(stats.shippingCount ?? 0)
+        ordersTotal = ordersDone + pendingCountVal
+      }
+
+      // Phiếu nhập: done = số phiếu nhập hôm nay, target tối thiểu 1
+      const importDone  = importCountVal
+      const importTotal = Math.max(importDone + (importDone === 0 ? 1 : 0), importDone + 1)
+
+      // Phiếu xuất (đóng gói): done = số phiếu xuất hôm nay
+      const exportDone  = exportCountVal
+      const exportTotal = Math.max(exportDone + (exportDone === 0 ? 1 : 0), exportDone + 1)
+
+      setProgressStats({
+        orders:  { done: ordersDone,  total: Math.max(ordersTotal, 1), label: 'Đơn hàng đã xử lý',   unit: 'đơn',   color: 'teal'   },
+        imports: { done: importDone,  total: importTotal,               label: 'Phiếu nhập hôm nay',  unit: 'phiếu', color: 'blue'   },
+        exports: { done: exportDone,  total: exportTotal,               label: 'Phiếu xuất hôm nay',  unit: 'phiếu', color: 'violet' },
+      })
 
       setLastUpdated(new Date())
     } finally {
@@ -284,6 +319,91 @@ export default function StaffDashboardPage() {
               onClick={() => c.action && onNavigate(c.action)}
             />
           ))}
+        </div>
+
+        {/* ── Daily Progress Tracker ─────────────────────────────────────── */}
+        <div className="bg-white rounded border border-gray-200 px-6 py-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-base">📊</span>
+              <h3 className="text-sm font-bold text-gray-800">Tiến độ hoạt động hôm nay</h3>
+            </div>
+            <span className="text-[11px] text-gray-400">
+              {progressStats
+                ? `Ca làm việc: ${today.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+                : 'Đang tính toán...'}
+            </span>
+          </div>
+
+          {progressStats === null ? (
+            // Skeleton
+            <div className="space-y-4">
+              {[1, 2, 3].map(k => (
+                <div key={k} className="animate-pulse space-y-1.5">
+                  <div className="flex justify-between">
+                    <div className="h-3 bg-gray-100 rounded w-36" />
+                    <div className="h-3 bg-gray-100 rounded w-16" />
+                  </div>
+                  <div className="h-2.5 bg-gray-100 rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {Object.values(progressStats).map((track) => {
+                const pct = Math.min(Math.round((track.done / track.total) * 100), 100)
+                const isDone = pct >= 100
+
+                // Gradient màu theo loại
+                const gradients = {
+                  teal:   'from-teal-400 to-teal-600',
+                  blue:   'from-blue-400 to-blue-600',
+                  violet: 'from-violet-400 to-violet-600',
+                }
+                const textColors = {
+                  teal:   'text-teal-700',
+                  blue:   'text-blue-700',
+                  violet: 'text-violet-700',
+                }
+                const bgLights = {
+                  teal:   'bg-teal-50',
+                  blue:   'bg-blue-50',
+                  violet: 'bg-violet-50',
+                }
+
+                return (
+                  <div key={track.label}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        {isDone && (
+                          <span className="text-emerald-500 text-xs">✓</span>
+                        )}
+                        <span className="text-xs font-semibold text-gray-700">{track.label}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold ${isDone ? 'text-emerald-600' : textColors[track.color]}`}>
+                          {track.done}/{track.total} {track.unit}
+                        </span>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                          isDone ? 'bg-emerald-100 text-emerald-700' : `${bgLights[track.color]} ${textColors[track.color]}`
+                        }`}>
+                          {pct}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full bg-gradient-to-r ${isDone ? 'from-emerald-400 to-emerald-600' : gradients[track.color]} transition-all duration-700 ease-out`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Middle row */}

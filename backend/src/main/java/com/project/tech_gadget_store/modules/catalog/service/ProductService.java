@@ -296,11 +296,14 @@ public class ProductService {
         }
         Map<String, Object[]> ratingMap = fetchRatingStats(productIds);
         Map<String, Long> stockMap = fetchStockCounts(productIds);
+        Map<String, List<ProductVariant>> variantsMap = productVariantRepository.findVariantsForProductIds(productIds)
+                .stream()
+                .collect(Collectors.groupingBy(v -> v.getProduct().getId()));
 
         List<ProductResponseDto> items = products.stream()
                 .map(product -> productMapper.toProductResponseDto(
                         product,
-                        productVariantRepository.findByProductId(product.getId()),
+                        variantsMap.getOrDefault(product.getId(), List.of()),
                         salesCountMap.getOrDefault(product.getId(), 0),
                         ratingOf(ratingMap, product.getId()),
                         reviewCountOf(ratingMap, product.getId()),
