@@ -84,6 +84,7 @@ export default function PromotionSettingsPage() {
   const [perfModal, setPerfModal] = useState({ open: false, promotionId: null })
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [copiedPromoId, setCopiedPromoId] = useState(null)
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -134,13 +135,22 @@ export default function PromotionSettingsPage() {
         startAt: toIsoString(p.startAt),
         endAt: toIsoString(p.endAt),
         active: !p.active,
-        productIds: p.productIds || []
+        productIds: p.productIds || [],
+        targetTiers: p.targetTiers || []
       }
       await updatePromotion(p.id, updatedData)
       loadData()
     } catch (err) {
       alert(err.message || 'Cập nhật trạng thái thất bại')
     }
+  }
+
+  const handleCopy = (promoId, code) => {
+    navigator.clipboard.writeText(code)
+    setCopiedPromoId(promoId)
+    setTimeout(() => {
+      setCopiedPromoId(null)
+    }, 2000)
   }
 
   // Client-side, since getPromotions() already loads the full list in one call (no backend
@@ -378,10 +388,14 @@ export default function PromotionSettingsPage() {
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-gray-500">HSD: {expiry}</span>
                             <button
-                              onClick={() => { navigator.clipboard.writeText(p.code) }}
-                              className="text-xs font-semibold text-[#E8420A] hover:text-[#C4350A] cursor-pointer"
+                              onClick={() => handleCopy(p.id, p.code)}
+                              className={`text-[11px] font-semibold cursor-pointer transition-all px-1.5 py-0.5 rounded border border-transparent ${
+                                copiedPromoId === p.id 
+                                  ? 'text-green-600 bg-green-50 border-green-200 font-bold' 
+                                  : 'text-[#E8420A] hover:text-[#C4350A]'
+                              }`}
                             >
-                              Copy
+                              {copiedPromoId === p.id ? 'Đã copy! ✓' : 'Copy'}
                             </button>
                           </div>
                         </div>

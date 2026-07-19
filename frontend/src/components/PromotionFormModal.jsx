@@ -9,6 +9,7 @@ const EMPTY_FORM = {
   endAt: '',
   active: true,
   productIds: [],
+  targetTiers: [],
 }
 
 function toInputDateTime(val) {
@@ -44,6 +45,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
         endAt: toInputDateTime(initialData.endAt),
         active: initialData.active ?? true,
         productIds: initialData.productIds ?? [],
+        targetTiers: initialData.targetTiers ?? [],
       })
     } else {
       setForm(EMPTY_FORM)
@@ -121,6 +123,15 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
     }))
   }
 
+  const toggleTier = (tier) => {
+    setForm((f) => ({
+      ...f,
+      targetTiers: f.targetTiers.includes(tier)
+        ? f.targetTiers.filter((t) => t !== tier)
+        : [...f.targetTiers, tier],
+    }))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -143,6 +154,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
         endAt: form.endAt + ':00',
         active: form.active,
         productIds: form.productIds,
+        targetTiers: form.targetTiers,
       })
     } catch (err) {
       setError(err.message || 'Có lỗi xảy ra')
@@ -252,6 +264,25 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
               </p>
             )
           })()}
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-2">
+              Hạng thành viên áp dụng (Để trống nếu áp dụng cho tất cả)
+            </label>
+            <div className="flex flex-wrap gap-3.5 bg-gray-50 border border-gray-150 rounded p-3">
+              {['STANDARD', 'BRONZE', 'SILVER', 'GOLD', 'DIAMOND'].map((tier) => (
+                <label key={tier} className="flex items-center gap-2 text-xs text-gray-700 font-semibold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.targetTiers.includes(tier)}
+                    onChange={() => toggleTier(tier)}
+                    className="accent-[#E8420A] w-4 h-4"
+                  />
+                  {tier}
+                </label>
+              ))}
+            </div>
+          </div>
 
           <div className="flex items-center gap-3">
             <label className="text-xs font-semibold text-gray-600">Kích hoạt ngay</label>

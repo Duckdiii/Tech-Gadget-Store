@@ -30,6 +30,7 @@ public class PromotionMapper {
                 .productIds(productIds)
                 .imageUrl(promotion.getImageUrl())
                 .status(computeStatus(promotion))
+                .targetTiers(promotion.getTargetTiers())
                 .build();
     }
 

@@ -26,4 +26,5 @@ public class PromotionResponseDto {
     private List<String> productIds;
     private String imageUrl;
     private String status;
+    private List<String> targetTiers;
 }

@@ -50,6 +50,11 @@ public class Promotion extends BaseEntity {
         @Column(name = "image_url")
         private String imageUrl;
 
+        @ElementCollection(fetch = FetchType.EAGER)
+        @CollectionTable(name = "promotion_target_tiers", joinColumns = @JoinColumn(name = "promotion_id"))
+        @Column(name = "tier")
+        private List<String> targetTiers = new ArrayList<>();
+
         public Promotion(String code, String name, Double discountPercent, LocalDateTime startAt, LocalDateTime endAt,
                         Boolean active, Product product) {
                 if (code == null || code.isBlank()) {

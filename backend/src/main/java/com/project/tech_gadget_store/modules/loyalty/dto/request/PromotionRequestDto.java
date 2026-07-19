@@ -42,4 +42,6 @@ public class PromotionRequestDto {
 
     @NotEmpty(message = "productIds must not be empty")
     private List<String> productIds;
+
+    private List<String> targetTiers;
 }
