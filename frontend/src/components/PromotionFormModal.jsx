@@ -82,6 +82,34 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
     })
   }
 
+  const handleGenerateCode = () => {
+    const prefixes = ['SUMMER', 'WINTER', 'SALE', 'PROMO', 'VIP', 'TECH', 'GIFT']
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)]
+    const randomHex = Math.floor(1000 + Math.random() * 9000).toString(16).toUpperCase()
+    set('code', `${prefix}_${randomHex}`)
+  }
+
+  const getDurationText = () => {
+    if (!form.startAt || !form.endAt) return null
+    const start = new Date(form.startAt)
+    const end = new Date(form.endAt)
+    const diffMs = end.getTime() - start.getTime()
+    if (diffMs <= 0) {
+      return { text: 'Ngày kết thúc phải sau ngày bắt đầu!', isValid: false }
+    }
+    const diffSecs = Math.floor(diffMs / 1000)
+    const days = Math.floor(diffSecs / (3600 * 24))
+    const hours = Math.floor((diffSecs % (3600 * 24)) / 3600)
+    const minutes = Math.floor((diffSecs % 3600) / 60)
+
+    let parts = []
+    if (days > 0) parts.push(`${days} ngày`)
+    if (hours > 0) parts.push(`${hours} giờ`)
+    if (minutes > 0) parts.push(`${minutes} phút`)
+    
+    return { text: `Thời gian chạy: ${parts.join(' ')}`, isValid: true }
+  }
+
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
 
   const toggleProduct = (id) => {
@@ -149,13 +177,23 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Mã khuyến mãi *</label>
-              <input
-                type="text"
-                value={form.code}
-                onChange={(e) => set('code', e.target.value.toUpperCase())}
-                placeholder="VD: SUMMER24"
-                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
-              />
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={form.code}
+                  onChange={(e) => set('code', e.target.value.toUpperCase())}
+                  placeholder="VD: SUMMER24"
+                  className="flex-1 border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
+                />
+                <button
+                  type="button"
+                  onClick={handleGenerateCode}
+                  title="Tạo mã ngẫu nhiên"
+                  className="px-3 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded text-gray-600 hover:text-gray-800 transition-colors cursor-pointer text-sm font-semibold flex items-center justify-center"
+                >
+                  🪄
+                </button>
+              </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Phần trăm giảm (%) *</label>
@@ -167,7 +205,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
                 value={form.discountPercent}
                 onChange={(e) => set('discountPercent', e.target.value)}
                 placeholder="10"
-                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
+                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
               />
             </div>
           </div>
@@ -179,7 +217,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
               placeholder="VD: Sale Mùa Hè 2024"
-              className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
+              className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
             />
           </div>
 
@@ -190,7 +228,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
                 type="datetime-local"
                 value={form.startAt}
                 onChange={(e) => set('startAt', e.target.value)}
-                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
+                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
               />
             </div>
             <div>
@@ -199,10 +237,21 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
                 type="datetime-local"
                 value={form.endAt}
                 onChange={(e) => set('endAt', e.target.value)}
-                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
+                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
               />
             </div>
           </div>
+
+          {/* Duration Preview */}
+          {(() => {
+            const duration = getDurationText()
+            if (!duration) return null
+            return (
+              <p className={`text-xs font-semibold ${duration.isValid ? 'text-green-600' : 'text-red-500'} mt-1`}>
+                {duration.text}
+              </p>
+            )
+          })()}
 
           <div className="flex items-center gap-3">
             <label className="text-xs font-semibold text-gray-600">Kích hoạt ngay</label>
