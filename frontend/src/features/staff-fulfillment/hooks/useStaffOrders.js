@@ -13,7 +13,7 @@ export function useStaffOrders() {
     try {
       setLoading(true)
       const data = await staffFulfillmentService.getOrders()
-      setOrders(data || [])
+      setOrders(data?.items || [])
     } catch (e) {
       console.error('Lỗi tải đơn hàng staff:', e)
     } finally {
@@ -38,14 +38,14 @@ export function useStaffOrders() {
     )
   })
 
-  async function handleMarkDone(id) {
+  async function handleMarkDone(id, nextStatus) {
     try {
-      await staffFulfillmentService.updateOrderStatus(id, 'COMPLETED')
+      await staffFulfillmentService.updateOrderStatus(id, nextStatus)
       await fetchOrders()
       setSelected(null)
-      showToast('Đã đánh dấu hoàn thành đơn hàng')
+      showToast('Đã cập nhật trạng thái đơn hàng')
     } catch (e) {
-      alert('Lỗi xác nhận hoàn thành: ' + e.message)
+      alert('Lỗi cập nhật trạng thái: ' + e.message)
     }
   }
 

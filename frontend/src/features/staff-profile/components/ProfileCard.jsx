@@ -19,7 +19,6 @@ export default function ProfileCard({ profile }) {
           <p className="text-teal-200 mt-0.5">@{profile.username}</p>
           <div className="flex items-center gap-2 mt-2">
             <span className="text-xs font-semibold bg-white/20 text-white px-2.5 py-1 rounded-full">{profile.role}</span>
-            <span className="text-xs font-semibold bg-white/20 text-white px-2.5 py-1 rounded-full">{profile.department}</span>
           </div>
         </div>
       </div>
@@ -28,7 +27,7 @@ export default function ProfileCard({ profile }) {
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Thông tin chi tiết</h3>
         <InfoRow label="Email"            value={profile.email}      />
         <InfoRow label="Chức vụ"          value={profile.role}       />
-        <InfoRow label="Phòng ban"        value={profile.department} />
+        <InfoRow label="Mã nhân viên"     value={profile.staffCode}  />
         <InfoRow label="Ngày vào làm"     value={profile.joinDate}   />
         <InfoRow label="Đăng nhập gần đây" value={profile.lastLogin} />
       </div>

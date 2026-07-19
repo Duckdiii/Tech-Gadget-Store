@@ -2,6 +2,14 @@ import { ORDER_STATUS, PAY_METHOD } from '../utils/orderConstants'
 
 const fmt = n => (n || 0).toLocaleString('vi-VN')
 
+// Đơn hàng chỉ được chuyển từng bước một (xem OrderStatus.java) — không thể nhảy thẳng
+// từ AWAITING_CONFIRMATION lên COMPLETED.
+const NEXT_STATUS = {
+  AWAITING_CONFIRMATION: { status: 'PROCESSING', label: 'Xác nhận đơn hàng' },
+  PROCESSING:            { status: 'SHIPPING',   label: 'Bắt đầu giao hàng' },
+  SHIPPING:              { status: 'COMPLETED',  label: 'Xác nhận đã giao (Hoàn thành)' },
+}
+
 export default function OrderDetailDrawer({ order, onClose, onMarkDone }) {
   const items = order.items || []
   const subtotal = order.total || 0
@@ -71,11 +79,11 @@ export default function OrderDetailDrawer({ order, onClose, onMarkDone }) {
         </div>
 
         {/* Footer */}
-        {order.orderStatus !== 'COMPLETED' && order.orderStatus !== 'CANCELLED' && (
+        {NEXT_STATUS[order.orderStatus] && (
           <div className="px-6 py-4 border-t border-gray-100">
-            <button onClick={() => onMarkDone(order.id)} className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded text-sm font-bold cursor-pointer transition-colors flex items-center justify-center gap-2 border-none">
+            <button onClick={() => onMarkDone(order.id, NEXT_STATUS[order.orderStatus].status)} className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded text-sm font-bold cursor-pointer transition-colors flex items-center justify-center gap-2 border-none">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-              Xác nhận xử lý xong (Hoàn thành)
+              {NEXT_STATUS[order.orderStatus].label}
             </button>
           </div>
         )}

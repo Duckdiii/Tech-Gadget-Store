@@ -1,8 +1,10 @@
 package com.project.tech_gadget_store.modules.auth.repository;
 
 import com.project.tech_gadget_store.modules.auth.entity.LoginLog;
+import com.project.tech_gadget_store.modules.auth.entity.enums.LoginStatus;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +17,9 @@ import org.springframework.stereotype.Repository;
 public interface LoginLogRepository extends JpaRepository<LoginLog, String> {
 
     void deleteByAccountId(String accountId);
+
+    Optional<LoginLog> findTopByAccountIdAndLoginStatusOrderByLoginTimeDesc(
+            String accountId, LoginStatus loginStatus);
 
     // cursorTimestamp must be cast to timestamp — see SupplyOrderRepository.findSupplyOrdersCursor
     // for why: Postgres can't infer the type of a bare null parameter under "IS NULL".

@@ -33,7 +33,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 
         @Query("SELECT o FROM Order o WHERE " +
                         "(:status IS NULL OR o.orderStatus = :status) AND " +
-                        "(:search IS NULL OR LOWER(o.id) LIKE LOWER(:search) OR LOWER(o.customer.fullName) LIKE LOWER(:search)) AND " +
+                        "(cast(:search as string) IS NULL OR LOWER(o.id) LIKE LOWER(cast(:search as string)) OR LOWER(o.customer.fullName) LIKE LOWER(cast(:search as string))) AND " +
                         "(cast(:startDate as timestamp) IS NULL OR o.orderDate >= :startDate) AND " +
                         "(cast(:endDate as timestamp) IS NULL OR o.orderDate <= :endDate) AND " +
                         "(:paymentMethod IS NULL OR o.selectedPaymentMethod.name = :paymentMethod) AND " +
