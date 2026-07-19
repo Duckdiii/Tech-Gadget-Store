@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { downloadCSV } from '../../../utils/exportHelper'
 
 function fmt(n) {
   if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(3).replace(/\.?0+$/, '') + ' tỷ'
@@ -141,6 +142,20 @@ export default function ImportLogTab({ logsList }) {
 
   const totalValue = filtered.reduce((s, l) => s + l.total, 0)
 
+  const handleExportExcel = () => {
+    const headers = ['Mã phiếu', 'Ngày nhập', 'Nhà cung cấp', 'Tổng số mặt hàng', 'Tổng tiền (đ)', 'Nhân viên', 'Trạng thái']
+    const rows = filtered.map(log => [
+      log.id,
+      `${log.date} ${log.time}`,
+      log.supplier || 'N/A',
+      log.items.reduce((sum, item) => sum + item.qty, 0),
+      log.total,
+      log.staff,
+      log.status === 'completed' ? 'Hoàn thành' : log.status === 'pending' ? 'Chờ duyệt' : 'Đã huỷ'
+    ])
+    downloadCSV(headers, rows, 'nhat_ky_nhap_kho.csv')
+  }
+
   return (
     <>
       {/* Title */}
@@ -149,7 +164,10 @@ export default function ImportLogTab({ logsList }) {
           <h1 className="text-2xl font-bold text-gray-900">Nhật ký nhập hàng</h1>
           <p className="text-sm text-gray-500 mt-0.5">{filtered.length} phiếu · Tổng giá trị: <span className="font-semibold text-[#E8420A]">{fmt(totalValue)}</span></p>
         </div>
-        <button className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer transition-colors bg-white">
+        <button
+          onClick={handleExportExcel}
+          className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer transition-colors bg-white"
+        >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>

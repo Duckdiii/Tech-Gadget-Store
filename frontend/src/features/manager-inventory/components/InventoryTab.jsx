@@ -1,4 +1,5 @@
 import StockBar from './StockBar'
+import { downloadCSV } from '../../../utils/exportHelper'
 
 const STATUS_CONFIG = {
   sap_het:  { label: 'Sắp hết',  bg: 'bg-orange-100', text: 'text-orange-600', barColor: 'bg-red-500' },
@@ -23,6 +24,19 @@ export default function InventoryTab({
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1
   const rangeEnd   = Math.min((page + 1) * pageSize, totalItems)
 
+  const handleExportCSV = () => {
+    const headers = ['Mã sản phẩm', 'Tên sản phẩm', 'Danh mục', 'Giá bán (₫)', 'Tồn kho', 'Trạng thái']
+    const rows = productsList.map(p => [
+      p.id,
+      p.name,
+      p.category,
+      p.price,
+      p.stock,
+      p.status === 'het_hang' ? 'Hết hàng' : p.status === 'sap_het' ? 'Sắp hết' : 'Còn hàng'
+    ])
+    downloadCSV(headers, rows, 'ton_kho_techstore.csv')
+  }
+
   // Tạo danh sách nút trang hiển thị (cửa sổ 5 trang)
   const pageButtons = []
   const windowStart = Math.max(0, Math.min(page - 2, totalPages - 5))
@@ -40,7 +54,10 @@ export default function InventoryTab({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer transition-colors">
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer transition-colors bg-white"
+          >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
