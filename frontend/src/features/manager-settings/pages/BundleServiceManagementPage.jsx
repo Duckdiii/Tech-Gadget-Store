@@ -1,16 +1,13 @@
+import { useState } from 'react'
 import { useBundleService } from '../hooks/useBundleService'
 import Field from '../components/Field'
 
 const TYPE_LABELS = { WARRANTY: 'Bảo hành', SCREEN_PROTECTION: 'Dán màn hình' }
 
-
-
 function formatCurrency(value) {
   if (value === null || value === undefined) return '—'
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
 }
-
-
 
 export default function BundleServiceManagementPage() {
   const {
@@ -28,7 +25,6 @@ export default function BundleServiceManagementPage() {
     setDeactivateId,
     deactivating,
     toast,
-    filtered,
     openAdd,
     openEdit,
     closePanel,
@@ -36,6 +32,17 @@ export default function BundleServiceManagementPage() {
     handleDeactivate,
     target,
   } = useBundleService()
+
+  const [tabFilter, setTabFilter] = useState('all') // 'all' | 'WARRANTY' | 'SCREEN_PROTECTION' | 'active' | 'inactive'
+
+  const finalFiltered = items.filter(x => {
+    if (search && !x.name.toLowerCase().includes(search.toLowerCase())) return false
+    if (tabFilter === 'WARRANTY') return x.type === 'WARRANTY'
+    if (tabFilter === 'SCREEN_PROTECTION') return x.type === 'SCREEN_PROTECTION'
+    if (tabFilter === 'active') return x.active
+    if (tabFilter === 'inactive') return !x.active
+    return true
+  })
 
   const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]'
 
@@ -53,12 +60,37 @@ export default function BundleServiceManagementPage() {
           </button>
         </div>
 
+        <div className="flex items-center gap-2 border-b border-gray-200">
+          {[
+            { id: 'all', label: 'Tất cả dịch vụ' },
+            { id: 'WARRANTY', label: 'Gói bảo hành' },
+            { id: 'SCREEN_PROTECTION', label: 'Dán màn hình' },
+            { id: 'active', label: 'Đang hoạt động' },
+            { id: 'inactive', label: 'Đã ngừng' },
+          ].map(t => {
+            const isActive = tabFilter === t.id
+            return (
+              <button
+                key={t.id}
+                onClick={() => { setTabFilter(t.id); setSearch('') }}
+                className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${
+                  isActive
+                    ? 'border-[#E8420A] text-[#E8420A]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t.label}
+              </button>
+            )
+          })}
+        </div>
+
         <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex items-center gap-3">
           <div className="relative flex-1 max-w-xs">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên dịch vụ..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
-          <span className="ml-auto text-xs text-gray-400 shrink-0">{filtered.length} / {items.length} dịch vụ</span>
+          <span className="ml-auto text-xs text-gray-400 shrink-0">{finalFiltered.length} / {items.length} dịch vụ</span>
         </div>
 
         {loading && <div className="bg-white rounded border border-gray-200 py-16 text-center text-gray-400 text-sm">Đang tải dữ liệu...</div>}
@@ -69,34 +101,48 @@ export default function BundleServiceManagementPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Tên dịch vụ', 'Loại', 'Giá', 'Thời hạn', 'Trạng thái', ''].map((h, i) => (
-                    <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                  {['Tên dịch vụ', 'Loại', 'Giá', 'Thời hạn', 'Trạng thái', 'Thao tác'].map((h, i) => (
+                    <th key={i} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filtered.length === 0
+                {finalFiltered.length === 0
                   ? <tr><td colSpan={6} className="text-center py-12 text-gray-400">Không tìm thấy dịch vụ nào</td></tr>
-                  : filtered.map(item => (
+                  : finalFiltered.map(item => (
                     <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
                       <td className="px-4 py-4 font-semibold text-gray-800">{item.name || '—'}</td>
                       <td className="px-4 py-4 text-gray-600">{TYPE_LABELS[item.type] || item.type}</td>
                       <td className="px-4 py-4 text-gray-600">{formatCurrency(item.price)}</td>
-                      <td className="px-4 py-4 text-gray-500">{item.durationMonths ? `${item.durationMonths} tháng` : '—'}</td>
+                      <td className="px-4 py-4 text-gray-500">{item.durationMonths ? `${item.durationMonths} tháng` : 'Không thời hạn'}</td>
                       <td className="px-4 py-4">
                         {item.active
                           ? <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Đang hoạt động</span>
                           : <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">Đã ngừng</span>}
                       </td>
-                      <td className="px-4 py-4">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
-                          <button onClick={() => openEdit(item)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
-                            Sửa →
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => openEdit(item)}
+                            className="p-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-[#E8420A] rounded transition-colors cursor-pointer border-none"
+                            title="Chỉnh sửa"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
                           </button>
-                          {item.active && (
-                            <button onClick={() => setDeactivateId(item.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50">
-                              Ngừng
+                          {item.active ? (
+                            <button
+                              onClick={() => setDeactivateId(item.id)}
+                              className="p-1.5 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded transition-colors cursor-pointer border-none"
+                              title="Ngừng hoạt động"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                              </svg>
                             </button>
+                          ) : (
+                            <div className="w-7 h-7" />
                           )}
                         </div>
                       </td>
