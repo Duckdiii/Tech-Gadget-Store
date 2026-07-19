@@ -1,4 +1,3 @@
-import StoreNavbar from '../../../components/StoreNavbar'
 import { useStaffOrders } from '../hooks/useStaffOrders'
 import OrderDetailDrawer from '../components/OrderDetailDrawer'
 import { ORDER_STATUS, PAY_METHOD } from '../utils/orderConstants'
@@ -25,8 +24,6 @@ export default function StaffOrderPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gray-50 text-gray-800">
-      <StoreNavbar />
-
       <header className="bg-white border-b border-gray-100 px-8 py-3.5 flex items-center gap-4">
         <div>
           <h1 className="text-xl font-bold text-gray-800">Hỗ trợ đơn hàng (Nhân viên)</h1>

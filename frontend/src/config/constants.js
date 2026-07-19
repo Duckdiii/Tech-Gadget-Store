@@ -21,6 +21,6 @@ export const ROLE_PAGES = {
     'orderHistory', 'invoice', 'inventory', 'importStock',
   ]),
   staff: new Set([
-    'home', 'staffDashboard', 'staffImport', 'staffExport', 'staffHistory', 'staffOrders', 'staffProfile', 'supplyOrders',
+    'home', 'staffDashboard', 'staffImport', 'staffExport', 'staffHistory', 'staffOrders', 'staffProfile', 'staffSupplyOrders',
   ]),
 }

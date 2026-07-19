@@ -10,5 +10,5 @@ export const staffRoutes = [
   { path: '/staff/export', element: <StaffExportPage /> },
   { path: '/staff/history', element: <StaffLogPage /> },
   { path: '/staff/profile', element: <StaffProfilePage /> },
-  { path: '/supply-orders', element: <SupplyOrderPage /> },
+  { path: '/staff/supply-orders', element: <SupplyOrderPage /> },
 ]

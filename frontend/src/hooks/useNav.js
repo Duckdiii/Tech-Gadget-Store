@@ -22,6 +22,7 @@ export const ROUTE_MAP = {
   membershipManagement: '/memberships',
   supplierManagement: '/suppliers',
   supplyOrders:       '/supply-orders',
+  staffSupplyOrders:  '/staff/supply-orders',
   recoverRestore:     '/recover',
   customerManagement: '/customers',
   customerDetail:     '/customers/detail',
