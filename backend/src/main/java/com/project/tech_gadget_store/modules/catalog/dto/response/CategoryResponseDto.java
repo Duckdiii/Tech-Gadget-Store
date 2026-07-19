@@ -21,4 +21,5 @@ public class CategoryResponseDto {
     private String imageUrl;
     private List<String> productsIds;
     private Long productCount;
+    private Integer displayOrder;
 }

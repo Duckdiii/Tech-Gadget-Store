@@ -25,6 +25,9 @@ public class Category extends BaseEntity {
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
+    @Column(name = "display_order", nullable = false, columnDefinition = "integer not null default 0")
+    private Integer displayOrder = 0;
+
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Product> products = new ArrayList<>();
 

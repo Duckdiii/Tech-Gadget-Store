@@ -8,11 +8,11 @@ function normalizeBrand(dto) {
 }
 
 function normalizeCategory(dto) {
-  return { id: dto.id, name: dto.name || '', imageUrl: dto.imageUrl || '', productCount: dto.productCount || 0 }
+  return { id: dto.id, name: dto.name || '', imageUrl: dto.imageUrl || '', productCount: dto.productCount || 0, displayOrder: dto.displayOrder || 0 }
 }
 
 const EMPTY_BRAND_FORM = { name: '', logoUrl: '', description: '' }
-const EMPTY_CATEGORY_FORM = { name: '', imageUrl: '' }
+const EMPTY_CATEGORY_FORM = { name: '', imageUrl: '', displayOrder: 0 }
 
 const INP_CLASS = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]'
 
@@ -283,7 +283,7 @@ export default function BrandCategoryManagementPage() {
   function openEdit(item) {
     setEditingId(item.id)
     if (tab === 'brands') setBrandForm({ name: item.name, logoUrl: item.logoUrl, description: item.description })
-    else setCategoryForm({ name: item.name, imageUrl: item.imageUrl })
+    else setCategoryForm({ name: item.name, imageUrl: item.imageUrl, displayOrder: item.displayOrder })
     setFormErrors({})
     setPanel('edit')
   }
@@ -299,6 +299,9 @@ export default function BrandCategoryManagementPage() {
     } else {
       if (!categoryForm.name.trim()) errs.name = 'Vui lòng nhập tên danh mục'
       if (!categoryForm.imageUrl.trim()) errs.imageUrl = 'Vui lòng chọn hoặc tải ảnh danh mục'
+      if (categoryForm.displayOrder === undefined || categoryForm.displayOrder === '' || isNaN(Number(categoryForm.displayOrder)) || Number(categoryForm.displayOrder) < 0) {
+        errs.displayOrder = 'Thứ tự hiển thị phải là số lớn hơn hoặc bằng 0'
+      }
     }
     return errs
   }
@@ -311,19 +314,19 @@ export default function BrandCategoryManagementPage() {
     const base = isBrand ? '/api/manager/brands' : '/api/manager/categories'
     const payload = isBrand
       ? { name: brandForm.name.trim(), logoUrl: brandForm.logoUrl.trim(), description: brandForm.description.trim() }
-      : { name: categoryForm.name.trim(), imageUrl: categoryForm.imageUrl.trim() }
+      : { name: categoryForm.name.trim(), imageUrl: categoryForm.imageUrl.trim(), displayOrder: Number(categoryForm.displayOrder) || 0 }
 
     setSaving(true)
     try {
       if (panel === 'add') {
         const dto = await apiFetch(base, { method: 'POST', body: JSON.stringify(payload) })
         if (isBrand) setBrands(p => [normalizeBrand(dto), ...p])
-        else setCategories(p => [normalizeCategory(dto), ...p])
+        else setCategories(p => [...p, normalizeCategory(dto)].sort((a, b) => a.displayOrder - b.displayOrder))
         showToast(isBrand ? 'Đã thêm thương hiệu' : 'Đã thêm danh mục')
       } else {
         const dto = await apiFetch(`${base}/${editingId}`, { method: 'PUT', body: JSON.stringify(payload) })
         if (isBrand) setBrands(p => p.map(x => x.id === editingId ? normalizeBrand(dto) : x))
-        else setCategories(p => p.map(x => x.id === editingId ? normalizeCategory(dto) : x))
+        else setCategories(p => p.map(x => x.id === editingId ? normalizeCategory(dto) : x).sort((a, b) => a.displayOrder - b.displayOrder))
         showToast(isBrand ? 'Đã cập nhật thương hiệu' : 'Đã cập nhật danh mục')
       }
       closePanel()
@@ -421,14 +424,14 @@ export default function BrandCategoryManagementPage() {
                       className="rounded border-gray-300 text-[#E8420A] focus:ring-[#E8420A] cursor-pointer"
                     />
                   </th>
-                  {(tab === 'brands' ? ['Ảnh', 'Tên thương hiệu', 'Số sản phẩm', 'Mô tả', 'Thao tác'] : ['Ảnh', 'Tên danh mục', 'Số sản phẩm', 'Thao tác']).map((h, i) => (
+                  {(tab === 'brands' ? ['Ảnh', 'Tên thương hiệu', 'Số sản phẩm', 'Mô tả', 'Thao tác'] : ['Ảnh', 'Tên danh mục', 'Thứ tự', 'Số sản phẩm', 'Thao tác']).map((h, i) => (
                     <th key={i} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.length === 0
-                  ? <tr><td colSpan={tab === 'brands' ? 6 : 5} className="text-center py-12 text-gray-400">Không tìm thấy dữ liệu nào</td></tr>
+                  ? <tr><td colSpan={6} className="text-center py-12 text-gray-400">Không tìm thấy dữ liệu nào</td></tr>
                   : filtered.map(item => (
                     <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
                       <td className="px-4 py-3 w-10">
@@ -445,6 +448,9 @@ export default function BrandCategoryManagementPage() {
                           : <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">N/A</div>}
                       </td>
                       <td className="px-4 py-4 font-semibold text-gray-800">{item.name || '—'}</td>
+                      {tab === 'categories' && (
+                        <td className="px-4 py-4 font-medium text-gray-500">#{item.displayOrder}</td>
+                      )}
                       <td className="px-4 py-4">
                         {item.productCount > 0 ? (
                           <Link
@@ -532,6 +538,16 @@ export default function BrandCategoryManagementPage() {
                   onChange={url => setCategoryForm(f => ({ ...f, imageUrl: url }))}
                   error={formErrors.imageUrl}
                 />
+                <Field label="Thứ tự hiển thị (càng nhỏ càng hiện trước) *" error={formErrors.displayOrder}>
+                  <input
+                    type="number"
+                    min={0}
+                    value={categoryForm.displayOrder}
+                    onChange={e => setCategoryForm(f => ({ ...f, displayOrder: e.target.value }))}
+                    placeholder="0"
+                    className={inp}
+                  />
+                </Field>
               </>
             )}
           </div>

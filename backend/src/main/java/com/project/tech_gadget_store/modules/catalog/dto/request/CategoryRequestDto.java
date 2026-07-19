@@ -21,4 +21,7 @@ public class CategoryRequestDto {
     private String name;
     @NotBlank(message = "imageUrl must not be blank")
     private String imageUrl;
+
+    @Builder.Default
+    private Integer displayOrder = 0;
 }

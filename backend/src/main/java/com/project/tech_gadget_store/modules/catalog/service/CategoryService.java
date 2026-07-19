@@ -29,6 +29,9 @@ public class CategoryService {
             throw new DuplicateResourceException("Category name already exists. Please use a different name");
         }
         Category category = new Category(dto.getName(), dto.getImageUrl());
+        if (dto.getDisplayOrder() != null) {
+            category.setDisplayOrder(dto.getDisplayOrder());
+        }
         return toResponseDto(categoryRepository.save(category));
     }
 
@@ -41,6 +44,9 @@ public class CategoryService {
         }
         category.setName(dto.getName());
         category.setImageUrl(dto.getImageUrl());
+        if (dto.getDisplayOrder() != null) {
+            category.setDisplayOrder(dto.getDisplayOrder());
+        }
         return toResponseDto(categoryRepository.save(category));
     }
 
@@ -55,7 +61,7 @@ public class CategoryService {
     }
 
     public List<CategoryResponseDto> getAllCategories() {
-        return categoryRepository.findAll().stream()
+        return categoryRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "displayOrder")).stream()
                 .map(this::toResponseDto)
                 .toList();
     }
@@ -69,6 +75,7 @@ public class CategoryService {
                 .name(category.getName())
                 .imageUrl(category.getImageUrl())
                 .productCount(count)
+                .displayOrder(category.getDisplayOrder())
                 .build();
     }
 }
