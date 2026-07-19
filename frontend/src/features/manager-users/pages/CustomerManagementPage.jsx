@@ -55,6 +55,9 @@ export default function CustomerManagementPage() {
     if (location.state?.prefilledSearch !== undefined) {
       setSearch(location.state.prefilledSearch)
     }
+    if (location.state?.prefilledTier !== undefined) {
+      setTierFilter(location.state.prefilledTier)
+    }
   }, [location.state])
 
   useEffect(() => {

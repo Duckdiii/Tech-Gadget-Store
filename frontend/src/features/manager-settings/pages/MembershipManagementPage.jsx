@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { apiFetch } from '../../../services/api'
 import Field from '../components/Field'
 
@@ -14,6 +15,7 @@ function normalizeMembership(dto) {
     discountPercentage: dto.benefit?.discountPercentage ?? 0,
     freeShipping: !!dto.benefit?.freeShipping,
     description: dto.benefit?.description || '',
+    customersIds: dto.customersIds || [],
   }
 }
 
@@ -149,47 +151,136 @@ export default function MembershipManagementPage() {
         {error && !loading && <div className="bg-red-50 border border-red-200 rounded px-5 py-4 text-red-600 text-sm">{error}</div>}
 
         {!loading && !error && (
-          <div className="bg-white rounded border border-gray-200 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  {['Hạng', 'Ngưỡng chi tiêu', 'Giảm giá', 'Miễn ship', 'Mô tả quyền lợi', ''].map((h, i) => (
-                    <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {items.length === 0
-                  ? <tr><td colSpan={6} className="text-center py-12 text-gray-400">Chưa có hạng thành viên nào</td></tr>
-                  : items.map(item => (
-                    <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
-                      <td className="px-4 py-4 font-semibold text-gray-800">{TIER_LABELS[item.tier] || item.tier}</td>
-                      <td className="px-4 py-4 text-gray-600">
-                        {formatCurrency(item.minSpending)} – {item.maxSpending ? formatCurrency(item.maxSpending) : 'không giới hạn'}
-                      </td>
-                      <td className="px-4 py-4 text-gray-600">{item.discountPercentage}%</td>
-                      <td className="px-4 py-4">
-                        {item.freeShipping
-                          ? <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Có</span>
-                          : <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">Không</span>}
-                      </td>
-                      <td className="px-4 py-4 text-gray-500 max-w-xs truncate">{item.description || '—'}</td>
-                      <td className="px-4 py-4">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
-                          <button onClick={() => openEdit(item)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
-                            Sửa →
-                          </button>
-                          <button onClick={() => setDeleteId(item.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50">
-                            Xóa
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+          <>
+            {/* Hàng thẻ Hạng thành viên thiết kế Gradient cao cấp */}
+            <div className="grid grid-cols-5 gap-4">
+              {TIER_OPTIONS.map(tier => {
+                const item = items.find(x => x.tier === tier)
+                const count = item ? (item.customersIds?.length || 0) : 0
+                
+                let cardBg = ""
+                let iconColor = ""
+                if (tier === 'STANDARD') {
+                  cardBg = "from-slate-500 to-slate-700"
+                  iconColor = "text-slate-300"
+                } else if (tier === 'BRONZE') {
+                  cardBg = "from-amber-600 to-amber-800"
+                  iconColor = "text-amber-300"
+                } else if (tier === 'SILVER') {
+                  cardBg = "from-zinc-400 to-zinc-600"
+                  iconColor = "text-zinc-200"
+                } else if (tier === 'GOLD') {
+                  cardBg = "from-yellow-500 via-amber-500 to-yellow-600"
+                  iconColor = "text-yellow-200"
+                } else if (tier === 'DIAMOND') {
+                  cardBg = "from-indigo-600 via-purple-600 to-pink-600"
+                  iconColor = "text-pink-200"
                 }
-              </tbody>
-            </table>
-          </div>
+
+                return (
+                  <div
+                    key={tier}
+                    className={`relative rounded-xl p-5 bg-gradient-to-br ${cardBg} text-white shadow-md transition-all hover:shadow-lg ${
+                      !item ? 'opacity-50 border border-dashed border-gray-300' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider opacity-90">{TIER_LABELS[tier]}</span>
+                      <svg className={`w-5 h-5 ${iconColor}`} fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M6.267 3.455a.75.75 0 00-.708.522L4.63 7H3a1 1 0 010-2h.63l.708-2.122a1.75 1.75 0 013.364 0l.708 2.122H9a1 1 0 010 2H7.369l-.93-2.788a.25.25 0 00-.236-.174zM16.267 3.455a.75.75 0 00-.708.522L14.63 7H13a1 1 0 010-2h.63l.708-2.122a1.75 1.75 0 013.364 0l.708 2.122H19a1 1 0 010 2h-1.631l-.93-2.788a.25.25 0 00-.236-.174zM2 9a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zm1 4a2 2 0 00-2 2v1a2 2 0 002 2h14a2 2 0 002-2v-1a2 2 0 00-2-2H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+
+                    {item ? (
+                      <div className="mt-4 space-y-2">
+                        <div>
+                          <div className="text-[10px] opacity-75 font-medium uppercase">Ngưỡng chi tiêu</div>
+                          <div className="text-sm font-bold truncate">
+                            {formatCurrency(item.minSpending)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] opacity-75 font-medium uppercase">Ưu đãi</div>
+                          <div className="text-xs font-semibold">
+                            Giảm {item.discountPercentage}% {item.freeShipping && '+ Freeship'}
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t border-white/20 mt-2 flex items-center justify-between">
+                          <span className="text-[10px] opacity-75 font-medium uppercase">Hội viên</span>
+                          <Link
+                            to="/customers-management"
+                            state={{ prefilledTier: tier }}
+                            className="text-xs font-bold bg-white/20 hover:bg-white/35 px-2 py-0.5 rounded transition-colors text-white"
+                            title="Click để xem danh sách hội viên"
+                          >
+                            {count} hội viên
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-8 text-center text-xs opacity-75 font-semibold py-4">
+                        Chưa cấu hình hạng
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="bg-white rounded border border-gray-200 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    {['Hạng', 'Ngưỡng chi tiêu', 'Giảm giá', 'Miễn ship', 'Mô tả quyền lợi', 'Thao tác'].map((h, i) => (
+                      <th key={i} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {items.length === 0
+                    ? <tr><td colSpan={6} className="text-center py-12 text-gray-400">Chưa có hạng thành viên nào</td></tr>
+                    : items.map(item => (
+                      <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
+                        <td className="px-4 py-4 font-semibold text-gray-800">{TIER_LABELS[item.tier] || item.tier}</td>
+                        <td className="px-4 py-4 text-gray-600">
+                          {formatCurrency(item.minSpending)} – {item.maxSpending ? formatCurrency(item.maxSpending) : 'không giới hạn'}
+                        </td>
+                        <td className="px-4 py-4 text-gray-600">{item.discountPercentage}%</td>
+                        <td className="px-4 py-4">
+                          {item.freeShipping
+                            ? <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Có</span>
+                            : <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">Không</span>}
+                        </td>
+                        <td className="px-4 py-4 text-gray-500 max-w-xs truncate">{item.description || '—'}</td>
+                        <td className="px-4 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => openEdit(item)}
+                              className="p-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-[#E8420A] rounded transition-colors cursor-pointer border-none"
+                              title="Chỉnh sửa"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => setDeleteId(item.id)}
+                              className="p-1.5 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded transition-colors cursor-pointer border-none"
+                              title="Xóa"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
