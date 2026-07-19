@@ -85,12 +85,15 @@ public class Account extends BaseEntity {
                 password = encodedPassword;
         }
 
-        public void recordLoginSuccess() {
-                LoginLog.success(this);
+        // loginLogs is the mappedBy (inverse) side with no cascade, so the returned LoginLog
+        // must be persisted explicitly via LoginLogRepository — adding it to this collection
+        // alone does not write it to the database.
+        public LoginLog recordLoginSuccess() {
+                return LoginLog.success(this);
         }
 
-        public void recordLoginFailure() {
-                LoginLog.failure(this);
+        public LoginLog recordLoginFailure() {
+                return LoginLog.failure(this);
         }
 
         public void attachUser(User user) {

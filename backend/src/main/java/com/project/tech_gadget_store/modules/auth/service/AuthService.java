@@ -9,6 +9,7 @@ import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.auth.entity.enums.AccountStatus;
 import com.project.tech_gadget_store.modules.auth.repository.AccountRepository;
 import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
+import com.project.tech_gadget_store.modules.auth.repository.LoginLogRepository;
 import com.project.tech_gadget_store.modules.auth.security.AccountUserDetails;
 import com.project.tech_gadget_store.modules.loyalty.entity.Membership;
 import com.project.tech_gadget_store.modules.loyalty.entity.enums.MembershipTier;
@@ -35,6 +36,7 @@ public class AuthService {
     private final AccountRepository accountRepository;
     private final CustomerRepository customerRepository;
     private final MembershipRepository membershipRepository;
+    private final LoginLogRepository loginLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailService emailService;
@@ -44,6 +46,7 @@ public class AuthService {
     public AuthService(AccountRepository accountRepository,
             CustomerRepository customerRepository,
             MembershipRepository membershipRepository,
+            LoginLogRepository loginLogRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             EmailService emailService,
@@ -52,11 +55,24 @@ public class AuthService {
         this.accountRepository = accountRepository;
         this.customerRepository = customerRepository;
         this.membershipRepository = membershipRepository;
+        this.loginLogRepository = loginLogRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailService = emailService;
         this.redisTemplate = redisTemplate;
         this.frontendUrl = frontendUrl;
+    }
+
+    @Transactional
+    public void recordLoginSuccess(String email) {
+        accountRepository.findByEmail(email)
+                .ifPresent(account -> loginLogRepository.save(account.recordLoginSuccess()));
+    }
+
+    @Transactional
+    public void recordLoginFailure(String email) {
+        accountRepository.findByEmail(email)
+                .ifPresent(account -> loginLogRepository.save(account.recordLoginFailure()));
     }
 
     @Transactional

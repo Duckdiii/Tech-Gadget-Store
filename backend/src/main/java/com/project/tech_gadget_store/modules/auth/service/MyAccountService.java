@@ -3,6 +3,7 @@ package com.project.tech_gadget_store.modules.auth.service;
 import com.project.tech_gadget_store.modules.auth.dto.request.ChangeMyPasswordRequestDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.MyProfileResponseDto;
 import com.project.tech_gadget_store.modules.auth.entity.Account;
+import com.project.tech_gadget_store.modules.auth.entity.LoginLog;
 import com.project.tech_gadget_store.modules.auth.entity.Manager;
 import com.project.tech_gadget_store.modules.auth.entity.Staff;
 import com.project.tech_gadget_store.modules.auth.entity.User;
@@ -12,7 +13,9 @@ import com.project.tech_gadget_store.modules.auth.repository.LoginLogRepository;
 import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.hibernate.Hibernate;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,10 +60,12 @@ public class MyAccountService {
             role = "CUSTOMER";
         }
 
-        LocalDateTime lastLoginAt = loginLogRepository
-                .findTopByAccountIdAndLoginStatusOrderByLoginTimeDesc(account.getId(), LoginStatus.SUCCESS)
-                .map(com.project.tech_gadget_store.modules.auth.entity.LoginLog::getLoginTime)
-                .orElse(null);
+        // Bản ghi mới nhất là phiên đăng nhập hiện tại — lấy bản ghi thứ 2 mới bằng
+        // "lần đăng nhập gần đây" theo đúng nghĩa (lần trước đó), không phải phiên đang dùng.
+        List<LoginLog> recentLogins = loginLogRepository
+                .findByAccountIdAndLoginStatusOrderByLoginTimeDesc(
+                        account.getId(), LoginStatus.SUCCESS, PageRequest.of(0, 2));
+        LocalDateTime lastLoginAt = recentLogins.size() > 1 ? recentLogins.get(1).getLoginTime() : null;
 
         return MyProfileResponseDto.builder()
                 .id(user.getId())

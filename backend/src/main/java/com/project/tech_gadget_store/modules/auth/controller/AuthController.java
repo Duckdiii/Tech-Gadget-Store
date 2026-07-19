@@ -46,12 +46,14 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
             AccountUserDetails details = (AccountUserDetails) auth.getPrincipal();
             String token = jwtService.generateToken(details);
+            authService.recordLoginSuccess(details.getUsername());
             return ResponseEntity.ok(new LoginResponseDto(
                     token,
                     details.getUsername(),
                     details.getFullName(),
                     details.getRole()));
         } catch (AuthenticationException e) {
+            authService.recordLoginFailure(req.getEmail());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Sai email hoặc mật khẩu."));
         }
