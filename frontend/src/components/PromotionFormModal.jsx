@@ -27,10 +27,14 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [prodSearch, setProdSearch] = useState('')
+  const [prodCategory, setProdCategory] = useState('')
 
   useEffect(() => {
     if (!isOpen) return
     setError('')
+    setProdSearch('')
+    setProdCategory('')
     if (isEdit) {
       setForm({
         code: initialData.code ?? '',
@@ -46,16 +50,37 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
     }
     setLoadingProducts(true)
     getProductsForPromotion()
-      // GET /api/products returns a ProductPageResponseDto shaped { items, page, size,
-      // totalItems, totalPages } — not { content }. With the wrong key this always resolved
-      // to [], leaving the product checklist permanently empty and making it impossible to
-      // create/edit a promotion (the form requires >=1 selected product to submit).
       .then((res) => setProducts(res?.items ?? []))
       .catch(() => setProducts([]))
       .finally(() => setLoadingProducts(false))
   }, [isOpen, initialData, isEdit])
 
   if (!isOpen) return null
+
+  const categories = [...new Set(products.map((p) => p.categoryName || 'General'))]
+
+  const filteredProducts = products.filter((p) => {
+    const q = prodSearch.toLowerCase().trim()
+    const matchesSearch = !q || p.name?.toLowerCase().includes(q)
+    const matchesCategory = !prodCategory || (p.categoryName || 'General') === prodCategory
+    return matchesSearch && matchesCategory
+  })
+
+  const handleSelectAllVisible = () => {
+    const visibleIds = filteredProducts.map(p => p.id)
+    setForm(f => {
+      const newIds = [...new Set([...f.productIds, ...visibleIds])]
+      return { ...f, productIds: newIds }
+    })
+  }
+
+  const handleDeselectAllVisible = () => {
+    const visibleIds = filteredProducts.map(p => p.id)
+    setForm(f => {
+      const newIds = f.productIds.filter(id => !visibleIds.includes(id))
+      return { ...f, productIds: newIds }
+    })
+  }
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
 
@@ -195,16 +220,55 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-2">
-              Sản phẩm áp dụng * ({form.productIds.length} đã chọn)
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-semibold text-gray-600">
+                Sản phẩm áp dụng * ({form.productIds.length} đã chọn)
+              </label>
+              <div className="flex gap-2 text-xs font-bold text-[#E8420A]">
+                <button
+                  type="button"
+                  onClick={handleSelectAllVisible}
+                  className="hover:underline cursor-pointer border-none bg-transparent text-[#E8420A] p-0"
+                >
+                  Chọn tất cả hiển thị
+                </button>
+                <span>·</span>
+                <button
+                  type="button"
+                  onClick={handleDeselectAllVisible}
+                  className="hover:underline cursor-pointer border-none bg-transparent text-[#E8420A] p-0"
+                >
+                  Bỏ chọn tất cả
+                </button>
+              </div>
+            </div>
+
+            {/* Search & Filter sub-row */}
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <input
+                type="text"
+                placeholder="Tìm sản phẩm..."
+                value={prodSearch}
+                onChange={e => setProdSearch(e.target.value)}
+                className="border border-gray-200 rounded px-2.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
+              />
+              <select
+                value={prodCategory}
+                onChange={e => setProdCategory(e.target.value)}
+                className="border border-gray-200 rounded px-2.5 py-1 text-xs bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
+              >
+                <option value="">Tất cả danh mục</option>
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+
             {loadingProducts ? (
               <div className="text-sm text-gray-400 py-3 text-center">Đang tải sản phẩm...</div>
-            ) : products.length === 0 ? (
-              <div className="text-sm text-gray-400 py-3 text-center">Không có sản phẩm</div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="text-sm text-gray-400 py-3 text-center bg-gray-50 border border-dashed border-gray-200 rounded">Không tìm thấy sản phẩm nào</div>
             ) : (
-              <div className="border border-gray-200 rounded max-h-40 overflow-y-auto divide-y divide-gray-100">
-                {products.map((p) => (
+              <div className="border border-gray-200 rounded max-h-40 overflow-y-auto divide-y divide-gray-100 bg-white">
+                {filteredProducts.map((p) => (
                   <label key={p.id} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer">
                     <input
                       type="checkbox"
@@ -212,7 +276,10 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
                       onChange={() => toggleProduct(p.id)}
                       className="accent-[#E8420A] w-4 h-4 shrink-0"
                     />
-                    <span className="text-sm text-gray-700 truncate">{p.name}</span>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm text-gray-700 font-medium truncate">{p.name}</span>
+                      <span className="text-[10px] text-gray-400">{p.categoryName || 'General'}</span>
+                    </div>
                   </label>
                 ))}
               </div>

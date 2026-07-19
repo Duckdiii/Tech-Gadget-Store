@@ -37,6 +37,16 @@ function formatCurrency(val) {
   return Number(val).toLocaleString('vi-VN') + ' đ'
 }
 
+function toIsoString(val) {
+  if (!val) return ''
+  if (Array.isArray(val)) {
+    const [y, mo, d, h = 0, m = 0] = val
+    return `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`
+  }
+  return String(val)
+}
+
+
 
 /* ── Dropdown ── */
 function Dropdown({ label, value, onChange, options = [] }) {
@@ -112,6 +122,24 @@ export default function PromotionSettingsPage() {
     } catch (err) {
       setDeleteModal((m) => ({ ...m, loading: false }))
       alert(err.message || 'Xóa thất bại')
+    }
+  }
+
+  const handleToggleActive = async (p) => {
+    try {
+      const updatedData = {
+        code: p.code,
+        name: p.name,
+        discountPercent: p.discountPercent,
+        startAt: toIsoString(p.startAt),
+        endAt: toIsoString(p.endAt),
+        active: !p.active,
+        productIds: p.productIds || []
+      }
+      await updatePromotion(p.id, updatedData)
+      loadData()
+    } catch (err) {
+      alert(err.message || 'Cập nhật trạng thái thất bại')
     }
   }
 
@@ -240,8 +268,8 @@ export default function PromotionSettingsPage() {
             </div>
 
             {/* Table header */}
-            <div className="grid grid-cols-[3rem_1fr_9rem_9rem_9rem_9rem] gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50">
-              {['STT', 'TÊN CHIẾN DỊCH', 'GIẢM GIÁ', 'THỜI GIAN', 'TRẠNG THÁI', 'THAO TÁC'].map((h) => (
+            <div className="grid grid-cols-[3rem_1fr_6rem_8rem_7rem_6rem_6rem] gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50">
+              {['STT', 'TÊN CHIẾN DỊCH', 'GIẢM GIÁ', 'THỜI GIAN', 'TRẠNG THÁI', 'KÍCH HOẠT', 'THAO TÁC'].map((h) => (
                 <span key={h} className="text-xs font-bold text-gray-400 tracking-wider uppercase">{h}</span>
               ))}
             </div>
@@ -257,7 +285,7 @@ export default function PromotionSettingsPage() {
               filteredPromotions.map((p, idx) => {
                 const st = STATUS_CONFIG[p.status] ?? STATUS_CONFIG.ENDED
                 return (
-                  <div key={p.id} className="grid grid-cols-[3rem_1fr_9rem_9rem_9rem_9rem] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center">
+                  <div key={p.id} className="grid grid-cols-[3rem_1fr_6rem_8rem_7rem_6rem_6rem] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center">
                     <span className="text-sm text-gray-500 font-medium">{idx + 1}</span>
                     <span className="text-sm font-semibold text-gray-800 truncate">{p.name}</span>
                     <span className="text-sm text-gray-600">-{p.discountPercent}%</span>
@@ -265,6 +293,22 @@ export default function PromotionSettingsPage() {
                     <span className={`inline-flex items-center justify-center px-3 py-1 rounded text-xs font-semibold w-fit ${st.bg} ${st.text}`}>
                       {st.label}
                     </span>
+                    {/* Switch Toggle */}
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => handleToggleActive(p)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer border-none ${
+                          p.active ? 'bg-orange-600' : 'bg-gray-200'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            p.active ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    {/* Actions */}
                     <div className="flex items-center gap-1">
                       {/* Edit */}
                       <button
