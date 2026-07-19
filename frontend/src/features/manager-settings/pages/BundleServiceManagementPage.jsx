@@ -31,9 +31,41 @@ export default function BundleServiceManagementPage() {
     handleSubmit,
     handleDeactivate,
     target,
+    handleToggleActive,
+    handleBulkUpdateActive,
   } = useBundleService()
 
   const [tabFilter, setTabFilter] = useState('all') // 'all' | 'WARRANTY' | 'SCREEN_PROTECTION' | 'active' | 'inactive'
+  const [selectedIds, setSelectedIds] = useState([])
+  const [updatingBulk, setUpdatingBulk] = useState(false)
+
+  const handleSelectAllToggle = () => {
+    const allFilteredIds = finalFiltered.map(x => x.id)
+    const isAllSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => selectedIds.includes(id))
+    if (isAllSelected) {
+      setSelectedIds(prev => prev.filter(id => !allFilteredIds.includes(id)))
+    } else {
+      setSelectedIds(prev => [...new Set([...prev, ...allFilteredIds])])
+    }
+  }
+
+  const handleSelectRowToggle = (id) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    )
+  }
+
+  const handleBulkAction = async (newActive) => {
+    setUpdatingBulk(true)
+    try {
+      await handleBulkUpdateActive(selectedIds, newActive)
+      setSelectedIds([])
+    } catch (err) {
+      // toast shown by hook
+    } finally {
+      setUpdatingBulk(false)
+    }
+  }
 
   const finalFiltered = items.filter(x => {
     if (search && !x.name.toLowerCase().includes(search.toLowerCase())) return false
@@ -72,7 +104,7 @@ export default function BundleServiceManagementPage() {
             return (
               <button
                 key={t.id}
-                onClick={() => { setTabFilter(t.id); setSearch('') }}
+                onClick={() => { setTabFilter(t.id); setSearch(''); setSelectedIds([]) }}
                 className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${
                   isActive
                     ? 'border-[#E8420A] text-[#E8420A]'
@@ -93,6 +125,37 @@ export default function BundleServiceManagementPage() {
           <span className="ml-auto text-xs text-gray-400 shrink-0">{finalFiltered.length} / {items.length} dịch vụ</span>
         </div>
 
+        {selectedIds.length > 0 && (
+          <div className="bg-orange-50 border border-orange-200 rounded px-5 py-3 flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2 text-gray-700">
+              <span className="font-semibold">Đã chọn {selectedIds.length} dịch vụ</span>
+              <span className="text-gray-300">|</span>
+              <button
+                onClick={() => setSelectedIds([])}
+                className="text-xs text-[#E8420A] hover:underline font-semibold bg-transparent border-none p-0 cursor-pointer"
+              >
+                Bỏ chọn tất cả
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleBulkAction(true)}
+                disabled={updatingBulk}
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold cursor-pointer transition-colors border-none disabled:opacity-50"
+              >
+                {updatingBulk ? 'Đang kích hoạt...' : 'Kích hoạt hàng loạt'}
+              </button>
+              <button
+                onClick={() => handleBulkAction(false)}
+                disabled={updatingBulk}
+                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold cursor-pointer transition-colors border-none disabled:opacity-50"
+              >
+                {updatingBulk ? 'Đang ngừng...' : 'Ngừng hoạt động hàng loạt'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {loading && <div className="bg-white rounded border border-gray-200 py-16 text-center text-gray-400 text-sm">Đang tải dữ liệu...</div>}
         {error && !loading && <div className="bg-red-50 border border-red-200 rounded px-5 py-4 text-red-600 text-sm">{error}</div>}
 
@@ -101,6 +164,14 @@ export default function BundleServiceManagementPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
+                  <th className="px-4 py-3.5 w-10 text-left">
+                    <input
+                      type="checkbox"
+                      checked={finalFiltered.length > 0 && finalFiltered.every(x => selectedIds.includes(x.id))}
+                      onChange={handleSelectAllToggle}
+                      className="rounded border-gray-300 text-[#E8420A] focus:ring-[#E8420A] cursor-pointer"
+                    />
+                  </th>
                   {['Tên dịch vụ', 'Loại', 'Giá', 'Thời hạn', 'Trạng thái', 'Thao tác'].map((h, i) => (
                     <th key={i} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
@@ -108,17 +179,34 @@ export default function BundleServiceManagementPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {finalFiltered.length === 0
-                  ? <tr><td colSpan={6} className="text-center py-12 text-gray-400">Không tìm thấy dịch vụ nào</td></tr>
+                  ? <tr><td colSpan={7} className="text-center py-12 text-gray-400">Không tìm thấy dịch vụ nào</td></tr>
                   : finalFiltered.map(item => (
                     <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
+                      <td className="px-4 py-4 w-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(item.id)}
+                          onChange={() => handleSelectRowToggle(item.id)}
+                          className="rounded border-gray-300 text-[#E8420A] focus:ring-[#E8420A] cursor-pointer"
+                        />
+                      </td>
                       <td className="px-4 py-4 font-semibold text-gray-800">{item.name || '—'}</td>
                       <td className="px-4 py-4 text-gray-600">{TYPE_LABELS[item.type] || item.type}</td>
                       <td className="px-4 py-4 text-gray-600">{formatCurrency(item.price)}</td>
                       <td className="px-4 py-4 text-gray-500">{item.durationMonths ? `${item.durationMonths} tháng` : 'Không thời hạn'}</td>
                       <td className="px-4 py-4">
-                        {item.active
-                          ? <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Đang hoạt động</span>
-                          : <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">Đã ngừng</span>}
+                        <label className="relative inline-flex items-center cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={item.active}
+                            onChange={() => handleToggleActive(item)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                          <span className="ml-2 text-xs font-semibold text-gray-700 w-8">
+                            {item.active ? 'Bật' : 'Tắt'}
+                          </span>
+                        </label>
                       </td>
                       <td className="px-4 py-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
@@ -182,6 +270,11 @@ export default function BundleServiceManagementPage() {
             <div className="grid grid-cols-2 gap-3">
               <Field label="Giá (VND) *" error={formErrors.price}>
                 <input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} className={inp} />
+                {form.price && !isNaN(Number(form.price)) && Number(form.price) >= 0 && (
+                  <div className="text-[11px] text-emerald-600 mt-1 font-semibold">
+                    Gợi ý hiển thị: {formatCurrency(Number(form.price))}
+                  </div>
+                )}
               </Field>
               <Field label="Thời hạn (tháng)">
                 <input type="number" value={form.durationMonths} onChange={e => setForm(f => ({ ...f, durationMonths: e.target.value }))} className={inp} />

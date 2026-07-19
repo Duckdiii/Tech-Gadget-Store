@@ -133,6 +133,48 @@ export function useBundleService() {
 
   const target = items.find(x => x.id === deactivateId)
 
+  async function handleToggleActive(item) {
+    const newActive = !item.active
+    try {
+      const dto = await settingsService.updateBundleService(item.id, {
+        name: item.name,
+        type: item.type,
+        description: item.description,
+        price: item.price,
+        durationMonths: item.durationMonths,
+        active: newActive
+      })
+      setItems(p => p.map(x => x.id === item.id ? normalizeBundleService(dto) : x))
+      showToast(newActive ? 'Đã kích hoạt dịch vụ' : 'Đã ngừng dịch vụ')
+    } catch (err) {
+      showToast(err.message || 'Lỗi khi cập nhật trạng thái')
+    }
+  }
+
+  async function handleBulkUpdateActive(ids, newActive) {
+    const selectedItems = items.filter(x => ids.includes(x.id))
+    try {
+      const dtos = await Promise.all(selectedItems.map(item =>
+        settingsService.updateBundleService(item.id, {
+          name: item.name,
+          type: item.type,
+          description: item.description,
+          price: item.price,
+          durationMonths: item.durationMonths,
+          active: newActive
+        })
+      ))
+      setItems(p => p.map(x => {
+        const match = dtos.find(d => d.id === x.id)
+        return match ? normalizeBundleService(match) : x
+      }))
+      showToast(newActive ? `Đã kích hoạt ${ids.length} dịch vụ` : `Đã ngừng hoạt động ${ids.length} dịch vụ`)
+    } catch (err) {
+      showToast(err.message || 'Lỗi khi cập nhật hàng loạt')
+      throw err
+    }
+  }
+
   return {
     items,
     loading,
@@ -155,5 +197,7 @@ export function useBundleService() {
     handleSubmit,
     handleDeactivate,
     target,
+    handleToggleActive,
+    handleBulkUpdateActive,
   }
 }
