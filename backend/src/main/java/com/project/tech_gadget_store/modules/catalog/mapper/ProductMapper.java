@@ -65,6 +65,7 @@ public class ProductMapper {
                                                 .distinct()
                                                 .collect(Collectors.joining(", ")))
                                 .hasVariants(!variants.isEmpty())
+                                .variantCount(variants.size())
                                 .discountPercent(getBestActivePromotionPercent(product))
                                 .salesCount(salesCount)
                                 .specSummary(buildSpecSummary(product, variants))

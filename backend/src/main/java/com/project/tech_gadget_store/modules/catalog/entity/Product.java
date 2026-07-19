@@ -87,4 +87,8 @@ public Product(String name, String description, Brand brand, Category category) 
     public void discontinue() {
         this.isActive = false;
     }
+
+    public void reactivate() {
+        this.isActive = true;
+    }
 }

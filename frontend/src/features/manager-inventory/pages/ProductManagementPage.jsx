@@ -11,6 +11,7 @@ function normalizeProduct(dto) {
     minPrice:       dto.minPrice,
     imageUrl:       dto.imageUrl || '',
     hasVariants:    !!dto.hasVariants,
+    variantCount:   dto.variantCount ?? 0,
     availableCount: dto.availableCount ?? 0,
   }
 }
@@ -90,8 +91,10 @@ export default function ProductManagementPage() {
   // ── KPI stats ──────────────────────────────────────────────────
   const [stats, setStats]         = useState(null)
   const [activeKpi, setActiveKpi] = useState(null) // null | 'outOfStock' | 'noVariants' | 'noImages'
+  const [activeTab, setActiveTab] = useState('active') // 'active' | 'discontinued'
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(null), 3200) }
+  function reloadStats() { apiFetch('/api/manager/products/stats').then(setStats).catch(() => {}) }
 
   const handleBrandChange = (e) => {
     setSelectedBrand(e.target.value)
@@ -118,6 +121,7 @@ export default function ProductManagementPage() {
     if (selectedBrand) params.append('brandNames', selectedBrand)
     if (selectedCategory) params.append('categoryNames', selectedCategory)
     if (activeKpi) params.append('stockFilter', activeKpi)
+    params.append('active', activeTab === 'active' ? 'true' : 'false')
     params.append('page', page)
     params.append('size', pageSize)
 
@@ -129,7 +133,7 @@ export default function ProductManagementPage() {
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
-  }, [debouncedSearch, selectedBrand, selectedCategory, activeKpi, page])
+  }, [debouncedSearch, selectedBrand, selectedCategory, activeKpi, activeTab, page])
 
   useEffect(() => {
     loadProducts()
@@ -138,7 +142,7 @@ export default function ProductManagementPage() {
   useEffect(() => {
     apiFetch('/api/manager/brands').then(setBrands).catch(() => {})
     apiFetch('/api/manager/categories').then(setCategories).catch(() => {})
-    apiFetch('/api/manager/products/stats').then(setStats).catch(() => {})
+    reloadStats()
   }, [])
 
   const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]'
@@ -268,10 +272,22 @@ export default function ProductManagementPage() {
       setDiscontinueId(null)
       if (editingId === id) closePanel()
       showToast('Đã ngừng kinh doanh sản phẩm')
+      reloadStats()
     } catch (err) {
       showToast(err.message)
     } finally {
       setDiscontinuing(false)
+    }
+  }
+
+  async function handleReactivate(id) {
+    try {
+      await apiFetch(`/api/manager/products/${id}/reactivate`, { method: 'PATCH' })
+      setProducts(p => p.filter(x => x.id !== id))
+      showToast('Đã kích hoạt lại sản phẩm')
+      reloadStats()
+    } catch (err) {
+      showToast(err.message)
     }
   }
 
@@ -366,7 +382,8 @@ export default function ProductManagementPage() {
         </div>
 
         {/* ── KPI Cards ─────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {activeTab === 'active' && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
               key: null,
@@ -450,6 +467,33 @@ export default function ProductManagementPage() {
               </button>
             )
           })}
+          </div>
+        )}
+
+        {/* ── Active/Discontinued Tabs ─────────────────────────────────── */}
+        <div className="border-b border-gray-200 flex items-center justify-between">
+          <div className="flex gap-6">
+            {[
+              { id: 'active', label: 'Đang kinh doanh' },
+              { id: 'discontinued', label: 'Đã ngừng kinh doanh' },
+            ].map(tab => {
+              const active = activeTab === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => { setActiveTab(tab.id); setActiveKpi(null); setPage(0) }}
+                  className={`pb-3 text-sm font-bold relative transition-colors cursor-pointer border-none bg-transparent ${
+                    active ? 'text-[#E8420A]' : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {tab.label}
+                  {active && (
+                    <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#E8420A] rounded-t" />
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex flex-wrap items-center gap-3">
@@ -493,6 +537,36 @@ export default function ProductManagementPage() {
             {totalItems === 0 ? 'Không có sản phẩm nào' : `Hiển thị ${rangeStart} - ${rangeEnd} trên ${totalItems.toLocaleString('vi-VN')} sản phẩm`}
           </span>
         </div>
+
+        {/* ── Chip filter: Trạng thái tồn kho ─────────────────────────── */}
+        {activeTab === 'active' && (
+          <div className="flex flex-wrap items-center gap-2">
+            {[
+              { key: null,          label: 'Tất cả',              dot: null,      active: 'bg-gray-800 text-white border-gray-800',       idle: 'bg-white text-gray-600 border-gray-200 hover:border-gray-400' },
+              { key: 'inStock',     label: '🟢 Có hàng',          dot: 'emerald', active: 'bg-emerald-600 text-white border-emerald-600',  idle: 'bg-white text-emerald-700 border-emerald-200 hover:border-emerald-400' },
+              { key: 'outOfStock',  label: '🔴 Hết hàng',         dot: 'red',     active: 'bg-red-600 text-white border-red-600',         idle: 'bg-white text-red-700 border-red-200 hover:border-red-400' },
+              { key: 'noVariants',  label: '🟡 Chưa có phiên bản',dot: 'amber',   active: 'bg-amber-500 text-white border-amber-500',     idle: 'bg-white text-amber-700 border-amber-200 hover:border-amber-400' },
+            ].map(chip => {
+              const isActive = activeKpi === chip.key
+              return (
+                <button
+                  key={chip.label}
+                  onClick={() => { setActiveKpi(isActive && chip.key !== null ? null : chip.key); setPage(0) }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold transition-all cursor-pointer ${
+                    isActive ? chip.active : chip.idle
+                  }`}
+                >
+                  {chip.label}
+                  {isActive && chip.key !== null && (
+                    <svg className="w-3 h-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        )}
 
         {loading && <div className="bg-white rounded border border-gray-200 py-16 text-center text-gray-400 text-sm">Đang tải dữ liệu...</div>}
         {error && !loading && <div className="bg-red-50 border border-red-200 rounded px-5 py-4 text-red-600 text-sm">{error}</div>}
@@ -572,18 +646,36 @@ export default function ProductManagementPage() {
                           })()}
                         </td>
                         <td className="px-4 py-4">
-                          {p.hasVariants
-                            ? <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Có phiên bản</span>
-                            : <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">Chưa có</span>}
+                          {p.variantCount === 0
+                            ? <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">Chưa có</span>
+                            : (
+                              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                p.variantCount === 1
+                                  ? 'bg-orange-100 text-orange-700'
+                                  : 'bg-emerald-100 text-emerald-700'
+                              }`}>
+                                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                                </svg>
+                                {p.variantCount} phiên bản
+                              </span>
+                            )
+                          }
                         </td>
                         <td className="px-4 py-4">
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
                             <button onClick={() => openEdit(p)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
                               Sửa →
                             </button>
-                            <button onClick={() => setDiscontinueId(p.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50">
-                              Ngừng kinh doanh
-                            </button>
+                            {activeTab === 'active' ? (
+                              <button onClick={() => setDiscontinueId(p.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50">
+                                Ngừng kinh doanh
+                              </button>
+                            ) : (
+                              <button onClick={() => handleReactivate(p.id)} className="text-xs text-emerald-600 hover:text-emerald-800 font-medium cursor-pointer px-2 py-1 rounded hover:bg-emerald-50">
+                                Kích hoạt lại
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

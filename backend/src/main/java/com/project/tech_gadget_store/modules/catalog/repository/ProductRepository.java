@@ -128,7 +128,7 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
          * for why this returns ids rather than {@code Product} directly.
          */
         @Query(value = "SELECT p.id FROM products p " +
-                        "WHERE p.is_active = true AND p.search_vector @@ websearch_to_tsquery('simple', :keyword) " +
+                        "WHERE p.search_vector @@ websearch_to_tsquery('simple', :keyword) " +
                         "ORDER BY ts_rank(p.search_vector, websearch_to_tsquery('simple', :keyword)) DESC " +
                         "LIMIT :limit", nativeQuery = true)
         List<String> searchProductIdsByKeyword(@Param("keyword") String keyword, @Param("limit") int limit);
@@ -149,7 +149,7 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
          * Sản phẩm đang kinh doanh nhưng chưa có hình ảnh nào.
          */
         @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true " +
-               "AND NOT EXISTS (SELECT 1 FROM ProductImage i WHERE i.product = p)")
+               "AND p.images IS EMPTY")
         long countActiveWithNoImages();
 
         /**

@@ -26,6 +26,7 @@ public class ProductResponseDto {
     private Integer storageGb;
     private String color;
     private boolean hasVariants;
+    private int variantCount;
     private Double discountPercent;
     private Integer salesCount;
     private String specSummary;

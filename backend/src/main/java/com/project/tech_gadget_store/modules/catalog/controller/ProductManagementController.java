@@ -45,6 +45,12 @@ public class ProductManagementController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{id}/reactivate")
+    public ResponseEntity<Void> reactivateProduct(@PathVariable String id) {
+        productManagementService.reactivateProduct(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{id}/variants")
     public ResponseEntity<ProductVariantResponseDto> addVariant(
             @PathVariable String id,

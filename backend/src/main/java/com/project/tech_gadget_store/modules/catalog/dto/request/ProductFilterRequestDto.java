@@ -24,6 +24,7 @@ public class ProductFilterRequestDto {
     private String keyword;
     private List<String> brandNames;
     private List<String> categoryNames;
+    private Boolean active;
 
     @DecimalMin(value = "0.0", message = "minPrice must not be negative")
     private BigDecimal minPrice;

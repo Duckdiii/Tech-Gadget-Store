@@ -328,7 +328,11 @@ public class ProductService {
     private Specification<Product> buildSpecification(ProductFilterRequestDto f, List<String> keywordMatchedIds) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.isTrue(root.get("isActive")));
+            if (f.getActive() != null) {
+                predicates.add(cb.equal(root.get("isActive"), f.getActive()));
+            } else {
+                predicates.add(cb.isTrue(root.get("isActive")));
+            }
 
             if (keywordMatchedIds != null) {
                 predicates.add(root.get("id").in(keywordMatchedIds));
@@ -510,6 +514,18 @@ public class ProductService {
                             cb.equal(psRoot.get("status"), SerialStatus.IN_STOCK)
                         );
                         predicates.add(cb.not(cb.exists(stockSq)));
+                    }
+                    case "inStock" -> {
+                        // Has at least 1 IN_STOCK serial
+                        Subquery<String> inStockSq = query.subquery(String.class);
+                        Root<ProductSerial> isRoot = inStockSq.from(ProductSerial.class);
+                        inStockSq.select(isRoot.get("id"));
+                        Join<ProductSerial, ProductVariant> isJoin = isRoot.join("productVariant");
+                        inStockSq.where(
+                            cb.equal(isJoin.get("product"), root),
+                            cb.equal(isRoot.get("status"), SerialStatus.IN_STOCK)
+                        );
+                        predicates.add(cb.exists(inStockSq));
                     }
                     default -> {} // ignore unknown values
                 }

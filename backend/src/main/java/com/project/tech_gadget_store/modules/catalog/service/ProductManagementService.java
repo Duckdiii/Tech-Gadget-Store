@@ -113,6 +113,14 @@ public class ProductManagementService {
     }
 
     @Transactional
+    public void reactivateProduct(String id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        product.reactivate();
+        productRepository.save(product);
+    }
+
+    @Transactional
     public ProductVariantResponseDto addVariant(String productId, ProductVariantRequestDto dto) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
