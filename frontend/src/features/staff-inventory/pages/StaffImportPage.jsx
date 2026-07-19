@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '../../../context/useAuth'
 import { useStaffImport } from '../hooks/useStaffImport'
 import ImportReceiptModal from '../components/ImportReceiptModal'
@@ -21,9 +23,12 @@ const CATEGORIES = [
   { id: 'cat-accessory', name: 'Phụ kiện' },
 ]
 
-/* ── Main Page ── */
 export default function StaffImportPage() {
   const { user } = useAuth()
+  const location = useLocation()
+  const prefillProductId   = location.state?.prefillProductId   ?? null
+  const prefillProductName = location.state?.prefillProductName ?? null
+
   const {
     productsList,
     supplier,
@@ -46,6 +51,20 @@ export default function StaffImportPage() {
     handleSubmit,
     resetForm,
   } = useStaffImport(user)
+
+  // Banner dismiss state
+  const [prefillBannerVisible, setPrefillBannerVisible] = useState(!!prefillProductId)
+
+  // Khi productsList đã tải xong và có prefill → điền sản phẩm vào dòng đầu tiên
+  useEffect(() => {
+    if (!prefillProductId || productsList.length === 0 || loading) return
+    const match = productsList.find(p => p.id === prefillProductId)
+    if (match) {
+      updateRow(0, 'productId', match.id)
+    }
+  // Chỉ chạy 1 lần sau khi products tải xong
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productsList, loading])
 
   const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400'
   const sel = inp + ' cursor-pointer'
@@ -78,6 +97,31 @@ export default function StaffImportPage() {
       ) : (
         <div className="flex-1 px-8 py-6">
           <div className="max-w-4xl mx-auto space-y-5">
+
+            {/* Banner gợi ý prefill từ Dashboard */}
+            {prefillBannerVisible && prefillProductName && (
+              <div className="flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-lg px-4 py-3">
+                <svg className="w-4 h-4 text-teal-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-xs font-semibold text-teal-800">
+                    Đã điền sẵn sản phẩm cần nhập: <span className="font-bold">{prefillProductName}</span>
+                  </p>
+                  <p className="text-[11px] text-teal-600 mt-0.5">
+                    Vui lòng kiểm tra lại từng ô thông tin, chọn phiên bản và nhập số lượng, đơn giá rồi bấm Tạo phiếu nhập.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setPrefillBannerVisible(false)}
+                  className="text-teal-400 hover:text-teal-700 cursor-pointer transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
             {/* Info section */}
             <div className="bg-white rounded border border-gray-200 p-6">
               <h2 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Thông tin phiếu nhập</h2>
