@@ -54,7 +54,7 @@ function groupLogsToRecent(logs, limit = 4) {
       }
     }
     groups[item.logId].items += 1
-    groups[item.logId].total += (item.quantity ?? 0) * (Number(item.price) ?? 0)
+    groups[item.logId].total += (item.quantity ?? 0) * (Number(item.price) || 0)
   })
   return Object.values(groups)
     .sort((a, b) => b.sortTs - a.sortTs)

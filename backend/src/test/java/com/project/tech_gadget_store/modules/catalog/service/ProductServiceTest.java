@@ -116,7 +116,7 @@ class ProductServiceTest {
         ProductResponseDto mapped = ProductResponseDto.builder().id("prod-1").name("iPhone 15").build();
 
         when(productRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-        when(productVariantRepository.findByProductId("prod-1")).thenReturn(List.of());
+        when(productVariantRepository.findVariantsForProductIds(List.of("prod-1"))).thenReturn(List.of());
         when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
         when(productMapper.toProductResponseDto(eq(product), any(), anyInt(), any(), any(), anyLong())).thenReturn(mapped);
 
@@ -148,7 +148,7 @@ class ProductServiceTest {
         when(productRepository.searchProductIdsByKeyword("iphone", 2000)).thenReturn(List.of("prod-1"));
         when(productRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(product)));
-        when(productVariantRepository.findByProductId("prod-1")).thenReturn(List.of());
+        when(productVariantRepository.findVariantsForProductIds(List.of("prod-1"))).thenReturn(List.of());
         when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
         when(productMapper.toProductResponseDto(eq(product), any(), anyInt(), any(), any(), anyLong())).thenReturn(mapped);
 

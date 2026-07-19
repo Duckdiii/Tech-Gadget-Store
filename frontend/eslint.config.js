@@ -24,6 +24,11 @@ export default defineConfig([
       // https://react.dev/reference/react/useEffect#fetching-data-with-effects. Disabled rather than
       // rewriting ~20 working hooks to dodge a compiler-compatibility rule this app doesn't need yet.
       'react-hooks/set-state-in-effect': 'off',
+      // Same React Compiler readiness family as above. It flags Math.random()/Date.now() calls
+      // inside any function nested in a component body, even ones only reachable from onClick —
+      // it can't prove the call site is event-handler-only, not render-path. See
+      // PromotionFormModal.jsx's handleGenerateCode, invoked solely via onClick.
+      'react-hooks/purity': 'off',
     },
   },
 ])
