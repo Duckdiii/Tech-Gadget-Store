@@ -76,6 +76,48 @@ export default function MembershipManagementPage() {
       errs.discountPercentage = 'Vui lòng nhập % giảm giá từ 0 đến 100'
     }
     if (!form.description.trim()) errs.description = 'Vui lòng nhập mô tả quyền lợi'
+
+    const minSpendingVal = form.minSpending === '' ? 0 : Number(form.minSpending)
+    const maxSpendingVal = form.maxSpending === '' ? null : Number(form.maxSpending)
+
+    if (isNaN(minSpendingVal) || minSpendingVal < 0) {
+      errs.minSpending = 'Chi tiêu tối thiểu phải là số không âm'
+    }
+
+    if (maxSpendingVal !== null && (isNaN(maxSpendingVal) || maxSpendingVal < 0)) {
+      errs.maxSpending = 'Chi tiêu tối đa phải là số không âm'
+    }
+
+    if (maxSpendingVal !== null && minSpendingVal > maxSpendingVal) {
+      errs.minSpending = 'Chi tiêu tối thiểu không được lớn hơn chi tiêu tối đa'
+    }
+
+    // Cross-spending validation
+    const tierIndex = TIER_OPTIONS.indexOf(form.tier)
+    if (tierIndex > 0) {
+      // Find configured previous tier
+      const prevTier = TIER_OPTIONS[tierIndex - 1]
+      const prevItem = items.find(x => x.tier === prevTier && x.id !== editingId)
+      if (prevItem) {
+        const prevBound = prevItem.maxSpending || prevItem.minSpending || 0
+        if (minSpendingVal < prevBound) {
+          errs.minSpending = `Chi tiêu tối thiểu phải lớn hơn hoặc bằng giới hạn của hạng ${TIER_LABELS[prevTier]} (${formatCurrency(prevBound)})`
+        }
+      }
+    }
+
+    if (tierIndex < TIER_OPTIONS.length - 1) {
+      // Find configured next tier
+      const nextTier = TIER_OPTIONS[tierIndex + 1]
+      const nextItem = items.find(x => x.tier === nextTier && x.id !== editingId)
+      if (nextItem) {
+        const nextMin = nextItem.minSpending || 0
+        if (maxSpendingVal !== null && maxSpendingVal > nextMin) {
+          errs.maxSpending = `Chi tiêu tối đa không được lớn hơn chi tiêu tối thiểu của hạng ${TIER_LABELS[nextTier]} (${formatCurrency(nextMin)})`
+        }
+      }
+    }
+
     return errs
   }
 
@@ -231,19 +273,29 @@ export default function MembershipManagementPage() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    {['Hạng', 'Ngưỡng chi tiêu', 'Giảm giá', 'Miễn ship', 'Mô tả quyền lợi', 'Thao tác'].map((h, i) => (
+                    {['Hạng', 'Ngưỡng chi tiêu', 'Số hội viên', 'Giảm giá', 'Miễn ship', 'Mô tả quyền lợi', 'Thao tác'].map((h, i) => (
                       <th key={i} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {items.length === 0
-                    ? <tr><td colSpan={6} className="text-center py-12 text-gray-400">Chưa có hạng thành viên nào</td></tr>
+                    ? <tr><td colSpan={7} className="text-center py-12 text-gray-400">Chưa có hạng thành viên nào</td></tr>
                     : items.map(item => (
                       <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
                         <td className="px-4 py-4 font-semibold text-gray-800">{TIER_LABELS[item.tier] || item.tier}</td>
                         <td className="px-4 py-4 text-gray-600">
                           {formatCurrency(item.minSpending)} – {item.maxSpending ? formatCurrency(item.maxSpending) : 'không giới hạn'}
+                        </td>
+                        <td className="px-4 py-4">
+                          <Link
+                            to="/customers-management"
+                            state={{ prefilledTier: item.tier }}
+                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                            title="Click để xem danh sách hội viên"
+                          >
+                            {item.customersIds?.length || 0} hội viên
+                          </Link>
                         </td>
                         <td className="px-4 py-4 text-gray-600">{item.discountPercentage}%</td>
                         <td className="px-4 py-4">
@@ -302,11 +354,21 @@ export default function MembershipManagementPage() {
               </select>
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Chi tiêu tối thiểu (VND)">
+              <Field label="Chi tiêu tối thiểu (VND) *" error={formErrors.minSpending}>
                 <input type="number" value={form.minSpending} onChange={e => setForm(f => ({ ...f, minSpending: e.target.value }))} placeholder="0" className={inp} />
+                {form.minSpending && !isNaN(Number(form.minSpending)) && Number(form.minSpending) >= 0 && (
+                  <div className="text-[11px] text-emerald-600 mt-1 font-semibold">
+                    Gợi ý hiển thị: {formatCurrency(Number(form.minSpending))}
+                  </div>
+                )}
               </Field>
-              <Field label="Chi tiêu tối đa (VND)">
+              <Field label="Chi tiêu tối đa (VND)" error={formErrors.maxSpending}>
                 <input type="number" value={form.maxSpending} onChange={e => setForm(f => ({ ...f, maxSpending: e.target.value }))} placeholder="Không giới hạn" className={inp} />
+                {form.maxSpending && !isNaN(Number(form.maxSpending)) && Number(form.maxSpending) >= 0 && (
+                  <div className="text-[11px] text-emerald-600 mt-1 font-semibold">
+                    Gợi ý hiển thị: {formatCurrency(Number(form.maxSpending))}
+                  </div>
+                )}
               </Field>
             </div>
             <Field label="Giảm giá (%) *" error={formErrors.discountPercentage}>
