@@ -27,7 +27,7 @@ export default function AccountDetailDrawer({ account, onClose, onBlock, onUnblo
       <div className="fixed top-0 right-0 h-full w-[460px] bg-white shadow-2xl z-50 flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-br from-slate-700 to-slate-900 px-6 pt-5 pb-6 relative text-left">
-          <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded hover:bg-white/10 cursor-pointer border-none bg-transparent">
+          <button aria-label="Đóng" type="button" onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded hover:bg-white/10 cursor-pointer border-none bg-transparent">
             <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
           <div className="flex items-center gap-4">
@@ -63,22 +63,22 @@ export default function AccountDetailDrawer({ account, onClose, onBlock, onUnblo
 
         {/* Actions */}
         <div className="px-6 py-4 border-t border-gray-100 space-y-2">
-          <button onClick={() => setResetConfirm(true)} className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors bg-white">
+          <button aria-label="Thao tác" type="button" onClick={() => setResetConfirm(true)} className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors bg-white">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
             Đặt lại mật khẩu
           </button>
           <div className="flex gap-2">
             {account.status === 'blocked'
-              ? <button onClick={() => { onUnblock(account.id); onClose() }} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-green-200 rounded text-sm font-medium text-green-700 hover:bg-green-50 cursor-pointer transition-colors bg-white">
+              ? <button aria-label="Thao tác" type="button" onClick={() => { onUnblock(account.id); onClose() }} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-green-200 rounded text-sm font-medium text-green-700 hover:bg-green-50 cursor-pointer transition-colors bg-white">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
                   Mở khoá
                 </button>
-              : <button onClick={() => setBlockConfirm(true)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-orange-200 rounded text-sm font-medium text-orange-600 hover:bg-orange-50 cursor-pointer transition-colors bg-white">
+              : <button aria-label="Thao tác" type="button" onClick={() => setBlockConfirm(true)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-orange-200 rounded text-sm font-medium text-orange-600 hover:bg-orange-50 cursor-pointer transition-colors bg-white">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zM10 11V7a2 2 0 114 0v4" /></svg>
                   Khoá tài khoản
                 </button>
             }
-            <button onClick={() => setDeleteConfirm(true)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-red-200 rounded text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer transition-colors bg-white">
+            <button aria-label="Thao tác" type="button" onClick={() => setDeleteConfirm(true)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-red-200 rounded text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer transition-colors bg-white">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
               Xoá tài khoản
             </button>
@@ -98,8 +98,8 @@ export default function AccountDetailDrawer({ account, onClose, onBlock, onUnblo
               <h3 className="text-lg font-bold text-gray-900">Khoá tài khoản?</h3>
               <p className="text-sm text-gray-500 mt-2">Tài khoản <span className="font-semibold text-gray-800">{account.email}</span> sẽ không thể đăng nhập.<br />Bạn có thể mở khoá sau.</p>
               <div className="flex gap-3 mt-6">
-                <button onClick={() => setBlockConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ</button>
-                <button onClick={() => { onBlock(account.id); setBlockConfirm(false); onClose() }} className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Khoá tài khoản</button>
+                <button  type="button" onClick={() => setBlockConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ</button>
+                <button aria-label="Thao tác" type="button" onClick={() => { onBlock(account.id); setBlockConfirm(false); onClose() }} className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Khoá tài khoản</button>
               </div>
             </div>
           </div>
@@ -118,8 +118,8 @@ export default function AccountDetailDrawer({ account, onClose, onBlock, onUnblo
               <h3 className="text-lg font-bold text-gray-900">Xoá tài khoản?</h3>
               <p className="text-sm text-gray-500 mt-2">Tài khoản <span className="font-semibold text-gray-800">{account.email}</span> sẽ bị xoá vĩnh viễn.<br />Hành động này không thể hoàn tác.</p>
               <div className="flex gap-3 mt-6">
-                <button onClick={() => setDeleteConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ bỏ</button>
-                <button onClick={() => { onDelete(account.id); setDeleteConfirm(false); onClose() }} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Xác nhận xoá</button>
+                <button  type="button" onClick={() => setDeleteConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ bỏ</button>
+                <button aria-label="Thao tác" type="button" onClick={() => { onDelete(account.id); setDeleteConfirm(false); onClose() }} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Xác nhận xoá</button>
               </div>
             </div>
           </div>
@@ -138,8 +138,8 @@ export default function AccountDetailDrawer({ account, onClose, onBlock, onUnblo
               <h3 className="text-lg font-bold text-gray-900">Đặt lại mật khẩu?</h3>
               <p className="text-sm text-gray-500 mt-2">Link đặt lại mật khẩu sẽ được gửi đến<br /><span className="font-semibold text-gray-800">{account.email}</span></p>
               <div className="flex gap-3 mt-6">
-                <button onClick={() => setResetConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ</button>
-                <button onClick={handleReset} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Gửi email</button>
+                <button  type="button" onClick={() => setResetConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ</button>
+                <button aria-label="Thao tác" type="button" onClick={handleReset} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Gửi email</button>
               </div>
             </div>
           </div>

@@ -49,17 +49,17 @@ export default function AccountManagementPage() {
   const selectedAccount = selected !== null ? accounts.find(a => a.id === selected) : null
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 px-8 py-3 flex items-center gap-4">
         <div className="flex-1 max-w-sm">
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input type="text" placeholder="Tìm kiếm nhanh..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
+            <input aria-label="Tìm kiếm nhanh..." type="text" placeholder="Tìm kiếm nhanh..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <button className="relative p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button aria-label="Thao tác" type="button" className="relative p-2 hover:bg-gray-100 rounded-full cursor-pointer">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
           </button>
@@ -80,10 +80,10 @@ export default function AccountManagementPage() {
             { label:'Tổng tài khoản',  value:total,   color:'blue',   icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> },
             { label:'Đang hoạt động', value:active,  color:'green',  icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
             { label:'Bị khoá',         value:blocked, color:'red',    icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zM10 11V7a2 2 0 114 0v4" /></svg> },
-          ].map((c,i) => {
+          ].map((c) => {
             const clr = { blue:['bg-[#E8420A]','text-[#E8420A]'], green:['bg-green-500','text-green-600'], red:['bg-red-500','text-red-600'] }[c.color]
             return (
-              <div key={i} className="bg-white rounded border border-gray-200 p-5 flex items-center gap-4">
+              <div key={c.label} className="bg-white rounded border border-gray-200 p-5 flex items-center gap-4">
                 <span className={`w-12 h-12 ${clr[0]} rounded flex items-center justify-center text-white shrink-0`}>{c.icon}</span>
                 <div><p className="text-xs text-gray-500 font-medium">{c.label}</p><p className={`text-3xl font-bold ${clr[1]}`}>{c.value}</p></div>
               </div>
@@ -95,14 +95,14 @@ export default function AccountManagementPage() {
         <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm kiếm theo email..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm kiếm theo email..." aria-label="Tìm kiếm theo email" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Lọc theo trạng thái" className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
             <option value="">Tất cả trạng thái</option>
             <option value="active">Hoạt động</option>
             <option value="blocked">Bị khoá</option>
           </select>
-          <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
+          <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} aria-label="Lọc theo vai trò" className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer">
             <option value="">Tất cả vai trò</option>
             <option value="MANAGER">Quản lý</option>
             <option value="STAFF">Nhân viên</option>
@@ -125,8 +125,8 @@ export default function AccountManagementPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Tài khoản','Vai trò','Ngày tạo','Số lần đăng nhập','Trạng thái',''].map((h,i) => (
-                    <th key={i} className="px-4 py-3.5 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                  {['Tài khoản','Vai trò','Ngày tạo','Số lần đăng nhập','Trạng thái',''].map((h) => (
+                    <th key={h || 'actions'} className="px-4 py-3.5 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -161,7 +161,7 @@ export default function AccountManagementPage() {
                           </span>
                         </td>
                         <td className="px-4 py-4">
-                          <button onClick={() => setSelected(acc.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
+                          <button aria-label={`Chi tiết tài khoản ${acc.email}`} type="button" onClick={() => setSelected(acc.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50 border-none bg-transparent">
                             Chi tiết →
                           </button>
                         </td>
@@ -176,7 +176,7 @@ export default function AccountManagementPage() {
       </div>
 
       {/* Drawer overlay */}
-      {selectedAccount && <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setSelected(null)} />}
+      {selectedAccount && <button type="button" aria-label="Đóng chi tiết tài khoản" onClick={() => setSelected(null)} className="fixed inset-0 bg-black/30 z-40 cursor-pointer border-none" />}
 
       {/* Drawer */}
       {selectedAccount && (

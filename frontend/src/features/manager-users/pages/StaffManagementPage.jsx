@@ -28,7 +28,7 @@ export default function StaffManagementPage() {
   const [activeTab, setActiveTab] = useState('list')
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 px-8 py-3 flex items-center gap-4">
         <div className="flex-1 max-w-sm">
@@ -36,7 +36,7 @@ export default function StaffManagementPage() {
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input 
+            <input aria-label="Tìm kiếm nhanh..." 
               type="text" 
               placeholder="Tìm kiếm nhanh..." 
               className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" 
@@ -44,7 +44,7 @@ export default function StaffManagementPage() {
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <button className="relative p-2 hover:bg-gray-100 rounded-full cursor-pointer border-none bg-transparent">
+          <button aria-label="Thao tác" type="button" className="relative p-2 hover:bg-gray-100 rounded-full cursor-pointer border-none bg-transparent">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
@@ -62,7 +62,7 @@ export default function StaffManagementPage() {
       <div className="bg-white border-b border-gray-100 px-8">
         <div className="flex items-center gap-1">
           {TABS.map(tab => (
-            <button 
+            <button aria-label="Thao tác" type="button" 
               key={tab.id} 
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap bg-transparent border-none ${

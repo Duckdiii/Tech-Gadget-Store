@@ -4,6 +4,10 @@ export default function StatCard({ icon, label, value, valueSuffix, valueClass='
   const cursorClass = onClick ? 'cursor-pointer transition-all' : ''
   return (
     <div 
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={onClick ? label : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick(e) } : undefined}
       onClick={onClick}
       className={`bg-white rounded border border-gray-200 ${padding} flex-1 text-left ${activeClass} ${cursorClass}`}
     >

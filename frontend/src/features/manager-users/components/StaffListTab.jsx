@@ -162,7 +162,7 @@ export default function StaffListTab() {
           <h1 className="text-2xl font-bold text-gray-900">Danh sách nhân viên</h1>
           <p className="text-sm text-gray-500 mt-0.5">Thêm mới và quản lý thông tin nhân viên</p>
         </div>
-        <button onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer border-none">
+        <button aria-label="Thao tác" type="button" onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer border-none">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
           Thêm nhân viên
         </button>
@@ -174,10 +174,10 @@ export default function StaffListTab() {
           { label:'Tổng nhân viên', value:staff.length,  color:'blue',   icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg> },
           { label:'Đang hoạt động', value:activeCount,   color:'green',  icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
           { label:'Kết quả tìm',    value:filtered.length, color:'purple', icon:<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg> },
-        ].map((c, i) => {
+        ].map((c) => {
           const clr = { blue:['bg-[#E8420A]','text-[#E8420A]'], green:['bg-green-500','text-green-600'], purple:['bg-purple-500','text-purple-600'] }[c.color]
           return (
-            <div key={i} className="bg-white rounded border border-gray-200 p-5 flex items-center gap-4 text-left">
+            <div key={c.label} className="bg-white rounded border border-gray-200 p-5 flex items-center gap-4 text-left">
               <span className={`w-12 h-12 rounded flex items-center justify-center text-white shrink-0 ${clr[0]}`}>{c.icon}</span>
               <div><p className="text-xs text-gray-500 font-medium">{c.label}</p><p className={`text-3xl font-bold ${clr[1]}`}>{c.value}</p></div>
             </div>
@@ -189,7 +189,7 @@ export default function StaffListTab() {
       <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex items-center gap-3">
         <div className="relative flex-1 max-w-xs text-left">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên, email, SĐT, mã NV..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên, email, SĐT, mã NV..." aria-label="Tìm kiếm nhân viên" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white" />
         </div>
         <span className="ml-auto text-xs text-gray-400 shrink-0">{filtered.length} / {staff.length} nhân viên</span>
       </div>
@@ -204,8 +204,8 @@ export default function StaffListTab() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                {['Nhân viên','Mã NV','Số điện thoại','Ngày vào làm',''].map((h,i) => (
-                  <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                {['Nhân viên','Mã NV','Số điện thoại','Ngày vào làm',''].map((h) => (
+                  <th key={h || 'actions'} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -224,7 +224,7 @@ export default function StaffListTab() {
                     <td className="px-4 py-4 text-gray-600 text-sm">{s.phone}</td>
                     <td className="px-4 py-4 text-gray-500 text-sm">{s.joinDate}</td>
                     <td className="px-4 py-4">
-                      <button onClick={() => openDetail(s.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50 border-none bg-transparent">
+                      <button aria-label={`Xem chi tiết nhân viên ${s.name}`} type="button" onClick={() => openDetail(s.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50 border-none bg-transparent">
                         Chi tiết →
                       </button>
                     </td>
@@ -237,33 +237,33 @@ export default function StaffListTab() {
       )}
 
       {/* Drawer overlay */}
-      {panel && <div className="fixed inset-0 bg-black/30 z-40" onClick={closePanel} />}
+      {panel && <button type="button" aria-label="Đóng bảng thông tin nhân viên" onClick={closePanel} className="fixed inset-0 bg-black/30 z-40 cursor-pointer border-none" />}
 
       {/* Add drawer */}
       {panel === 'add' && (
         <div className="fixed top-0 right-0 h-full w-[440px] bg-white shadow-2xl z-50 flex flex-col text-left">
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <div><h2 className="text-lg font-bold text-gray-900">Thêm nhân viên mới</h2><p className="text-xs text-gray-400 mt-0.5">Điền đầy đủ thông tin bên dưới</p></div>
-            <button onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer border-none bg-transparent"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer border-none bg-transparent"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-            <Field label="Họ và tên *" error={formErrors.name}><input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="Nguyễn Văn A" className={inp} /></Field>
-            <Field label="Email *" error={formErrors.email}><input value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} placeholder="email@techstore.vn" type="email" className={inp} /></Field>
+            <Field label="Họ và tên *" error={formErrors.name}><input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="Nguyễn Văn A" aria-label="Họ và tên nhân viên" className={inp} /></Field>
+            <Field label="Email *" error={formErrors.email}><input value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} placeholder="email@techstore.vn" type="email" aria-label="Email nhân viên" className={inp} /></Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Số điện thoại *" error={formErrors.phone}><input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} placeholder="0912345678" className={inp} /></Field>
-              <Field label="Mã nhân viên *" error={formErrors.staffCode}><input value={form.staffCode} onChange={e => setForm(f=>({...f,staffCode:e.target.value}))} placeholder="NV001" className={inp} /></Field>
+              <Field label="Số điện thoại *" error={formErrors.phone}><input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} placeholder="0912345678" aria-label="Số điện thoại nhân viên" className={inp} /></Field>
+              <Field label="Mã nhân viên *" error={formErrors.staffCode}><input value={form.staffCode} onChange={e => setForm(f=>({...f,staffCode:e.target.value}))} placeholder="NV001" aria-label="Mã nhân viên" className={inp} /></Field>
             </div>
-            <Field label="Ngày vào làm *" error={formErrors.hireDate}><input type="date" value={form.hireDate} onChange={e => setForm(f=>({...f,hireDate:e.target.value}))} className={inp} /></Field>
+            <Field label="Ngày vào làm *" error={formErrors.hireDate}><input type="date" value={form.hireDate} onChange={e => setForm(f=>({...f,hireDate:e.target.value}))} aria-label="Ngày vào làm" className={inp} /></Field>
             <Field label="Mật khẩu *" error={formErrors.password}>
               <div className="flex gap-2">
-                <input value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))} placeholder="••••••••" type="text" className={inp} />
-                <button onClick={() => setForm(f=>({...f,password:Math.random().toString(36).slice(2,10)}))} className="shrink-0 px-3 border border-gray-200 rounded text-xs text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap bg-white">Tự động</button>
+                <input value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))} placeholder="••••••••" type="text" aria-label="Mật khẩu nhân viên" className={inp} />
+                <button type="button" aria-label="Tự tạo mật khẩu" onClick={() => setForm(f=>({...f,password:Array.from(crypto.getRandomValues(new Uint8Array(8)), b => (b % 36).toString(36)).join('')}))} className="shrink-0 px-3 border border-gray-200 rounded text-xs text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap bg-white">Tự động</button>
               </div>
             </Field>
           </div>
           <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-            <button onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ</button>
-            <button onClick={handleAdd} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Thêm nhân viên</button>
+            <button aria-label="Hủy" type="button" onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ</button>
+            <button aria-label="Thêm nhân viên" type="button" onClick={handleAdd} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Thêm nhân viên</button>
           </div>
         </div>
       )}
@@ -272,7 +272,7 @@ export default function StaffListTab() {
       {selectedStaff && (
         <div className="fixed top-0 right-0 h-full w-[440px] bg-white shadow-2xl z-50 flex flex-col text-left">
           <div className="bg-gradient-to-br from-slate-700 to-slate-900 px-6 pt-5 pb-6 relative">
-            <button onClick={closePanel} className="absolute top-4 right-4 p-1.5 rounded hover:bg-white/10 cursor-pointer border-none bg-transparent"><svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="absolute top-4 right-4 p-1.5 rounded hover:bg-white/10 cursor-pointer border-none bg-transparent"><svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
             <div className="flex items-center gap-4">
               <Avatar initials={selectedStaff.initials} bg={selectedStaff.bg} size="lg" />
               <div className="min-w-0">
@@ -285,15 +285,15 @@ export default function StaffListTab() {
           
           {isEditing ? (
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-              <Field label="Họ và tên *" error={formErrors.name}><input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="Nguyễn Văn A" className={inp} /></Field>
-              <Field label="Email *" error={formErrors.email}><input value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} placeholder="email@techstore.vn" type="email" className={inp} /></Field>
+              <Field label="Họ và tên *" error={formErrors.name}><input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="Nguyễn Văn A" aria-label="Họ và tên nhân viên" className={inp} /></Field>
+              <Field label="Email *" error={formErrors.email}><input value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} placeholder="email@techstore.vn" type="email" aria-label="Email nhân viên" className={inp} /></Field>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Số điện thoại *" error={formErrors.phone}><input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} placeholder="0912345678" className={inp} /></Field>
-                <Field label="Mã nhân viên *" error={formErrors.staffCode}><input value={form.staffCode} onChange={e => setForm(f=>({...f,staffCode:e.target.value}))} placeholder="NV001" className={inp} /></Field>
+                <Field label="Số điện thoại *" error={formErrors.phone}><input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} placeholder="0912345678" aria-label="Số điện thoại nhân viên" className={inp} /></Field>
+                <Field label="Mã nhân viên *" error={formErrors.staffCode}><input value={form.staffCode} onChange={e => setForm(f=>({...f,staffCode:e.target.value}))} placeholder="NV001" aria-label="Mã nhân viên" className={inp} /></Field>
               </div>
-              <Field label="Ngày vào làm *" error={formErrors.hireDate}><input type="date" value={form.hireDate} onChange={e => setForm(f=>({...f,hireDate:e.target.value}))} className={inp} /></Field>
+              <Field label="Ngày vào làm *" error={formErrors.hireDate}><input type="date" value={form.hireDate} onChange={e => setForm(f=>({...f,hireDate:e.target.value}))} aria-label="Ngày vào làm" className={inp} /></Field>
               <Field label="Mật khẩu (để trống nếu không đổi)" error={formErrors.password}>
-                <input value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))} placeholder="••••••••" type="text" className={inp} />
+                <input value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))} placeholder="••••••••" type="text" aria-label="Mật khẩu nhân viên" className={inp} />
               </Field>
             </div>
           ) : (
@@ -307,16 +307,16 @@ export default function StaffListTab() {
 
           {isEditing ? (
             <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setIsEditing(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ</button>
-              <button onClick={() => handleUpdate(selectedStaff.id)} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Lưu thay đổi</button>
+              <button aria-label="Hủy chỉnh sửa" type="button" onClick={() => setIsEditing(false)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ</button>
+              <button aria-label="Lưu thay đổi" type="button" onClick={() => handleUpdate(selectedStaff.id)} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Lưu thay đổi</button>
             </div>
           ) : (
             <div className="px-6 py-4 border-t border-gray-100 flex gap-2">
-              <button onClick={openEdit} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer bg-white">
+              <button aria-label="Chỉnh sửa" type="button" onClick={openEdit} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer bg-white">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                 Chỉnh sửa
               </button>
-              <button onClick={() => setDeleteId(selectedStaff.id)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-red-200 rounded text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer bg-white">
+              <button aria-label="Thao tác" type="button" onClick={() => setDeleteId(selectedStaff.id)} className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-red-200 rounded text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer bg-white">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 Xoá nhân viên
               </button>
@@ -337,8 +337,8 @@ export default function StaffListTab() {
                 <h3 className="text-lg font-bold text-gray-900">Xoá nhân viên?</h3>
                 <p className="text-sm text-gray-500 mt-2">Bạn có chắc muốn xoá <span className="font-semibold text-gray-800">{t?.name}</span>?<br />Hành động này không thể hoàn tác.</p>
                 <div className="flex gap-3 mt-6">
-                  <button onClick={() => setDeleteId(null)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ bỏ</button>
-                  <button onClick={() => handleDelete(deleteId)} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Xác nhận xoá</button>
+                  <button  type="button" onClick={() => setDeleteId(null)} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ bỏ</button>
+                  <button aria-label="Thao tác" type="button" onClick={() => handleDelete(deleteId)} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">Xác nhận xoá</button>
                 </div>
               </div>
             </div>

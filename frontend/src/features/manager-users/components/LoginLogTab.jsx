@@ -7,6 +7,12 @@ const LOG_STATUS = {
   blocked: { label:'Bị chặn',    bg:'bg-orange-100', text:'text-orange-700',dot:'bg-orange-500'},
 }
 
+function formatLoginTime(loginTime) {
+  if (!loginTime) return '—'
+  const d = new Date(loginTime)
+  return `${d.toLocaleDateString('vi-VN')} ${d.toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', second:'2-digit' })}`
+}
+
 export default function LoginLogTab() {
   const [logs, setLogs]           = useState([])
   const [loading, setLoading]     = useState(true)
@@ -41,11 +47,7 @@ export default function LoginLogTab() {
   const successCount = filtered.filter(l => l.status === 'success').length
   const failCount    = filtered.filter(l => l.status !== 'success').length
 
-  function formatLoginTime(loginTime) {
-    if (!loginTime) return '—'
-    const d = new Date(loginTime)
-    return `${d.toLocaleDateString('vi-VN')} ${d.toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', second:'2-digit' })}`
-  }
+
 
   return (
     <div className="space-y-5">
@@ -63,9 +65,9 @@ export default function LoginLogTab() {
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-xs text-left">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Email, vai trò..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Email, vai trò..." aria-label="Tìm kiếm theo Email hoặc vai trò" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white" />
         </div>
-        <select value={statusFilter} onChange={e => setStatus(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer bg-white">
+        <select value={statusFilter} onChange={e => setStatus(e.target.value)} aria-label="Lọc theo trạng thái đăng nhập" className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer bg-white">
           <option value="">Tất cả trạng thái</option>
           <option value="success">Thành công</option>
           <option value="failed">Thất bại</option>
@@ -83,8 +85,8 @@ export default function LoginLogTab() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                {['Tài khoản','Vai trò','Thời gian đăng nhập','Trạng thái'].map((h,i) => (
-                  <th key={i} className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                {['Tài khoản','Vai trò','Thời gian đăng nhập','Trạng thái'].map((h) => (
+                  <th key={h} className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                 ))}
               </tr>
             </thead>

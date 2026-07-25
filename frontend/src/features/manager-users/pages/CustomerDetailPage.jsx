@@ -86,7 +86,7 @@ export default function CustomerDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex-1 flex items-center justify-center min-h-dvh bg-gray-50">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
       </div>
     )
@@ -94,9 +94,9 @@ export default function CustomerDetailPage() {
 
   if (error || !customer) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-gray-50 gap-3">
+      <div className="flex-1 flex flex-col items-center justify-center min-h-dvh bg-gray-50 gap-3">
         <p className="text-sm text-gray-500">{error || 'Không tìm thấy khách hàng.'}</p>
-        <button
+        <button aria-label="Thao tác" type="button"
           onClick={() => onNavigate('customerManagement')}
           className="text-sm text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer"
         >
@@ -109,7 +109,7 @@ export default function CustomerDetailPage() {
   const tier = TIER_DISPLAY[customer.tier] || { label: customer.tier, bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700' }
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 px-8 py-3 flex items-center gap-4">
         <div className="flex-1 max-w-md">
@@ -119,6 +119,7 @@ export default function CustomerDetailPage() {
             </svg>
             <input
               type="text"
+              aria-label="Tìm kiếm khách hàng"
               value={headerSearch}
               onChange={(e) => setHeaderSearch(e.target.value)}
               onKeyDown={handleHeaderSearchSubmit}
@@ -129,17 +130,17 @@ export default function CustomerDetailPage() {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
-          <button className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button aria-label="Thông báo" type="button" className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button aria-label="Trợ giúp" type="button" className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button aria-label="Cài đặt hệ thống" type="button" className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -159,20 +160,20 @@ export default function CustomerDetailPage() {
         <div className="flex items-start justify-between mb-5">
           <div>
             <p className="text-sm text-gray-500 mb-1">
-              <span onClick={() => onNavigate('customerManagement')} className="hover:text-[#E8420A] cursor-pointer">Khách hàng</span>
+              <button aria-label="Trở về danh sách khách hàng" type="button" onClick={() => onNavigate('customerManagement')} className="hover:text-[#E8420A] cursor-pointer border-none bg-transparent p-0 font-inherit text-inherit">Khách hàng</button>
               <span className="mx-2">›</span>
               <span className="text-gray-700 font-medium">{customer.fullName}</span>
             </p>
             <h1 className="text-3xl font-bold text-gray-900">Chi tiết khách hàng</h1>
           </div>
           <div className="flex items-center gap-3 mt-1">
-            <button className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
+            <button aria-label="Thao tác" type="button" className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
               Edit Profile
             </button>
-            <button className="flex items-center gap-2 bg-[#C4350A] hover:bg-[#0D0F14] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
+            <button aria-label="Thao tác" type="button" className="flex items-center gap-2 bg-[#C4350A] hover:bg-[#0D0F14] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
               </svg>
@@ -207,7 +208,7 @@ export default function CustomerDetailPage() {
                 </div>
                 <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden mb-2">
                   <div 
-                    className="bg-gradient-to-r from-amber-500 to-[#E8420A] h-full transition-all duration-500"
+                    className="bg-gradient-to-r from-amber-500 to-[#E8420A] h-full transition-colors duration-500"
                     style={{ width: `${Math.min(100, Math.max(0, (customer.totalSpend / (customer.nextTierMinSpending || 1)) * 100))}%` }}
                   />
                 </div>
@@ -260,7 +261,7 @@ export default function CustomerDetailPage() {
                   text: `Tham gia: ${fmtDate(customer.joinDate)}`,
                 },
               ].map((item, i, arr) => (
-                <div key={i}>
+                <div key={item.text}>
                   <div className="flex items-center gap-3 py-3.5">
                     {item.icon}
                     <span className="text-sm text-gray-700">{item.text}</span>
@@ -335,7 +336,7 @@ export default function CustomerDetailPage() {
 
                   return (
                     <div 
-                      key={idx} 
+                      key={name?.id ?? name?.code ?? name?.name ?? name?.key ?? name?.val ?? name} 
                       className="flex-1 flex flex-col items-center h-full group relative"
                       onMouseEnter={() => setHoveredMonth(idx)}
                       onMouseLeave={() => setHoveredMonth(null)}
@@ -363,7 +364,7 @@ export default function CustomerDetailPage() {
               <div className="flex justify-between gap-2.5 px-2.5 pt-1.5">
                 {MONTH_NAMES.map((name, idx) => (
                   <span 
-                    key={idx} 
+                    key={name} 
                     className={`flex-1 text-center text-[10px] font-semibold ${
                       hoveredMonth === idx ? 'text-[#E8420A] font-bold' : 'text-gray-400'
                     }`}
@@ -378,7 +379,7 @@ export default function CustomerDetailPage() {
             <div className="bg-white rounded border border-gray-200 flex-1 overflow-hidden">
               <div className="flex border-b border-gray-200 px-5">
                 {TABS.map((tab) => (
-                  <button
+                  <button aria-label="Thao tác" type="button"
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`py-4 px-3 mr-4 text-sm font-medium transition-colors cursor-pointer border-b-2 ${
@@ -448,9 +449,9 @@ export default function CustomerDetailPage() {
                         Khách hàng chưa mua sản phẩm nào.
                       </div>
                     ) : (
-                      customer.purchasedProducts.map((item, idx) => (
+                      customer.purchasedProducts.map((item) => (
                         <div
-                          key={idx}
+                          key={item.id || item.productId || item.productName}
                           className="grid grid-cols-[1fr_150px_100px_140px] gap-2 px-5 py-4 border-b border-gray-100 last:border-0 items-center hover:bg-gray-50 transition-colors"
                         >
                           {/* Tên sản phẩm + Hình ảnh */}
@@ -499,10 +500,12 @@ export default function CustomerDetailPage() {
                 <div className="px-5 py-6">
                   {/* Form to Add Note */}
                   <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    <label htmlFor="new-customer-note" className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                       Thêm ghi chú mới
                     </label>
                     <textarea
+                      id="new-customer-note"
+                      aria-label="Thêm ghi chú mới"
                       value={newNoteContent}
                       onChange={(e) => setNewNoteContent(e.target.value)}
                       placeholder="Nhập ghi chú nội bộ về khách hàng (ví dụ: thói quen mua sắm, yêu cầu đặc biệt...)"
@@ -510,7 +513,7 @@ export default function CustomerDetailPage() {
                       className="w-full border border-gray-300 rounded p-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white resize-none"
                     />
                     <div className="flex justify-end mt-2">
-                      <button
+                      <button aria-label="Lưu ghi chú" type="button"
                         onClick={handleAddNote}
                         disabled={!newNoteContent.trim()}
                         className="bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-50 text-white font-semibold py-2 px-4 rounded text-xs transition-colors cursor-pointer"
@@ -544,19 +547,20 @@ export default function CustomerDetailPage() {
                             {isEditing ? (
                               <div className="flex flex-col gap-2 mt-1">
                                 <textarea
+                                  aria-label="Chỉnh sửa ghi chú"
                                   value={editingNoteContent}
                                   onChange={(e) => setEditingNoteContent(e.target.value)}
                                   rows={2}
                                   className="w-full border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white resize-none"
                                 />
                                 <div className="flex justify-end gap-2">
-                                  <button
+                                  <button aria-label="Hủy chỉnh sửa ghi chú" type="button"
                                     onClick={() => setEditingNoteId(null)}
                                     className="border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 py-1 px-3 rounded text-xs transition-colors cursor-pointer"
                                   >
                                     Hủy
                                   </button>
-                                  <button
+                                  <button aria-label="Lưu chỉnh sửa ghi chú" type="button"
                                     onClick={() => handleUpdateNote(note.id)}
                                     disabled={!editingNoteContent.trim()}
                                     className="bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-50 text-white py-1 px-3 rounded text-xs transition-colors cursor-pointer"
@@ -571,7 +575,7 @@ export default function CustomerDetailPage() {
                                   {note.content}
                                 </p>
                                 <div className="flex justify-end gap-3 mt-1 pt-2 border-t border-gray-50">
-                                  <button
+                                  <button aria-label="Thao tác" type="button"
                                     onClick={() => {
                                       setEditingNoteId(note.id)
                                       setEditingNoteContent(note.content)
@@ -580,7 +584,7 @@ export default function CustomerDetailPage() {
                                   >
                                     Sửa
                                   </button>
-                                  <button
+                                  <button aria-label="Thao tác" type="button"
                                     onClick={() => handleDeleteNote(note.id)}
                                     className="text-xs text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
                                   >
