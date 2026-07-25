@@ -31,7 +31,7 @@ export default function PortalLoginPage() {
 
   return (
     <div
-      className="flex-1 flex flex-col items-center justify-center px-4 py-12 min-h-screen"
+      className="flex-1 flex flex-col items-center justify-center px-4 py-12 min-h-dvh"
       style={{ backgroundColor: 'var(--ink)' }}
     >
       <div
@@ -57,17 +57,19 @@ export default function PortalLoginPage() {
 
         {/* Email */}
         <div className="mb-4">
-          <label className="block text-[12px] font-bold mb-1.5 text-gray-700">Email công việc</label>
+          <label htmlFor="portal-email" className="block text-[12px] font-bold mb-1.5 text-gray-700">Email công việc</label>
           <div className="relative">
             <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
             <input
+              id="portal-email"
               type="email"
               value={email}
               onChange={e => { setEmail(e.target.value); setError('') }}
               onKeyDown={handleKeyDown}
               placeholder="work@techstore.vn"
+              aria-label="Email công việc"
               className="field-light w-full pl-10 pr-4 py-3 text-[13px]"
             />
           </div>
@@ -75,20 +77,23 @@ export default function PortalLoginPage() {
 
         {/* Password */}
         <div className="mb-5">
-          <label className="block text-[12px] font-bold mb-1.5 text-gray-700">Mật khẩu</label>
+          <label htmlFor="portal-password" className="block text-[12px] font-bold mb-1.5 text-gray-700">Mật khẩu</label>
           <div className="relative">
             <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
             <input
+              id="portal-password"
               type={showPass ? 'text' : 'password'}
               value={password}
               onChange={e => { setPassword(e.target.value); setError('') }}
               onKeyDown={handleKeyDown}
               placeholder="••••••••"
+              aria-label="Mật khẩu"
               className="field-light w-full pl-10 pr-11 py-3 text-[13px]"
             />
             <button
+              aria-label={showPass ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
               type="button"
               onClick={() => setShowPass(s => !s)}
               className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer border-none bg-transparent"
@@ -122,7 +127,7 @@ export default function PortalLoginPage() {
 
         {/* Forgot Password Link */}
         <div className="flex justify-end mb-5">
-          <button
+          <button aria-label="Quên mật khẩu" type="button"
             onClick={() => navigate('/forgot-password', { state: { isPortal: true } })}
             className="text-[12px] font-bold text-gray-500 hover:text-[#E8420A] cursor-pointer transition-colors border-none bg-transparent"
           >
@@ -131,10 +136,10 @@ export default function PortalLoginPage() {
         </div>
 
         {/* Submit */}
-        <button
+        <button aria-label="Đăng nhập hệ thống" type="button"
           onClick={handleLogin}
           disabled={loading}
-          className="w-full text-white font-extrabold py-3.5 text-[13px] tracking-wide transition-all duration-200 cursor-pointer disabled:opacity-50 border-none"
+          className="w-full text-white font-extrabold py-3.5 text-[13px] tracking-wide transition-colors duration-200 cursor-pointer disabled:opacity-50 border-none"
           style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
           onMouseEnter={e => { if (!loading) e.currentTarget.style.backgroundColor = 'var(--accent-d)' }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--accent)' }}

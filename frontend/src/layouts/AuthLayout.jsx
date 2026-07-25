@@ -10,7 +10,7 @@ export default function AuthLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center">
+    <div className="min-h-dvh bg-gray-50 flex flex-col justify-center">
       <Outlet />
     </div>
   )

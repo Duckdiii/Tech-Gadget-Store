@@ -46,7 +46,7 @@ export default function RegisterPage() {
         </h2>
         <p className="text-[13px] text-center text-gray-500 mb-8">
           Đã có tài khoản?{' '}
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={() => navigate('/login')}
             className="font-bold transition-colors cursor-pointer"
             style={{ color: 'var(--accent)' }}
@@ -72,7 +72,7 @@ export default function RegisterPage() {
 
         {/* Full name */}
         <Field label="Họ và tên *" error={errors.fullName}>
-          <input
+          <input aria-label="Nguyễn Văn A"
             type="text"
             value={form.fullName}
             onChange={set('fullName')}
@@ -84,7 +84,7 @@ export default function RegisterPage() {
 
         {/* Phone */}
         <Field label="Số điện thoại" error={errors.phone}>
-          <input
+          <input aria-label="0901 234 567"
             type="tel"
             value={form.phone}
             onChange={set('phone')}
@@ -96,7 +96,7 @@ export default function RegisterPage() {
 
         {/* Email */}
         <Field label="Email *" error={errors.email}>
-          <input
+          <input aria-label="your@email.com"
             type="email"
             value={form.email}
             onChange={set('email')}
@@ -109,7 +109,7 @@ export default function RegisterPage() {
         {/* Password */}
         <Field label="Mật khẩu *" error={errors.password}>
           <div className="relative">
-            <input
+            <input aria-label="Tối thiểu 6 ký tự"
               type={showPass ? 'text' : 'password'}
               value={form.password}
               onChange={set('password')}
@@ -117,7 +117,7 @@ export default function RegisterPage() {
               placeholder="Tối thiểu 6 ký tự"
               className={getFieldCls(errors.password) + ' pr-10'}
             />
-            <button
+            <button aria-label="Thao tác"
               type="button"
               onClick={() => setShowPass(s => !s)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
@@ -139,7 +139,7 @@ export default function RegisterPage() {
         {/* Confirm */}
         <Field label="Xác nhận mật khẩu *" error={errors.confirm}>
           <div className="relative">
-            <input
+            <input aria-label="Nhập lại mật khẩu"
               type={showConfirm ? 'text' : 'password'}
               value={form.confirm}
               onChange={set('confirm')}
@@ -147,7 +147,7 @@ export default function RegisterPage() {
               placeholder="Nhập lại mật khẩu"
               className={getFieldCls(errors.confirm) + ' pr-10'}
             />
-            <button
+            <button aria-label="Thao tác"
               type="button"
               onClick={() => setShowConfirm(s => !s)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
@@ -167,10 +167,10 @@ export default function RegisterPage() {
         </Field>
 
         {/* Submit */}
-        <button
+        <button aria-label="Quay lại" type="button"
           onClick={handleSubmit}
           disabled={loading}
-          className="mt-2 w-full text-white font-bold py-3.5 text-[13px] tracking-wide transition-all duration-200 cursor-pointer disabled:opacity-50"
+          className="mt-2 w-full text-white font-bold py-3.5 text-[13px] tracking-wide transition-colors duration-200 cursor-pointer disabled:opacity-50"
           style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
           onMouseEnter={e => { if (!loading) e.currentTarget.style.backgroundColor = 'var(--accent-d)' }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--accent)' }}

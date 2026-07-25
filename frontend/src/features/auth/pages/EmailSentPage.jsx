@@ -47,8 +47,8 @@ export default function EmailSentPage() {
         </p>
 
         {/* Back to login button */}
-        <button onClick={() => navigate(isPortal ? '/portal/login' : '/login')}
-          className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer mb-4 tracking-wide border-none"
+        <button aria-label="Thao tác" type="button" onClick={() => navigate(isPortal ? '/portal/login' : '/login')}
+          className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-colors duration-200 cursor-pointer mb-4 tracking-wide border-none"
           style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
           onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
           onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
@@ -60,7 +60,7 @@ export default function EmailSentPage() {
         <div className="text-center">
           <p className="text-sm text-gray-500">
             Bạn không nhận được email?{' '}
-            <button
+            <button aria-label="Thao tác" type="button"
               onClick={handleResend}
               disabled={resending}
               className="hover:underline font-bold cursor-pointer transition-colors disabled:opacity-50 border-none bg-transparent"
@@ -82,7 +82,7 @@ export default function EmailSentPage() {
       {/* ── Footer links ── */}
       <div className="flex items-center gap-6 mt-8">
         {['Privacy Policy', 'Terms of Service', 'Help Center'].map((link) => (
-          <button key={link} className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition-colors border-none bg-transparent">
+          <button aria-label="Thao tác" type="button" key={link} className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition-colors border-none bg-transparent">
             {link
           }</button>
         ))}

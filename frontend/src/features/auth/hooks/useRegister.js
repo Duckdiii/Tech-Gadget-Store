@@ -24,7 +24,7 @@ export function useRegister() {
     const e = {}
     if (!form.fullName.trim()) e.fullName = 'Vui lòng nhập họ tên.'
     if (!form.email.trim()) e.email = 'Vui lòng nhập email.'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Email không hợp lệ.'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = 'Email không hợp lệ.'
     
     if (!form.password) e.password = 'Vui lòng nhập mật khẩu.'
     else if (form.password.length < 6) e.password = 'Mật khẩu phải có ít nhất 6 ký tự.'

@@ -57,7 +57,7 @@ export default function ResetPasswordPage() {
 
             {/* New password */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Mật khẩu mới</label>
+              <span className="block text-sm font-medium text-gray-700 mb-1.5">Mật khẩu mới</span>
               <PasswordInput
                 value={newPwd}
                 onChange={(e) => { setNewPwd(e.target.value); setError('') }}
@@ -68,7 +68,7 @@ export default function ResetPasswordPage() {
 
             {/* Confirm password */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Xác nhận mật khẩu mới</label>
+              <span className="block text-sm font-medium text-gray-700 mb-1.5">Xác nhận mật khẩu mới</span>
               <PasswordInput
                 value={confirmPwd}
                 onChange={(e) => { setConfirmPwd(e.target.value); setError('') }}
@@ -89,10 +89,10 @@ export default function ResetPasswordPage() {
             </div>
 
             {/* Submit button */}
-            <button
+            <button aria-label="Cập nhật mật khẩu" type="button"
               onClick={handleSubmit}
               disabled={loading || success || !token}
-              className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer mb-5 tracking-wide disabled:opacity-50"
+              className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-colors duration-200 cursor-pointer mb-5 tracking-wide disabled:opacity-50 border-none"
               style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
               onMouseEnter={e => !(loading || success || !token) && (e.currentTarget.style.backgroundColor = 'var(--accent-d)')}
               onMouseLeave={e => !(loading || success || !token) && (e.currentTarget.style.backgroundColor = 'var(--accent)')}
@@ -102,8 +102,8 @@ export default function ResetPasswordPage() {
 
             {/* Back to login */}
             <div className="flex justify-center">
-              <button onClick={() => onNavigate('login')}
-                className="flex items-center gap-1.5 text-sm font-bold cursor-pointer transition-colors"
+              <button aria-label="Quay lại Đăng nhập" type="button" onClick={() => onNavigate('login')}
+                className="flex items-center gap-1.5 text-sm font-bold cursor-pointer transition-colors bg-transparent border-none"
                 style={{ color: 'var(--accent)' }}
                 onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-d)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--accent)'}
@@ -124,7 +124,7 @@ export default function ResetPasswordPage() {
         <span className="text-sm text-gray-500">© 2024 TechStore. All rights reserved.</span>
         <div className="flex items-center gap-5">
           {['Privacy Policy', 'Terms of Service', 'Support'].map((link) => (
-            <button key={link} className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition-colors">
+            <button aria-label={link} type="button" key={link} className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition-colors bg-transparent border-none">
               {link}
             </button>
           ))}

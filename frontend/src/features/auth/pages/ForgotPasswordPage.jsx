@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
 
         {/* Email field */}
         <div className="mb-5">
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+          <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
           <div className="relative">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,22 +69,24 @@ export default function ForgotPasswordPage() {
               </svg>
             </span>
             <input
+              id="forgot-email"
               type="email"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setError('') }}
               onKeyDown={handleKeyDown}
               disabled={loading}
               placeholder="admin@techstore.com"
+              aria-label="Email khôi phục mật khẩu"
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition disabled:opacity-50"
             />
           </div>
         </div>
 
         {/* Submit button */}
-        <button
+        <button aria-label="Gửi yêu cầu khôi phục mật khẩu" type="button"
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer mb-5 tracking-wide disabled:opacity-50"
+          className="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-colors duration-200 cursor-pointer mb-5 tracking-wide disabled:opacity-50"
           style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
           onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = 'var(--accent-d)')}
           onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = 'var(--accent)')}
@@ -94,7 +96,7 @@ export default function ForgotPasswordPage() {
 
         {/* Back to login */}
         <div className="flex justify-center">
-          <button onClick={() => navigate(isPortal ? '/portal/login' : '/login')}
+          <button aria-label="Quay lại trang Đăng nhập" type="button" onClick={() => navigate(isPortal ? '/portal/login' : '/login')}
             className="flex items-center gap-1.5 text-sm font-bold cursor-pointer transition-colors border-none bg-transparent"
             style={{ color: 'var(--accent)' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-d)'}
@@ -110,7 +112,7 @@ export default function ForgotPasswordPage() {
 
       {/* ── Footer ── */}
       <div className="mt-8">
-        <button className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition-colors border-none bg-transparent">
+        <button aria-label="Liên hệ hỗ trợ" type="button" className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition-colors border-none bg-transparent">
           Liên hệ hỗ trợ
         </button>
       </div>

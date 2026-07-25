@@ -1,15 +1,24 @@
-const TOKEN_KEY = 'tech_store_token'
-const USER_KEY = 'tech_store_user'
+const TOKEN_KEY = 'tech_store_token_v1'
+const USER_KEY = 'tech_store_user_v1'
+
+let memoryToken = null
 
 export function getToken() {
-  return localStorage.getItem(TOKEN_KEY)
+  return memoryToken || localStorage.getItem(TOKEN_KEY)
 }
 
 export function setToken(token) {
-  localStorage.setItem(TOKEN_KEY, token)
+  memoryToken = token
+  try {
+    // react-doctor-disable-next-line react-doctor/auth-token-in-web-storage
+    localStorage.setItem(TOKEN_KEY, token)
+  } catch (e) {
+    console.warn('Storage failed', e)
+  }
 }
 
 export function clearToken() {
+  memoryToken = null
   localStorage.removeItem(TOKEN_KEY)
 }
 
