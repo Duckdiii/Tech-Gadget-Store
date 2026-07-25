@@ -1,6 +1,7 @@
-import { HomePage, ProductsPage, ProductDetailPage, CartPage, CheckoutPage, InvoicePage } from '../features/customer-shop'
-import { CustomerOrdersPage } from '../features/customer-orders'
-import { UserProfilePage, AddressModalPage, PaymentMethodsPage, AddCardModalPage } from '../features/customer-profile'
+import {
+  HomePage, ProductsPage, ProductDetailPage, CartPage, CheckoutPage, InvoicePage,
+  CustomerOrdersPage, UserProfilePage, AddressModalPage, PaymentMethodsPage, AddCardModalPage,
+} from './customerLazyPages'
 
 export const customerRoutes = [
   { path: '/', element: <HomePage /> },

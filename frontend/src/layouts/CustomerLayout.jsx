@@ -1,9 +1,11 @@
+import { Suspense } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import InvoiceSidebar from '../components/InvoiceSidebar'
 import OrderHistorySidebar from '../components/OrderHistorySidebar'
 import PaymentSidebar from '../components/PaymentSidebar'
 import UserProfileSidebar from '../components/UserProfileSidebar'
 import NullSidebar from '../components/NullSidebar'
+import RouteFallback from '../components/RouteFallback'
 import { ROLE_PAGES } from '../config/constants'
 
 const SIDEBAR_MAP = {
@@ -35,10 +37,12 @@ export default function CustomerLayout() {
   const allowedPages = ROLE_PAGES.customer
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-dvh bg-gray-50">
       <SidebarComponent allowedPages={allowedPages} />
       <div className="flex-1 flex flex-col">
-        <Outlet />
+        <Suspense fallback={<RouteFallback />}>
+          <Outlet />
+        </Suspense>
       </div>
     </div>
   )
