@@ -1,5 +1,7 @@
 package com.project.tech_gadget_store.modules.order.service;
 
+import com.project.tech_gadget_store.common.exception.ForbiddenException;
+import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.entity.Account;
 import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.loyalty.entity.Membership;
@@ -19,8 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -57,43 +57,40 @@ class InvoiceServiceTest {
     }
 
     @Test
-    void getOrCreateInvoice_OrderNotFound_ThrowsResponseStatusException() {
+    void getOrCreateInvoice_OrderNotFound_ThrowsResourceNotFoundException() {
         when(orderRepository.findById("invalid-id")).thenReturn(Optional.empty());
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
                 invoiceService.getOrCreateInvoice("invalid-id", "user@example.com", false));
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("Đơn hàng không tồn tại"));
+        assertTrue(exception.getMessage().contains("Đơn hàng không tồn tại"));
     }
 
     @Test
-    void getOrCreateInvoice_AccessDenied_ThrowsResponseStatusException() {
+    void getOrCreateInvoice_AccessDenied_ThrowsForbiddenException() {
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(order));
         when(order.getCustomer()).thenReturn(customer);
         when(customer.getAccount()).thenReturn(account);
         when(account.getEmail()).thenReturn("owner@example.com");
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+        ForbiddenException exception = assertThrows(ForbiddenException.class, () ->
                 invoiceService.getOrCreateInvoice("order-1", "stranger@example.com", false));
 
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("Bạn không có quyền xem hoá đơn này"));
+        assertTrue(exception.getMessage().contains("Bạn không có quyền xem hoá đơn này"));
     }
 
     @Test
-    void getOrCreateInvoice_OrderCancelled_ThrowsResponseStatusException() {
+    void getOrCreateInvoice_OrderCancelled_ThrowsIllegalArgumentException() {
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(order));
         when(order.getCustomer()).thenReturn(customer);
         when(customer.getAccount()).thenReturn(account);
         when(account.getEmail()).thenReturn("owner@example.com");
         when(order.getOrderStatus()).thenReturn(OrderStatus.CANCELLED);
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 invoiceService.getOrCreateInvoice("order-1", "owner@example.com", false));
 
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("Không thể xuất hoá đơn cho đơn hàng đã huỷ"));
+        assertTrue(exception.getMessage().contains("Không thể xuất hoá đơn cho đơn hàng đã huỷ"));
     }
 
     @Test

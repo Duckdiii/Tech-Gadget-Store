@@ -272,7 +272,7 @@ public class CustomerOrderSeeder implements CommandLineRunner {
     private void applyOrderStatus(Order order, LocalDateTime orderDate) {
         String status = ORDER_STATUS_POOL.get(random.nextInt(ORDER_STATUS_POOL.size()));
         OrderStatus orderStatus = OrderStatus.valueOf(status);
-        order.setOrderStatus(orderStatus);
+        order.applyStatus(orderStatus);
         if (orderStatus != OrderStatus.CANCELLED) {
             order.setPaidAt(orderDate.plusHours(2));
         }

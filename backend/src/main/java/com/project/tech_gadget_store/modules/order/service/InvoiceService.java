@@ -1,6 +1,10 @@
 package com.project.tech_gadget_store.modules.order.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.project.tech_gadget_store.common.constants.ErrorMessages;
+import com.project.tech_gadget_store.common.exception.ForbiddenException;
+import com.project.tech_gadget_store.common.exception.InvoicePdfGenerationException;
+import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.loyalty.entity.BundleService;
 import com.project.tech_gadget_store.modules.order.dto.response.InvoiceItemResponseDto;
@@ -20,10 +24,8 @@ import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 
 
@@ -45,19 +47,19 @@ public class InvoiceService {
     @Transactional
     public InvoiceResponseDto getOrCreateInvoice(String orderId, String customerEmail, boolean isManagerOrStaff) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.ORDER_NOT_FOUND_PREFIX + orderId));
 
         // Security check: Only the customer who placed the order (or a manager/staff) can view the invoice
         if (!isManagerOrStaff) {
             if (order.getCustomer() == null || order.getCustomer().getAccount() == null ||
                     !order.getCustomer().getAccount().getEmail().equals(customerEmail)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xem hoá đơn này");
+                throw new ForbiddenException("Bạn không có quyền xem hoá đơn này");
             }
         }
 
         // Validate order status
         if (OrderStatus.CANCELLED.equals(order.getOrderStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể xuất hoá đơn cho đơn hàng đã huỷ");
+            throw new IllegalArgumentException("Không thể xuất hoá đơn cho đơn hàng đã huỷ");
         }
 
         Invoice invoice = invoiceRepository.findByOrderId(orderId)
@@ -97,7 +99,7 @@ public class InvoiceService {
         InvoiceResponseDto dto = getOrCreateInvoice(orderId, customerEmail, isManagerOrStaff);
         
         Invoice invoice = invoiceRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hoá đơn"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hoá đơn"));
 
         try {
             String htmlContent = buildXhtmlContent(invoice, dto);
@@ -115,7 +117,7 @@ public class InvoiceService {
             builder.run();
             return os.toByteArray();
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi tạo file PDF hoá đơn: " + e.getMessage(), e);
+            throw new InvoicePdfGenerationException("Lỗi khi tạo file PDF hoá đơn: " + e.getMessage(), e);
         }
     }
 

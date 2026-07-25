@@ -1,7 +1,9 @@
 package com.project.tech_gadget_store.modules.order.service;
 
+import com.project.tech_gadget_store.common.constants.ErrorMessages;
 import com.project.tech_gadget_store.common.exception.InventoryUpdateException;
 import com.project.tech_gadget_store.common.exception.OrderSaveException;
+import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.entity.Address;
 import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.auth.repository.AddressRepository;
@@ -40,10 +42,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @Component
@@ -89,7 +89,7 @@ public class CheckoutFacade {
     public PaymentConfirmResponseDto confirmCheckout(PaymentConfirmRequestDto req, String customerEmail,
             String clientIp) {
         Customer customer = customerRepository.findByAccountEmail(customerEmail)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CUSTOMER_NOT_FOUND));
 
         Cart cart = customer.getCart();
         if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {
@@ -129,20 +129,17 @@ public class CheckoutFacade {
         }
 
         Address address = addressRepository.findById(req.getAddressId())
-                .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ giao hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy địa chỉ giao hàng"));
 
         // Resolve Payment Method
         PaymentMethod paymentMethod = paymentMethodRepository.findById(req.getPaymentMethodId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Phương thức thanh toán không hợp lệ"));
+                .orElseThrow(() -> new IllegalArgumentException("Phương thức thanh toán không hợp lệ"));
 
         // Resolve Strategy
         PaymentStrategy activeStrategy = paymentStrategies.stream()
                 .filter(strategy -> strategy.supports(req.getPaymentMethodId()))
                 .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Phương thức thanh toán không hỗ trợ"));
+                .orElseThrow(() -> new IllegalArgumentException("Phương thức thanh toán không hỗ trợ"));
 
         BigDecimal subtotal = matchedItems.stream()
                 .map(CartItem::calculateSubtotal)
@@ -237,7 +234,7 @@ public class CheckoutFacade {
                 long oldStock = oldStocks.getOrDefault(p.getId(), 0L);
                 long newStock = productVariantRepository.countAvailablePhysicalUnitsByProductId(p.getId());
                 eventPublisher.publishEvent(
-                        new com.project.tech_gadget_store.modules.notification.event.ProductStockChangedEvent(p,
+                        new ProductStockChangedEvent(p,
                                 oldStock, newStock));
             } catch (Exception e) {
                 log.error("Failed to publish ProductStockChangedEvent: {}", e.getMessage(), e);

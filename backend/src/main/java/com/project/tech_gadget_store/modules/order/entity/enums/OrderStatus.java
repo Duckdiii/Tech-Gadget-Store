@@ -7,7 +7,7 @@ public enum OrderStatus {
     AWAITING_CONFIRMATION {
         @Override
         public void confirm(Order order) {
-            order.setOrderStatus(PROCESSING);
+            order.applyStatus(PROCESSING);
         }
         @Override
         public void markPaid(Order order) {
@@ -15,7 +15,7 @@ public enum OrderStatus {
         }
         @Override
         public void cancel(Order order) {
-            order.setOrderStatus(CANCELLED);
+            order.applyStatus(CANCELLED);
         }
         @Override
         public boolean canCancel() {
@@ -25,11 +25,11 @@ public enum OrderStatus {
     PROCESSING {
         @Override
         public void markShipping(Order order) {
-            order.setOrderStatus(SHIPPING);
+            order.applyStatus(SHIPPING);
         }
         @Override
         public void cancel(Order order) {
-            order.setOrderStatus(CANCELLED);
+            order.applyStatus(CANCELLED);
         }
         @Override
         public boolean canCancel() {
@@ -39,14 +39,14 @@ public enum OrderStatus {
     SHIPPING {
         @Override
         public void complete(Order order) {
-            order.setOrderStatus(COMPLETED);
+            order.applyStatus(COMPLETED);
         }
     },
     COMPLETED,
     CANCELLED {
         @Override
         public void refund(Order order) {
-            order.setOrderStatus(REFUNDED);
+            order.applyStatus(REFUNDED);
         }
     },
     REFUNDED;

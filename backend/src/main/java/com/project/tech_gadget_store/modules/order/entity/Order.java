@@ -55,6 +55,7 @@ public class Order extends BaseEntity {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    @Setter(AccessLevel.NONE)
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false, length = 40)
@@ -129,6 +130,17 @@ public class Order extends BaseEntity {
 
     public boolean canCancel() {
         return this.orderStatus.canCancel();
+    }
+
+    /**
+     * Raw status assignment used only by {@link OrderStatus}'s own transition methods (it lives
+     * in a different package, so it needs a public hook to mutate this field) and by seed
+     * scripts backfilling historical demo data. Application code must go through
+     * {@link #transitionTo}, {@link #cancel}, {@link #confirm} etc. — never call this directly,
+     * it skips every transition rule those methods enforce.
+     */
+    public void applyStatus(OrderStatus status) {
+        this.orderStatus = status;
     }
 
     public void transitionTo(OrderStatus targetStatus) {
