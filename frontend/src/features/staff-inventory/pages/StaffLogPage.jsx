@@ -23,7 +23,7 @@ export default function StaffLogPage() {
   } = useStaffLogs()
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-8 py-3.5 flex items-center gap-4">
         <div>
           <h1 className="text-xl font-bold text-gray-800">Lịch sử phiếu</h1>
@@ -42,7 +42,7 @@ export default function StaffLogPage() {
           { id: 'import', label: 'Phiếu nhập', badge: importFiltered.length, icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg> },
           { id: 'export', label: 'Phiếu xuất', badge: exportFiltered.length, icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg> }
         ].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+          <button aria-label={`Tab ${tab.label}`} type="button" key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeTab===tab.id ? 'border-teal-600 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
             {tab.icon}{tab.label}
             <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab===tab.id ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-500'}`}>{tab.badge}</span>
@@ -63,7 +63,7 @@ export default function StaffLogPage() {
           <div className="flex items-center gap-3">
             <div className="relative flex-1 max-w-sm">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Số phiếu, nhà cung cấp, đối tượng..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Số phiếu, nhà cung cấp, đối tượng..." aria-label="Tìm kiếm lịch sử phiếu" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
             </div>
           </div>
 
@@ -73,8 +73,8 @@ export default function StaffLogPage() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    {['Số phiếu','Ngày / Giờ','Nhà cung cấp','Thủ kho thực hiện','Số SP','Giá trị',''].map((h,i) => (
-                      <th key={i} className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                    {['Số phiếu','Ngày / Giờ','Nhà cung cấp','Thủ kho thực hiện','Số SP','Giá trị',''].map((h) => (
+                      <th key={h || 'actions'} className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -93,7 +93,7 @@ export default function StaffLogPage() {
                         <td className="px-4 py-3.5 text-sm font-bold text-gray-700">{log.items.length}</td>
                         <td className="px-4 py-3.5 text-sm font-bold text-gray-800">{fmt(total)}đ</td>
                         <td className="px-4 py-3.5">
-                          <button onClick={() => setViewLog({ type:'import', log })} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-teal-600 hover:text-teal-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-teal-50">
+                          <button aria-label={`Xem chi tiết phiếu nhập ${log.id}`} type="button" onClick={() => setViewLog({ type:'import', log })} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-teal-600 hover:text-teal-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-teal-50 border-none bg-transparent">
                             Xem phiếu →
                           </button>
                         </td>
@@ -111,8 +111,8 @@ export default function StaffLogPage() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    {['Số phiếu','Ngày / Giờ','Loại xuất','Người nhận / Lý do','Số SP','Giá trị',''].map((h,i) => (
-                      <th key={i} className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                    {['Số phiếu','Ngày / Giờ','Loại xuất','Người nhận / Lý do','Số SP','Giá trị',''].map((h) => (
+                      <th key={h || 'actions'} className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -133,7 +133,7 @@ export default function StaffLogPage() {
                         <td className="px-4 py-3.5 text-sm font-bold text-gray-700">{log.items.length}</td>
                         <td className="px-4 py-3.5 text-sm font-bold text-gray-800">{fmt(total)}đ</td>
                         <td className="px-4 py-3.5">
-                          <button onClick={() => setViewLog({ type:'export', log })} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-slate-600 hover:text-slate-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-slate-50">
+                          <button aria-label={`Xem chi tiết phiếu xuất ${log.id}`} type="button" onClick={() => setViewLog({ type:'export', log })} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-slate-600 hover:text-slate-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-slate-50 border-none bg-transparent">
                             Xem phiếu →
                           </button>
                         </td>

@@ -21,11 +21,11 @@ export default function OrderDetailDrawer({ order, onClose, onMarkDone }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
+      <button type="button" aria-label="Đóng bảng chi tiết đơn hàng" onClick={onClose} className="fixed inset-0 bg-black/30 z-40 cursor-pointer border-none" />
       <div className="fixed top-0 right-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col text-gray-800 text-left">
         {/* Header */}
         <div className="bg-gray-900 px-6 pt-5 pb-5 text-white relative">
-          <button onClick={onClose} className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded cursor-pointer border-none bg-transparent">
+          <button aria-label="Đóng chi tiết đơn hàng" type="button" onClick={onClose} className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded cursor-pointer border-none bg-transparent">
             <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
           <p className="text-sm font-bold opacity-70">Đơn hàng</p>
@@ -52,8 +52,8 @@ export default function OrderDetailDrawer({ order, onClose, onMarkDone }) {
           <div>
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Sản phẩm ({items.length})</h3>
             <div className="space-y-2">
-              {items.map((item, i) => (
-                <div key={i} className="flex items-center gap-3 bg-gray-50 rounded px-4 py-3">
+              {items.map((item) => (
+                <div key={item.id || item.productId || item.productName} className="flex items-center gap-3 bg-gray-50 rounded px-4 py-3">
                   <div className="w-10 h-10 bg-white rounded border border-gray-100 flex items-center justify-center text-lg shrink-0">📦</div>
                   <div className="flex-1 min-w-0 text-left">
                     <p className="text-xs font-semibold text-gray-800 truncate">{item.productName}</p>
@@ -81,7 +81,7 @@ export default function OrderDetailDrawer({ order, onClose, onMarkDone }) {
         {/* Footer */}
         {NEXT_STATUS[order.orderStatus] && (
           <div className="px-6 py-4 border-t border-gray-100">
-            <button onClick={() => onMarkDone(order.id, NEXT_STATUS[order.orderStatus].status)} className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded text-sm font-bold cursor-pointer transition-colors flex items-center justify-center gap-2 border-none">
+            <button aria-label={NEXT_STATUS[order.orderStatus].label} type="button" onClick={() => onMarkDone(order.id, NEXT_STATUS[order.orderStatus].status)} className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded text-sm font-bold cursor-pointer transition-colors flex items-center justify-center gap-2 border-none">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               {NEXT_STATUS[order.orderStatus].label}
             </button>

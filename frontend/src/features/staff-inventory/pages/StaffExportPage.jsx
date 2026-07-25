@@ -29,7 +29,7 @@ export default function StaffExportPage() {
   const currentType = EXPORT_TYPES.find(t => t.id === exportType)
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-8 py-3.5 flex items-center gap-4">
         <div>
           <h1 className="text-xl font-bold text-gray-800">Xuất kho</h1>
@@ -65,7 +65,7 @@ export default function StaffExportPage() {
                   }[t.color]
                   const isActive = exportType === t.id
                   return (
-                    <button
+                    <button aria-label={`Chọn loại xuất kho ${t.label}`} type="button"
                       key={t.id}
                       onClick={() => { setExportType(t.id); setRecipient('') }}
                       className={`py-3 px-4 rounded border-2 text-sm font-semibold transition-all cursor-pointer ${isActive ? `${colorMap[1]} ${colorMap[3]} ${colorMap[2]}` : 'border-gray-100 text-gray-500 hover:border-gray-200 bg-gray-50'}`}
@@ -82,17 +82,17 @@ export default function StaffExportPage() {
               <h2 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Thông tin phiếu xuất</h2>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">{currentType?.recipientLabel} *</label>
-                  <input value={recipient} onChange={e => setRecipient(e.target.value)} placeholder={`Nhập ${currentType?.recipientLabel?.toLowerCase()}...`} className={inp} />
+                  <span className="block text-xs font-semibold text-gray-500 mb-1.5">{currentType?.recipientLabel} *</span>
+                  <input value={recipient} onChange={e => setRecipient(e.target.value)} placeholder={`Nhập ${currentType?.recipientLabel?.toLowerCase()}...`} aria-label={currentType?.recipientLabel || 'Đối tượng xuất'} className={inp} />
                   {errors.recipient && <p className="text-xs text-red-500 mt-1">{errors.recipient}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Ngày xuất</label>
-                  <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inp} />
+                  <span className="block text-xs font-semibold text-gray-500 mb-1.5">Ngày xuất</span>
+                  <input type="date" value={date} onChange={e => setDate(e.target.value)} aria-label="Ngày xuất" className={inp} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Ghi chú</label>
-                  <input value={note} onChange={e => setNote(e.target.value)} placeholder="Ghi chú..." className={inp} />
+                  <span className="block text-xs font-semibold text-gray-500 mb-1.5">Ghi chú</span>
+                  <input value={note} onChange={e => setNote(e.target.value)} placeholder="Ghi chú..." aria-label="Ghi chú" className={inp} />
                 </div>
               </div>
             </div>
@@ -101,7 +101,7 @@ export default function StaffExportPage() {
             <div className="bg-white rounded border border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
                 <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Danh sách hàng xuất</h2>
-                <button onClick={addRow} className="flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-700 font-semibold cursor-pointer">
+                <button aria-label="Thêm sản phẩm xuất kho" type="button" onClick={addRow} className="flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-700 font-semibold cursor-pointer border-none bg-transparent">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                   Thêm sản phẩm
                 </button>
@@ -123,7 +123,8 @@ export default function StaffExportPage() {
                   const selectedProduct = productsList.find(p => p.id === row.productId)
                   const variantOptions = []
                   if (selectedProduct) {
-                    flatVariants.filter(v => v.productId === row.productId).forEach(v => {
+                    flatVariants.forEach(v => {
+                      if (v.productId !== row.productId) return
                       variantOptions.push({
                         id: v.id,
                         label: `${v.ramGb ? v.ramGb + 'GB RAM / ' : ''}${v.storageGb ? v.storageGb + 'GB Storage / ' : ''}${v.color || ''} (Còn: ${v.stock})`,
@@ -135,20 +136,21 @@ export default function StaffExportPage() {
                   const selectedVariant = flatVariants.find(v => v.id === row.productVariantId)
 
                   return (
-                    <div key={i} className={`px-6 py-4 grid items-center gap-3 ${overstock ? 'bg-red-50/50' : ''}`} style={{gridTemplateColumns:'24px 1.5fr 1fr 100px 100px 40px', gap:'12px'}}>
+                    <div key={row?.id ?? row?.code ?? row?.name ?? row?.key ?? row?.val ?? row} className={`px-6 py-4 grid items-center gap-3 ${overstock ? 'bg-red-50/50' : ''}`} style={{gridTemplateColumns:'24px 1.5fr 1fr 100px 100px 40px', gap:'12px'}}>
                       <span className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">{i+1}</span>
 
-                      <select value={row.productId} onChange={e => { updateRow(i, 'productId', e.target.value); updateRow(i, 'productVariantId', '') }} className="w-full border border-gray-200 rounded px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer">
+                      <select value={row.productId} onChange={e => { updateRow(i, 'productId', e.target.value); updateRow(i, 'productVariantId', '') }} aria-label="Chọn sản phẩm" className="w-full border border-gray-200 rounded px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer">
                         <option value="">-- Chọn sản phẩm --</option>
                         {productsList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                       </select>
 
-                      <select value={row.productVariantId} onChange={e => updateRow(i, 'productVariantId', e.target.value)} disabled={!row.productId} className="w-full border border-gray-200 rounded px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer disabled:opacity-55">
+                      <select value={row.productVariantId} onChange={e => updateRow(i, 'productVariantId', e.target.value)} disabled={!row.productId} aria-label="Chọn phiên bản" className="w-full border border-gray-200 rounded px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer disabled:opacity-55">
                         <option value="">-- Chọn phiên bản --</option>
                         {variantOptions.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                       </select>
 
                       <input type="number" min={1} value={row.qty} onChange={e => updateRow(i, 'qty', e.target.value)}
+                        aria-label="Số lượng xuất"
                         className={`w-full border rounded px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 ${overstock ? 'border-red-400 focus:ring-red-300 bg-red-50' : 'border-gray-200 focus:ring-teal-400'}`}
                       />
 
@@ -161,9 +163,9 @@ export default function StaffExportPage() {
                         ) : <span className="text-gray-300 text-xs">—</span>}
                       </div>
 
-                      <button
+                      <button aria-label={`Xóa dòng xuất kho thứ ${i+1}`} type="button"
                         onClick={() => removeRow(i)} disabled={rows.length === 1}
-                        className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 disabled:opacity-30 cursor-pointer shrink-0 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 disabled:opacity-30 cursor-pointer shrink-0 transition-colors border-none bg-transparent"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                       </button>
@@ -177,8 +179,8 @@ export default function StaffExportPage() {
 
             {/* Actions */}
             <div className="flex gap-3 justify-end">
-              <button onClick={resetForm} className="px-5 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Làm mới</button>
-              <button onClick={handleSubmit} disabled={submitting} className="px-6 py-2.5 bg-slate-700 hover:bg-slate-800 disabled:opacity-55 text-white rounded text-sm font-bold cursor-pointer transition-colors flex items-center gap-2">
+              <button aria-label="Làm mới phiếu xuất" type="button" onClick={resetForm} className="px-5 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Làm mới</button>
+              <button aria-label="Tạo phiếu xuất kho" type="button" onClick={handleSubmit} disabled={submitting} className="px-6 py-2.5 bg-slate-700 hover:bg-slate-800 disabled:opacity-55 text-white rounded text-sm font-bold cursor-pointer transition-colors flex items-center gap-2 border-none">
                 {submitting ? (
                   <>
                     <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">

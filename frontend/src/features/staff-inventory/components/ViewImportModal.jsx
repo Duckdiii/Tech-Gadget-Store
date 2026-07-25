@@ -6,7 +6,7 @@ export default function ViewImportModal({ log, onClose }) {
   const total = sub + vat
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
+      <button type="button" aria-label="Đóng xem phiếu nhập kho" onClick={onClose} className="fixed inset-0 bg-black/50 z-50 cursor-pointer border-none" />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
           <div className="bg-teal-700  px-6 py-5 text-white">
@@ -33,8 +33,8 @@ export default function ViewImportModal({ log, onClose }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {log.items.map((r,i) => (
-                    <tr key={i}>
+                  {log.items.map((r) => (
+                    <tr key={r.id || r.sku || r.name}>
                       <td className="px-3 py-2.5"><p className="text-xs font-semibold text-gray-800">{r.name}</p><p className="text-[11px] text-gray-400">{r.sku}</p></td>
                       <td className="px-3 py-2.5 text-center font-bold text-teal-700">{r.qty}</td>
                       <td className="px-3 py-2.5 text-right text-xs text-gray-600">{fmt(r.unitPrice)}đ</td>
@@ -52,7 +52,7 @@ export default function ViewImportModal({ log, onClose }) {
             {log.note && <p className="text-xs text-gray-400 italic">Ghi chú: {log.note}</p>}
           </div>
           <div className="flex gap-3 px-6 pb-6">
-            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
+            <button aria-label="Đóng chi tiết phiếu nhập" type="button" onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Đóng</button>
           </div>
         </div>
       </div>

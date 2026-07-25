@@ -33,16 +33,17 @@ export default function ChangePasswordCard({ pwdForm, setPwdForm, pwdErrors, pwd
       <div className="space-y-4">
         {FIELDS.map(({ key, label }) => (
           <div key={key}>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">{label}</label>
+            <span className="block text-xs font-semibold text-gray-500 mb-1.5">{label}</span>
             <div className="relative">
               <input
                 type={showPwd[key] ? 'text' : 'password'}
                 value={pwdForm[key]}
                 onChange={e => setPwdForm(f => ({ ...f, [key]: e.target.value }))}
                 placeholder="••••••••"
+                aria-label={label}
                 className={inp + ' pr-10'}
               />
-              <button
+              <button aria-label={showPwd[key] ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 type="button"
                 onClick={() => toggleShow(key)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
@@ -72,7 +73,7 @@ export default function ChangePasswordCard({ pwdForm, setPwdForm, pwdErrors, pwd
 
       {pwdErrors.submit && <p className="text-xs text-red-600 font-semibold mt-3">{pwdErrors.submit}</p>}
 
-      <button onClick={onSubmit} disabled={pwdSubmitting} className="mt-5 w-full py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-55 text-white rounded text-sm font-bold cursor-pointer transition-colors">
+      <button aria-label="Thao tác" type="button" onClick={onSubmit} disabled={pwdSubmitting} className="mt-5 w-full py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-55 text-white rounded text-sm font-bold cursor-pointer transition-colors">
         {pwdSubmitting ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
       </button>
     </div>

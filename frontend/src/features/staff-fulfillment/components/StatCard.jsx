@@ -9,8 +9,12 @@ export default function StatCard({ icon, label, value, sub, color, action, onCli
 
   return (
     <div
+      role={onClick || action ? "button" : undefined}
+      tabIndex={onClick || action ? 0 : undefined}
+      aria-label={onClick || action ? label : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick(e) } : undefined}
       onClick={onClick}
-      className={`bg-white rounded border border-gray-200 p-5 flex items-center gap-4 text-left ${action ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+      className={`bg-white rounded border border-gray-200 p-5 flex items-center gap-4 text-left ${action || onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
     >
       <span className={`w-12 h-12 ${cls[0]} rounded flex items-center justify-center text-white shrink-0`}>{icon}</span>
       <div>

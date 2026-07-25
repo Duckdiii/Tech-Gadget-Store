@@ -277,11 +277,11 @@ export default function StaffDashboardPage() {
           </div>
 
           {/* Manual refresh button */}
-          <button
+          <button aria-label="Tải lại dữ liệu" type="button"
             onClick={handleManualRefresh}
             disabled={isRefreshing}
             title="Tải lại dữ liệu"
-            className="p-2 hover:bg-gray-100 rounded-full cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 hover:bg-gray-100 rounded-full cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-none bg-transparent"
           >
             <svg
               className={`w-4 h-4 text-gray-500 ${isRefreshing ? 'animate-spin' : ''}`}
@@ -292,7 +292,7 @@ export default function StaffDashboardPage() {
             </svg>
           </button>
 
-          <button className="relative p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button aria-label="Thông báo" type="button" className="relative p-2 hover:bg-gray-100 rounded-full cursor-pointer border-none bg-transparent">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
@@ -307,9 +307,9 @@ export default function StaffDashboardPage() {
       <div className="flex-1 px-8 py-6 space-y-6">
         {/* KPI */}
         <div className="grid grid-cols-4 gap-4">
-          {KPI.map((c, i) => (
+          {KPI.map((c) => (
             <StatCard
-              key={i}
+              key={c.label}
               icon={c.icon}
               label={c.label}
               value={c.value}
@@ -415,7 +415,7 @@ export default function StaffDashboardPage() {
                 <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                 <h3 className="text-sm font-bold text-gray-800">Cảnh báo tồn kho</h3>
               </div>
-              <button onClick={() => onNavigate('staffImport')} className="text-xs text-teal-600 hover:text-teal-700 font-semibold cursor-pointer">
+              <button aria-label="Xem tất cả sản phẩm sắp hết hàng" type="button" onClick={() => onNavigate('staffImport')} className="text-xs text-teal-600 hover:text-teal-700 font-semibold cursor-pointer border-none bg-transparent">
                 Xem tất cả →
               </button>
             </div>
@@ -447,10 +447,10 @@ export default function StaffDashboardPage() {
                       </p>
                     </div>
                     {/* Nút nhập hàng nhanh */}
-                    <button
+                    <button aria-label={`Nhập hàng cho ${p.name}`} type="button"
                       onClick={() => onNavigate('staffImport', { state: { prefillProductId: p.id, prefillProductName: p.name } })}
                       title={`Nhập hàng cho: ${p.name}`}
-                      className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded text-[11px] font-bold text-teal-700 bg-teal-50 border border-teal-200 hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all cursor-pointer"
+                      className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded text-[11px] font-bold text-teal-700 bg-teal-50 border border-teal-200 hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-colors cursor-pointer"
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -462,7 +462,7 @@ export default function StaffDashboardPage() {
               )}
             </div>
             <div className="px-5 py-3 border-t border-gray-50">
-              <button onClick={() => onNavigate('staffImport')} className="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded cursor-pointer transition-colors">
+              <button aria-label="Tạo phiếu nhập kho mới" type="button" onClick={() => onNavigate('staffImport')} className="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded cursor-pointer transition-colors border-none">
                 + Tạo phiếu nhập kho
               </button>
             </div>
@@ -480,7 +480,7 @@ export default function StaffDashboardPage() {
                   </svg>
                 )}
               </div>
-              <button onClick={() => onNavigate('staffOrders')} className="text-xs text-teal-600 hover:text-teal-700 font-semibold cursor-pointer">
+              <button aria-label="Xem tất cả đơn hàng cần xử lý" type="button" onClick={() => onNavigate('staffOrders')} className="text-xs text-teal-600 hover:text-teal-700 font-semibold cursor-pointer border-none bg-transparent">
                 Xem tất cả →
               </button>
             </div>
@@ -505,14 +505,18 @@ export default function StaffDashboardPage() {
                   <p className="text-xs text-gray-400">Không có đơn hàng nào cần xử lý.</p>
                 </div>
               ) : (
-                pendingOrders.map((o, i) => {
+                pendingOrders.map((o) => {
                   const statusKey = o.orderStatus || o.status || ''
                   const sc = ORDER_STATUS[statusKey] || { bg: 'bg-gray-100', text: 'text-gray-600', label: statusKey }
                   const orderItems = o.orderItems ?? o.items ?? []
                   const itemCount  = Array.isArray(orderItems) ? orderItems.length : (orderItems ?? 0)
                   return (
                     <div
-                      key={o.id ?? i}
+                      key={o.id || o.createdAt}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Xem chi tiết đơn hàng ${o.id?.slice(0, 13) ?? 'cần xử lý'}`}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('staffOrders') }}
                       onClick={() => onNavigate('staffOrders')}
                       className="px-5 py-3.5 flex items-center gap-4 hover:bg-gray-50/60 cursor-pointer transition-colors"
                     >
@@ -549,7 +553,7 @@ export default function StaffDashboardPage() {
                 </svg>
               )}
             </div>
-            <button onClick={() => onNavigate('staffHistory')} className="text-xs text-teal-600 hover:text-teal-700 font-semibold cursor-pointer">
+            <button aria-label="Xem lịch sử phiếu nhập xuất" type="button" onClick={() => onNavigate('staffHistory')} className="text-xs text-teal-600 hover:text-teal-700 font-semibold cursor-pointer border-none bg-transparent">
               Xem lịch sử →
             </button>
           </div>
@@ -571,9 +575,13 @@ export default function StaffDashboardPage() {
             <p className="px-5 py-3.5 text-xs text-gray-400">Chưa có phiếu nhập/xuất nào gần đây.</p>
           ) : (
             <div className="grid grid-cols-4 divide-x divide-gray-50">
-              {recentReceipts.map((r, i) => (
+              {recentReceipts.map((r) => (
                 <div
-                  key={r.id ?? i}
+                  key={r.id || r.type}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Xem chi tiết phiếu ${r.id}`}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('staffHistory') }}
                   onClick={() => onNavigate('staffHistory')}
                   className="p-5 cursor-pointer hover:bg-gray-50/60 transition-colors"
                 >

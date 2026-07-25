@@ -25,7 +25,7 @@ export function useStaffImport(user) {
   const [productsList, setProductsList] = useState([])
   const [supplier, setSupplier] = useState('')
   const [warehouse, setWarehouse] = useState(WAREHOUSES[0])
-  const [date, setDate] = useState(today())
+  const [date, setDate] = useState(() => today())
   const [note, setNote] = useState('')
   const [rows, setRows] = useState([BLANK_ROW()])
   const [errors, setErrors] = useState({})

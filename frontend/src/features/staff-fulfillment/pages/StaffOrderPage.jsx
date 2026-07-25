@@ -23,7 +23,7 @@ export default function StaffOrderPage() {
   const selectedOrder = selected ? orders.find(o => o.id === selected) : null
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50 text-gray-800">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50 text-gray-800">
       <header className="bg-white border-b border-gray-100 px-8 py-3.5 flex items-center gap-4">
         <div>
           <h1 className="text-xl font-bold text-gray-800">Hỗ trợ đơn hàng (Nhân viên)</h1>
@@ -42,9 +42,9 @@ export default function StaffOrderPage() {
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã đơn, tên khách..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã đơn, tên khách..." aria-label="Tìm mã đơn hoặc tên khách hàng" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white" />
           </div>
-          <select value={statusF} onChange={e => setStatusF(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer bg-white">
+          <select value={statusF} onChange={e => setStatusF(e.target.value)} aria-label="Lọc theo trạng thái đơn hàng" className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer bg-white">
             <option value="">Tất cả trạng thái</option>
             {Object.entries(ORDER_STATUS).map(([k,v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
@@ -61,8 +61,8 @@ export default function StaffOrderPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Mã đơn','Khách hàng','Ngày đặt','Tổng tiền','Thanh toán','Trạng thái',''].map((h,i) => (
-                    <th key={i} className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                  {['Mã đơn','Khách hàng','Ngày đặt','Tổng tiền','Thanh toán','Trạng thái',''].map((h) => (
+                    <th key={h || 'actions'} className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -91,7 +91,7 @@ export default function StaffOrderPage() {
                           <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${st.bg} ${st.text}`}>{st.label}</span>
                         </td>
                         <td className="px-4 py-4 text-right">
-                          <button onClick={() => setSelected(o.id)} className="text-xs font-semibold text-teal-600 hover:text-teal-700 border-none bg-transparent cursor-pointer">
+                          <button aria-label={`Xử lý đơn hàng ${o.id.substring(0, 13)}`} type="button" onClick={() => setSelected(o.id)} className="text-xs font-semibold text-teal-600 hover:text-teal-700 border-none bg-transparent cursor-pointer">
                             Xử lý →
                           </button>
                         </td>

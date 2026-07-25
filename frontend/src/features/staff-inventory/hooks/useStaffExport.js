@@ -9,7 +9,7 @@ export function useStaffExport(user) {
   const [flatVariants, setFlatVariants] = useState([])
   const [exportType, setExportType] = useState('sale')
   const [recipient,  setRecipient]  = useState('')
-  const [date,       setDate]       = useState(today())
+  const [date,       setDate]       = useState(() => today())
   const [note,       setNote]       = useState('')
   const [rows,       setRows]       = useState([BLANK_ROW()])
   const [errors,     setErrors]     = useState({})
@@ -42,7 +42,8 @@ export function useStaffExport(user) {
         }
 
         const exportedCounts = {}
-        logs.filter(l => l.type === 'EXPORT').forEach(log => {
+        logs.forEach(log => {
+          if (log.type !== 'EXPORT') return
           const { ram, storage, color } = parseDetails(log.productDetails)
           const key = `${log.productName}-${ram}-${storage}-${color}`.toLowerCase()
           exportedCounts[key] = (exportedCounts[key] || 0) + log.quantity
