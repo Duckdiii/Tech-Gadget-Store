@@ -16,11 +16,12 @@ import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRe
 import com.project.tech_gadget_store.modules.loyalty.entity.Promotion;
 import com.project.tech_gadget_store.modules.loyalty.repository.BundleServiceRepository;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
-import com.project.tech_gadget_store.modules.review.repository.ReviewRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -59,10 +60,22 @@ class ProductServiceTest {
     private OrderRepository orderRepository;
 
     @Mock
-    private ReviewRepository reviewRepository;
+    private ProductSpecificationBuilder productSpecificationBuilder;
+
+    @Mock
+    private ProductStatsAggregator productStatsAggregator;
 
     @InjectMocks
     private ProductService productService;
+
+    @BeforeEach
+    void setUpDefaultStubs() {
+        lenient().when(productSpecificationBuilder.build(any(), any()))
+                .thenReturn((root, query, cb) -> cb.conjunction());
+        lenient().when(productStatsAggregator.fetchSalesCounts(anyList())).thenReturn(Map.of());
+        lenient().when(productStatsAggregator.fetchRatingStats(anyList())).thenReturn(Map.of());
+        lenient().when(productStatsAggregator.fetchStockCounts(anyList())).thenReturn(Map.of());
+    }
 
     private Product product(String name) {
         Brand brand = new Brand("Apple", "http://logo.png", "Apple Inc.");
@@ -117,7 +130,6 @@ class ProductServiceTest {
 
         when(productRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
         when(productVariantRepository.findVariantsForProductIds(List.of("prod-1"))).thenReturn(List.of());
-        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
         when(productMapper.toProductResponseDto(eq(product), any(), anyInt(), any(), any(), anyLong())).thenReturn(mapped);
 
         ProductFilterRequestDto filter = ProductFilterRequestDto.builder().page(0).size(20).build();
@@ -149,7 +161,6 @@ class ProductServiceTest {
         when(productRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(product)));
         when(productVariantRepository.findVariantsForProductIds(List.of("prod-1"))).thenReturn(List.of());
-        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
         when(productMapper.toProductResponseDto(eq(product), any(), anyInt(), any(), any(), anyLong())).thenReturn(mapped);
 
         ProductFilterRequestDto filter = ProductFilterRequestDto.builder()

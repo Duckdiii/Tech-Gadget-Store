@@ -14,8 +14,8 @@ import com.project.tech_gadget_store.modules.catalog.repository.CustomerRecommen
 import com.project.tech_gadget_store.modules.catalog.repository.ProductRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
 import com.project.tech_gadget_store.modules.catalog.repository.RecommendationExperimentLogRepository;
+import com.project.tech_gadget_store.modules.catalog.service.ProductStatsAggregator.RatingStat;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
-import com.project.tech_gadget_store.modules.review.repository.ReviewRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +45,7 @@ public class RecommendationService {
     private final RecommendationExperimentLogRepository recommendationExperimentLogRepository;
     private final RecentlyViewedService recentlyViewedService;
     private final ProductMapper productMapper;
-    private final ReviewRepository reviewRepository;
+    private final ProductStatsAggregator productStatsAggregator;
 
     public RecommendationService(
             ProductRepository productRepository,
@@ -55,7 +55,7 @@ public class RecommendationService {
             RecommendationExperimentLogRepository recommendationExperimentLogRepository,
             RecentlyViewedService recentlyViewedService,
             ProductMapper productMapper,
-            ReviewRepository reviewRepository) {
+            ProductStatsAggregator productStatsAggregator) {
         this.productRepository = productRepository;
         this.productVariantRepository = productVariantRepository;
         this.orderRepository = orderRepository;
@@ -63,37 +63,7 @@ public class RecommendationService {
         this.recommendationExperimentLogRepository = recommendationExperimentLogRepository;
         this.recentlyViewedService = recentlyViewedService;
         this.productMapper = productMapper;
-        this.reviewRepository = reviewRepository;
-    }
-
-    /** [productId -> [averageRating, reviewCount]] for a batch of products — avoids N+1 review queries per list. */
-    private Map<String, Object[]> fetchRatingStats(List<String> productIds) {
-        Map<String, Object[]> ratingMap = new java.util.HashMap<>();
-        for (Object[] row : reviewRepository.findRatingStatsByProductIds(productIds)) {
-            double avg = ((Number) row[1]).doubleValue();
-            int count = ((Number) row[2]).intValue();
-            ratingMap.put((String) row[0], new Object[] { avg, count });
-        }
-        return ratingMap;
-    }
-
-    private Double ratingOf(Map<String, Object[]> ratingMap, String productId) {
-        Object[] stat = ratingMap.get(productId);
-        return stat != null ? (Double) stat[0] : null;
-    }
-
-    private Integer reviewCountOf(Map<String, Object[]> ratingMap, String productId) {
-        Object[] stat = ratingMap.get(productId);
-        return stat != null ? (Integer) stat[1] : 0;
-    }
-
-    /** Batch-load số lượng serial IN_STOCK theo productId. Kết quả: [productId -> availableCount] */
-    private Map<String, Long> fetchStockCounts(List<String> productIds) {
-        Map<String, Long> stockMap = new java.util.HashMap<>();
-        for (String pid : productIds) {
-            stockMap.put(pid, productVariantRepository.countAvailablePhysicalUnitsByProductId(pid));
-        }
-        return stockMap;
+        this.productStatsAggregator = productStatsAggregator;
     }
 
     /**
@@ -107,14 +77,26 @@ public class RecommendationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
         List<ProductVariant> variantsA = productVariantRepository.findByProductId(productId);
+        List<ScoredProduct> topScored = computeTopScored(targetProduct, variantsA);
+        return mapScoredToDtos(topScored);
+    }
+
+    /**
+     * Content-based similarity scoring (steps 1-4 of the algorithm) for a single target product,
+     * given its already-loaded variants. Extracted from {@link #getSimilarProducts} so
+     * {@link #getSuggestionsFromHistory} can fan out over several target products while batching
+     * the stats-aggregator lookups once at the end instead of once per target (N+1).
+     */
+    private List<ScoredProduct> computeTopScored(Product targetProduct, List<ProductVariant> variantsA) {
         if (variantsA.isEmpty()) {
-            return Collections.emptyList();
+            return List.of();
         }
 
         // Determine default variant of Product A (lowest price variant)
         ProductVariant defaultVariantA = variantsA.stream()
                 .min(Comparator.comparing(ProductVariant::getPrice))
-                .orElseThrow(() -> new ResourceNotFoundException("No configurations found for product: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No configurations found for product: " + targetProduct.getId()));
 
         int targetRam = defaultVariantA.getRamGb() != null ? defaultVariantA.getRamGb() : 0;
         int targetStorage = defaultVariantA.getStorageGb() != null ? defaultVariantA.getStorageGb() : 0;
@@ -124,11 +106,11 @@ public class RecommendationService {
         // 1. Fetch raw candidate products (same category, different product, active)
         List<Product> candidates = productRepository.findCandidatesForRecommendation(
                 targetProduct.getCategory().getId(),
-                productId
+                targetProduct.getId()
         );
 
         if (candidates.isEmpty()) {
-            return Collections.emptyList();
+            return List.of();
         }
 
         // 2. Fetch all variants of candidate products to avoid N+1 query issue
@@ -193,31 +175,30 @@ public class RecommendationService {
         }
 
         // 4. Sort by score descending and return Top 6
-        List<ScoredProduct> topScored = scoredProducts.stream()
+        return scoredProducts.stream()
                 .sorted(Comparator.comparingDouble((ScoredProduct sp) -> sp.score).reversed())
                 .limit(6)
                 .toList();
+    }
 
-        if (topScored.isEmpty()) {
+    /** Batches the stats-aggregator lookups once for the given scored products, then maps to DTOs. */
+    private List<ProductResponseDto> mapScoredToDtos(List<ScoredProduct> scored) {
+        if (scored.isEmpty()) {
             return List.of();
         }
 
-        List<String> topIds = topScored.stream().map(sp -> sp.product.getId()).toList();
-        List<Object[]> salesCountsObj = orderRepository.countProductSalesForList(topIds);
-        Map<String, Integer> salesCountMap = new java.util.HashMap<>();
-        for (Object[] obj : salesCountsObj) {
-            salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
-        }
-        Map<String, Object[]> ratingMap = fetchRatingStats(topIds);
-        Map<String, Long> stockMap = fetchStockCounts(topIds);
+        List<String> ids = scored.stream().map(sp -> sp.product.getId()).toList();
+        Map<String, Integer> salesCountMap = productStatsAggregator.fetchSalesCounts(ids);
+        Map<String, RatingStat> ratingMap = productStatsAggregator.fetchRatingStats(ids);
+        Map<String, Long> stockMap = productStatsAggregator.fetchStockCounts(ids);
 
-        return topScored.stream()
+        return scored.stream()
                 .map(sp -> productMapper.toProductResponseDto(
                         sp.product,
                         sp.variants,
                         salesCountMap.getOrDefault(sp.product.getId(), 0),
-                        ratingOf(ratingMap, sp.product.getId()),
-                        reviewCountOf(ratingMap, sp.product.getId()),
+                        ProductStatsAggregator.ratingOf(ratingMap, sp.product.getId()),
+                        ProductStatsAggregator.reviewCountOf(ratingMap, sp.product.getId()),
                         stockMap.getOrDefault(sp.product.getId(), 0L)))
                 .toList();
     }
@@ -403,10 +384,15 @@ public class RecommendationService {
     }
 
     /**
-     * "Gợi ý từ lịch sử" — reuses {@link #getSimilarProducts} for each of the customer's
-     * recently viewed products, merging results and excluding both duplicates and the viewed
-     * products themselves. No new similarity logic — this is purely a fan-out over content-based
-     * recommendations already built for idea 1.
+     * "Gợi ý từ lịch sử" — reuses the same content-based scoring as {@link #getSimilarProducts}
+     * for each of the customer's recently viewed products, merging results and excluding both
+     * duplicates and the viewed products themselves.
+     *
+     * Unlike calling {@link #getSimilarProducts} once per viewed product (up to
+     * {@link #RECENTLY_VIEWED_LIMIT} times, each issuing its own stats-aggregator queries — an
+     * N+1 fan-out), this batches the target-product/variant lookups and the final stats-aggregator
+     * lookup once across all viewed products. A viewed product that's since gone inactive/missing
+     * is silently skipped rather than aborting the whole suggestion list.
      */
     public List<ProductResponseDto> getSuggestionsFromHistory(String customerId) {
         List<String> recentProductIds = getRecentlyViewedProductIds(customerId);
@@ -414,22 +400,36 @@ public class RecommendationService {
             return Collections.emptyList();
         }
 
-        List<ProductResponseDto> suggestions = new ArrayList<>();
+        Map<String, Product> viewedProductsById = productRepository.findAllById(recentProductIds).stream()
+                .filter(p -> Boolean.TRUE.equals(p.getIsActive()))
+                .collect(Collectors.toMap(Product::getId, p -> p));
+        Map<String, List<ProductVariant>> viewedVariantsByProductId =
+                productVariantRepository.findVariantsForProductIds(recentProductIds).stream()
+                        .collect(Collectors.groupingBy(pv -> pv.getProduct().getId()));
+
         Set<String> seen = new HashSet<>(recentProductIds);
+        List<ScoredProduct> merged = new ArrayList<>();
         for (String viewedProductId : recentProductIds) {
-            if (suggestions.size() >= FOR_YOU_LIMIT) {
+            if (merged.size() >= FOR_YOU_LIMIT) {
                 break;
             }
-            for (ProductResponseDto candidate : getSimilarProducts(viewedProductId)) {
-                if (suggestions.size() >= FOR_YOU_LIMIT) {
+            Product targetProduct = viewedProductsById.get(viewedProductId);
+            if (targetProduct == null) {
+                continue;
+            }
+            List<ProductVariant> variantsA =
+                    viewedVariantsByProductId.getOrDefault(viewedProductId, Collections.emptyList());
+            for (ScoredProduct candidate : computeTopScored(targetProduct, variantsA)) {
+                if (merged.size() >= FOR_YOU_LIMIT) {
                     break;
                 }
-                if (seen.add(candidate.getId())) {
-                    suggestions.add(candidate);
+                if (seen.add(candidate.product.getId())) {
+                    merged.add(candidate);
                 }
             }
         }
-        return suggestions;
+
+        return mapScoredToDtos(merged);
     }
 
     /** Up to {@link #RECENTLY_VIEWED_LIMIT} distinct, most-recently-viewed product ids. */
@@ -456,19 +456,15 @@ public class RecommendationService {
         Map<String, List<ProductVariant>> variantsByProductId = variants.stream()
                 .collect(Collectors.groupingBy(pv -> pv.getProduct().getId()));
 
-        List<Object[]> salesCountsObj = orderRepository.countProductSalesForList(productIds);
-        Map<String, Integer> salesCountMap = new java.util.HashMap<>();
-        for (Object[] obj : salesCountsObj) {
-            salesCountMap.put((String) obj[0], ((Number) obj[1]).intValue());
-        }
-        Map<String, Object[]> ratingMap = fetchRatingStats(productIds);
-        Map<String, Long> stockMap = fetchStockCounts(productIds);
+        Map<String, Integer> salesCountMap = productStatsAggregator.fetchSalesCounts(productIds);
+        Map<String, RatingStat> ratingMap = productStatsAggregator.fetchRatingStats(productIds);
+        Map<String, Long> stockMap = productStatsAggregator.fetchStockCounts(productIds);
 
         List<ProductResponseDto> result = new ArrayList<>();
         for (Product p : products) {
             List<ProductVariant> pVariants = variantsByProductId.getOrDefault(p.getId(), Collections.emptyList());
             result.add(productMapper.toProductResponseDto(p, pVariants, salesCountMap.getOrDefault(p.getId(), 0),
-                    ratingOf(ratingMap, p.getId()), reviewCountOf(ratingMap, p.getId()),
+                    ProductStatsAggregator.ratingOf(ratingMap, p.getId()), ProductStatsAggregator.reviewCountOf(ratingMap, p.getId()),
                     stockMap.getOrDefault(p.getId(), 0L)));
         }
         return result;

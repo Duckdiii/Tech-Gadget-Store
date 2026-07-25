@@ -11,11 +11,11 @@ import com.project.tech_gadget_store.modules.catalog.repository.ProductRepositor
 import com.project.tech_gadget_store.modules.catalog.repository.ProductVariantRepository;
 import com.project.tech_gadget_store.modules.loyalty.repository.BundleServiceRepository;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
-import com.project.tech_gadget_store.modules.review.repository.ReviewRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,10 @@ class RecommendationServiceTest {
     private OrderRepository orderRepository;
 
     @Mock
-    private ReviewRepository reviewRepository;
+    private ProductStatsAggregator productStatsAggregator;
+
+    @Mock
+    private RecentlyViewedService recentlyViewedService;
 
     @InjectMocks
     private RecommendationService recommendationService;
@@ -61,6 +64,10 @@ class RecommendationServiceTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(productStatsAggregator.fetchSalesCounts(anyList())).thenReturn(Map.of());
+        lenient().when(productStatsAggregator.fetchRatingStats(anyList())).thenReturn(Map.of());
+        lenient().when(productStatsAggregator.fetchStockCounts(anyList())).thenReturn(Map.of());
+
         category = new Category("Phone", "http://image.url");
         category.setId("cat-id");
 
@@ -72,7 +79,7 @@ class RecommendationServiceTest {
 
         targetProduct = new Product("iPhone 15", "iPhone Description", brandApple, category);
         targetProduct.setId("target-id");
-        targetProduct.setIsActive(true);
+        targetProduct.reactivate();
 
         targetVariant = new ProductVariant(targetProduct, 8, 128, "Black", BigDecimal.valueOf(1000.0));
         targetVariant.setId("v-target-id");
@@ -105,7 +112,7 @@ class RecommendationServiceTest {
         // Candidates: B (Samsung, Phone, price 1100, RAM 12, Storage 256) -> Score = 65
         Product productB = new Product("Galaxy S24", "Samsung phone", brandSamsung, category);
         productB.setId("B");
-        productB.setIsActive(true);
+        productB.reactivate();
 
         ProductVariant variantB = new ProductVariant(productB, 12, 256, "Black", BigDecimal.valueOf(1100.0));
         variantB.setId("v-b");
@@ -113,7 +120,7 @@ class RecommendationServiceTest {
         // Candidates: C (Apple, Phone, price 900, RAM 6, Storage 64) -> Score = 75
         Product productC = new Product("iPhone 14", "Apple phone", brandApple, category);
         productC.setId("C");
-        productC.setIsActive(true);
+        productC.reactivate();
 
         ProductVariant variantC = new ProductVariant(productC, 6, 64, "Black", BigDecimal.valueOf(900.0));
         variantC.setId("v-c");
@@ -121,7 +128,7 @@ class RecommendationServiceTest {
         // Candidates: D (Samsung, Phone, price 1500) -> Over 40% diff -> Excluded
         Product productD = new Product("Galaxy Fold", "Samsung foldable", brandSamsung, category);
         productD.setId("D");
-        productD.setIsActive(true);
+        productD.reactivate();
 
         ProductVariant variantD = new ProductVariant(productD, 16, 512, "Black", BigDecimal.valueOf(1500.0));
         variantD.setId("v-d");
@@ -129,7 +136,7 @@ class RecommendationServiceTest {
         // Candidates: E (Apple, Phone, price 1000, RAM 8, Storage 128) -> Score = 100
         Product productE = new Product("iPhone 15 Plus", "Apple phone", brandApple, category);
         productE.setId("E");
-        productE.setIsActive(true);
+        productE.reactivate();
 
         ProductVariant variantE = new ProductVariant(productE, 8, 128, "Black", BigDecimal.valueOf(1000.0));
         variantE.setId("v-e");
@@ -145,7 +152,6 @@ class RecommendationServiceTest {
         ProductResponseDto dtoC = ProductResponseDto.builder().id("C").name("iPhone 14").build();
         ProductResponseDto dtoE = ProductResponseDto.builder().id("E").name("iPhone 15 Plus").build();
 
-        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
         when(productMapper.toProductResponseDto(eq(productB), anyList(), anyInt(), any(), any(), anyLong())).thenReturn(dtoB);
         when(productMapper.toProductResponseDto(eq(productC), anyList(), anyInt(), any(), any(), anyLong())).thenReturn(dtoC);
         when(productMapper.toProductResponseDto(eq(productE), anyList(), anyInt(), any(), any(), anyLong())).thenReturn(dtoE);
@@ -180,7 +186,6 @@ class RecommendationServiceTest {
         when(productRepository.findAllById(productIds)).thenReturn(products);
         when(productVariantRepository.findVariantsForProductIds(productIds)).thenReturn(variants);
 
-        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
         for (int i = 0; i < 6; i++) {
             ProductResponseDto dto = ProductResponseDto.builder().id("P" + (i + 1)).build();
             when(productMapper.toProductResponseDto(eq(products.get(i)), anyList(), anyInt(), any(), any(), anyLong())).thenReturn(dto);
@@ -205,7 +210,6 @@ class RecommendationServiceTest {
         when(productRepository.findAllById(List.of("P1"))).thenReturn(List.of(p1));
         when(productVariantRepository.findVariantsForProductIds(List.of("P1"))).thenReturn(List.of(v1));
 
-        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
         ProductResponseDto dto1 = ProductResponseDto.builder().id("P1").build();
         when(productMapper.toProductResponseDto(eq(p1), anyList(), anyInt(), any(), any(), anyLong())).thenReturn(dto1);
 
@@ -231,6 +235,70 @@ class RecommendationServiceTest {
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getId()).isEqualTo("P1");
         assertThat(result.get(1).getId()).isEqualTo("C");
+    }
+
+    @Test
+    void getSuggestionsFromHistory_noHistory_returnsEmptyList() {
+        when(recentlyViewedService.getRecentProductIds("cust-1", 5)).thenReturn(Collections.emptyList());
+
+        List<ProductResponseDto> result = recommendationService.getSuggestionsFromHistory("cust-1");
+
+        assertThat(result).isEmpty();
+        verifyNoInteractions(productStatsAggregator);
+    }
+
+    /**
+     * Two recently-viewed products are scored via the shared batched path; the stats-aggregator
+     * lookup must fire exactly once for the merged result set, not once per viewed product
+     * (the N+1 fan-out this refactor fixes).
+     */
+    @Test
+    void getSuggestionsFromHistory_mergesAcrossViewedProducts_callsStatsAggregatorOnce() {
+        Product v2Product = new Product("Product V2", "Desc", brandApple, category);
+        v2Product.setId("v2");
+        v2Product.reactivate();
+        ProductVariant v2Variant = new ProductVariant(v2Product, 8, 128, "Black", BigDecimal.valueOf(500.0));
+        v2Variant.setId("v-v2");
+
+        when(recentlyViewedService.getRecentProductIds("cust-1", 5)).thenReturn(List.of("target-id", "v2"));
+        when(productRepository.findAllById(List.of("target-id", "v2")))
+                .thenReturn(List.of(targetProduct, v2Product));
+        when(productVariantRepository.findVariantsForProductIds(List.of("target-id", "v2")))
+                .thenReturn(List.of(targetVariant, v2Variant));
+
+        Product productC = new Product("iPhone 14", "Apple phone", brandApple, category);
+        productC.setId("C");
+        productC.reactivate();
+        ProductVariant variantC = new ProductVariant(productC, 6, 64, "Black", BigDecimal.valueOf(900.0));
+        variantC.setId("v-c");
+
+        when(productRepository.findCandidatesForRecommendation("cat-id", "target-id")).thenReturn(List.of(productC));
+        when(productVariantRepository.findVariantsForProductIds(List.of("C"))).thenReturn(List.of(variantC));
+        when(productRepository.findCandidatesForRecommendation("cat-id", "v2")).thenReturn(Collections.emptyList());
+
+        ProductResponseDto dtoC = ProductResponseDto.builder().id("C").name("iPhone 14").build();
+        when(productMapper.toProductResponseDto(eq(productC), anyList(), anyInt(), any(), any(), anyLong())).thenReturn(dtoC);
+
+        List<ProductResponseDto> result = recommendationService.getSuggestionsFromHistory("cust-1");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo("C");
+        verify(productStatsAggregator, times(1)).fetchSalesCounts(anyList());
+        verify(productStatsAggregator, times(1)).fetchRatingStats(anyList());
+        verify(productStatsAggregator, times(1)).fetchStockCounts(anyList());
+    }
+
+    @Test
+    void getSuggestionsFromHistory_viewedProductNoLongerActive_skipsItInsteadOfThrowing() {
+        targetProduct.discontinue();
+
+        when(recentlyViewedService.getRecentProductIds("cust-1", 5)).thenReturn(List.of("target-id"));
+        when(productRepository.findAllById(List.of("target-id"))).thenReturn(List.of(targetProduct));
+
+        List<ProductResponseDto> result = recommendationService.getSuggestionsFromHistory("cust-1");
+
+        assertThat(result).isEmpty();
+        verifyNoInteractions(productStatsAggregator);
     }
 
     @Test
@@ -266,7 +334,6 @@ class RecommendationServiceTest {
 
         ProductResponseDto dtoC = ProductResponseDto.builder().id("C").build();
         ProductResponseDto dtoP2 = ProductResponseDto.builder().id("P2").build();
-        when(orderRepository.countProductSalesForList(anyList())).thenReturn(List.of());
         when(productMapper.toProductResponseDto(eq(productC), anyList(), anyInt(), any(), any(), anyLong())).thenReturn(dtoC);
         when(productMapper.toProductResponseDto(eq(productP2), anyList(), anyInt(), any(), any(), anyLong())).thenReturn(dtoP2);
 

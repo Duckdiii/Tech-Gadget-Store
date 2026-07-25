@@ -36,6 +36,7 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @Setter(AccessLevel.NONE)
     @Column(name = "is_active", nullable = false, columnDefinition = "boolean not null default true")
     private Boolean isActive = true;
 
@@ -90,5 +91,43 @@ public Product(String name, String description, Brand brand, Category category) 
 
     public void reactivate() {
         this.isActive = true;
+    }
+
+    // -------------------------------------------------------------------------
+    // Type-specific behavior — overridden per subtype (Phone/Laptop/Monitor/Headphones/
+    // Smartwatch) so callers (ProductMapper, ProductManagementService, OrderService...) never
+    // need to type-switch on `instanceof` to find out what kind of product this is.
+    // -------------------------------------------------------------------------
+
+    /** This product's type-specific spec fields; empty unless a subtype overrides it. */
+    public ProductSpecs specs() {
+        return ProductSpecs.EMPTY;
+    }
+
+    /** Copies whichever of {@code specs}' fields apply to this product's type onto itself; no-op unless overridden. */
+    public void applySpecs(ProductSpecs specs) {
+        // no type-specific fields on the base type
+    }
+
+    /** Short descriptive snippets ("RAM 8GB", "Snapdragon 8 Gen 3"...) for the storefront card summary. */
+    public List<String> buildSpecSummaryParts(List<ProductVariant> variants) {
+        List<String> parts = new ArrayList<>();
+        appendRamAndStorage(parts, variants);
+        return parts;
+    }
+
+    /** Shared by the base fallback and the {@link Phone}/{@link Laptop} overrides. */
+    protected void appendRamAndStorage(List<String> parts, List<ProductVariant> variants) {
+        if (!variants.isEmpty() && variants.get(0).getRamGb() != null) {
+            parts.add("RAM " + variants.get(0).getRamGb() + "GB");
+        }
+        if (!variants.isEmpty() && variants.get(0).getStorageGb() != null) {
+            parts.add(variants.get(0).getStorageGb() + "GB");
+        }
+    }
+
+    /** Weight (kg) used for shipping-manifest calculations; overridden by {@link Laptop}. */
+    public double shippingWeightKg() {
+        return 0.5;
     }
 }

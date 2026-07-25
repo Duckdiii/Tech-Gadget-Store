@@ -3,6 +3,8 @@ package com.project.tech_gadget_store.modules.catalog.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,5 +32,28 @@ public class Headphones extends Product {
 
     public Headphones(String name, String description, Brand brand, Category category) {
         super(name, description, brand, category);
+    }
+
+    @Override
+    public ProductSpecs specs() {
+        return ProductSpecs.builder()
+                .connectorType(connectorType)
+                .isWireless(isWireless)
+                .batteryLifeHours(batteryLifeHours)
+                .hasNoiseCancelling(hasNoiseCancelling)
+                .build();
+    }
+
+    @Override
+    public List<String> buildSpecSummaryParts(List<ProductVariant> variants) {
+        List<String> parts = new ArrayList<>();
+        parts.add(Boolean.TRUE.equals(isWireless) ? "Không dây" : "Có dây");
+        if (Boolean.TRUE.equals(hasNoiseCancelling)) {
+            parts.add("Chống ồn ANC");
+        }
+        if (batteryLifeHours != null) {
+            parts.add(batteryLifeHours + "h pin");
+        }
+        return parts;
     }
 }

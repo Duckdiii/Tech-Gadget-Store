@@ -13,9 +13,7 @@ import com.project.tech_gadget_store.modules.catalog.dto.response.ProductStatsRe
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductVariantResponseDto;
 import com.project.tech_gadget_store.modules.catalog.entity.Brand;
 import com.project.tech_gadget_store.modules.catalog.entity.Category;
-import com.project.tech_gadget_store.modules.catalog.entity.Laptop;
-import com.project.tech_gadget_store.modules.catalog.entity.Monitor;
-import com.project.tech_gadget_store.modules.catalog.entity.Phone;
+import com.project.tech_gadget_store.modules.catalog.entity.ProductSpecs;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductFactory;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductImage;
@@ -199,24 +197,17 @@ public class ProductManagementService {
     // -------------------------------------------------------------------------
 
     private void applySpecFields(Product product, ProductRequestDto dto) {
-        if (product instanceof Phone phone) {
-            phone.setScreenSize(dto.getScreenSize());
-            phone.setRearCamera(dto.getRearCamera());
-            phone.setFrontCamera(dto.getFrontCamera());
-            phone.setChipset(dto.getChipset());
-            phone.setNfcSupported(dto.getNfcSupported());
-            phone.setBatteryCapacity(dto.getBatteryCapacity());
-            phone.setSimType(dto.getSimType());
-            phone.setOperatingSystem(dto.getOperatingSystem());
-            phone.setScreenResolution(dto.getScreenResolution());
-        } else if (product instanceof Laptop laptop) {
-            laptop.setScreenSize(dto.getScreenSize());
-            laptop.setOperatingSystem(dto.getOperatingSystem());
-            // Other laptop-specific specs can be set here if present in DTO/future extensions
-        } else if (product instanceof Monitor monitor) {
-            monitor.setScreenSize(dto.getScreenSize());
-            monitor.setResolution(dto.getScreenResolution());
-        }
+        product.applySpecs(ProductSpecs.builder()
+                .screenSize(dto.getScreenSize())
+                .rearCamera(dto.getRearCamera())
+                .frontCamera(dto.getFrontCamera())
+                .chipset(dto.getChipset())
+                .nfcSupported(dto.getNfcSupported())
+                .batteryCapacity(dto.getBatteryCapacity())
+                .simType(dto.getSimType())
+                .operatingSystem(dto.getOperatingSystem())
+                .screenResolution(dto.getScreenResolution())
+                .build());
     }
 
     private boolean isVariantReferenced(String variantId) {

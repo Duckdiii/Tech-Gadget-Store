@@ -5,14 +5,10 @@ import com.project.tech_gadget_store.modules.catalog.dto.response.ProductDetailR
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductImageResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductResponseDto;
 import com.project.tech_gadget_store.modules.catalog.dto.response.ProductVariantResponseDto;
-import com.project.tech_gadget_store.modules.catalog.entity.Headphones;
-import com.project.tech_gadget_store.modules.catalog.entity.Laptop;
-import com.project.tech_gadget_store.modules.catalog.entity.Monitor;
-import com.project.tech_gadget_store.modules.catalog.entity.Phone;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductImage;
+import com.project.tech_gadget_store.modules.catalog.entity.ProductSpecs;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
-import com.project.tech_gadget_store.modules.catalog.entity.Smartwatch;
 import com.project.tech_gadget_store.modules.loyalty.dto.response.BundleServiceResponseDto;
 import com.project.tech_gadget_store.modules.loyalty.entity.BundleService;
 import com.project.tech_gadget_store.modules.loyalty.entity.Promotion;
@@ -73,31 +69,22 @@ public class ProductMapper {
                                 .reviewCount(reviewCount)
                                 .availableCount(availableCount);
 
-                if (product instanceof Phone phone) {
-                        builder.screenSize(phone.getScreenSize());
-                        builder.chipset(phone.getChipset());
-                        builder.batteryCapacity(phone.getBatteryCapacity());
-                        builder.operatingSystem(phone.getOperatingSystem());
-                        builder.resolution(phone.getScreenResolution());
-                } else if (product instanceof Laptop laptop) {
-                        builder.cpu(laptop.getCpu());
-                        builder.gpu(laptop.getGpu());
-                        builder.screenSize(laptop.getScreenSize());
-                        builder.operatingSystem(laptop.getOperatingSystem());
-                } else if (product instanceof Monitor monitor) {
-                        builder.screenSize(monitor.getScreenSize());
-                        builder.resolution(monitor.getResolution());
-                        builder.refreshRate(monitor.getRefreshRate());
-                        builder.panelType(monitor.getPanelType());
-                } else if (product instanceof Headphones headphones) {
-                        builder.isWireless(headphones.getIsWireless());
-                        builder.hasNoiseCancelling(headphones.getHasNoiseCancelling());
-                        builder.batteryLifeHours(headphones.getBatteryLifeHours());
-                } else if (product instanceof Smartwatch smartwatch) {
-                        builder.batteryLifeDays(smartwatch.getBatteryLifeDays());
-                        builder.isWaterResistant(smartwatch.getIsWaterResistant());
-                        builder.hasGps(smartwatch.getHasGps());
-                }
+                ProductSpecs specs = product.specs();
+                builder.screenSize(specs.getScreenSize());
+                builder.resolution(specs.getScreenResolution());
+                builder.chipset(specs.getChipset());
+                builder.batteryCapacity(specs.getBatteryCapacity());
+                builder.operatingSystem(specs.getOperatingSystem());
+                builder.cpu(specs.getCpu());
+                builder.gpu(specs.getGpu());
+                builder.refreshRate(specs.getRefreshRate());
+                builder.panelType(specs.getPanelType());
+                builder.isWireless(specs.getIsWireless());
+                builder.hasNoiseCancelling(specs.getHasNoiseCancelling());
+                builder.batteryLifeHours(specs.getBatteryLifeHours());
+                builder.batteryLifeDays(specs.getBatteryLifeDays());
+                builder.isWaterResistant(specs.getIsWaterResistant());
+                builder.hasGps(specs.getHasGps());
 
                 return builder.build();
         }
@@ -137,59 +124,7 @@ public class ProductMapper {
                                                 .build())
                                 .toList();
 
-                Double screenSize = null;
-                String screenResolution = null;
-                String rearCamera = null;
-                String frontCamera = null;
-                String chipset = null;
-                Boolean nfcSupported = null;
-                Integer batteryCapacity = null;
-                String simType = null;
-                String operatingSystem = null;
-                String cpu = null;
-                String gpu = null;
-                Double weight = null;
-                Integer refreshRate = null;
-                String panelType = null;
-                String connectorType = null;
-                Boolean isWireless = null;
-                Integer batteryLifeHours = null;
-                Boolean hasNoiseCancelling = null;
-                Integer batteryLifeDays = null;
-                Boolean isWaterResistant = null;
-                Boolean hasGps = null;
-
-                if (product instanceof Phone phone) {
-                        screenSize = phone.getScreenSize();
-                        screenResolution = phone.getScreenResolution();
-                        rearCamera = phone.getRearCamera();
-                        frontCamera = phone.getFrontCamera();
-                        chipset = phone.getChipset();
-                        nfcSupported = phone.getNfcSupported();
-                        batteryCapacity = phone.getBatteryCapacity();
-                        simType = phone.getSimType();
-                        operatingSystem = phone.getOperatingSystem();
-                } else if (product instanceof Laptop laptop) {
-                        screenSize = laptop.getScreenSize();
-                        operatingSystem = laptop.getOperatingSystem();
-                        cpu = laptop.getCpu();
-                        gpu = laptop.getGpu();
-                        weight = laptop.getWeight();
-                } else if (product instanceof Monitor monitor) {
-                        screenSize = monitor.getScreenSize();
-                        screenResolution = monitor.getResolution();
-                        refreshRate = monitor.getRefreshRate();
-                        panelType = monitor.getPanelType();
-                } else if (product instanceof Headphones headphones) {
-                        connectorType = headphones.getConnectorType();
-                        isWireless = headphones.getIsWireless();
-                        batteryLifeHours = headphones.getBatteryLifeHours();
-                        hasNoiseCancelling = headphones.getHasNoiseCancelling();
-                } else if (product instanceof Smartwatch smartwatch) {
-                        batteryLifeDays = smartwatch.getBatteryLifeDays();
-                        isWaterResistant = smartwatch.getIsWaterResistant();
-                        hasGps = smartwatch.getHasGps();
-                }
+                ProductSpecs specs = product.specs();
 
                 return ProductDetailResponseDto.builder()
                                 .id(product.getId())
@@ -207,27 +142,27 @@ public class ProductMapper {
                                 .images(imageDtos)
                                 .variants(variantDtos)
                                 .bundleServices(bundleServiceDtos)
-                                .screenSize(screenSize)
-                                .screenResolution(screenResolution)
-                                .rearCamera(rearCamera)
-                                .frontCamera(frontCamera)
-                                .chipset(chipset)
-                                .nfcSupported(nfcSupported)
-                                .batteryCapacity(batteryCapacity)
-                                .simType(simType)
-                                .operatingSystem(operatingSystem)
-                                .cpu(cpu)
-                                .gpu(gpu)
-                                .weight(weight)
-                                .refreshRate(refreshRate)
-                                .panelType(panelType)
-                                .connectorType(connectorType)
-                                .isWireless(isWireless)
-                                .batteryLifeHours(batteryLifeHours)
-                                .hasNoiseCancelling(hasNoiseCancelling)
-                                .batteryLifeDays(batteryLifeDays)
-                                .isWaterResistant(isWaterResistant)
-                                .hasGps(hasGps)
+                                .screenSize(specs.getScreenSize())
+                                .screenResolution(specs.getScreenResolution())
+                                .rearCamera(specs.getRearCamera())
+                                .frontCamera(specs.getFrontCamera())
+                                .chipset(specs.getChipset())
+                                .nfcSupported(specs.getNfcSupported())
+                                .batteryCapacity(specs.getBatteryCapacity())
+                                .simType(specs.getSimType())
+                                .operatingSystem(specs.getOperatingSystem())
+                                .cpu(specs.getCpu())
+                                .gpu(specs.getGpu())
+                                .weight(specs.getWeight())
+                                .refreshRate(specs.getRefreshRate())
+                                .panelType(specs.getPanelType())
+                                .connectorType(specs.getConnectorType())
+                                .isWireless(specs.getIsWireless())
+                                .batteryLifeHours(specs.getBatteryLifeHours())
+                                .hasNoiseCancelling(specs.getHasNoiseCancelling())
+                                .batteryLifeDays(specs.getBatteryLifeDays())
+                                .isWaterResistant(specs.getIsWaterResistant())
+                                .hasGps(specs.getHasGps())
                                 .discountPercent(getBestActivePromotionPercent(product))
                                 .salesCount(salesCount)
                                 .build();
@@ -308,51 +243,11 @@ public class ProductMapper {
 
         /**
          * Builds a short spec summary string displayed in product card thumbnails.
-         * Tailored per product type so the storefront never needs to know the concrete subtype.
+         * Tailored per product type — delegates to {@link Product#buildSpecSummaryParts} so the
+         * mapper never needs to know the concrete subtype.
          */
         private String buildSpecSummary(Product product, List<ProductVariant> variants) {
-                List<String> parts = new java.util.ArrayList<>();
-                if (product instanceof Phone phone) {
-                        // RAM · Storage · Colors
-                        if (!variants.isEmpty() && variants.get(0).getRamGb() != null)
-                                parts.add("RAM " + variants.get(0).getRamGb() + "GB");
-                        if (!variants.isEmpty() && variants.get(0).getStorageGb() != null)
-                                parts.add(variants.get(0).getStorageGb() + "GB");
-                        String colors = variants.stream()
-                                        .map(ProductVariant::getColor)
-                                        .filter(Objects::nonNull)
-                                        .distinct()
-                                        .collect(Collectors.joining(", "));
-                        if (!colors.isBlank()) parts.add(colors);
-                } else if (product instanceof Laptop laptop) {
-                        if (laptop.getCpu() != null) parts.add(laptop.getCpu());
-                        if (!variants.isEmpty() && variants.get(0).getRamGb() != null)
-                                parts.add("RAM " + variants.get(0).getRamGb() + "GB");
-                        if (!variants.isEmpty() && variants.get(0).getStorageGb() != null)
-                                parts.add(variants.get(0).getStorageGb() + "GB");
-                } else if (product instanceof Monitor monitor) {
-                        if (monitor.getScreenSize() != null)
-                                parts.add(monitor.getScreenSize().intValue() + "\"" );
-                        if (monitor.getResolution() != null) parts.add(monitor.getResolution());
-                        if (monitor.getRefreshRate() != null) parts.add(monitor.getRefreshRate() + "Hz");
-                        if (monitor.getPanelType() != null) parts.add(monitor.getPanelType());
-                } else if (product instanceof Headphones headphones) {
-                        parts.add(Boolean.TRUE.equals(headphones.getIsWireless()) ? "Không dây" : "Có dây");
-                        if (Boolean.TRUE.equals(headphones.getHasNoiseCancelling())) parts.add("Chống ồn ANC");
-                        if (headphones.getBatteryLifeHours() != null)
-                                parts.add(headphones.getBatteryLifeHours() + "h pin");
-                } else if (product instanceof Smartwatch smartwatch) {
-                        if (Boolean.TRUE.equals(smartwatch.getHasGps())) parts.add("GPS");
-                        if (Boolean.TRUE.equals(smartwatch.getIsWaterResistant())) parts.add("Chống nước");
-                        if (smartwatch.getBatteryLifeDays() != null)
-                                parts.add(smartwatch.getBatteryLifeDays() + " ngày pin");
-                } else {
-                        // Generic fallback: RAM · Storage · Colors
-                        if (!variants.isEmpty() && variants.get(0).getRamGb() != null)
-                                parts.add("RAM " + variants.get(0).getRamGb() + "GB");
-                        if (!variants.isEmpty() && variants.get(0).getStorageGb() != null)
-                                parts.add(variants.get(0).getStorageGb() + "GB");
-                }
+                List<String> parts = product.buildSpecSummaryParts(variants);
                 return parts.isEmpty() ? null : String.join(" · ", parts);
         }
 }
