@@ -77,9 +77,9 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
   }
 
   const handleDeselectAllVisible = () => {
-    const visibleIds = filteredProducts.map(p => p.id)
+    const visibleSet = new Set(filteredProducts.map(p => p.id))
     setForm(f => {
-      const newIds = f.productIds.filter(id => !visibleIds.includes(id))
+      const newIds = f.productIds.filter(id => !visibleSet.has(id))
       return { ...f, productIds: newIds }
     })
   }
@@ -171,7 +171,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
           <h2 className="text-base font-bold text-gray-900">
             {isEdit ? 'Chỉnh sửa khuyến mãi' : 'Tạo khuyến mãi mới'}
           </h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded transition-colors cursor-pointer">
+          <button aria-label="Đóng" type="button" onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded transition-colors cursor-pointer">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -188,16 +188,19 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Mã khuyến mãi *</label>
+              <label htmlFor="promo-code" className="block text-xs font-semibold text-gray-600 mb-1">Mã khuyến mãi *</label>
               <div className="flex gap-1.5">
                 <input
+                  id="promo-code"
                   type="text"
                   value={form.code}
                   onChange={(e) => set('code', e.target.value.toUpperCase())}
                   placeholder="VD: SUMMER24"
+                  aria-label="Mã khuyến mãi"
                   className="flex-1 border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
                 />
                 <button
+                  aria-label="Tạo mã ngẫu nhiên"
                   type="button"
                   onClick={handleGenerateCode}
                   title="Tạo mã ngẫu nhiên"
@@ -208,8 +211,9 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Phần trăm giảm (%) *</label>
+              <label htmlFor="promo-discount" className="block text-xs font-semibold text-gray-600 mb-1">Phần trăm giảm (%) *</label>
               <input
+                id="promo-discount"
                 type="number"
                 min="0"
                 max="100"
@@ -217,38 +221,45 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
                 value={form.discountPercent}
                 onChange={(e) => set('discountPercent', e.target.value)}
                 placeholder="10"
+                aria-label="Phần trăm giảm"
                 className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Tên chiến dịch *</label>
+            <label htmlFor="promo-name" className="block text-xs font-semibold text-gray-600 mb-1">Tên chiến dịch *</label>
             <input
+              id="promo-name"
               type="text"
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
               placeholder="VD: Sale Mùa Hè 2024"
+              aria-label="Tên chiến dịch"
               className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Ngày bắt đầu *</label>
+              <label htmlFor="promo-start" className="block text-xs font-semibold text-gray-600 mb-1">Ngày bắt đầu *</label>
               <input
+                id="promo-start"
                 type="datetime-local"
                 value={form.startAt}
                 onChange={(e) => set('startAt', e.target.value)}
+                aria-label="Ngày bắt đầu"
                 className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Ngày kết thúc *</label>
+              <label htmlFor="promo-end" className="block text-xs font-semibold text-gray-600 mb-1">Ngày kết thúc *</label>
               <input
+                id="promo-end"
                 type="datetime-local"
                 value={form.endAt}
                 onChange={(e) => set('endAt', e.target.value)}
+                aria-label="Ngày kết thúc"
                 className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
               />
             </div>
@@ -266,9 +277,9 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
           })()}
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-2">
+            <span className="block text-xs font-semibold text-gray-600 mb-2">
               Hạng thành viên áp dụng (Để trống nếu áp dụng cho tất cả)
-            </label>
+            </span>
             <div className="flex flex-wrap gap-3.5 bg-gray-50 border border-gray-150 rounded p-3">
               {['STANDARD', 'BRONZE', 'SILVER', 'GOLD', 'DIAMOND'].map((tier) => (
                 <label key={tier} className="flex items-center gap-2 text-xs text-gray-700 font-semibold cursor-pointer">
@@ -285,8 +296,9 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
           </div>
 
           <div className="flex items-center gap-3">
-            <label className="text-xs font-semibold text-gray-600">Kích hoạt ngay</label>
+            <span className="text-xs font-semibold text-gray-600">Kích hoạt ngay</span>
             <button
+              aria-label="Bật tắt kích hoạt khuyến mãi"
               type="button"
               onClick={() => set('active', !form.active)}
               className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer focus:outline-none ${
@@ -301,11 +313,12 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-semibold text-gray-600">
+              <span className="block text-xs font-semibold text-gray-600">
                 Sản phẩm áp dụng * ({form.productIds.length} đã chọn)
-              </label>
+              </span>
               <div className="flex gap-2 text-xs font-bold text-[#E8420A]">
                 <button
+                  aria-label="Chọn tất cả sản phẩm hiển thị"
                   type="button"
                   onClick={handleSelectAllVisible}
                   className="hover:underline cursor-pointer border-none bg-transparent text-[#E8420A] p-0"
@@ -314,6 +327,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
                 </button>
                 <span>·</span>
                 <button
+                  aria-label="Bỏ chọn tất cả sản phẩm"
                   type="button"
                   onClick={handleDeselectAllVisible}
                   className="hover:underline cursor-pointer border-none bg-transparent text-[#E8420A] p-0"
@@ -325,7 +339,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
 
             {/* Search & Filter sub-row */}
             <div className="grid grid-cols-2 gap-2 mb-2">
-              <input
+              <input aria-label="Tìm sản phẩm..."
                 type="text"
                 placeholder="Tìm sản phẩm..."
                 value={prodSearch}
@@ -335,6 +349,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
               <select
                 value={prodCategory}
                 onChange={e => setProdCategory(e.target.value)}
+                aria-label="Lọc theo danh mục"
                 className="border border-gray-200 rounded px-2.5 py-1 text-xs bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
               >
                 <option value="">Tất cả danh mục</option>
@@ -348,20 +363,23 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
               <div className="text-sm text-gray-400 py-3 text-center bg-gray-50 border border-dashed border-gray-200 rounded">Không tìm thấy sản phẩm nào</div>
             ) : (
               <div className="border border-gray-200 rounded max-h-40 overflow-y-auto divide-y divide-gray-100 bg-white">
-                {filteredProducts.map((p) => (
-                  <label key={p.id} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.productIds.includes(p.id)}
-                      onChange={() => toggleProduct(p.id)}
-                      className="accent-[#E8420A] w-4 h-4 shrink-0"
-                    />
+                {(() => {
+                  const productIdSet = new Set(form.productIds)
+                  return filteredProducts.map((p) => (
+                    <label key={p.id} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={productIdSet.has(p.id)}
+                        onChange={() => toggleProduct(p.id)}
+                        className="accent-[#E8420A] w-4 h-4 shrink-0"
+                      />
                     <div className="flex flex-col min-w-0">
                       <span className="text-sm text-gray-700 font-medium truncate">{p.name}</span>
                       <span className="text-[10px] text-gray-400">{p.categoryName || 'General'}</span>
                     </div>
                   </label>
-                ))}
+                  ))
+                })()}
               </div>
             )}
           </div>
@@ -369,7 +387,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
 
         {/* Footer */}
         <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100">
-          <button
+          <button aria-label="Hủy"
             type="button"
             onClick={onClose}
             disabled={submitting}
@@ -377,7 +395,7 @@ export default function PromotionFormModal({ isOpen, onClose, onSubmit, initialD
           >
             Hủy
           </button>
-          <button
+          <button aria-label="Lưu khuyến mãi" type="button"
             onClick={handleSubmit}
             disabled={submitting}
             className="px-4 py-2 text-sm font-semibold text-white bg-[#E8420A] hover:bg-[#C4350A] rounded transition-colors disabled:opacity-50 cursor-pointer"

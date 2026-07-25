@@ -12,8 +12,8 @@ export default function Table({
         className={`grid gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50 items-center`}
         style={gridTemplateColumns ? { gridTemplateColumns } : undefined}
       >
-        {headers.map((h, i) => (
-          <span key={i} className="text-xs font-bold text-gray-400 tracking-wider uppercase truncate">
+        {headers.map((h) => (
+          <span key={typeof h === 'string' ? h : (h?.key || h?.id || h?.label || h?.title)} className="text-xs font-bold text-gray-400 tracking-wider uppercase truncate">
             {h}
           </span>
         ))}

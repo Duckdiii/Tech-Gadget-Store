@@ -15,7 +15,7 @@ export default function Modal({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-          <button
+          <button aria-label="Đóng" type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 cursor-pointer focus:outline-none"
           >

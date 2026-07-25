@@ -56,7 +56,7 @@ export default function StaffSidebar() {
   const { pathname } = useLocation()
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col shrink-0">
+    <aside className="w-64 min-h-dvh bg-white border-r border-gray-200 flex flex-col shrink-0">
       {/* Logo */}
       <div className="px-5 pt-5 pb-4 flex items-center gap-3">
         <div className="w-10 h-10 rounded bg-teal-600 flex items-center justify-center shrink-0">
@@ -81,7 +81,7 @@ export default function StaffSidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 pb-3 overflow-y-auto space-y-4">
         {NAV_GROUPS.map((group, gi) => (
-          <div key={gi}>
+          <div key={group?.id ?? group?.code ?? group?.name ?? gi}>
             {group.label && (
               <p className="px-3 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">{group.label}</p>
             )}
@@ -89,7 +89,7 @@ export default function StaffSidebar() {
               {group.items.map(item => {
                 const isActive = pathname === item.path
                 return (
-                  <button
+                  <button aria-label="Thao tác" type="button"
                     key={item.id}
                     onClick={() => onNavigate(item.id)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition-colors cursor-pointer ${
@@ -110,7 +110,7 @@ export default function StaffSidebar() {
 
       {/* Logout */}
       <div className="px-3 border-t border-gray-100 pt-3 pb-5">
-        <button
+        <button aria-label="Thao tác" type="button"
           onClick={() => onNavigate('login')}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 cursor-pointer transition-colors border-l-4 border-transparent"
         >

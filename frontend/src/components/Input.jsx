@@ -1,6 +1,7 @@
 
 export default function Input({
   label,
+  id,
   type = 'text',
   value,
   onChange,
@@ -10,14 +11,18 @@ export default function Input({
   className = '',
   ...props
 }) {
+  const inputId = id || props.name || (typeof label === 'string' ? `input-${label.toLowerCase().replace(/[^a-z0-9]/g, '-')}` : undefined)
+
   return (
     <div className={`flex flex-col w-full ${className}`}>
       {label && (
-        <label className="block text-xs font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+        <label htmlFor={inputId} className="block text-xs font-bold text-gray-500 tracking-wider uppercase mb-1.5">
           {label} {required && <span className="text-red-400 ml-0.5">*</span>}
         </label>
       )}
       <input
+        id={inputId}
+        aria-label={props['aria-label'] || (typeof label === 'string' ? label : undefined)}
         type={type}
         value={value}
         onChange={onChange}

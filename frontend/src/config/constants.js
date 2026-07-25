@@ -1,9 +1,3 @@
-export const ROLES = {
-  CUSTOMER: 'customer',
-  MANAGER: 'manager',
-  STAFF: 'staff',
-}
-
 export const ROLE_LANDING = {
   customer: '/',
   manager:  '/dashboard',

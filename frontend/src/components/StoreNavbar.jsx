@@ -18,6 +18,16 @@ function timeAgo(dateStr) {
   return `${day} ngày trước`
 }
 
+function getMembershipTierLabel(tier) {
+  switch (tier) {
+    case 'STANDARD': return 'Thành viên Đồng'
+    case 'SILVER':   return 'Thành viên Bạc'
+    case 'GOLD':     return 'Thành viên Vàng'
+    case 'PLATINUM': return 'Thành viên Bạch Kim'
+    default:         return 'Thành viên Đồng'
+  }
+}
+
 const TICKER_ITEMS = [
   { text: 'iPhone 15 Pro Max giảm 12% — chỉ hôm nay' },
   { text: 'Miễn phí vận chuyển toàn quốc đơn từ 500.000₫' },
@@ -135,13 +145,15 @@ export default function StoreNavbar() {
   const [couponsCount, setCouponsCount] = useState(0)
 
   useEffect(() => {
+    let active = true
     const fetchCartCount = async () => {
       if (!user || user.role !== 'customer') {
-        setCartCount(0)
+        if (active) setCartCount(0)
         return
       }
       try {
         const cartData = await shopService.getCart()
+        if (!active) return
         if (cartData && cartData.items) {
           const count = cartData.items.reduce((sum, item) => sum + item.quantity, 0)
           setCartCount(count)
@@ -155,7 +167,10 @@ export default function StoreNavbar() {
 
     fetchCartCount()
     window.addEventListener('cart_changed', fetchCartCount)
-    return () => window.removeEventListener('cart_changed', fetchCartCount)
+    return () => {
+      active = false
+      window.removeEventListener('cart_changed', fetchCartCount)
+    }
   }, [user])
 
   useEffect(() => {
@@ -196,16 +211,6 @@ export default function StoreNavbar() {
     }
   }, [user])
 
-  const getMembershipTierLabel = (tier) => {
-    switch (tier) {
-      case 'STANDARD': return 'Thành viên Đồng'
-      case 'SILVER':   return 'Thành viên Bạc'
-      case 'GOLD':     return 'Thành viên Vàng'
-      case 'PLATINUM': return 'Thành viên Bạch Kim'
-      default:         return 'Thành viên Đồng'
-    }
-  }
-
   const points = membership ? Math.floor((membership.totalSpent || 0) / 10000) : 0
 
   const bellRef = useRef(null)
@@ -213,9 +218,8 @@ export default function StoreNavbar() {
   const bell = useDropdown(bellRef)
   const userMenu = useDropdown(userMenuRef)
   const [subPanel, setSubPanel] = useState(null)
+  const effectiveSubPanel = userMenu.open ? subPanel : null
   const { dark, setDark, font, setFont, noMotion, setNoMotion } = useAccessibility()
-
-  useEffect(() => { if (!userMenu.open) setSubPanel(null) }, [userMenu.open])
 
   useEffect(() => {
     if (!user || user.role !== 'customer') { setNotifications([]); return }
@@ -292,9 +296,11 @@ export default function StoreNavbar() {
         <div className="max-w-screen-2xl mx-auto px-8 h-[72px] flex items-center gap-8">
 
           {/* Logo */}
-          <div
+          <button
+            type="button"
             onClick={() => onNavigate('home')}
-            className="flex items-center gap-2.5 shrink-0 cursor-pointer select-none"
+            aria-label="TechStore Trang chủ"
+            className="flex items-center gap-2.5 shrink-0 cursor-pointer select-none border-none bg-transparent p-0"
           >
             <div
               style={{
@@ -321,18 +327,18 @@ export default function StoreNavbar() {
                 />
               </svg>
             </div>
-            <div>
+            <div className="text-left">
               <span style={{ fontSize: '21px', fontWeight: 900, color: 'var(--t1)', letterSpacing: '-0.5px' }}>Tech</span>
               <span style={{ fontSize: '21px', fontWeight: 900, color: '#EA580C', letterSpacing: '-0.5px' }}>Store</span>
             </div>
-          </div>
+          </button>
 
           {/* Nav links */}
           <nav className="flex items-stretch h-full">
             {NAV_LINKS.map(({ label, page }) => {
               const active = location.pathname === ROUTE_MAP[page]
               return (
-                <button
+                <button type="button"
                   key={label}
                   onClick={() => onNavigate(page)}
                   className="relative flex items-center px-4 text-[13px] font-medium tracking-wide transition-colors h-full"
@@ -354,8 +360,7 @@ export default function StoreNavbar() {
 
           {/* Search */}
           <form onSubmit={handleSearch} className="flex-1 flex items-center gap-2">
-            <button
-              type="button"
+            <button type="button"
               onClick={() => setAiMode(v => !v)}
               title={aiMode ? 'Đang tìm bằng AI — bấm để tắt' : 'Tìm bằng câu hỏi tự nhiên, vd. "điện thoại chụp ảnh đẹp dưới 15 triệu"'}
               className="shrink-0 flex items-center gap-1 px-2.5 py-2 text-[11px] font-bold transition-colors"
@@ -383,7 +388,8 @@ export default function StoreNavbar() {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
                 placeholder={aiMode ? 'Mô tả sản phẩm bạn cần, vd. "laptop nhẹ pin trâu dưới 20 triệu"...' : 'Tìm điện thoại, máy tính, phụ kiện...'}
-                className="w-full pl-10 pr-20 py-2.5 text-[13px] transition-all"
+                aria-label="Tìm kiếm sản phẩm"
+                className="w-full pl-10 pr-20 py-2.5 text-[13px] transition-colors"
                 style={{
                   backgroundColor: 'var(--s2)',
                   border: `1px solid ${searchFocused ? 'var(--accent)' : 'var(--b1)'}`,
@@ -393,9 +399,9 @@ export default function StoreNavbar() {
                   fontFamily: 'Be Vietnam Pro, sans-serif',
                 }}
               />
-              <button
-                type="submit"
+              <button type="submit"
                 disabled={aiLoading}
+                aria-label="Tìm kiếm"
                 className="absolute right-0 top-0 bottom-0 px-5 text-white text-[12px] font-bold tracking-wide transition-colors"
                 style={{ backgroundColor: 'var(--accent)', borderRadius: '0 3px 3px 0', opacity: aiLoading ? 0.7 : 1 }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
@@ -410,7 +416,7 @@ export default function StoreNavbar() {
           <div className="flex items-center gap-5 shrink-0" style={{ color: 'var(--t3)' }}>
 
             {/* Cart */}
-            <button
+            <button type="button"
               onClick={() => onNavigate('cart')}
               className="relative transition-colors"
               style={{ color: 'var(--t3)' }}
@@ -433,7 +439,7 @@ export default function StoreNavbar() {
 
             {/* Bell */}
             <div className="relative" ref={bellRef}>
-              <button
+              <button type="button"
                 onClick={handleBell}
                 className="relative transition-colors"
                 style={{ color: bell.open ? 'var(--accent)' : 'var(--t3)' }}
@@ -478,12 +484,13 @@ export default function StoreNavbar() {
                       )}
                     </span>
                     {unreadCount > 0 && (
-                      <button
+                      <button type="button"
                         onClick={markAllRead}
-                        className="text-[11px] font-medium"
+                        className="text-[11px] font-medium transition-colors"
                         style={{ color: 'var(--accent)' }}
                         onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-h)'}
                         onMouseLeave={e => e.currentTarget.style.color = 'var(--accent)'}
+                        aria-label="Đánh dấu đọc tất cả thông báo"
                       >
                         Đọc tất cả
                       </button>
@@ -499,19 +506,20 @@ export default function StoreNavbar() {
                     {notifications.map(n => {
                       const unread = !n.readAt
                       return (
-                      <li
-                        key={n.id}
-                        onClick={() => unread && markRead(n.id)}
-                        className="flex gap-3 px-4 py-3 cursor-pointer transition-colors"
-                        style={{
-                          borderBottom: '1px solid var(--b1)',
-                          backgroundColor: unread ? 'rgba(232,66,10,0.05)' : 'transparent',
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--s1)'}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = unread ? 'rgba(232,66,10,0.05)' : 'transparent'}
-                      >
-                        {renderNotificationIcon(n.type)}
-                        <div className="flex-1 min-w-0">
+                      <li key={n.id} style={{ borderBottom: '1px solid var(--b1)' }}>
+                        <button
+                          type="button"
+                          aria-label={`Thông báo: ${n.title}`}
+                          onClick={() => unread && markRead(n.id)}
+                          className="w-full text-left flex gap-3 px-4 py-3 cursor-pointer transition-colors border-none bg-transparent"
+                          style={{
+                            backgroundColor: unread ? 'rgba(232,66,10,0.05)' : 'transparent',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--s1)'}
+                          onMouseLeave={e => e.currentTarget.style.backgroundColor = unread ? 'rgba(232,66,10,0.05)' : 'transparent'}
+                        >
+                          {renderNotificationIcon(n.type)}
+                          <div className="flex-1 min-w-0">
                           <p className="text-[12px] leading-snug font-semibold" style={{ color: unread ? 'var(--t1)' : 'var(--t2)' }}>
                             {n.title}
                           </p>
@@ -521,13 +529,14 @@ export default function StoreNavbar() {
                         {unread && (
                           <span className="w-1.5 h-1.5 mt-1.5 shrink-0 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />
                         )}
+                        </button>
                       </li>
                       )
                     })}
                   </ul>
 
                   <div className="px-4 py-2.5 text-center">
-                    <button
+                    <button type="button"
                       className="text-[11px] font-medium"
                       style={{ color: 'var(--accent)' }}
                       onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-h)'}
@@ -543,9 +552,9 @@ export default function StoreNavbar() {
             {/* User avatar or Login/Register Button */}
             {user ? (
               <div className="relative" ref={userMenuRef}>
-                <button
+                <button type="button"
                   onClick={handleUserMenu}
-                  className="w-8 h-8 flex items-center justify-center text-white text-[12px] font-bold transition-all"
+                  className="w-8 h-8 flex items-center justify-center text-white text-[12px] font-bold transition-colors"
                   style={{
                     backgroundColor: userMenu.open ? 'var(--accent)' : 'var(--s3)',
                     border: `1px solid ${userMenu.open ? 'var(--accent)' : 'var(--b2)'}`,
@@ -590,7 +599,7 @@ export default function StoreNavbar() {
                       </div>
                     </div>
 
-                    {subPanel === null ? (
+                    {effectiveSubPanel === null ? (
                       <>
                         <div className="p-2" style={{ borderBottom: '1px solid var(--b1)' }}>
                           <NavItem onClick={() => { onNavigate('userProfile'); userMenu.setOpen(false) }} icon={<UserIcon />} label="Trang cá nhân" sub="Xem và chỉnh sửa thông tin" />
@@ -611,9 +620,9 @@ export default function StoreNavbar() {
                           className="flex items-center gap-3 px-3 py-2.5"
                           style={{ borderBottom: '1px solid var(--b1)' }}
                         >
-                          <button
+                          <button type="button" aria-label="Quay lại danh mục"
                             onClick={() => setSubPanel(null)}
-                            className="w-6 h-6 flex items-center justify-center transition-colors"
+                            className="w-6 h-6 flex items-center justify-center transition-colors border-none"
                             style={{ backgroundColor: 'var(--s2)', borderRadius: '3px' }}
                             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--s3)'}
                             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--s2)'}
@@ -659,10 +668,10 @@ export default function StoreNavbar() {
                             </div>
                             <div className="flex gap-2">
                               {[{ val: 'sm', label: 'Nhỏ', sz: 'text-xs' }, { val: 'md', label: 'Vừa', sz: 'text-sm' }, { val: 'lg', label: 'Lớn', sz: 'text-base' }].map(({ val, label, sz }) => (
-                                <button
+                                <button type="button"
                                   key={val}
                                   onClick={() => setFont(val)}
-                                  className={`flex-1 flex flex-col items-center py-2 transition-all ${sz}`}
+                                  className={`flex-1 flex flex-col items-center py-2 transition-colors ${sz}`}
                                   style={
                                     font === val
                                       ? { backgroundColor: 'var(--accent)', borderRadius: '3px', border: '1px solid var(--accent)', color: 'white' }
@@ -700,9 +709,9 @@ export default function StoreNavbar() {
                 )}
               </div>
             ) : (
-              <button
+              <button type="button"
                 onClick={() => onNavigate('login')}
-                className="px-4 py-1.5 text-[12px] font-bold text-white transition-all duration-200"
+                className="px-4 py-1.5 text-[12px] font-bold text-white transition-colors duration-200"
                 style={{
                   background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-h) 100%)',
                   borderRadius: '6px',
@@ -732,11 +741,11 @@ export default function StoreNavbar() {
 
 /* ── Sub-components ── */
 
-function Toggle({ on, onChange }) {
+function Toggle({ on, onChange, label = 'Chuyển đổi trạng thái' }) {
   return (
-    <button
+    <button type="button" aria-label={label}
       onClick={() => onChange(!on)}
-      className="relative w-10 h-5 transition-colors duration-200 shrink-0"
+      className="relative w-10 h-5 transition-colors duration-200 shrink-0 border-none cursor-pointer"
       style={{ backgroundColor: on ? 'var(--accent)' : 'var(--b2)', borderRadius: '10px' }}
       aria-pressed={on}
     >
@@ -750,7 +759,7 @@ function Toggle({ on, onChange }) {
 
 function NavItem({ icon, label, sub, badge, arrow, onClick, danger }) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className="w-full flex items-center gap-2.5 px-2.5 py-2 transition-colors text-left group"
       style={{ borderRadius: '3px' }}

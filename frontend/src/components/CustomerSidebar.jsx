@@ -62,7 +62,7 @@ export default function CustomerSidebar({ allowedPages = null }) {
 
   return (
     <aside
-      className="w-60 min-h-screen flex flex-col shrink-0"
+      className="w-60 min-h-dvh flex flex-col shrink-0"
       style={{
         backgroundColor: 'var(--ink)',
         borderRight: '1px solid var(--b1)',
@@ -104,10 +104,10 @@ export default function CustomerSidebar({ allowedPages = null }) {
           .map(item => {
             const isActive = location.pathname === ROUTE_MAP[item.target]
             return (
-              <button
+              <button aria-label="Thao tác" type="button"
                 key={item.id}
                 onClick={() => item.target && onNavigate(item.target)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-all duration-150 relative"
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors duration-150 relative"
                 style={{
                   borderRadius: '4px',
                   color: isActive ? 'var(--t1)' : 'var(--t2)',
@@ -138,9 +138,9 @@ export default function CustomerSidebar({ allowedPages = null }) {
         className="px-3 py-4 space-y-0.5"
         style={{ borderTop: '1px solid var(--b1)' }}
       >
-        <button
+        <button aria-label="Thao tác" type="button"
           onClick={() => onNavigate('userProfile')}
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-all duration-150"
+          className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors duration-150"
           style={{ borderRadius: '4px', color: 'var(--t2)' }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--s1)'; e.currentTarget.style.color = 'var(--t1)' }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--t2)' }}
@@ -153,9 +153,9 @@ export default function CustomerSidebar({ allowedPages = null }) {
           <span className="text-[13px] font-medium">Tài khoản</span>
         </button>
 
-        <button
+        <button aria-label="Thao tác" type="button"
           onClick={() => setShowLogoutModal(true)}
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-all duration-150"
+          className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors duration-150"
           style={{ borderRadius: '4px', color: 'var(--err)' }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)' }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
@@ -179,13 +179,13 @@ export default function CustomerSidebar({ allowedPages = null }) {
               <p className="text-xs text-gray-500">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?</p>
             </div>
             <div className="flex gap-3">
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => setShowLogoutModal(false)}
                 className="flex-1 py-2.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer border-none"
               >
                 Hủy bỏ
               </button>
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => {
                   setShowLogoutModal(false)
                   onNavigate('login')

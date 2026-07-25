@@ -33,7 +33,7 @@ const NAV_TARGETS = {
 export default function PaymentSidebar({ allowedPages = null }) {
   const onNavigate = useNav()
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col shrink-0">
+    <aside className="w-64 min-h-dvh bg-white border-r border-gray-200 flex flex-col shrink-0">
       {/* Logo */}
       <div className="px-6 py-5">
         <span className="text-xl font-black text-blue-600 tracking-tight">TechStore</span>
@@ -55,7 +55,7 @@ export default function PaymentSidebar({ allowedPages = null }) {
       {/* Nav */}
       <nav className="flex-1 px-2 space-y-0.5">
         {navItems.map((item) => (
-          <button
+          <button aria-label="Thao tác" type="button"
             key={item.id}
             onClick={() => NAV_TARGETS[item.id] && onNavigate(NAV_TARGETS[item.id])}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${
@@ -72,16 +72,16 @@ export default function PaymentSidebar({ allowedPages = null }) {
 
       {/* Bottom: Upgrade + Settings + Logout */}
       <div className="px-4 pb-4 space-y-1">
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors cursor-pointer mb-2">
+        <button aria-label="Thao tác" type="button" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors cursor-pointer mb-2">
           Upgrade Plan
         </button>
-        {(allowedPages === null || allowedPages.has('systemConfig')) && <button onClick={() => onNavigate('systemConfig')} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
+        {(allowedPages === null || allowedPages.has('systemConfig')) && <button aria-label="Thao tác" type="button" onClick={() => onNavigate('systemConfig')} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.7} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.7} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           Settings
         </button>}
-        <button onClick={() => onNavigate('login')} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
+        <button aria-label="Thao tác" type="button" onClick={() => onNavigate('login')} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.7} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>

@@ -59,7 +59,7 @@ const NAV_TARGETS = {
 export default function InventoryOpsSidebar() {
   const onNavigate = useNav()
   return (
-    <aside className="w-64 min-h-screen bg-slate-50 border-r border-gray-200 flex flex-col shrink-0">
+    <aside className="w-64 min-h-dvh bg-slate-50 border-r border-gray-200 flex flex-col shrink-0">
       {/* Logo */}
       <div className="px-6 pt-6 pb-5">
         <h1 className="text-lg font-bold text-blue-600">Inventory Ops</h1>
@@ -68,7 +68,7 @@ export default function InventoryOpsSidebar() {
 
       {/* Add New Product button */}
       <div className="px-4 mb-5">
-        <button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors cursor-pointer">
+        <button aria-label="Thao tác" type="button" className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors cursor-pointer">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
           </svg>
@@ -79,7 +79,7 @@ export default function InventoryOpsSidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 space-y-0.5">
         {navItems.map((item) => (
-          <button
+          <button aria-label="Thao tác" type="button"
             key={item.id}
             onClick={() => NAV_TARGETS[item.id] && onNavigate(NAV_TARGETS[item.id])}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
@@ -96,13 +96,13 @@ export default function InventoryOpsSidebar() {
 
       {/* Bottom links */}
       <div className="px-3 pb-5 border-t border-gray-200 pt-4 space-y-0.5">
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors border-l-4 border-transparent">
+        <button aria-label="Thao tác" type="button" className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors border-l-4 border-transparent">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Support
         </button>
-        <button onClick={() => onNavigate('login')} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors border-l-4 border-transparent">
+        <button aria-label="Thao tác" type="button" onClick={() => onNavigate('login')} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors border-l-4 border-transparent">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>

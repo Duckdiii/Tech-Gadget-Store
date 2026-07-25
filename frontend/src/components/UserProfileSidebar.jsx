@@ -33,13 +33,13 @@ const NAV_TARGETS = {
 export default function UserProfileSidebar({ allowedPages = null }) {
   const onNavigate = useNav()
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col shrink-0">
+    <aside className="w-64 min-h-dvh bg-white border-r border-gray-200 flex flex-col shrink-0">
       <div className="px-6 py-5">
         <span className="text-xl font-black text-blue-600 tracking-tight">TechStore</span>
       </div>
       <nav className="flex-1 px-2 space-y-0.5">
         {navItems.filter((item) => !NAV_TARGETS[item.id] || NAV_TARGETS[item.id] === 'login' || allowedPages === null || allowedPages.has(NAV_TARGETS[item.id])).map((item) => (
-          <button
+          <button aria-label="Thao tác" type="button"
             key={item.id}
             onClick={() => NAV_TARGETS[item.id] && onNavigate(NAV_TARGETS[item.id])}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${

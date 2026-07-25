@@ -60,7 +60,7 @@ const NAV_TARGETS = {
 export default function InvoiceSidebar({ allowedPages = null }) {
   const onNavigate = useNav()
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col shrink-0">
+    <aside className="w-64 min-h-dvh bg-white border-r border-gray-200 flex flex-col shrink-0">
       {/* Logo */}
       <div className="px-6 pt-6 pb-5">
         <h1 className="text-lg font-bold text-blue-700 leading-tight">
@@ -77,7 +77,7 @@ export default function InvoiceSidebar({ allowedPages = null }) {
         />
         <div>
           <p className="text-sm font-semibold text-gray-800">Premium Member</p>
-          <button className="text-xs text-blue-600 hover:underline cursor-pointer font-medium">
+          <button aria-label="Thao tác" type="button" className="text-xs text-blue-600 hover:underline cursor-pointer font-medium">
             Upgrade Plan
           </button>
         </div>
@@ -86,7 +86,7 @@ export default function InvoiceSidebar({ allowedPages = null }) {
       {/* Nav */}
       <nav className="flex-1 px-3 space-y-0.5">
         {navItems.filter((item) => !NAV_TARGETS[item.id] || allowedPages === null || allowedPages.has(NAV_TARGETS[item.id])).map((item) => (
-          <button
+          <button aria-label="Thao tác" type="button"
             key={item.id}
             onClick={() => NAV_TARGETS[item.id] && onNavigate(NAV_TARGETS[item.id])}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
