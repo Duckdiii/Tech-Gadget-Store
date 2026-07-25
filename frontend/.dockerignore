@@ -1,0 +1,35 @@
+# Quan trọng nhất: Dockerfile chạy `npm ci` rồi `COPY . .` — không có .dockerignore thì
+# COPY . . sẽ đè node_modules/ (cài cho OS máy host, vd. Windows) lên trên node_modules/
+# vừa cài đúng cho Linux/alpine bên trong container, và copy luôn dist/ cũ + .git/ vào image.
+node_modules
+dist
+dist-ssr
+
+.git
+.gitignore
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Secrets / env — image lấy config qua biến môi trường lúc chạy container, không cần .env lúc build
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Không cần cho image production (chỉ dùng lúc dev/CI)
+README.md
+.claude

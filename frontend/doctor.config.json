@@ -1,0 +1,7 @@
+{
+  "rules": {
+    "deslop/unused-file": "off",
+    "react-doctor/no-giant-component": "off",
+    "jsx-a11y/no-static-element-interactions": "off"
+  }
+}

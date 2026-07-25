@@ -1,14 +1,20 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss()], 
   server: {
+    //Chỉ áp dụng khi chạy npm run dev
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': 'http://localhost:8080',//mọi request frontend gọi tới /api sẽ được chuyển tiếp tới backend (http://localhost:8080)
       // ws: true — Vite proxy không tự nâng cấp kết nối WebSocket nếu không khai báo rõ.
-      '/ws': { target: 'http://localhost:8080', ws: true },
+      '/ws': { target: 'http://localhost:8080', ws: true },//mọi request frontend gọi tới /ws sẽ được chuyển tiếp tới backend (http://localhost:8080) và hỗ trợ WebSocket
     },
+  },
+  //Cấu hình Vitest
+  test: {
+    environment: 'jsdom', //Sử dụng môi trường jsdom để mô phỏng DOM trong quá trình test
+    setupFiles: './src/test/setup.js',//Chỉ định file setup.js để thiết lập môi trường test trước khi chạy các test case
   },
 })
