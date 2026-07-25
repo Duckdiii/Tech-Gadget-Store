@@ -1,5 +1,7 @@
 package com.project.tech_gadget_store.modules.payment.controller;
 
+import com.project.tech_gadget_store.common.constants.ErrorMessages;
+import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
@@ -25,12 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 
 
@@ -66,7 +66,7 @@ public class CustomerPaymentController {
             @RequestParam List<String> cartItemIds,
             Authentication authentication) {
         Customer customer = customerRepository.findByAccountEmail(authentication.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CUSTOMER_NOT_FOUND));
 
         Cart cart = customer.getCart();
         if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {
@@ -153,7 +153,7 @@ public class CustomerPaymentController {
     @GetMapping("/preferred-method")
     public ResponseEntity<PreferredPaymentMethodResponseDto> getPreferredMethod(Authentication authentication) {
         Customer customer = customerRepository.findByAccountEmail(authentication.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CUSTOMER_NOT_FOUND));
         return ResponseEntity.ok(PreferredPaymentMethodResponseDto.builder()
                 .available(listAvailablePaymentMethods())
                 .preferred(customer.getPreferredPaymentType())
@@ -165,7 +165,7 @@ public class CustomerPaymentController {
             @Valid @RequestBody UpdatePreferredPaymentMethodRequestDto request,
             Authentication authentication) {
         Customer customer = customerRepository.findByAccountEmail(authentication.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CUSTOMER_NOT_FOUND));
 
         List<PaymentMethodResponseDto> available = listAvailablePaymentMethods();
         boolean isValidChoice = available.stream().anyMatch(m -> m.getType().equals(request.getPaymentType()));

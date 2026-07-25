@@ -12,6 +12,7 @@ import com.project.tech_gadget_store.modules.payment.service.PaymentService;
 import com.project.tech_gadget_store.modules.payment.service.VNPayService;
 import jakarta.validation.Valid;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 
+@Slf4j
 @RestController
 @RequestMapping("/api/payment")
 public class PaymentController {
@@ -140,6 +142,13 @@ public class PaymentController {
         String orderId = params.get("orderId"); // mapping to pendingLog.getId()
         String transactionId = params.get("transId");
         String resultCode = params.get("resultCode");
+
+        if (!momoService.verifyReturnSignature(params)) {
+            log.warn("MoMo return: invalid signature, orderId={}", orderId);
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, frontendUrl + "/invoice?success=false")
+                    .build();
+        }
 
         if ("0".equals(resultCode)) {
             paymentService.markSuccess(orderId, transactionId);

@@ -1,5 +1,7 @@
 package com.project.tech_gadget_store.modules.payment.service.strategy;
 
+import com.project.tech_gadget_store.common.constants.ErrorMessages;
+import com.project.tech_gadget_store.common.exception.PaymentInitializationException;
 import com.project.tech_gadget_store.modules.order.entity.Order;
 import com.project.tech_gadget_store.modules.payment.dto.request.PaymentConfirmRequestDto;
 import com.project.tech_gadget_store.modules.payment.dto.response.PaymentConfirmResponseDto;
@@ -8,9 +10,7 @@ import com.project.tech_gadget_store.modules.payment.repository.VNPayPaymentMeth
 import com.project.tech_gadget_store.modules.payment.service.VNPayService;
 import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 
 
@@ -42,10 +42,10 @@ public class VNPayPaymentStrategy implements PaymentStrategy {
                     .status("PENDING")
                     .redirectUrl(redirectUrl)
                     .paymentLogId(paymentLog.getId())
-                    .message("Khởi tạo thanh toán online thành công, chuyển hướng người dùng")
+                    .message(ErrorMessages.PAYMENT_INITIATED_REDIRECT)
                     .build();
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khởi tạo thanh toán: " + e.getMessage(), e);
+            throw new PaymentInitializationException(ErrorMessages.PAYMENT_INITIALIZATION_FAILED_PREFIX + e.getMessage(), e);
         }
     }
 }

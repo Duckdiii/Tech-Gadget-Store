@@ -49,4 +49,7 @@ public abstract class PaymentMethod extends BaseEntity {
     public void changeDescription(String description) {
         this.description = description;
     }
+
+    /** Short type code ("MOMO"/"VNPAY"/"COD"/...) used for revenue-by-payment-method reporting and filters. */
+    public abstract String getPaymentType();
 }

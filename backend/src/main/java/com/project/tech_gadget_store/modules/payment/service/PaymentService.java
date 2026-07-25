@@ -1,6 +1,9 @@
 package com.project.tech_gadget_store.modules.payment.service;
 
+import com.project.tech_gadget_store.common.constants.ErrorMessages;
+import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.config.MomoProperties;
+import com.project.tech_gadget_store.config.PaymentProperties;
 import com.project.tech_gadget_store.config.VNPayProperties;
 import com.project.tech_gadget_store.modules.auth.repository.AddressRepository;
 import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
@@ -22,11 +25,9 @@ import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.ObjectMapper;
 
 
@@ -46,6 +47,7 @@ public class PaymentService {
     private final BundleServiceRepository bundleServiceRepository;
     private final MomoProperties momoProps;
     private final VNPayProperties vnpayProps;
+    private final PaymentProperties paymentProps;
     private final CustomerService customerService;
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbcTemplate;
@@ -61,6 +63,7 @@ public class PaymentService {
             BundleServiceRepository bundleServiceRepository,
             MomoProperties momoProps,
             VNPayProperties vnpayProps,
+            PaymentProperties paymentProps,
             @Lazy CustomerService customerService,
             ObjectMapper objectMapper,
             JdbcTemplate jdbcTemplate) {
@@ -75,6 +78,7 @@ public class PaymentService {
         this.bundleServiceRepository = bundleServiceRepository;
         this.momoProps = momoProps;
         this.vnpayProps = vnpayProps;
+        this.paymentProps = paymentProps;
         this.customerService = customerService;
         this.objectMapper = objectMapper;
         this.jdbcTemplate = jdbcTemplate;
@@ -96,25 +100,29 @@ public class PaymentService {
     }
 
     void initPaymentMethods() {
+        boolean sandboxMode = paymentProps.isDefaultSandboxMode();
+
         if (momoMethodRepository.findFirstByOrderByCreatedAtAsc().isEmpty()) {
-            MomoPaymentMethod momo = new MomoPaymentMethod(
+            MomoProperties.Gateway momo = momoProps.active(sandboxMode);
+            MomoPaymentMethod momoMethod = new MomoPaymentMethod(
                     "Ví MoMo", "Thanh toán qua ví điện tử MoMo",
-                    momoProps.getPartnerCode(),
-                    momoProps.getAccessKey(),
-                    momoProps.getEndpoint(),
-                    momoProps.getRedirectUrl(),
-                    momoProps.getIpnUrl());
-            momoMethodRepository.save(momo);
+                    momo.getPartnerCode(),
+                    momo.getAccessKey(),
+                    momo.getEndpoint(),
+                    momo.getRedirectUrl(),
+                    momo.getIpnUrl());
+            momoMethodRepository.save(momoMethod);
         }
 
         if (vnpayMethodRepository.findFirstByOrderByCreatedAtAsc().isEmpty()) {
-            VNPayPaymentMethod vnpay = new VNPayPaymentMethod(
+            VNPayProperties.Gateway vnpay = vnpayProps.active(sandboxMode);
+            VNPayPaymentMethod vnpayMethod = new VNPayPaymentMethod(
                     "VNPay", "Cổng thanh toán VNPay",
-                    vnpayProps.getTmnCode(),
-                    vnpayProps.getPaymentUrl(),
-                    vnpayProps.getReturnUrl(),
-                    vnpayProps.getHashSecret());
-            vnpayMethodRepository.save(vnpay);
+                    vnpay.getTmnCode(),
+                    vnpay.getPaymentUrl(),
+                    vnpay.getReturnUrl(),
+                    vnpay.getHashSecret());
+            vnpayMethodRepository.save(vnpayMethod);
         }
 
         if (codMethodRepository.findFirstByOrderByCreatedAtAsc().isEmpty()) {
@@ -131,7 +139,7 @@ public class PaymentService {
     public PaymentLog createPendingLog(String orderId, BigDecimal amount, boolean isMomo) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại: " + orderId));
+                        () -> new ResourceNotFoundException(ErrorMessages.ORDER_NOT_FOUND_PREFIX + orderId));
 
         // Huỷ log PENDING cũ nếu user thử lại
         paymentLogRepository.findFirstByOrderIdAndStatus(orderId, PaymentLogStatus.PENDING)

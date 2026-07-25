@@ -1,6 +1,7 @@
 package com.project.tech_gadget_store.modules.payment.service;
 
 import com.project.tech_gadget_store.config.MomoProperties;
+import com.project.tech_gadget_store.config.PaymentProperties;
 import com.project.tech_gadget_store.config.VNPayProperties;
 import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.auth.entity.User;
@@ -50,10 +51,14 @@ class PaymentServiceTest {
     @Mock private AddressRepository addressRepository;
     @Mock private ProductVariantRepository productVariantRepository;
     @Mock private BundleServiceRepository bundleServiceRepository;
-    @Mock private MomoProperties momoProps;
-    @Mock private VNPayProperties vnpayProps;
     @Mock private CustomerService customerService;
     @Mock private JdbcTemplate jdbcTemplate;
+
+    // Cấu hình thật (không mock) vì PaymentService giờ chọn config qua momoProps.active(...) /
+    // vnpayProps.active(...) — mock trực tiếp các getter cũ không còn phản ánh đúng luồng đó.
+    private final MomoProperties momoProps = new MomoProperties();
+    private final VNPayProperties vnpayProps = new VNPayProperties();
+    private final PaymentProperties paymentProps = new PaymentProperties();
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -62,21 +67,21 @@ class PaymentServiceTest {
         paymentService = new PaymentService(
                 paymentLogRepository, momoMethodRepository, vnpayMethodRepository,
                 codMethodRepository, orderRepository, customerRepository, addressRepository,
-                productVariantRepository, bundleServiceRepository, momoProps, vnpayProps,
+                productVariantRepository, bundleServiceRepository, momoProps, vnpayProps, paymentProps,
                 customerService, objectMapper, jdbcTemplate);
     }
 
     @Test
     void init_dropsConstraintAndInitializesMethods() {
-        when(momoProps.getPartnerCode()).thenReturn("MOMO");
-        when(momoProps.getAccessKey()).thenReturn("ACCESS");
-        when(momoProps.getEndpoint()).thenReturn("ENDPOINT");
-        when(momoProps.getRedirectUrl()).thenReturn("REDIRECT");
-        when(momoProps.getIpnUrl()).thenReturn("IPN");
-        when(vnpayProps.getTmnCode()).thenReturn("TMN");
-        when(vnpayProps.getPaymentUrl()).thenReturn("PAY");
-        when(vnpayProps.getReturnUrl()).thenReturn("RETURN");
-        when(vnpayProps.getHashSecret()).thenReturn("SECRET");
+        momoProps.getSandbox().setPartnerCode("MOMO");
+        momoProps.getSandbox().setAccessKey("ACCESS");
+        momoProps.getSandbox().setEndpoint("ENDPOINT");
+        momoProps.getSandbox().setRedirectUrl("REDIRECT");
+        momoProps.getSandbox().setIpnUrl("IPN");
+        vnpayProps.getSandbox().setTmnCode("TMN");
+        vnpayProps.getSandbox().setPaymentUrl("PAY");
+        vnpayProps.getSandbox().setReturnUrl("RETURN");
+        vnpayProps.getSandbox().setHashSecret("SECRET");
         when(momoMethodRepository.findFirstByOrderByCreatedAtAsc()).thenReturn(Optional.empty());
         when(vnpayMethodRepository.findFirstByOrderByCreatedAtAsc()).thenReturn(Optional.empty());
         when(codMethodRepository.findFirstByOrderByCreatedAtAsc()).thenReturn(Optional.empty());

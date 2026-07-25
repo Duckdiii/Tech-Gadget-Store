@@ -1,5 +1,6 @@
 package com.project.tech_gadget_store.modules.payment.service.strategy;
 
+import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.order.entity.Order;
 import com.project.tech_gadget_store.modules.payment.dto.request.PaymentConfirmRequestDto;
 import com.project.tech_gadget_store.modules.payment.dto.response.PaymentConfirmResponseDto;
@@ -8,9 +9,7 @@ import com.project.tech_gadget_store.modules.payment.entity.PaymentLog;
 import com.project.tech_gadget_store.modules.payment.repository.CODPaymentMethodRepository;
 import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 
 
@@ -34,10 +33,10 @@ public class CODPaymentStrategy implements PaymentStrategy {
             String clientIp
     ) {
         CODPaymentMethod codMethod = codMethodRepository.findById(req.getPaymentMethodId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phương thức thanh toán"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phương thức thanh toán"));
 
         if (!codMethod.isAmountAllowed(amount)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giá trị đơn hàng vượt quá giới hạn cho phép của COD");
+            throw new IllegalArgumentException("Giá trị đơn hàng vượt quá giới hạn cho phép của COD");
         }
 
         return PaymentConfirmResponseDto.builder()

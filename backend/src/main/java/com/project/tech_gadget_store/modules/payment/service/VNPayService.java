@@ -1,5 +1,6 @@
 package com.project.tech_gadget_store.modules.payment.service;
 
+import com.project.tech_gadget_store.config.PaymentProperties;
 import com.project.tech_gadget_store.config.VNPayProperties;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -23,10 +24,18 @@ public class VNPayService {
     private static final String HMAC_SHA512 = "HmacSHA512";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-    private final VNPayProperties props;
+    private final VNPayProperties vnpayProperties;
+    private final PaymentProperties paymentProperties;
 
-    public VNPayService(VNPayProperties props) {
-        this.props = props;
+    public VNPayService(VNPayProperties vnpayProperties, PaymentProperties paymentProperties) {
+        this.vnpayProperties = vnpayProperties;
+        this.paymentProperties = paymentProperties;
+    }
+
+    /** Cấu hình VNPay đang active — Sandbox hoặc Production tuỳ theo app.payment.default-sandbox-mode
+     * và app.payment.vnpay.production.enabled (xem {@link VNPayProperties#active}). */
+    private VNPayProperties.Gateway gateway() {
+        return vnpayProperties.active(paymentProperties.isDefaultSandboxMode());
     }
 
     /**
@@ -34,6 +43,7 @@ public class VNPayService {
      * VNPay yêu cầu amount = VND × 100 (không có phần thập phân).
      */
     public String buildPaymentUrl(String orderId, BigDecimal amount, String clientIp, String orderInfo) {
+        VNPayProperties.Gateway props = gateway();
         String createDate = LocalDateTime.now().format(DATE_FORMATTER);
         String resolvedOrderInfo = (orderInfo != null && !orderInfo.isBlank())
                 ? orderInfo : "Thanh toan don hang " + orderId;
@@ -76,6 +86,7 @@ public class VNPayService {
             return false;
         }
 
+        VNPayProperties.Gateway props = gateway();
         Map<String, String> paramsForHash = new TreeMap<>(params);
         paramsForHash.remove("vnp_SecureHash");
         paramsForHash.remove("vnp_SecureHashType");

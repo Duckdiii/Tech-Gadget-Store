@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.modules.payment.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.project.tech_gadget_store.config.PaymentProperties;
 import com.project.tech_gadget_store.config.VNPayProperties;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
@@ -17,12 +18,13 @@ class VNPayServiceTest {
 
     @BeforeEach
     void setUp() {
-        VNPayProperties props = new VNPayProperties();
+        VNPayProperties vnpayProperties = new VNPayProperties();
+        VNPayProperties.Gateway props = vnpayProperties.getSandbox();
         props.setPaymentUrl("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html");
         props.setTmnCode("TESTCODE");
         props.setHashSecret("SOME_SECRET_KEY");
         props.setReturnUrl("http://localhost:8080/api/payments/vnpay/return");
-        vnPayService = new VNPayService(props);
+        vnPayService = new VNPayService(vnpayProperties, new PaymentProperties());
     }
 
     /**

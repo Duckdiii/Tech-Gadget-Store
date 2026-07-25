@@ -1,6 +1,8 @@
 package com.project.tech_gadget_store.modules.payment.service;
 
+import com.project.tech_gadget_store.common.exception.PaymentGatewayException;
 import com.project.tech_gadget_store.config.MomoProperties;
+import com.project.tech_gadget_store.config.PaymentProperties;
 import com.project.tech_gadget_store.modules.payment.dto.request.MomoIpnCallbackDto;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -12,11 +14,9 @@ import java.util.UUID;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.server.ResponseStatusException;
 
 
 
@@ -25,18 +25,27 @@ public class MomoService {
 
     private static final String HMAC_SHA256 = "HmacSHA256";
 
-    private final MomoProperties props;
+    private final MomoProperties momoProperties;
+    private final PaymentProperties paymentProperties;
     private final RestClient restClient;
 
-    public MomoService(MomoProperties props) {
-        this.props = props;
+    public MomoService(MomoProperties momoProperties, PaymentProperties paymentProperties) {
+        this.momoProperties = momoProperties;
+        this.paymentProperties = paymentProperties;
         this.restClient = RestClient.create();
     }
 
+    /** Cấu hình MoMo đang active — Sandbox hoặc Production tuỳ theo app.payment.default-sandbox-mode
+     * và app.payment.momo.production.enabled (xem {@link MomoProperties#active}). */
+    private MomoProperties.Gateway gateway() {
+        return momoProperties.active(paymentProperties.isDefaultSandboxMode());
+    }
+
     /**
-     * Gọi MoMo sandbox để tạo payment, trả về payUrl để FE redirect.
+     * Gọi MoMo (Sandbox hoặc Production tuỳ cấu hình hiện tại) để tạo payment, trả về payUrl để FE redirect.
      */
     public String createPayment(String orderId, BigDecimal amount, String orderInfo) {
+        MomoProperties.Gateway props = gateway();
         String requestId = UUID.randomUUID().toString();
         String extraData = "";
         String resolvedOrderInfo = (orderInfo != null && !orderInfo.isBlank())
@@ -44,7 +53,7 @@ public class MomoService {
         long amountLong = amount.longValue();
 
         String rawSignature = buildCreateSignatureData(
-                requestId, amountLong, extraData, orderId, resolvedOrderInfo);
+                props, requestId, amountLong, extraData, orderId, resolvedOrderInfo);
         String signature = hmacSHA256(props.getSecretKey(), rawSignature);
 
         Map<String, Object> body = new LinkedHashMap<>();
@@ -69,24 +78,23 @@ public class MomoService {
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {});
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
-                    "Không thể kết nối tới MoMo sandbox: " + e.getMessage());
+            throw new PaymentGatewayException("Không thể kết nối tới MoMo: " + e.getMessage());
         }
 
         if (response == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "MoMo không trả về phản hồi");
+            throw new PaymentGatewayException("MoMo không trả về phản hồi");
         }
 
         Object resultCodeObj = response.get("resultCode");
         int resultCode = resultCodeObj instanceof Number n ? n.intValue() : -1;
         if (resultCode != 0) {
             String msg = (String) response.getOrDefault("message", "Lỗi không xác định từ MoMo");
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "MoMo: " + msg);
+            throw new PaymentGatewayException("MoMo: " + msg);
         }
 
         String payUrl = (String) response.get("payUrl");
         if (payUrl == null || payUrl.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "MoMo không trả về payUrl");
+            throw new PaymentGatewayException("MoMo không trả về payUrl");
         }
         return payUrl;
     }
@@ -96,6 +104,7 @@ public class MomoService {
      * Raw signature cho IPN khác với signature khi tạo payment.
      */
     public boolean verifyIpnSignature(MomoIpnCallbackDto ipn) {
+        MomoProperties.Gateway props = gateway();
         String rawSignature = "accessKey=" + props.getAccessKey()
                 + "&amount=" + ipn.getAmount()
                 + "&extraData=" + nullSafe(ipn.getExtraData())
@@ -114,10 +123,41 @@ public class MomoService {
         return expected.equals(ipn.getSignature());
     }
 
+    /**
+     * Xác minh chữ ký HMAC-SHA256 từ redirect return URL của MoMo (GET, trình duyệt user).
+     * MoMo dùng cùng bộ field và cùng thuật toán ký cho cả ipnUrl (server-to-server) lẫn
+     * redirectUrl (browser return) — xem {@link #verifyIpnSignature}. Không verify được raw
+     * signature này đồng nghĩa request có thể bị giả mạo để đánh dấu đơn hàng đã thanh toán.
+     */
+    public boolean verifyReturnSignature(Map<String, String> params) {
+        String receivedSignature = params.get("signature");
+        if (receivedSignature == null || receivedSignature.isBlank()) {
+            return false;
+        }
+
+        MomoProperties.Gateway props = gateway();
+        String rawSignature = "accessKey=" + props.getAccessKey()
+                + "&amount=" + nullSafe(params.get("amount"))
+                + "&extraData=" + nullSafe(params.get("extraData"))
+                + "&message=" + nullSafe(params.get("message"))
+                + "&orderId=" + nullSafe(params.get("orderId"))
+                + "&orderInfo=" + nullSafe(params.get("orderInfo"))
+                + "&orderType=" + nullSafe(params.get("orderType"))
+                + "&partnerCode=" + nullSafe(params.get("partnerCode"))
+                + "&payType=" + nullSafe(params.get("payType"))
+                + "&requestId=" + nullSafe(params.get("requestId"))
+                + "&responseTime=" + nullSafe(params.get("responseTime"))
+                + "&resultCode=" + nullSafe(params.get("resultCode"))
+                + "&transId=" + nullSafe(params.get("transId"));
+
+        String expected = hmacSHA256(props.getSecretKey(), rawSignature);
+        return expected.equals(receivedSignature);
+    }
+
     // ---------- helpers ----------
 
-    private String buildCreateSignatureData(String requestId, long amount, String extraData,
-                                            String orderId, String orderInfo) {
+    private String buildCreateSignatureData(MomoProperties.Gateway props, String requestId, long amount,
+                                            String extraData, String orderId, String orderInfo) {
         // Thứ tự fields phải đúng theo tài liệu MoMo v2
         return "accessKey=" + props.getAccessKey()
                 + "&amount=" + amount

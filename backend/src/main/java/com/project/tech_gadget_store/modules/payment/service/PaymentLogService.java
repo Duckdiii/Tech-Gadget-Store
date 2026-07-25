@@ -176,20 +176,13 @@ public class PaymentLogService {
         LocalDateTime startDateTime = startLocalDate != null ? startLocalDate.atStartOfDay() : null;
         LocalDateTime endDateTime = endLocalDate != null ? endLocalDate.atTime(23, 59, 59, 999999999) : null;
 
-        LocalDateTime cursorTimestamp = null;
-        String cursorId = null;
-
-        com.project.tech_gadget_store.common.util.CursorUtil.DecodedCursor decoded = com.project.tech_gadget_store.common.util.CursorUtil.decodeCursor(cursor);
-        if (decoded != null) {
-            cursorTimestamp = decoded.getTimestamp();
-            cursorId = decoded.getId();
-        }
+        CursorUtil.DecodedCursor decoded = CursorUtil.decodeCursorOrStart(cursor);
 
         Pageable pageable = PageRequest.of(0, limit + 1);
         List<PaymentLog> logs;
         try {
             logs = paymentLogRepository.findPaymentLogsCursor(
-                    status, startDateTime, endDateTime, cursorTimestamp, cursorId, pageable);
+                    status, startDateTime, endDateTime, decoded.getTimestamp(), decoded.getId(), pageable);
         } catch (Exception e) {
             log.error("Failed to load payment logs from database", e);
             throw new PaymentLogLoadException("Unable to load payment logs. Please try again later", e);
@@ -199,20 +192,7 @@ public class PaymentLogService {
             throw new java.util.NoSuchElementException("No payment records found");
         }
 
-        boolean hasNext = logs.size() > limit;
-        List<PaymentLog> resultLogs = hasNext ? logs.subList(0, limit) : logs;
-
-        List<PaymentLogResponseDto> dtos = resultLogs.stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
-
-        String nextCursor = null;
-        if (hasNext && !resultLogs.isEmpty()) {
-            PaymentLog lastLog = resultLogs.get(resultLogs.size() - 1);
-            nextCursor = com.project.tech_gadget_store.common.util.CursorUtil.encodeCursor(lastLog.getCreatedAt(), lastLog.getId());
-        }
-
-        return new com.project.tech_gadget_store.common.dto.CursorPageResponseDto<>(dtos, nextCursor, hasNext);
+        return CursorUtil.paginate(logs, limit, PaymentLog::getCreatedAt, this::mapToResponseDto);
     }
 
     public PaymentLogResponseDto getPaymentLogDetails(String logId) {

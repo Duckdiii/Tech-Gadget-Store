@@ -64,4 +64,9 @@ public class CODPaymentMethod extends PaymentMethod {
         }
         this.serviceFee = serviceFee;
     }
+
+    @Override
+    public String getPaymentType() {
+        return "COD";
+    }
 }
