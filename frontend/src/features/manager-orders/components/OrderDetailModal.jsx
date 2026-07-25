@@ -14,22 +14,27 @@ export default function OrderDetailModal({ orderId, onClose }) {
   const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
+    let active = true
     const loadInvoice = async () => {
       try {
         setLoading(true)
         setError(null)
         const data = await apiFetch(`/api/customer/invoices/order/${orderId}`)
+        if (!active) return
         setInvoice(data)
       } catch (err) {
-        console.error('Lỗi tải chi tiết đơn hàng:', err)
-        setError(err.message || 'Không thể tải thông tin đơn hàng này.')
+        if (active) {
+          console.error('Lỗi tải chi tiết đơn hàng:', err)
+          setError(err.message || 'Không thể tải thông tin đơn hàng này.')
+        }
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     }
     if (orderId) {
       loadInvoice()
     }
+    return () => { active = false }
   }, [orderId])
 
   const handleDownloadPdf = async () => {
@@ -106,16 +111,16 @@ export default function OrderDetailModal({ orderId, onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-50 animate-fade-in" onClick={onClose} />
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4 text-gray-800">
-        <div className="bg-white rounded shadow-2xl w-full max-w-[850px] max-h-[90vh] overflow-hidden flex flex-col">
+      <button type="button" aria-label="Đóng modal chi tiết đơn hàng" onClick={onClose} className="fixed inset-0 bg-black/40 z-50 cursor-pointer border-none" />
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4 text-gray-800 pointer-events-none">
+        <div className="bg-white rounded shadow-2xl w-full max-w-[850px] max-h-[90vh] overflow-hidden flex flex-col pointer-events-auto">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
             <div>
               <h2 className="text-lg font-bold text-gray-900">Chi tiết Đơn hàng #{orderId.substring(0, 8).toUpperCase()}</h2>
               <p className="text-xs text-gray-400 mt-0.5 font-mono">ID: {orderId}</p>
             </div>
-            <button onClick={onClose} className="p-1.5 hover:bg-gray-200 rounded cursor-pointer border-none bg-transparent transition-colors">
+            <button aria-label="Đóng" type="button" onClick={onClose} className="p-1.5 hover:bg-gray-200 rounded cursor-pointer border-none bg-transparent transition-colors">
               <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -133,7 +138,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
               <div className="flex-1 flex flex-col items-center justify-center py-20 text-center space-y-3">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-lg">⚠</div>
                 <p className="text-sm text-red-600 font-medium">{error}</p>
-                <button onClick={onClose} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded text-xs font-semibold cursor-pointer">Đóng</button>
+                <button aria-label="Đóng" type="button" onClick={onClose} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded text-xs font-semibold cursor-pointer">Đóng</button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
@@ -146,7 +151,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
                       {/* Connecting Line */}
                       <div className="absolute top-4 left-10 right-10 h-0.5 bg-gray-200 z-0">
                         <div 
-                          className="h-full bg-green-500 transition-all duration-500" 
+                          className="h-full bg-green-500 transition-colors duration-500" 
                           style={{
                             width: `${(timelineSteps.filter(s => s.done).length - 1) / (timelineSteps.length - 1) * 100}%`
                           }}
@@ -154,7 +159,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
                       </div>
 
                       {timelineSteps.map((step, idx) => (
-                        <div key={idx} className="flex flex-col items-center relative z-10 flex-1">
+                        <div key={step.label} className="flex flex-col items-center relative z-10 flex-1">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border ${
                             step.done 
                               ? step.isError 
@@ -191,8 +196,8 @@ export default function OrderDetailModal({ orderId, onClose }) {
                       <span className="text-right">THÀNH TIỀN</span>
                     </div>
                     <div className="divide-y divide-gray-50 max-h-[350px] overflow-y-auto">
-                      {invoice.items.map((item, idx) => (
-                        <div key={idx} className="grid grid-cols-[1fr_80px_110px_110px] px-4 py-3 text-sm items-center hover:bg-gray-50/50">
+                      {invoice.items.map((item) => (
+                        <div key={item.id || item.productId || item.productName} className="grid grid-cols-[1fr_80px_110px_110px] px-4 py-3 text-sm items-center hover:bg-gray-50/50">
                           <div>
                             <p className="font-semibold text-gray-800">{item.productName}</p>
                             {item.variantName && (
@@ -200,8 +205,8 @@ export default function OrderDetailModal({ orderId, onClose }) {
                             )}
                             {item.bundleServices && item.bundleServices.length > 0 && (
                               <div className="mt-1 space-y-0.5">
-                                {item.bundleServices.map((bundle, bidx) => (
-                                  <p key={bidx} className="text-[10px] font-semibold text-blue-600">+ {bundle}</p>
+                                {item.bundleServices.map((bundle) => (
+                                  <p key={bundle.id || bundle.name || bundle} className="text-[10px] font-semibold text-blue-600">+ {bundle}</p>
                                 ))}
                               </div>
                             )}
@@ -235,7 +240,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
                       </div>
                     </div>
                     {/* Copy Address Button */}
-                    <button
+                    <button aria-label="Thao tác" type="button"
                       onClick={() => {
                         const text = `${invoice.customerName || ''} - ${invoice.customerPhone || ''} - ${invoice.shippingAddress || ''}`;
                         navigator.clipboard.writeText(text);
@@ -288,11 +293,11 @@ export default function OrderDetailModal({ orderId, onClose }) {
 
           {/* Footer */}
           <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50">
-            <button onClick={onClose} className="px-5 py-2 border border-gray-200 hover:bg-gray-100 rounded text-sm font-semibold text-gray-600 cursor-pointer transition-colors bg-white">
+            <button aria-label="Đóng" type="button" onClick={onClose} className="px-5 py-2 border border-gray-200 hover:bg-gray-100 rounded text-sm font-semibold text-gray-600 cursor-pointer transition-colors bg-white">
               Đóng
             </button>
             {!loading && !error && (
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={handleDownloadPdf}
                 disabled={downloading}
                 className="flex items-center gap-2 px-5 py-2 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors"

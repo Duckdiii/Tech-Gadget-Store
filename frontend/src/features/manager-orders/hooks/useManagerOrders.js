@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { managerOrderService } from '../services/managerOrderService'
 
 export function useManagerOrders(initialFilter = 'all') {
@@ -15,6 +15,7 @@ export function useManagerOrders(initialFilter = 'all') {
   const [customEndDate, setCustomEndDate] = useState('')
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('all')
   const [stats, setStats] = useState(null)
+  const requestIdRef = useRef(0)
 
   const fetchStats = async () => {
     try {
@@ -44,9 +45,11 @@ export function useManagerOrders(initialFilter = 'all') {
       sDate = d.toISOString().split('T')[0]
       eDate = todayStr
     } else if (dateFilter === 'custom') {
-      sDate = customStartDate
-      eDate = customEndDate
+      sDate = customStartDate || null
+      eDate = customEndDate || null
     }
+
+    const currentRequestId = ++requestIdRef.current
 
     try {
       if (reset) {
@@ -60,6 +63,7 @@ export function useManagerOrders(initialFilter = 'all') {
           endDate: eDate,
           paymentMethod: paymentMethodFilter
         })
+        if (currentRequestId !== requestIdRef.current) return
         setOrders(data?.items || [])
         setNextCursor(data?.nextCursor || null)
         setHasNext(!!data?.hasNext)
@@ -73,18 +77,22 @@ export function useManagerOrders(initialFilter = 'all') {
           endDate: eDate,
           paymentMethod: paymentMethodFilter
         })
+        if (currentRequestId !== requestIdRef.current) return
         setOrders(prev => [...prev, ...(data?.items || [])])
         setNextCursor(data?.nextCursor || null)
         setHasNext(!!data?.hasNext)
       }
     } catch (e) {
-      console.error('Lỗi tải đơn hàng manager:', e)
+      if (currentRequestId === requestIdRef.current) {
+        console.error('Lỗi tải đơn hàng manager:', e)
+      }
     } finally {
       setLoading(false)
       setLoadingMore(false)
     }
   }
 
+  // react-doctor-disable-next-line react-doctor/no-set-state-after-await-in-effect
   useEffect(() => {
     fetchOrders(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps

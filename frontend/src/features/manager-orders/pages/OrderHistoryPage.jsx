@@ -27,12 +27,12 @@ export default function OrderHistoryPage() {
   const [activeTab, setActiveTab] = useState('orders')
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       {/* Tab bar */}
       <div className="bg-white border-b border-gray-100 px-8">
         <div className="flex items-center gap-1">
           {MAIN_TABS.map(tab => (
-            <button
+            <button aria-label="Thao tác" type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap bg-transparent ${

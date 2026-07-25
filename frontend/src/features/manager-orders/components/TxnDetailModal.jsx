@@ -25,9 +25,9 @@ export default function TxnDetailModal({ txn, onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4 text-gray-800">
-        <div className="bg-white rounded shadow-2xl w-full max-w-[520px] max-h-[90vh] overflow-y-auto">
+      <button type="button" aria-label="Đóng modal chi tiết giao dịch" onClick={onClose} className="fixed inset-0 bg-black/40 z-50 cursor-pointer border-none" />
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4 text-gray-800 pointer-events-none">
+        <div className="bg-white rounded shadow-2xl w-full max-w-[520px] max-h-[90vh] overflow-y-auto pointer-events-auto">
           {/* Status header banner */}
           <div className={`px-6 pt-6 pb-5 ${txn.status === 'SUCCESS' ? 'bg-green-50' : txn.status === 'FAILED' ? 'bg-red-50' : txn.status === 'REFUNDED' ? 'bg-purple-50' : 'bg-amber-50'}`}>
             <div className="flex items-start justify-between">
@@ -40,7 +40,7 @@ export default function TxnDetailModal({ txn, onClose }) {
                   <p className="text-xs text-gray-400 mt-0.5">{txn.timestamp ? new Date(txn.timestamp).toLocaleString('vi-VN') : ''}</p>
                 </div>
               </div>
-              <button onClick={onClose} className="p-1.5 hover:bg-black/10 rounded cursor-pointer border-none bg-transparent">
+              <button aria-label="Đóng" type="button" onClick={onClose} className="p-1.5 hover:bg-black/10 rounded cursor-pointer border-none bg-transparent">
                 <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>

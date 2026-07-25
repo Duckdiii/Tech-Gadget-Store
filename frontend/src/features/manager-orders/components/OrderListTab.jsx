@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useManagerOrders } from '../hooks/useManagerOrders'
 import { managerOrderService } from '../services/managerOrderService'
@@ -50,6 +50,8 @@ export default function OrderListTab() {
     setSelectedIds([])
   }, [activeFilter, search, dateFilter, customStartDate, customEndDate, paymentMethodFilter])
 
+  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds])
+
   const handleSelectAll = (e) => {
     if (e.target.checked) {
       setSelectedIds(orders.map(o => o.id))
@@ -68,7 +70,8 @@ export default function OrderListTab() {
 
   const handleBulkConfirm = async () => {
     if (selectedIds.length === 0) return
-    const countToConfirm = orders.filter(o => selectedIds.includes(o.id) && o.orderStatus === 'AWAITING_CONFIRMATION').length
+    const selectedSet = new Set(selectedIds)
+    const countToConfirm = orders.filter(o => selectedSet.has(o.id) && o.orderStatus === 'AWAITING_CONFIRMATION').length
     if (countToConfirm === 0) {
       alert("Không có đơn hàng nào được chọn ở trạng thái 'Chờ xác nhận' để duyệt.")
       return
@@ -110,7 +113,11 @@ export default function OrderListTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-7 text-gray-800 animate-fade-in">
         {/* Đơn chờ xác nhận */}
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Lọc đơn chờ xác nhận"
           onClick={() => setActiveFilter('AWAITING_CONFIRMATION')}
+          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveFilter('AWAITING_CONFIRMATION')}
           className={`bg-white p-5 rounded-xl border transition-all cursor-pointer hover:shadow-md flex items-center justify-between ${
             activeFilter === 'AWAITING_CONFIRMATION'
               ? 'border-[#E8420A] ring-1 ring-[#E8420A]/50 bg-amber-50/5'
@@ -128,7 +135,11 @@ export default function OrderListTab() {
 
         {/* Đang giao hàng */}
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Lọc đơn đang giao hàng"
           onClick={() => setActiveFilter('SHIPPING')}
+          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveFilter('SHIPPING')}
           className={`bg-white p-5 rounded-xl border transition-all cursor-pointer hover:shadow-md flex items-center justify-between ${
             activeFilter === 'SHIPPING'
               ? 'border-[#E8420A] ring-1 ring-[#E8420A]/50 bg-amber-50/5'
@@ -157,7 +168,11 @@ export default function OrderListTab() {
 
         {/* Tỷ lệ hủy đơn */}
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Lọc đơn đã hủy"
           onClick={() => setActiveFilter('CANCELLED')}
+          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveFilter('CANCELLED')}
           className={`bg-white p-5 rounded-xl border transition-all cursor-pointer hover:shadow-md flex items-center justify-between ${
             activeFilter === 'CANCELLED'
               ? 'border-[#E8420A] ring-1 ring-[#E8420A]/50 bg-amber-50/5'
@@ -191,6 +206,7 @@ export default function OrderListTab() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Tìm mã đơn, tên khách hàng..."
+              aria-label="Tìm mã đơn hoặc tên khách hàng"
               className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white"
             />
           </div>
@@ -203,6 +219,7 @@ export default function OrderListTab() {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
+              aria-label="Lọc theo thời gian"
               className="w-full appearance-none border border-gray-300 rounded px-3 py-2 pr-9 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
             >
               <option value="all">Tất cả thời gian</option>
@@ -223,6 +240,7 @@ export default function OrderListTab() {
                 type="date"
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
+                aria-label="Từ ngày"
                 className="border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white cursor-pointer"
               />
               <span className="text-gray-400 text-sm">đến</span>
@@ -230,6 +248,7 @@ export default function OrderListTab() {
                 type="date"
                 value={customEndDate}
                 onChange={(e) => setCustomEndDate(e.target.value)}
+                aria-label="Đến ngày"
                 className="border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white cursor-pointer"
               />
             </div>
@@ -240,6 +259,7 @@ export default function OrderListTab() {
             <select
               value={paymentMethodFilter}
               onChange={(e) => setPaymentMethodFilter(e.target.value)}
+              aria-label="Lọc theo phương thức thanh toán"
               className="w-full appearance-none border border-gray-300 rounded px-3 py-2 pr-9 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
             >
               <option value="all">Mọi phương thức thanh toán</option>
@@ -257,7 +277,7 @@ export default function OrderListTab() {
       {/* Status filter pills */}
       <div className="flex items-center gap-2 mb-5 flex-wrap">
         {ORDER_FILTER_TABS.map(tab => (
-          <button
+          <button aria-label={tab.label} type="button"
             key={tab.id}
             onClick={() => setActiveFilter(tab.id)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer border ${
@@ -285,11 +305,12 @@ export default function OrderListTab() {
                     type="checkbox"
                     checked={orders.length > 0 && selectedIds.length === orders.length}
                     onChange={handleSelectAll}
+                    aria-label="Chọn tất cả đơn hàng"
                     className="w-4 h-4 text-[#E8420A] focus:ring-[#E8420A] border-gray-300 rounded cursor-pointer"
                   />
                 </div>
-                {['MÃ ĐƠN', 'NGÀY ĐẶT', 'KHÁCH HÀNG', 'THANH TOÁN', 'TỔNG TIỀN', 'TRẠNG THÁI', 'ACT'].map((h, i) => (
-                  <span key={i} className={`text-[11px] font-bold text-gray-400 uppercase tracking-wide ${i === 6 ? 'text-right' : ''}`}>
+                {['MÃ ĐƠN', 'NGÀY ĐẶT', 'KHÁCH HÀNG', 'THANH TOÁN', 'TỔNG TIỀN', 'TRẠNG THÁI', 'ACT'].map((h) => (
+                  <span key={h} className={`text-[11px] font-bold text-gray-400 uppercase tracking-wide ${h === 'ACT' ? 'text-right' : ''}`}>
                     {h}
                   </span>
                 ))}
@@ -299,18 +320,20 @@ export default function OrderListTab() {
               ) : (
                 orders.map((order, i) => {
                   const isCancelled = order.orderStatus === 'CANCELLED'
+                  const isRowSelected = selectedIdSet.has(order.id)
                   return (
                     <div
                       key={order.id}
                       className={`grid grid-cols-[50px_140px_110px_120px_1fr_120px_150px_80px] px-6 py-4 items-center ${
                         i < orders.length - 1 ? 'border-b border-gray-50' : ''
-                      } hover:bg-gray-50/50 ${selectedIds.includes(order.id) ? 'bg-amber-50/20' : ''}`}
+                      } hover:bg-gray-50/50 ${isRowSelected ? 'bg-amber-50/20' : ''}`}
                     >
                       <div className="flex items-center">
                         <input
                           type="checkbox"
-                          checked={selectedIds.includes(order.id)}
+                          checked={isRowSelected}
                           onChange={() => handleSelectRow(order.id)}
+                          aria-label={`Chọn đơn hàng ${order.id}`}
                           className="w-4 h-4 text-[#E8420A] focus:ring-[#E8420A] border-gray-300 rounded cursor-pointer"
                         />
                       </div>
@@ -340,6 +363,7 @@ export default function OrderListTab() {
                           value={order.orderStatus}
                           onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
                           disabled={isCancelled || order.orderStatus === 'COMPLETED'}
+                          aria-label={`Cập nhật trạng thái đơn hàng ${order.id}`}
                           className="text-xs font-semibold px-2.5 py-1.5 rounded bg-gray-50 border border-gray-200 cursor-pointer focus:outline-none"
                         >
                           <option value="AWAITING_CONFIRMATION">Chờ xác nhận</option>
@@ -351,7 +375,7 @@ export default function OrderListTab() {
                         </select>
                       </div>
                       <div className="text-right">
-                        <button
+                        <button aria-label="Thao tác" type="button"
                           onClick={() => setSelectedOrderId(order.id)}
                           className="text-sm font-medium cursor-pointer text-[#E8420A] hover:underline bg-transparent border-none"
                         >
@@ -364,7 +388,7 @@ export default function OrderListTab() {
               )}
               {hasNext && (
                 <div className="flex justify-center py-4 border-t border-gray-100 bg-gray-50/50">
-                  <button
+                  <button aria-label="Thao tác" type="button"
                     onClick={() => fetchOrders(false)}
                     disabled={loadingMore}
                     className="px-4 py-2 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded cursor-pointer disabled:opacity-60 transition-colors"
@@ -386,19 +410,19 @@ export default function OrderListTab() {
 
       {/* Floating Bulk Actions Bar */}
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur text-white px-6 py-4 rounded-xl shadow-2xl border border-gray-800 flex items-center gap-6 z-40 transition-all duration-300">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur text-white px-6 py-4 rounded-xl shadow-2xl border border-gray-800 flex items-center gap-6 z-40 transition-colors duration-300">
           <div className="text-sm font-semibold border-r border-gray-700 pr-6">
             Đã chọn: <span className="text-[#E8420A] text-base font-bold">{selectedIds.length}</span> đơn hàng
           </div>
           <div className="flex items-center gap-3">
-            <button
+            <button aria-label="Thao tác" type="button"
               onClick={handleBulkConfirm}
               className="bg-[#E8420A] hover:bg-[#C4350A] text-white px-4 py-2 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               Duyệt đơn hàng loạt
             </button>
             
-            <button
+            <button aria-label="Thao tác" type="button"
               onClick={handleBulkExport}
               className="border border-gray-700 hover:bg-gray-800 text-gray-200 px-4 py-2 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
@@ -408,7 +432,7 @@ export default function OrderListTab() {
               Xuất vận đơn (Excel)
             </button>
           </div>
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={() => setSelectedIds([])}
             className="text-gray-400 hover:text-white transition-colors pl-4 border-l border-gray-700 cursor-pointer"
             title="Bỏ chọn tất cả"

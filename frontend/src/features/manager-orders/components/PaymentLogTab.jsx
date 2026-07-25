@@ -51,6 +51,7 @@ export default function PaymentLogTab() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Mã GD, mã đơn, khách hàng..."
+            aria-label="Tìm mã giao dịch, mã đơn hoặc tên khách hàng"
             className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-800"
           />
         </div>
@@ -66,8 +67,8 @@ export default function PaymentLogTab() {
             <table className="w-full text-sm min-w-[950px]">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Mã giao dịch', 'Ngày thanh toán', 'Khách hàng', 'Phương thức', 'Mã đơn hàng', 'Số tiền', 'Trạng thái', 'Chi tiết'].map((h, i) => (
-                    <th key={i} className={`px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide ${i >= 5 ? 'text-right' : 'text-left'}`}>
+                  {['Mã giao dịch', 'Ngày thanh toán', 'Khách hàng', 'Phương thức', 'Mã đơn hàng', 'Số tiền', 'Trạng thái', 'Chi tiết'].map((h) => (
+                    <th key={h} className={`px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide ${['Số tiền', 'Trạng thái', 'Chi tiết'].includes(h) ? 'text-right' : 'text-left'}`}>
                       {h}
                     </th>
                   ))}
@@ -109,7 +110,7 @@ export default function PaymentLogTab() {
                           <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${ps.bg} ${ps.text}`}>{ps.label}</span>
                         </td>
                         <td className="px-4 py-4 text-right">
-                          <button onClick={() => setSelected(log)} className="transition-opacity text-xs font-semibold text-[#E8420A] hover:text-[#C4350A] px-3 py-1.5 rounded hover:bg-orange-50 cursor-pointer whitespace-nowrap border-none bg-transparent">
+                          <button aria-label={`Xem chi tiết giao dịch ${log.id.substring(0, 10)}`} type="button" onClick={() => setSelected(log)} className="transition-opacity text-xs font-semibold text-[#E8420A] hover:text-[#C4350A] px-3 py-1.5 rounded hover:bg-orange-50 cursor-pointer whitespace-nowrap border-none bg-transparent">
                             Xem chi tiết
                           </button>
                         </td>
