@@ -1,6 +1,5 @@
 package com.project.tech_gadget_store.modules.auth.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.tech_gadget_store.modules.auth.dto.response.BackupMetadata;
 import com.project.tech_gadget_store.modules.auth.entity.AuditLog;
@@ -16,12 +15,18 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 
+/**
+ * Orchestrates backup/restore: file management, checksum verification, maintenance-mode
+ * switching, audit logging and rollback-on-failure. Delegates the actual table export/import
+ * (what to read/write and in what order) to {@link DatabaseSnapshotService}.
+ */
 @Slf4j
 @Service
 public class BackupAndRestoreService {
@@ -29,48 +34,23 @@ public class BackupAndRestoreService {
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
     private final AuditLogRepository auditLogRepository;
+    private final DatabaseSnapshotService databaseSnapshotService;
     private final AtomicBoolean maintenanceMode = new AtomicBoolean(false);
 
     private static final String APP_VERSION = "1.0.0";
-    private final Path backupDirectory = Paths.get("backups");
-
-    private static final List<String> TABLES_IN_ORDER = List.of(
-        "audit_logs",
-        "notifications",
-        "favorite_products",
-        "cart_items",
-        "carts",
-        "order_items",
-        "orders",
-        "export_log_items",
-        "export_logs",
-        "import_log_items",
-        "import_logs",
-        "receipts",
-        "product_variants",
-        "product_images",
-        "products",
-        "brands",
-        "categories",
-        "accounts",
-        "addresses",
-        "customers",
-        "staff",
-        "managers",
-        "users",
-        "memberships",
-        "promotions",
-        "payment_logs",
-        "payment_methods"
-    );
+    private final Path backupDirectory;
 
     public BackupAndRestoreService(JdbcTemplate jdbcTemplate,
-                                   AuditLogRepository auditLogRepository) {
+                                   AuditLogRepository auditLogRepository,
+                                   DatabaseSnapshotService databaseSnapshotService,
+                                   @Value("${app.backup.directory:backups}") String backupDirectory) {
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = new ObjectMapper().registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         this.auditLogRepository = auditLogRepository;
+        this.databaseSnapshotService = databaseSnapshotService;
+        this.backupDirectory = Paths.get(backupDirectory);
         try {
-            Files.createDirectories(backupDirectory);
+            Files.createDirectories(this.backupDirectory);
         } catch (IOException e) {
             log.error("Failed to create backup directory", e);
         }
@@ -113,22 +93,13 @@ public class BackupAndRestoreService {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-                // 1. Export all tables in order
-                for (String tableName : TABLES_IN_ORDER) {
-                    if (tableExists(tableName)) {
-                        List<Map<String, Object>> rows = jdbcTemplate.queryForList("SELECT * FROM " + tableName);
-                        writeZipEntry(zos, tableName + ".json", rows);
-                    }
-                }
-                
-                // 2. Write metadata
-                BackupMetadata meta = BackupMetadata.builder()
+                databaseSnapshotService.exportAllTables(zos);
+                writeZipEntry(zos, "metadata.json", BackupMetadata.builder()
                         .backupName(backupName)
                         .timestamp(LocalDateTime.now())
                         .appVersion(APP_VERSION)
                         .checksum("")
-                        .build();
-                writeZipEntry(zos, "metadata.json", meta);
+                        .build());
             }
 
             // Save zip file
@@ -253,145 +224,21 @@ public class BackupAndRestoreService {
     private void createTemporarySnapshotFile(Path path) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-            for (String tableName : TABLES_IN_ORDER) {
-                if (tableExists(tableName)) {
-                    List<Map<String, Object>> rows = jdbcTemplate.queryForList("SELECT * FROM " + tableName);
-                    writeZipEntry(zos, tableName + ".json", rows);
-                }
-            }
-            BackupMetadata meta = BackupMetadata.builder()
+            databaseSnapshotService.exportAllTables(zos);
+            writeZipEntry(zos, "metadata.json", BackupMetadata.builder()
                     .backupName(path.getFileName().toString())
                     .timestamp(LocalDateTime.now())
                     .appVersion(APP_VERSION)
                     .checksum("")
-                    .build();
-            writeZipEntry(zos, "metadata.json", meta);
+                    .build());
         }
         Files.write(path, baos.toByteArray());
     }
 
     private void executeRestoreFromZip(Path zipPath, String scope, List<String> modulesToRestore) throws Exception {
-        Map<String, List<Map<String, Object>>> tablesData = new HashMap<>();
-        
-        // Read data from zip
-        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipPath.toFile()))) {
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                String name = entry.getName();
-                if (name.endsWith(".json") && !name.equals("metadata.json")) {
-                    String tableName = name.substring(0, name.length() - 5);
-                    
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    byte[] buffer = new byte[1024];
-                    int len;
-                    while ((len = zis.read(buffer)) > 0) {
-                        bos.write(buffer, 0, len);
-                    }
-                    
-                    List<Map<String, Object>> rows = objectMapper.readValue(bos.toByteArray(), new TypeReference<List<Map<String, Object>>>() {});
-                    tablesData.put(tableName, rows);
-                }
-                zis.closeEntry();
-            }
-        }
-
-        // Determine which tables to clear and restore
-        List<String> targetTables = new ArrayList<>();
-        if ("FULL".equalsIgnoreCase(scope)) {
-            targetTables.addAll(TABLES_IN_ORDER);
-        } else { // PARTIAL
-            if (modulesToRestore == null || modulesToRestore.isEmpty()) {
-                throw new IllegalArgumentException("No modules selected for partial restore");
-            }
-            for (String module : modulesToRestore) {
-                if ("PRODUCTS".equalsIgnoreCase(module)) {
-                    targetTables.addAll(List.of("product_variants", "product_images", "products", "brands", "categories"));
-                } else if ("CUSTOMERS".equalsIgnoreCase(module)) {
-                    targetTables.addAll(List.of("customers", "users", "addresses", "carts", "cart_items"));
-                } else if ("ORDERS".equalsIgnoreCase(module)) {
-                    targetTables.addAll(List.of("order_items", "orders"));
-                }
-            }
-        }
-
-        // Clear target tables in reverse order to respect foreign key constraints
-        List<String> reverseOrder = new ArrayList<>(TABLES_IN_ORDER);
-        Collections.reverse(reverseOrder);
-        for (String tableName : reverseOrder) {
-            if (targetTables.contains(tableName) && tableExists(tableName)) {
-                jdbcTemplate.update("DELETE FROM " + tableName);
-            }
-        }
-
-        // Restore target tables in correct topological order
-        for (String tableName : TABLES_IN_ORDER) {
-            if (targetTables.contains(tableName) && tablesData.containsKey(tableName)) {
-                List<Map<String, Object>> rows = tablesData.get(tableName);
-                for (Map<String, Object> row : rows) {
-                    insertRow(tableName, row);
-                }
-            }
-        }
-    }
-
-    private void insertRow(String tableName, Map<String, Object> row) {
-        if (row.isEmpty()) return;
-
-        StringBuilder columns = new StringBuilder();
-        StringBuilder placeholders = new StringBuilder();
-        List<Object> values = new ArrayList<>();
-
-        for (Map.Entry<String, Object> entry : row.entrySet()) {
-            // Validate column name to prevent SQL injection via crafted backup files
-            validateIdentifier(entry.getKey());
-
-            if (columns.length() > 0) {
-                columns.append(", ");
-                placeholders.append(", ");
-            }
-            columns.append(entry.getKey());
-            placeholders.append("?");
-            values.add(convertValueIfNeeded(entry.getKey(), entry.getValue()));
-        }
-
-        String sql = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
-        jdbcTemplate.update(sql, values.toArray());
-    }
-
-    /**
-     * Validates that a SQL identifier (table or column name) contains only
-     * alphanumeric characters and underscores, preventing SQL injection via
-     * crafted backup files.
-     *
-     * @param name the identifier to validate
-     * @throws IllegalArgumentException if the identifier contains invalid characters
-     */
-    private void validateIdentifier(String name) {
-        if (name == null || !name.matches("[a-zA-Z0-9_]+")) {
-            throw new IllegalArgumentException("Invalid SQL identifier: " + name);
-        }
-    }
-
-    private Object convertValueIfNeeded(String columnName, Object value) {
-        if (value instanceof String && (columnName.endsWith("_at") || columnName.equals("timestamp") || columnName.endsWith("_date"))) {
-            try {
-                String str = (String) value;
-                return LocalDateTime.parse(str);
-            } catch (Exception e) {
-                return value;
-            }
-        }
-        return value;
-    }
-
-    private boolean tableExists(String tableName) {
-        try {
-            validateIdentifier(tableName);
-            jdbcTemplate.execute("SELECT 1 FROM " + tableName + " LIMIT 1");
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        Map<String, List<Map<String, Object>>> tablesData = databaseSnapshotService.readTablesFromZip(zipPath);
+        List<String> targetTables = databaseSnapshotService.resolveTargetTables(scope, modulesToRestore);
+        databaseSnapshotService.restoreTables(tablesData, targetTables);
     }
 
     private void writeZipEntry(ZipOutputStream zos, String entryName, Object data) throws IOException {

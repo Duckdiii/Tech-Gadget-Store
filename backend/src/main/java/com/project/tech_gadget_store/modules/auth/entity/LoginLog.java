@@ -57,28 +57,14 @@ public class LoginLog extends BaseEntity {
         if (account == null) {
             throw new IllegalArgumentException("account must not be null");
         }
-        return new LoginLog(account, account.getEmail(), resolveRoleName(account), LoginStatus.SUCCESS);
-    }
-
-    private static String resolveRoleName(Account account) {
-        User user = account.getUser();
-        if (user instanceof Manager) {
-            return "MANAGER";
-        }
-        if (user instanceof Staff) {
-            return "STAFF";
-        }
-        if (user instanceof Customer) {
-            return "CUSTOMER";
-        }
-        return null;
+        return new LoginLog(account, account.getEmail(), account.getUser().getRoleName(), LoginStatus.SUCCESS);
     }
 
     public static LoginLog failure(Account account) {
         if (account == null) {
             throw new IllegalArgumentException("account must not be null");
         }
-        return new LoginLog(account, account.getEmail(), resolveRoleName(account), LoginStatus.FAILED);
+        return new LoginLog(account, account.getEmail(), account.getUser().getRoleName(), LoginStatus.FAILED);
     }
 
     public boolean isSuccess() {

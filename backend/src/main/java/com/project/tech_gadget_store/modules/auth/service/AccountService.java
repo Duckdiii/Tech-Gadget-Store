@@ -6,10 +6,7 @@ import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.dto.response.AccountResponseDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.LoginLogResponseDto;
 import com.project.tech_gadget_store.modules.auth.entity.Account;
-import com.project.tech_gadget_store.modules.auth.entity.Customer;
-import com.project.tech_gadget_store.modules.auth.entity.Manager;
 import com.project.tech_gadget_store.modules.auth.entity.Staff;
-import com.project.tech_gadget_store.modules.auth.entity.User;
 import com.project.tech_gadget_store.modules.auth.entity.enums.AccountStatus;
 import com.project.tech_gadget_store.modules.auth.entity.enums.LoginStatus;
 import com.project.tech_gadget_store.modules.auth.repository.AccountRepository;
@@ -17,7 +14,6 @@ import com.project.tech_gadget_store.modules.auth.repository.LoginLogRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +45,7 @@ public class AccountService {
     public AccountResponseDto blockAccountById(String id) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
-        account.setStatus(AccountStatus.BLOCKED);
+        account.block();
         accountRepository.save(account);
         return toDto(account);
     }
@@ -57,7 +53,7 @@ public class AccountService {
     public AccountResponseDto unblockAccountById(String id) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
-        account.setStatus(AccountStatus.ACTIVE);
+        account.activate();
         accountRepository.save(account);
         return toDto(account);
     }
@@ -66,7 +62,7 @@ public class AccountService {
     public void deleteAccountById(String id) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
-        deleteStaffAccount(account);
+        deleteStaffAccountInternal(account);
     }
 
     public LoginLogResponseDto viewLoginInfo(String email) {
@@ -89,7 +85,7 @@ public class AccountService {
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Account not found with email: " + email));
 
-        account.setStatus(AccountStatus.BLOCKED);
+        account.block();
         accountRepository.save(account);
 
         return toDto(account);
@@ -110,10 +106,22 @@ public class AccountService {
 
     @Transactional
     public void deleteStaffAccount(Account account) {
+        deleteStaffAccountInternal(account);
+    }
+
+    /**
+     * Shared by {@link #deleteStaffAccount} (called externally via the Spring proxy, e.g. from
+     * {@code StaffService}) and {@link #deleteAccountById} (which already runs inside its own
+     * {@code @Transactional}). A private method is never proxied, so calling it directly here
+     * avoids the self-invocation trap of one {@code @Transactional} method calling another on
+     * {@code this} — that bypass is silent and only breaks if either method's transactional
+     * behavior (e.g. propagation) ever changes.
+     */
+    private void deleteStaffAccountInternal(Account account) {
         if (account == null) {
             throw new ResourceNotFoundException("Account does not exist");
         }
-        if (!(account.getUser() instanceof Staff)) {
+        if (!"STAFF".equals(account.getUser().getRoleName())) {
             throw new IllegalStateException("Account deletion is not allowed for this account type");
         }
         loginLogRepository.deleteByAccountId(account.getId());
@@ -130,18 +138,8 @@ public class AccountService {
                 .email(account.getEmail())
                 .status(account.getStatus())
                 .userId(account.getUser().getId())
-                .role(resolveRole(account.getUser()))
+                .role(account.getUser().getRoleName())
                 .loginLogsIds(account.getLoginLogs().stream().map(log -> log.getId()).toList())
                 .build();
-    }
-
-    // user is a lazy proxy of the abstract User type (JOINED inheritance, no discriminator
-    // column), so a plain `instanceof` check against it fails on the subclass checks below
-    // unless unproxied first — same fix already applied in AccountUserDetails.resolveRole.
-    private static String resolveRole(User user) {
-        Object unproxied = Hibernate.unproxy(user);
-        if (unproxied instanceof Manager) return "MANAGER";
-        if (unproxied instanceof Customer) return "CUSTOMER";
-        return "STAFF";
     }
 }

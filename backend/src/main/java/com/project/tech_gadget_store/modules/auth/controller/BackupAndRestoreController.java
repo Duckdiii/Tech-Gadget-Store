@@ -1,5 +1,6 @@
 package com.project.tech_gadget_store.modules.auth.controller;
 
+import com.project.tech_gadget_store.common.exception.UnauthorizedException;
 import com.project.tech_gadget_store.modules.auth.dto.request.RestoreRequestDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.BackupMetadata;
 import com.project.tech_gadget_store.modules.auth.service.BackupAndRestoreService;
@@ -7,7 +8,6 @@ import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 
 
@@ -63,7 +62,7 @@ public class BackupAndRestoreController {
 
     private String resolveUsername(Principal principal) {
         if (principal == null || principal.getName() == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
+            throw new UnauthorizedException("Authentication required");
         }
         return principal.getName();
     }

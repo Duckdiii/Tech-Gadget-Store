@@ -28,6 +28,7 @@ public class Account extends BaseEntity {
         @Column(name = "password", nullable = false, length = 255)
         private String password;
 
+        @Setter(AccessLevel.NONE)
         @Enumerated(EnumType.STRING)
         @Column(name = "status", nullable = false, length = 30)
         private AccountStatus status = AccountStatus.ACTIVE;
@@ -68,6 +69,19 @@ public class Account extends BaseEntity {
 
         public void unlock() {
                 activate();
+        }
+
+        /**
+         * Generic status change for callers (e.g. bulk admin actions) that only have a target
+         * {@link AccountStatus} value in hand, not a specific reason. Prefer {@link #activate()}/
+         * {@link #block()} when the intent is already known — they read as the actual business
+         * action instead of a raw field write.
+         */
+        public void changeStatus(AccountStatus status) {
+                if (status == null) {
+                        throw new IllegalArgumentException("status must not be null");
+                }
+                this.status = status;
         }
 
         public boolean isActive() {

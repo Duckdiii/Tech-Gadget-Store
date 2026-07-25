@@ -1,6 +1,8 @@
 package com.project.tech_gadget_store.modules.auth.controller;
 
+import com.project.tech_gadget_store.common.constants.ErrorMessages;
 import com.project.tech_gadget_store.common.dto.request.UpdateProfileRequestDto;
+import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.dto.request.AddressRequestDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.AddressResponseDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.CustomerResponseDto;
@@ -15,11 +17,9 @@ import com.project.tech_gadget_store.modules.loyalty.dto.response.MembershipTier
 import com.project.tech_gadget_store.modules.loyalty.dto.response.SubscriptionResponseDto;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 
 
@@ -78,7 +78,7 @@ public class CustomerController {
     @GetMapping("/profile")
     public ResponseEntity<CustomerResponseDto> showMyProfile(Authentication authentication) {
         Customer customer = customerRepository.findByAccountEmail(authentication.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CUSTOMER_NOT_FOUND));
         return ResponseEntity.ok(customerService.showCustomerProfile(customer.getId()));
     }
 
@@ -95,7 +95,7 @@ public class CustomerController {
             @Valid @RequestBody AddressRequestDto request,
             Authentication authentication) {
         Customer customer = customerRepository.findByAccountEmail(authentication.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CUSTOMER_NOT_FOUND));
         request.setUserId(customer.getId());
         return ResponseEntity.ok(customerService.addAddress(request));
     }
@@ -106,7 +106,7 @@ public class CustomerController {
             @Valid @RequestBody AddressRequestDto request,
             Authentication authentication) {
         Customer customer = customerRepository.findByAccountEmail(authentication.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CUSTOMER_NOT_FOUND));
         request.setUserId(customer.getId());
         return ResponseEntity.ok(customerService.updateAddress(addressId, request));
     }

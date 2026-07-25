@@ -1,6 +1,8 @@
 package com.project.tech_gadget_store.modules.auth.service;
 
+import com.project.tech_gadget_store.common.constants.ErrorMessages;
 import com.project.tech_gadget_store.common.dto.request.UpdateProfileRequestDto;
+import com.project.tech_gadget_store.common.exception.ForbiddenException;
 import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.dto.request.AddressRequestDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.AddressResponseDto;
@@ -22,10 +24,8 @@ import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 
 
@@ -66,13 +66,13 @@ public class CustomerService {
     public CustomerResponseDto showCustomerProfile(String id) {
         return customerRepository.findById(id)
                 .map(customerMapper::toCustomerResponseDto)
-                .orElseThrow(() -> new RuntimeException(CUSTOMER_NOT_FOUND + id));
+                .orElseThrow(() -> new ResourceNotFoundException(CUSTOMER_NOT_FOUND + id));
     }
 
     public MembershipResponseDto showCustomerMembership(String id) {
         return customerRepository.findById(id)
                 .map(customer -> membershipMapper.toMembershipResponseDto(customer.getMembership()))
-                .orElseThrow(() -> new RuntimeException(CUSTOMER_NOT_FOUND + id));
+                .orElseThrow(() -> new ResourceNotFoundException(CUSTOMER_NOT_FOUND + id));
     }
 
     public CustomerMembershipResponseDto getMyMembership(String email) {
@@ -117,7 +117,7 @@ public class CustomerService {
     @Transactional
     public AddressResponseDto addAddress(AddressRequestDto request) {
         var customer = customerRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException(CUSTOMER_NOT_FOUND + request.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException(CUSTOMER_NOT_FOUND + request.getUserId()));
         Address address = new Address(request.getStreet(), request.getWard(),
                 request.getDistrict(), request.getProvince());
         address.setName(request.getName());
@@ -141,12 +141,12 @@ public class CustomerService {
     @Transactional
     public AddressResponseDto updateAddress(String addressId, AddressRequestDto request) {
         var customer = customerRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CUSTOMER_NOT_FOUND + request.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException(CUSTOMER_NOT_FOUND + request.getUserId()));
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy địa chỉ"));
+
         if (!customer.getAddresses().contains(address)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Địa chỉ không thuộc về khách hàng này");
+            throw new ForbiddenException("Địa chỉ không thuộc về khách hàng này");
         }
 
         address.setStreet(request.getStreet());
@@ -174,22 +174,22 @@ public class CustomerService {
     @Transactional
     public void deleteAddress(String email, String addressId) {
         Customer customer = customerRepository.findByAccountEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CUSTOMER_NOT_FOUND));
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy địa chỉ"));
+
         if (!customer.getAddresses().contains(address)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Địa chỉ không thuộc về khách hàng này");
+            throw new ForbiddenException("Địa chỉ không thuộc về khách hàng này");
         }
 
-        customer.getAddresses().remove(address);
+        customer.removeAddress(address);
         customerRepository.save(customer);
     }
 
     @Transactional
     public CustomerResponseDto updateProfile(String email, UpdateProfileRequestDto request) {
         Customer customer = customerRepository.findByAccountEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CUSTOMER_NOT_FOUND));
         customer.setFullName(request.getFullName());
         customer.setPhone(request.getPhone());
         customerRepository.save(customer);
@@ -203,8 +203,7 @@ public class CustomerService {
     @Transactional
     public void recalculateMembership(String customerId) {
         Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        CUSTOMER_NOT_FOUND + customerId));
+                .orElseThrow(() -> new ResourceNotFoundException(CUSTOMER_NOT_FOUND + customerId));
 
         BigDecimal totalSpent = orderRepository.sumSpentByCustomerIdAndStatus(
                 customerId, OrderStatus.COMPLETED);

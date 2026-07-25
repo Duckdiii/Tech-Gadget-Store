@@ -4,7 +4,6 @@ import com.project.tech_gadget_store.modules.auth.dto.request.ChangeMyPasswordRe
 import com.project.tech_gadget_store.modules.auth.dto.response.MyProfileResponseDto;
 import com.project.tech_gadget_store.modules.auth.entity.Account;
 import com.project.tech_gadget_store.modules.auth.entity.LoginLog;
-import com.project.tech_gadget_store.modules.auth.entity.Manager;
 import com.project.tech_gadget_store.modules.auth.entity.Staff;
 import com.project.tech_gadget_store.modules.auth.entity.User;
 import com.project.tech_gadget_store.modules.auth.entity.enums.LoginStatus;
@@ -43,21 +42,18 @@ public class MyAccountService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản"));
 
         User user = account.getUser();
-        // user is a lazy proxy of the abstract User type (JOINED inheritance, no discriminator
-        // column) — same unproxy requirement as AccountUserDetails.resolveRole.
-        Object unproxied = Hibernate.unproxy(user);
+        // Virtual call: dispatches to the concrete subclass's override even through a lazy
+        // Hibernate proxy of this abstract type, no instanceof/unproxy needed for the role itself.
+        String role = user.getRoleName();
 
-        String role;
         String staffCode = null;
         LocalDate hireDate = null;
-        if (unproxied instanceof Manager) {
-            role = "MANAGER";
-        } else if (unproxied instanceof Staff staff) {
-            role = "STAFF";
+        // staffCode/hireDate only exist on Staff, so unlike the role name above there's no
+        // supertype method to call — Hibernate.unproxy is still needed here because `instanceof`
+        // does not see through a lazy proxy of the abstract User type.
+        if (Hibernate.unproxy(user) instanceof Staff staff) {
             staffCode = staff.getStaffCode();
             hireDate = staff.getHireDate();
-        } else {
-            role = "CUSTOMER";
         }
 
         // Bản ghi mới nhất là phiên đăng nhập hiện tại — lấy bản ghi thứ 2 mới bằng

@@ -33,4 +33,9 @@ public class Staff extends User {
     public boolean canManageInventory() {
         return true;
     }
+
+    @Override
+    public String getRoleName() {
+        return "STAFF";
+    }
 }

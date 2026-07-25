@@ -1,9 +1,11 @@
 package com.project.tech_gadget_store.modules.auth.service;
 
 import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
+import com.project.tech_gadget_store.modules.auth.entity.Address;
 import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.auth.mapper.AddressMapper;
 import com.project.tech_gadget_store.modules.auth.mapper.CustomerMapper;
+import com.project.tech_gadget_store.modules.auth.repository.AddressRepository;
 import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
 import com.project.tech_gadget_store.modules.loyalty.dto.response.CustomerMembershipResponseDto;
 import com.project.tech_gadget_store.modules.loyalty.entity.Membership;
@@ -14,6 +16,7 @@ import com.project.tech_gadget_store.modules.loyalty.repository.MembershipReposi
 import com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -23,6 +26,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -49,8 +54,15 @@ class CustomerServiceTest {
     @Mock
     private AddressMapper addressMapper;
 
+    @Mock
+    private AddressRepository addressRepository;
+
     @InjectMocks
     private CustomerService customerService;
+
+    private Address address(String street) {
+        return new Address(street, "ward", "district", "province");
+    }
 
     private Membership membership(MembershipTier tier, String min, String max) {
         MembershipBenefit benefit = new MembershipBenefit(5.0, true, "desc");
@@ -103,5 +115,39 @@ class CustomerServiceTest {
 
         assertThatThrownBy(() -> customerService.getMyMembership("missing@test.com"))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void deleteAddress_moreThanOneAddress_removesAndSaves() {
+        Customer customer = new Customer("Alice", "0900000000", membership(MembershipTier.SILVER, "5000000", "20000000"));
+        customer.setId("cust-1");
+        Address addressToDelete = address("123 Main St");
+        Address remaining = address("456 Other St");
+        customer.setAddresses(new ArrayList<>(List.of(addressToDelete, remaining)));
+
+        when(customerRepository.findByAccountEmail("alice@test.com")).thenReturn(Optional.of(customer));
+        when(addressRepository.findById("addr-1")).thenReturn(Optional.of(addressToDelete));
+
+        customerService.deleteAddress("alice@test.com", "addr-1");
+
+        assertThat(customer.getAddresses()).containsExactly(remaining);
+        verify(customerRepository).save(customer);
+    }
+
+    @Test
+    void deleteAddress_lastRemainingAddress_throwsIllegalStateException() {
+        Customer customer = new Customer("Alice", "0900000000", membership(MembershipTier.SILVER, "5000000", "20000000"));
+        customer.setId("cust-1");
+        Address onlyAddress = address("123 Main St");
+        customer.setAddresses(new ArrayList<>(List.of(onlyAddress)));
+
+        when(customerRepository.findByAccountEmail("alice@test.com")).thenReturn(Optional.of(customer));
+        when(addressRepository.findById("addr-1")).thenReturn(Optional.of(onlyAddress));
+
+        assertThatThrownBy(() -> customerService.deleteAddress("alice@test.com", "addr-1"))
+                .isInstanceOf(IllegalStateException.class);
+
+        assertThat(customer.getAddresses()).containsExactly(onlyAddress);
+        verify(customerRepository, never()).save(customer);
     }
 }

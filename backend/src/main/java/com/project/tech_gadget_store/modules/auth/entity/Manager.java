@@ -18,4 +18,9 @@ public class Manager extends User {
     public Manager(String fullName, String phone) {
         super(fullName, phone);
     }
+
+    @Override
+    public String getRoleName() {
+        return "MANAGER";
+    }
 }

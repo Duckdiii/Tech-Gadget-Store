@@ -1,5 +1,7 @@
 package com.project.tech_gadget_store.modules.auth.service;
 
+import com.project.tech_gadget_store.common.exception.DuplicateResourceException;
+import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.dto.request.ForgotPasswordRequestDto;
 import com.project.tech_gadget_store.modules.auth.dto.request.RegisterRequestDto;
 import com.project.tech_gadget_store.modules.auth.dto.request.ResetPasswordRequestDto;
@@ -19,11 +21,9 @@ import java.time.Duration;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 
 
@@ -78,7 +78,7 @@ public class AuthService {
     @Transactional
     public LoginResponseDto register(RegisterRequestDto req) {
         if (accountRepository.findByEmail(req.getEmail()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng");
+            throw new DuplicateResourceException("Email đã được sử dụng");
         }
 
         Membership membership = membershipRepository.findByTier(MembershipTier.STANDARD)
@@ -101,7 +101,7 @@ public class AuthService {
 
     public void forgotPassword(ForgotPasswordRequestDto req) {
         Account account = accountRepository.findByEmail(req.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản với email này."));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với email này."));
 
         String token = UUID.randomUUID().toString();
         redisTemplate.opsForValue().set(RESET_TOKEN_PREFIX + token, account.getId(), RESET_TOKEN_TTL);
@@ -119,11 +119,11 @@ public class AuthService {
         String key = RESET_TOKEN_PREFIX + req.getToken();
         String accountId = redisTemplate.opsForValue().get(key);
         if (accountId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã khôi phục không hợp lệ hoặc đã hết hạn.");
+            throw new IllegalArgumentException("Mã khôi phục không hợp lệ hoặc đã hết hạn.");
         }
 
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã khôi phục không hợp lệ hoặc đã hết hạn."));
+                .orElseThrow(() -> new IllegalArgumentException("Mã khôi phục không hợp lệ hoặc đã hết hạn."));
 
         account.changePassword(passwordEncoder.encode(req.getPassword()));
         accountRepository.save(account);

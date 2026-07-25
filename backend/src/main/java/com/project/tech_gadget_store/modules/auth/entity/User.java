@@ -93,4 +93,12 @@ public abstract class User extends BaseEntity {
         }
         addresses.remove(address);
     }
+
+    /**
+     * Short role code ("MANAGER"/"STAFF"/"CUSTOMER") used for JWT authorities, audit logs and
+     * profile responses. A virtual call — even through a lazy Hibernate proxy of this abstract
+     * type — dispatches to the concrete subclass's override, so callers never need an
+     * {@code instanceof}/unproxy check to find out which kind of user this is.
+     */
+    public abstract String getRoleName();
 }

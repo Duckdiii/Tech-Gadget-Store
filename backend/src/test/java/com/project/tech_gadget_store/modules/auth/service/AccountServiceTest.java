@@ -25,6 +25,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest {
 
+    // @Mock là annotation của Mockito, dùng để tạo ra một đối tượng giả (mock
+    // object) thay cho dependency thật của class đang test.
+
     @Mock
     private AccountRepository accountRepository;
 
@@ -34,7 +37,8 @@ class AccountServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
+    @InjectMocks // @InjectMocks là annotation của Mockito, dùng để tạo ra một đối tượng của
+                 // class đang test và inject các mock object vào các dependency của nó.
     private AccountService accountService;
 
     private Account staffAccount() {
@@ -46,31 +50,44 @@ class AccountServiceTest {
     }
 
     @Test
+    // Test case để kiểm tra phương thức blockAccountById khi tài khoản tồn tại
     void blockAccountById_found_setsStatusBlockedAndSaves() {
         Account account = staffAccount();
+        // khi service gọi findById("acc-1"), hãy trả về account ở trên
         when(accountRepository.findById("acc-1")).thenReturn(Optional.of(account));
 
+        // Gọi phương thức blockAccountById và kiểm tra kết quả
         AccountResponseDto result = accountService.blockAccountById("acc-1");
 
+        // Kiểm tra kết quả (Assert) -> kiểm tra giá trị
+        // Kiểm tra trạng thái của account và kết quả trả về
         assertThat(account.getStatus()).isEqualTo(AccountStatus.BLOCKED);
+        // Kiểm tra kết quả trả về có trạng thái là BLOCKED
         assertThat(result.getStatus()).isEqualTo(AccountStatus.BLOCKED);
+        // kiểm tra hành vi
+        // xác nhận rằng phương thức save(account) thực sự đã được gọi đúng 1 lần với
+        // đúng tham số account
         verify(accountRepository).save(account);
     }
 
     @Test
+
     void blockAccountById_notFound_throwsResourceNotFoundException() {
         when(accountRepository.findById("missing")).thenReturn(Optional.empty());
-
+        // Kiểm tra rằng khi gọi blockAccountById với id không tồn tại, sẽ ném ra
+        // ResourceNotFoundException
         assertThatThrownBy(() -> accountService.blockAccountById("missing"))
                 .isInstanceOf(ResourceNotFoundException.class);
-
+        // Kiểm tra rằng phương thức save(account) không bao giờ được gọi
         verify(accountRepository, never()).save(any());
     }
 
     @Test
+    // Test case để kiểm tra phương thức unblockAccountById khi tài khoản tồn tại
     void unblockAccountById_found_setsStatusActiveAndSaves() {
         Account account = staffAccount();
-        account.setStatus(AccountStatus.BLOCKED);
+        // Đặt trạng thái của account là BLOCKED trước khi gọi unblockAccountById
+        account.block();
         when(accountRepository.findById("acc-1")).thenReturn(Optional.of(account));
 
         AccountResponseDto result = accountService.unblockAccountById("acc-1");
@@ -81,6 +98,8 @@ class AccountServiceTest {
 
     @Test
     void unblockAccountById_notFound_throwsResourceNotFoundException() {
+        // Kiểm tra rằng khi gọi unblockAccountById với id không tồn tại, sẽ ném ra
+        // ResourceNotFoundException
         when(accountRepository.findById("missing")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> accountService.unblockAccountById("missing"))
@@ -92,9 +111,15 @@ class AccountServiceTest {
         Staff staff = new Staff("Nguyen Van A", "0900000001", "STF001", LocalDate.now());
         when(accountRepository.existsByEmail("staff@techstore.vn")).thenReturn(true);
 
+        // Kiểm tra rằng khi gọi createStaffAccount với email đã tồn tại, sẽ ném ra
+        // DuplicateResourceException
         assertThatThrownBy(() -> accountService.createStaffAccount("staff@techstore.vn", "raw-pass", staff))
                 .isInstanceOf(DuplicateResourceException.class);
 
+        // Kiểm tra rằng phương thức save(account) và encode(rawPassword) không bao giờ
+        // được gọi
+        // Tránh việc gọi các phương thức save và encode khi email đã tồn tại, vì không
+        // cần thiết phải thực hiện các hành động này trong trường hợp này.
         verify(accountRepository, never()).save(any());
         verify(passwordEncoder, never()).encode(any());
     }
@@ -102,8 +127,13 @@ class AccountServiceTest {
     @Test
     void createStaffAccount_newEmail_encodesPasswordAndSaves() {
         Staff staff = new Staff("Nguyen Van A", "0900000001", "STF001", LocalDate.now());
+
+        // Giả lập hành vi của accountRepository.existsByEmail để trả về false, nghĩa là
+        // email chưa tồn tại
         when(accountRepository.existsByEmail("staff@techstore.vn")).thenReturn(false);
         when(passwordEncoder.encode("raw-pass")).thenReturn("hashed-pass");
+        // Giả lập hành vi của accountRepository.save để trả về đối tượng Account đã
+        // được lưu
         when(accountRepository.save(any(Account.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Account result = accountService.createStaffAccount("staff@techstore.vn", "raw-pass", staff);

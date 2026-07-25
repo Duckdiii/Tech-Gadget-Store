@@ -7,8 +7,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 
 @Service
@@ -28,10 +26,10 @@ public class CustomerStatsService {
             start = LocalDate.parse(startDate.trim()).atStartOfDay();
             end = LocalDate.parse(endDate.trim()).atTime(LocalTime.MAX);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date range");
+            throw new IllegalArgumentException("Invalid date range");
         }
         if (start.isAfter(end)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date range");
+            throw new IllegalArgumentException("Invalid date range");
         }
 
         long newCustomers = customerRepository.countByCreatedAtBetween(start, end);

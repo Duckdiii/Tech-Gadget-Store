@@ -1,12 +1,9 @@
 package com.project.tech_gadget_store.modules.auth.security;
 
 import com.project.tech_gadget_store.modules.auth.entity.Account;
-import com.project.tech_gadget_store.modules.auth.entity.Customer;
-import com.project.tech_gadget_store.modules.auth.entity.Manager;
 import com.project.tech_gadget_store.modules.auth.entity.User;
 import java.util.Collection;
 import java.util.List;
-import org.hibernate.Hibernate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,18 +26,10 @@ public class AccountUserDetails implements UserDetails {
 
         User user = account.getUser();
         this.fullName = user.getFullName();
-        this.role = resolveRole(user);
+        // Virtual call: dispatches to the concrete subclass's override even through a lazy
+        // Hibernate proxy of this abstract type, no instanceof/unproxy needed.
+        this.role = user.getRoleName();
         this.userId = user.getId();
-    }
-
-    private static String resolveRole(User user) {
-        // user is a lazy proxy of the abstract User type (JOINED inheritance, no discriminator
-        // column), so a plain `instanceof` check against it always fails on the subclass
-        // checks below unless unproxied first.
-        Object unproxied = Hibernate.unproxy(user);
-        if (unproxied instanceof Manager) return "MANAGER";
-        if (unproxied instanceof Customer) return "CUSTOMER";
-        return "STAFF";
     }
 
     public String getFullName() { return fullName; }

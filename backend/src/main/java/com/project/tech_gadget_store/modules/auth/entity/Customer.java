@@ -19,6 +19,7 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Customer extends User {
 
+    @Setter(AccessLevel.NONE)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "membership_id", nullable = false)
     private Membership membership;
@@ -67,6 +68,22 @@ public class Customer extends User {
         if (!membership.getCustomers().contains(this)) {
             membership.getCustomers().add(this);
         }
+    }
+
+    /**
+     * Raw field assignment used only by {@link Membership#addCustomer}/
+     * {@link Membership#removeCustomer} (they live in a different package and already own
+     * updating their side — the {@code customers} list — of this relationship). Application code
+     * must go through {@link #assignMembership(Membership)} instead — it also keeps the old and
+     * new membership's customer lists in sync, which this method does not.
+     */
+    public void applyMembership(Membership membership) {
+        this.membership = membership;
+    }
+
+    @Override
+    public String getRoleName() {
+        return "CUSTOMER";
     }
 
 }

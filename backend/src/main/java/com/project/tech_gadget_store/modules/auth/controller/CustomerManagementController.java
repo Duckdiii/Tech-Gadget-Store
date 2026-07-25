@@ -1,10 +1,19 @@
 package com.project.tech_gadget_store.modules.auth.controller;
 
+import com.project.tech_gadget_store.modules.auth.dto.request.BulkPromotionRequestDto;
+import com.project.tech_gadget_store.modules.auth.dto.request.BulkStatusRequestDto;
+import com.project.tech_gadget_store.modules.auth.dto.request.CustomerNoteRequestDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.CustomerDetailResponseDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.CustomerListStatsDto;
+import com.project.tech_gadget_store.modules.auth.dto.response.CustomerNoteResponseDto;
 import com.project.tech_gadget_store.modules.auth.dto.response.CustomerPageResponseDto;
 import com.project.tech_gadget_store.modules.auth.service.CustomerManagementService;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,17 +72,17 @@ public class CustomerManagementController {
     }
 
     @PostMapping("/{customerId}/notes")
-    public ResponseEntity<com.project.tech_gadget_store.modules.auth.dto.response.CustomerNoteResponseDto> addNote(
+    public ResponseEntity<CustomerNoteResponseDto> addNote(
             @PathVariable String customerId,
-            @Valid @RequestBody com.project.tech_gadget_store.modules.auth.dto.request.CustomerNoteRequestDto request,
+            @Valid @RequestBody CustomerNoteRequestDto request,
             Authentication authentication) {
         return ResponseEntity.ok(customerManagementService.addNote(customerId, authentication.getName(), request.getContent()));
     }
 
     @PutMapping("/notes/{noteId}")
-    public ResponseEntity<com.project.tech_gadget_store.modules.auth.dto.response.CustomerNoteResponseDto> updateNote(
+    public ResponseEntity<CustomerNoteResponseDto> updateNote(
             @PathVariable String noteId,
-            @Valid @RequestBody com.project.tech_gadget_store.modules.auth.dto.request.CustomerNoteRequestDto request,
+            @Valid @RequestBody CustomerNoteRequestDto request,
             Authentication authentication) {
         return ResponseEntity.ok(customerManagementService.updateNote(noteId, authentication.getName(), request.getContent()));
     }
@@ -85,19 +94,19 @@ public class CustomerManagementController {
     }
 
     @PostMapping("/bulk-status")
-    public ResponseEntity<Void> bulkUpdateStatus(@Valid @RequestBody com.project.tech_gadget_store.modules.auth.dto.request.BulkStatusRequestDto request) {
+    public ResponseEntity<Void> bulkUpdateStatus(@Valid @RequestBody BulkStatusRequestDto request) {
         customerManagementService.bulkUpdateStatus(request.getAccountIds(), request.getStatus());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/bulk-promotion")
-    public ResponseEntity<java.util.Map<String, String>> bulkSendPromotion(@Valid @RequestBody com.project.tech_gadget_store.modules.auth.dto.request.BulkPromotionRequestDto request) {
+    public ResponseEntity<Map<String, String>> bulkSendPromotion(@Valid @RequestBody BulkPromotionRequestDto request) {
         String resultMsg = customerManagementService.bulkSendPromotion(request.getCustomerIds(), request.getMessage());
-        return ResponseEntity.ok(java.util.Map.of("message", resultMsg));
+        return ResponseEntity.ok(Map.of("message", resultMsg));
     }
 
     @PostMapping("/export")
-    public ResponseEntity<byte[]> exportCustomers(@RequestBody java.util.List<String> customerIds) {
+    public ResponseEntity<byte[]> exportCustomers(@RequestBody List<String> customerIds) {
         StringBuilder csv = new StringBuilder();
         csv.append("\uFEFF"); // UTF-8 BOM
         csv.append("Mã KH,Họ tên,Email,Số điện thoại,Hạng,Tổng chi tiêu,Tổng đơn hàng,Ngày đăng ký\n");
@@ -118,10 +127,10 @@ public class CustomerManagementController {
             }
         }
 
-        byte[] bytes = csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] bytes = csv.toString().getBytes(StandardCharsets.UTF_8);
         return ResponseEntity.ok()
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=danh_sach_khach_hang.csv")
-                .contentType(org.springframework.http.MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=danh_sach_khach_hang.csv")
+                .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
                 .body(bytes);
     }
 
