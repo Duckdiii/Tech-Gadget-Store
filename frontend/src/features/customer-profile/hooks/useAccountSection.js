@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react'
 import { profileService } from '../services/profileService'
 
+const INIT_ACCOUNT_INFO = {
+  firstName: '',
+  lastName: '',
+  phone: '',
+  email: '',
+  dob: '1998-06-01',
+  gender: 'male',
+  bio: '',
+}
+
+const GENDER_LABEL = { male: 'Nam', female: 'Nữ', other: 'Khác' }
+
 export function useAccountSection({ profile, onProfileUpdate }) {
   const [avatarSrc, setAvatarSrc] = useState(null)
 
@@ -16,15 +28,7 @@ export function useAccountSection({ profile, onProfileUpdate }) {
     return () => window.removeEventListener('customer_avatar_changed', loadAvatar)
   }, [profile])
 
-  const INIT = {
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    dob: '1998-06-01',
-    gender: 'male',
-    bio: '',
-  }
+  const INIT = INIT_ACCOUNT_INFO
 
   const [info, setInfo] = useState(INIT)
   const [draft, setDraft] = useState(INIT)
@@ -115,7 +119,7 @@ export function useAccountSection({ profile, onProfileUpdate }) {
     }
   }
 
-  const genderLabel = { male: 'Nam', female: 'Nữ', other: 'Khác' }
+  const genderLabel = GENDER_LABEL
   const dobDisplay = info.dob
     ? new Date(info.dob).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
     : '—'

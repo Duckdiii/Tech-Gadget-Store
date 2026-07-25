@@ -16,8 +16,8 @@ export function ProductImages({ product }) {
       {images.length > 1 && (
         <div className="flex gap-2.5 overflow-x-auto py-1.5 scrollbar-thin">
           {images.map((img, i) => (
-            <button
-              key={i}
+            <button aria-label="Thao tác" type="button"
+              key={img}
               onClick={() => setSelected(i)}
               className="w-16 h-16 shrink-0 overflow-hidden cursor-pointer"
               style={{
@@ -63,7 +63,7 @@ export function ProductInfo({
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-2.5 flex-wrap">
         <span className="text-[10px] font-extrabold px-3 py-1 text-white tracking-wider uppercase" style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '6px' }}>{product.categoryName || 'Sản phẩm'}</span>
-        <button
+        <button aria-label="Thao tác" type="button"
             onClick={() => document.getElementById('product-reviews')?.scrollIntoView({ behavior: 'smooth' })}
             className="flex items-center gap-1.5 cursor-pointer border-none bg-transparent p-0"
           >
@@ -71,7 +71,7 @@ export function ProductInfo({
               {[...Array(5)].map((_, i) => {
                 const fill = Math.max(0, Math.min(1, (averageRating ?? 0) - i))
                 return (
-                  <span key={i} className="relative w-4 h-4 inline-block">
+                  <span key={_?.id ?? _?.code ?? _?.name ?? _?.key ?? _?.val ?? _} className="relative w-4 h-4 inline-block">
                     <svg className="absolute inset-0 w-4 h-4" style={{ color: '#e2e8f0' }} fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                     </svg>
@@ -126,7 +126,7 @@ export function ProductInfo({
           <p className="text-[12.5px] font-extrabold mb-2" style={{ color: 'var(--t2)' }}>RAM</p>
           <div className="flex gap-2">
             {rams.map(ram => (
-              <button key={ram} onClick={() => setSelectedRam(ram)} className="px-4 py-2 text-xs font-bold transition-all cursor-pointer"
+              <button aria-label="Thao tác" type="button" key={ram} onClick={() => setSelectedRam(ram)} className="px-4 py-2 text-xs font-bold transition-colors cursor-pointer"
                 style={{
                   border: selectedRam === ram ? '2px solid var(--accent)' : '1.5px solid var(--b1)',
                   borderRadius: '8px',
@@ -145,7 +145,7 @@ export function ProductInfo({
           <p className="text-[12.5px] font-extrabold mb-2" style={{ color: 'var(--t2)' }}>Dung lượng bộ nhớ</p>
           <div className="flex gap-2">
             {storages.map(st => (
-              <button key={st} onClick={() => setSelectedStorage(st)} className="px-4 py-2 text-xs font-bold transition-all cursor-pointer"
+              <button aria-label="Thao tác" type="button" key={st} onClick={() => setSelectedStorage(st)} className="px-4 py-2 text-xs font-bold transition-colors cursor-pointer"
                 style={{
                   border: selectedStorage === st ? '2px solid var(--accent)' : '1.5px solid var(--b1)',
                   borderRadius: '8px',
@@ -166,7 +166,7 @@ export function ProductInfo({
           <p className="text-[12.5px] font-extrabold mb-2" style={{ color: 'var(--t2)' }}>Màu sắc</p>
           <div className="flex gap-2.5">
             {colors.map(col => (
-              <button key={col} onClick={() => setSelectedColor(col)} className="px-4 py-2 text-xs font-bold transition-all cursor-pointer"
+              <button aria-label="Thao tác" type="button" key={col} onClick={() => setSelectedColor(col)} className="px-4 py-2 text-xs font-bold transition-colors cursor-pointer"
                 style={{
                   border: selectedColor === col ? '2px solid var(--accent)' : '1.5px solid var(--b1)',
                   borderRadius: '8px',
@@ -181,10 +181,10 @@ export function ProductInfo({
 
       {/* CTAs */}
       <div className="flex flex-col gap-2.5 pt-1">
-        <button
+        <button aria-label="Thao tác" type="button"
           onClick={() => handleAddToCart()}
           disabled={adding || !selectedVariant}
-          className="w-full flex items-center justify-center gap-2.5 text-white font-extrabold py-3.5 px-6 text-[14px] cursor-pointer transition-all duration-200 hover:shadow-lg disabled:opacity-50 border-none"
+          className="w-full flex items-center justify-center gap-2.5 text-white font-extrabold py-3.5 px-6 text-[14px] cursor-pointer transition-colors duration-200 hover:shadow-lg disabled:opacity-50 border-none"
           style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '10px' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,7 +193,7 @@ export function ProductInfo({
           {adding ? 'Đang thêm...' : 'Thêm vào giỏ hàng'}
         </button>
         <div className="flex gap-3">
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={() => handleAddToCart()}
             disabled={adding || !selectedVariant}
             className="flex-1 text-white font-extrabold py-2.5 px-4 text-xs cursor-pointer transition-colors disabled:opacity-50 border-none"

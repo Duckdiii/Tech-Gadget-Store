@@ -35,9 +35,11 @@ const NAV_ITEMS = [
 // Section nào có nội dung gợi ý riêng ở cột phải (desktop only)
 const SECTIONS_WITH_TIPS = ['support', 'payment', 'address', 'account']
 
+const vndFormatter = new Intl.NumberFormat('vi-VN')
+
 function formatVnd(value) {
   if (value === null || value === undefined) return '—'
-  return new Intl.NumberFormat('vi-VN').format(value) + 'đ'
+  return vndFormatter.format(value) + 'đ'
 }
 
 /* ── Icons ───────────────────────────────────────────────────── */
@@ -64,6 +66,15 @@ function SvgIcon({ name, className = 'w-5 h-5', style }) {
 }
 
 /* ── Main component ──────────────────────────────────────────── */
+
+function getInitials(name) {
+  if (!name) return 'U'
+  const parts = name.trim().split(/\s+/)
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  }
+  return name.slice(0, 2).toUpperCase()
+}
 
 export default function UserProfilePage() {
   const onNavigate = useNav()
@@ -137,15 +148,6 @@ export default function UserProfilePage() {
     fetchProfileAndData()
   }, [])
 
-  const getInitials = (name) => {
-    if (!name) return 'U'
-    const parts = name.trim().split(/\s+/)
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-    }
-    return name.slice(0, 2).toUpperCase()
-  }
-
   const handleNavClick = (item) => {
     if (item.id === 'logout') {
       setShowLogoutModal(true)
@@ -161,7 +163,7 @@ export default function UserProfilePage() {
     : 100
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
+    <div className="flex-1 flex flex-col min-h-dvh" style={{ backgroundColor: 'var(--page)' }}>
       <StoreNavbar />
 
       {/* ── Hero banner ─────────────────────────────────────────── */}
@@ -173,7 +175,14 @@ export default function UserProfilePage() {
           <div className="flex flex-wrap items-center gap-5 sm:gap-8 py-6 sm:py-7">
 
             {/* Avatar */}
-            <div className="relative shrink-0 cursor-pointer group/avatar" onClick={() => setIsAvatarModalOpen(true)}>
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label="Thay đổi ảnh đại diện"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsAvatarModalOpen(true) }}
+              className="relative shrink-0 cursor-pointer group/avatar"
+              onClick={() => setIsAvatarModalOpen(true)}
+            >
               {profileLoading ? (
                 <Skeleton className="w-16 h-16 sm:w-24 sm:h-24 rounded-full ring-4" style={{ ringColor: 'rgba(255,255,255,0.15)', backgroundColor: 'rgba(255,255,255,0.12)' }} />
               ) : (
@@ -226,7 +235,7 @@ export default function UserProfilePage() {
             </div>
 
             {/* Edit button */}
-            <button
+            <button aria-label="Thao tác" type="button"
               onClick={() => setActiveSection('account')}
               className="ml-auto flex items-center gap-2 text-sm font-semibold px-4 sm:px-5 py-2.5 rounded transition-colors shrink-0 cursor-pointer"
               style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'white', backgroundColor: 'rgba(255,255,255,0.06)' }}
@@ -282,7 +291,11 @@ export default function UserProfilePage() {
 
             {/* Wishlist shortcut */}
             <div
+              role="button"
+              tabIndex={0}
+              aria-label="Xem danh sách yêu thích"
               onClick={() => setActiveSection('wishlist')}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveSection('wishlist') }}
               className="rounded px-4 sm:px-5 py-4 flex items-center gap-3 sm:gap-4 cursor-pointer transition-colors"
               style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             >
@@ -321,7 +334,7 @@ export default function UserProfilePage() {
                 <span className="text-xs font-black shrink-0" style={{ color: 'var(--accent)' }}>{tierProgressPct}%</span>
               </div>
               <div className="w-full rounded-full h-2.5 mb-2" style={{ backgroundColor: 'rgba(232,66,10,0.2)' }}>
-                <div className="h-2.5 rounded-full transition-all" style={{ width: `${tierProgressPct}%`, backgroundColor: 'var(--accent)' }} />
+                <div className="h-2.5 rounded-full transition-colors" style={{ width: `${tierProgressPct}%`, backgroundColor: 'var(--accent)' }} />
               </div>
               <p className="text-xs" style={{ color: 'rgba(232,66,10,0.8)' }}>
                 {membership?.nextTierMinSpending && membership.nextTierMinSpending > membership.totalSpent ? (
@@ -338,7 +351,7 @@ export default function UserProfilePage() {
           {/* Thanh nav ngang — chỉ hiện trên mobile/tablet (< lg), thay cho sidebar */}
           <div className="flex items-center gap-1 -mb-px overflow-x-auto lg:hidden">
             {NAV_ITEMS.filter(Boolean).map(item => (
-              <button
+              <button aria-label="Thao tác" type="button"
                 key={item.id}
                 onClick={() => handleNavClick(item)}
                 className="shrink-0 px-4 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer bg-transparent"
@@ -361,13 +374,13 @@ export default function UserProfilePage() {
           {/* Left sidebar — chỉ hiện trên desktop (lg+) */}
           <aside className="hidden lg:block overflow-hidden sticky top-24" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(15,23,42,0.02)' }}>
             <ul className="py-3">
-              {NAV_ITEMS.map((item, i) => {
-                if (!item) return <li key={i} className="my-2 mx-4" style={{ borderTop: '1px solid var(--b1)' }} />
+              {NAV_ITEMS.map((item) => {
+                if (!item) return <li key={item?.id ?? item?.code ?? item?.name ?? item?.key ?? item?.val ?? item} className="my-2 mx-4" style={{ borderTop: '1px solid var(--b1)' }} />
                 const isActive = activeSection === item.id && !item.action
                 const isLogout = item.id === 'logout'
                 return (
                   <li key={item.id}>
-                    <button
+                    <button aria-label="Thao tác" type="button"
                       onClick={() => handleNavClick(item)}
                       className="w-full flex items-center gap-3.5 text-sm transition-all text-left cursor-pointer"
                       style={isActive
@@ -440,8 +453,8 @@ export default function UserProfilePage() {
                         { day: 'Thứ 2 – Thứ 6', time: '8:00 – 22:00', active: true },
                         { day: 'Thứ 7', time: '8:00 – 20:00', active: true },
                         { day: 'Chủ nhật', time: '9:00 – 18:00', active: false },
-                      ].map((r, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm">
+                      ].map((r) => (
+                        <div key={r.day} className="flex items-center justify-between text-sm">
                           <span className="font-medium" style={{ color: 'var(--t2)' }}>{r.day}</span>
                           <span className="font-bold" style={{ color: r.active ? 'var(--ok)' : 'var(--warn)' }}>{r.time}</span>
                         </div>
@@ -460,8 +473,8 @@ export default function UserProfilePage() {
                         { channel: 'Hotline', time: '< 3 phút', icon: '📞' },
                         { channel: 'Phiếu hỗ trợ', time: '< 24 giờ', icon: '🎫' },
                         { channel: 'Email', time: '< 48 giờ', icon: '📧' },
-                      ].map((s, i) => (
-                        <div key={i} className="flex items-center justify-between text-xs">
+                      ].map((s) => (
+                        <div key={s.channel} className="flex items-center justify-between text-xs">
                           <span className="font-medium flex items-center gap-1.5" style={{ color: 'var(--t2)' }}>
                             <span>{s.icon}</span>{s.channel}
                           </span>
@@ -488,8 +501,8 @@ export default function UserProfilePage() {
                         'Không chia sẻ mã OTP với bất kỳ ai',
                         'Luôn kiểm tra địa chỉ website trước khi thanh toán',
                         'Bật thông đoán giao dịch từ ngân hàng',
-                      ].map((tip, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs" style={{ color: 'var(--warn)' }}>
+                      ].map((tip) => (
+                        <li key={tip} className="flex items-start gap-2 text-xs" style={{ color: 'var(--warn)' }}>
                           <span className="mt-0.5 shrink-0">⚠️</span>
                           {tip}
                         </li>
@@ -507,8 +520,8 @@ export default function UserProfilePage() {
                       { icon: '⭐', text: 'Địa chỉ mặc định sẽ được tự động chọn khi đặt hàng' },
                       { icon: '✏️', text: 'Bạn có thể thay đổi địa chỉ giao hàng ngay tại trang xác nhận đơn' },
                       { icon: '🔒', text: 'Thông tin địa chỉ được bảo mật và chỉ dùng cho giao hàng' },
-                    ].map((tip, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-xs" style={{ color: 'var(--t2)' }}>
+                    ].map((tip) => (
+                      <li key={tip.text} className="flex items-start gap-2.5 text-xs" style={{ color: 'var(--t2)' }}>
                         <span className="shrink-0 mt-0.5">{tip.icon}</span>
                         <span>{tip.text}</span>
                       </li>
@@ -530,8 +543,8 @@ export default function UserProfilePage() {
                       'Sử dụng mật khẩu dài ít nhất 8 ký tự, kết hợp chữ và số',
                       'Bật xác thực 2 bước để bảo vệ tài khoản',
                       'Không chia sẻ mật khẩu với người khác',
-                    ].map((tip, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs" style={{ color: 'var(--t2)' }}>
+                    ].map((tip) => (
+                      <li key={tip} className="flex items-start gap-2 text-xs" style={{ color: 'var(--t2)' }}>
                         <svg className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: 'var(--t3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                         </svg>
@@ -564,13 +577,13 @@ export default function UserProfilePage() {
               <p className="text-xs text-gray-500">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?</p>
             </div>
             <div className="flex gap-3">
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => setShowLogoutModal(false)}
                 className="flex-1 py-2.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer border-none"
               >
                 Hủy bỏ
               </button>
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => {
                   setShowLogoutModal(false)
                   onNavigate('login')

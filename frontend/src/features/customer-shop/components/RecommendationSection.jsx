@@ -33,7 +33,7 @@ export default function RecommendationSection({ title, products, loading, onNavi
         {!hideTitle && <h2 className="text-lg font-black mb-4" style={{ color: 'var(--t1)' }}>{title}</h2>}
         <div className="flex gap-5 overflow-hidden">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="shrink-0" style={{ width: CARD_WIDTH }}>
+            <div key={_?.id ?? _?.code ?? _?.name ?? i} className="shrink-0" style={{ width: CARD_WIDTH }}>
               <ProductCardSkeleton />
             </div>
           ))}
@@ -51,7 +51,7 @@ export default function RecommendationSection({ title, products, loading, onNavi
       {!hideTitle && <h2 className="text-lg font-black mb-4" style={{ color: 'var(--t1)' }}>{title}</h2>}
 
       {canScrollLeft && (
-        <button
+        <button type="button"
           onClick={() => scrollByAmount(-1)}
           aria-label="Cuộn sang trái"
           className="rec-arrow"
@@ -65,7 +65,7 @@ export default function RecommendationSection({ title, products, loading, onNavi
         </button>
       )}
       {canScrollRight && (
-        <button
+        <button type="button"
           onClick={() => scrollByAmount(1)}
           aria-label="Cuộn sang phải"
           className="rec-arrow"

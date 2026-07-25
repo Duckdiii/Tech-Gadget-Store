@@ -9,14 +9,25 @@ export function useProductReviews(productId) {
 
   const fetchReviews = useCallback(() => {
     if (!productId) return
-    setLoading(true)
     reviewService.getProductReviews(productId, 0, 20)
       .then(data => setReviews(data.content ?? []))
       .catch(err => console.error('Lỗi tải đánh giá:', err))
       .finally(() => setLoading(false))
   }, [productId])
 
-  useEffect(() => { fetchReviews() }, [fetchReviews])
+  useEffect(() => {
+    if (!productId) {
+      setLoading(false)
+      return
+    }
+    let active = true
+    reviewService.getProductReviews(productId, 0, 20)
+      .then(data => { if (active) setReviews(data.content ?? []) })
+      .catch(err => console.error('Lỗi tải đánh giá:', err))
+      .finally(() => { if (active) setLoading(false) })
+
+    return () => { active = false }
+  }, [productId])
 
   const submitReview = async (content, rating) => {
     setSubmitting(true)

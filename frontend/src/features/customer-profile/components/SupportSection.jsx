@@ -48,8 +48,8 @@ function FaqAccordion({ items }) {
   return (
     <div className="divide-y" style={{ borderColor: 'var(--b1)' }}>
       {items.map((item, i) => (
-        <div key={i}>
-          <button
+        <div key={item.q}>
+          <button aria-label="Thao tác" type="button"
             onClick={() => setOpen(open === i ? null : i)}
             className="w-full flex items-center justify-between px-5 py-4 text-left transition-colors bg-transparent border-none cursor-pointer"
           >
@@ -69,6 +69,8 @@ function FaqAccordion({ items }) {
   )
 }
 
+const FORM_BLANK = { subject: '', category: '', message: '' }
+
 export default function SupportSection() {
   const [tab, setTab] = useState('faq')
   const [faqCat, setFaqCat] = useState('order')
@@ -76,7 +78,6 @@ export default function SupportSection() {
   const [ticketsLoading, setTicketsLoading] = useState(true)
   const [ticketFilter, setTicketFilter] = useState('all')
 
-  const FORM_BLANK = { subject: '', category: '', message: '' }
   const [form, setForm] = useState(FORM_BLANK)
   const [formErrors, setFormErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
@@ -159,7 +160,7 @@ export default function SupportSection() {
             { id: 'new', label: 'Gửi yêu cầu' },
             { id: 'tickets', label: 'Lịch sử phiếu', badge: openCount },
           ].map(t => (
-            <button
+            <button aria-label="Thao tác" type="button"
               key={t.id}
               onClick={() => setTab(t.id)}
               className="flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap bg-transparent cursor-pointer"
@@ -178,7 +179,7 @@ export default function SupportSection() {
           <div>
             <div className="flex items-center gap-2 px-6 py-4 overflow-x-auto" style={{ borderBottom: '1px solid var(--b1)' }}>
               {FAQ_DATA.map(cat => (
-                <button
+                <button aria-label="Thao tác" type="button"
                   key={cat.id}
                   onClick={() => setFaqCat(cat.id)}
                   className="shrink-0 px-4 py-2 rounded text-xs font-bold transition-colors border-none cursor-pointer"
@@ -191,7 +192,7 @@ export default function SupportSection() {
             {activeFaq && <FaqAccordion items={activeFaq.items} />}
             <div className="px-6 py-5 flex items-center justify-between" style={{ backgroundColor: 'var(--s1)', borderTop: '1px solid var(--b1)' }}>
               <p className="text-sm" style={{ color: 'var(--t3)' }}>Không tìm thấy câu trả lời bạn cần?</p>
-              <button onClick={() => setTab('new')} className="text-sm font-bold flex items-center gap-1.5 transition-colors border-none bg-transparent cursor-pointer" style={{ color: 'var(--accent)' }}>
+              <button aria-label="Thao tác" type="button" onClick={() => setTab('new')} className="text-sm font-bold flex items-center gap-1.5 transition-colors border-none bg-transparent cursor-pointer" style={{ color: 'var(--accent)' }}>
                 Gửi yêu cầu hỗ trợ
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </button>
@@ -213,8 +214,8 @@ export default function SupportSection() {
             ) : (
               <div className="space-y-5 max-w-2xl">
                 <div>
-                  <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--t2)' }}>Tiêu đề yêu cầu <span style={{ color: 'var(--err)' }}>*</span></label>
-                  <input
+                  <span className="block text-xs font-bold mb-1.5" style={{ color: 'var(--t2)' }}>Tiêu đề yêu cầu <span style={{ color: 'var(--err)' }}>*</span></span>
+                  <input aria-label="Tiêu đề yêu cầu"
                     value={form.subject}
                     onChange={setF('subject')}
                     placeholder="Mô tả ngắn gọn vấn đề bạn gặp phải..."
@@ -225,8 +226,9 @@ export default function SupportSection() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--t2)' }}>Danh mục <span style={{ color: 'var(--err)' }}>*</span></label>
+                  <span className="block text-xs font-bold mb-1.5" style={{ color: 'var(--t2)' }}>Danh mục <span style={{ color: 'var(--err)' }}>*</span></span>
                   <select
+                    aria-label="Danh mục yêu cầu hỗ trợ"
                     value={form.category}
                     onChange={setF('category')}
                     className="w-full rounded px-4 py-2.5 text-sm focus:outline-none transition-colors"
@@ -239,8 +241,8 @@ export default function SupportSection() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--t2)' }}>Nội dung chi tiết <span style={{ color: 'var(--err)' }}>*</span></label>
-                  <textarea
+                  <span className="block text-xs font-bold mb-1.5" style={{ color: 'var(--t2)' }}>Nội dung chi tiết <span style={{ color: 'var(--err)' }}>*</span></span>
+                  <textarea aria-label="Nội dung chi tiết"
                     value={form.message}
                     onChange={setF('message')}
                     rows={6}
@@ -259,7 +261,7 @@ export default function SupportSection() {
                 )}
 
                 <div className="flex items-center justify-end pt-2">
-                  <button
+                  <button aria-label="Quay lại" type="button"
                     onClick={handleSubmit}
                     disabled={submitting}
                     className="flex items-center gap-2 px-7 py-2.5 text-sm font-bold text-white rounded shadow-sm transition-colors border-none cursor-pointer disabled:opacity-50"
@@ -285,7 +287,7 @@ export default function SupportSection() {
                 { id: 'RESOLVED', label: 'Đã giải quyết', count: tickets.filter(t => t.status === 'RESOLVED').length },
                 { id: 'CLOSED', label: 'Đã đóng', count: tickets.filter(t => t.status === 'CLOSED').length },
               ].map(f => (
-                <button
+                <button aria-label="Thao tác" type="button"
                   key={f.id}
                   onClick={() => setTicketFilter(f.id)}
                   className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded text-xs font-bold transition-colors border-none cursor-pointer"
@@ -295,7 +297,7 @@ export default function SupportSection() {
                   <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black" style={ticketFilter === f.id ? { backgroundColor: 'rgba(255,255,255,0.25)', color: 'white' } : { backgroundColor: 'var(--card)', color: 'var(--t3)' }}>{f.count}</span>
                 </button>
               ))}
-              <button onClick={() => setTab('new')} className="shrink-0 flex items-center gap-1.5 ml-auto px-4 py-2 text-xs font-bold rounded transition-colors cursor-pointer" style={{ color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.25)', backgroundColor: 'var(--card)' }}>
+              <button aria-label="Thao tác" type="button" onClick={() => setTab('new')} className="shrink-0 flex items-center gap-1.5 ml-auto px-4 py-2 text-xs font-bold rounded transition-colors cursor-pointer" style={{ color: 'var(--accent)', border: '1px solid rgba(232,66,10,0.25)', backgroundColor: 'var(--card)' }}>
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                 Tạo phiếu mới
               </button>
@@ -303,7 +305,7 @@ export default function SupportSection() {
 
             {ticketsLoading ? (
               <div className="p-6 space-y-3">
-                {[...Array(2)].map((_, i) => <div key={i} className="h-20 rounded animate-pulse" style={{ backgroundColor: 'var(--s1)' }} />)}
+                {[...Array(2)].map((_, i) => <div key={_?.id ?? _?.code ?? _?.name ?? i} className="h-20 rounded animate-pulse" style={{ backgroundColor: 'var(--s1)' }} />)}
               </div>
             ) : filtTickets.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16">

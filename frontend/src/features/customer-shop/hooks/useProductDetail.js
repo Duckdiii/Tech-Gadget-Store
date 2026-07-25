@@ -25,11 +25,13 @@ export function useProductDetail() {
   }
 
   useEffect(() => {
+    let active = true
     const loadProduct = async () => {
       if (!productId) return
       try {
         setLoading(true)
         const data = await shopService.getProductById(productId)
+        if (!active) return
         setProduct(data)
 
         // Initialize variant options
@@ -43,10 +45,11 @@ export function useProductDetail() {
       } catch (e) {
         console.error('Lỗi tải thông tin sản phẩm:', e)
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     }
     loadProduct()
+    return () => { active = false }
   }, [productId])
 
   // Recalculate selected variant when selections change

@@ -66,7 +66,7 @@ function AddressModal({ initial, onClose, onSave }) {
             <h2 className="text-base font-black text-gray-900">{initial ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới'}</h2>
             <p className="text-xs text-gray-400 mt-0.5">Điền đầy đủ thông tin để đặt hàng chính xác</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors border-none cursor-pointer">
+          <button aria-label="Đóng" type="button" onClick={onClose} className="w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors border-none cursor-pointer">
             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -76,20 +76,20 @@ function AddressModal({ initial, onClose, onSave }) {
         <div className="px-7 py-6 space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1.5">Họ và tên <span className="text-red-500">*</span></label>
-              <input value={form.name} onChange={set('name')} placeholder="Nguyễn Văn A" className={inputCls('name')} />
+              <span className="block text-xs font-bold text-gray-700 mb-1.5">Họ và tên <span className="text-red-500">*</span></span>
+              <input aria-label="Họ và tên" value={form.name} onChange={set('name')} placeholder="Nguyễn Văn A" className={inputCls('name')} />
               {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1.5">Số điện thoại <span className="text-red-500">*</span></label>
-              <input value={form.phone} onChange={set('phone')} placeholder="0901234567" maxLength={10} className={inputCls('phone')} />
+              <span className="block text-xs font-bold text-gray-700 mb-1.5">Số điện thoại <span className="text-red-500">*</span></span>
+              <input aria-label="Số điện thoại" value={form.phone} onChange={set('phone')} placeholder="0901234567" maxLength={10} className={inputCls('phone')} />
               {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1.5">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
-            <select value={form.province} onChange={set('province')} className={inputCls('province')}>
+            <span className="block text-xs font-bold text-gray-700 mb-1.5">Tỉnh / Thành phố <span className="text-red-500">*</span></span>
+            <select aria-label="Tỉnh / Thành phố" value={form.province} onChange={set('province')} className={inputCls('province')}>
               <option value="">-- Chọn tỉnh/thành phố --</option>
               {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
@@ -98,8 +98,8 @@ function AddressModal({ initial, onClose, onSave }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1.5">Quận / Huyện <span className="text-red-500">*</span></label>
-              <select value={form.district} onChange={set('district')} disabled={!form.province} className={inputCls('district') + (!form.province ? ' opacity-50 cursor-not-allowed' : '')}>
+              <span className="block text-xs font-bold text-gray-700 mb-1.5">Quận / Huyện <span className="text-red-500">*</span></span>
+              <select aria-label="Quận / Huyện" value={form.district} onChange={set('district')} disabled={!form.province} className={inputCls('district') + (!form.province ? ' opacity-50 cursor-not-allowed' : '')}>
                 <option value="">-- Chọn quận/huyện --</option>
                 {availableDistricts.length > 0
                   ? availableDistricts.map(d => <option key={d} value={d}>{d}</option>)
@@ -107,13 +107,13 @@ function AddressModal({ initial, onClose, onSave }) {
                 }
               </select>
               {availableDistricts.length === 0 && form.province && (
-                <input value={form.district} onChange={set('district')} placeholder="Nhập quận/huyện" className={`${inputCls('district')} mt-2`} />
+                <input aria-label="Nhập quận/huyện" value={form.district} onChange={set('district')} placeholder="Nhập quận/huyện" className={`${inputCls('district')} mt-2`} />
               )}
               {errors.district && <p className="text-xs text-red-500 mt-1">{errors.district}</p>}
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1.5">Phường / Xã <span className="text-red-500">*</span></label>
-              <select value={form.ward} onChange={set('ward')} disabled={!form.district} className={inputCls('ward') + (!form.district ? ' opacity-50 cursor-not-allowed' : '')}>
+              <span className="block text-xs font-bold text-gray-700 mb-1.5">Phường / Xã <span className="text-red-500">*</span></span>
+              <select aria-label="Phường / Xã" value={form.ward} onChange={set('ward')} disabled={!form.district} className={inputCls('ward') + (!form.district ? ' opacity-50 cursor-not-allowed' : '')}>
                 <option value="">-- Chọn phường/xã --</option>
                 {availableWards.length > 0
                   ? availableWards.map(w => <option key={w} value={w}>{w}</option>)
@@ -121,20 +121,20 @@ function AddressModal({ initial, onClose, onSave }) {
                 }
               </select>
               {availableWards.length === 0 && form.district && (
-                <input value={form.ward} onChange={set('ward')} placeholder="Nhập phường/xã" className={`${inputCls('ward')} mt-2`} />
+                <input aria-label="Nhập phường/xã" value={form.ward} onChange={set('ward')} placeholder="Nhập phường/xã" className={`${inputCls('ward')} mt-2`} />
               )}
               {errors.ward && <p className="text-xs text-red-500 mt-1">{errors.ward}</p>}
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1.5">Địa chỉ cụ thể <span className="text-red-500">*</span></label>
-            <input value={form.detail} onChange={set('detail')} placeholder="Số nhà, tên đường, tên tòa nhà..." className={inputCls('detail')} />
+            <span className="block text-xs font-bold text-gray-700 mb-1.5">Địa chỉ cụ thể <span className="text-red-500">*</span></span>
+            <input aria-label="Địa chỉ cụ thể" value={form.detail} onChange={set('detail')} placeholder="Số nhà, tên đường, tên tòa nhà..." className={inputCls('detail')} />
             {errors.detail && <p className="text-xs text-red-500 mt-1">{errors.detail}</p>}
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">Loại địa chỉ</label>
+            <span className="block text-xs font-bold text-gray-700 mb-2">Loại địa chỉ</span>
             <div className="flex gap-3">
               {[
                 { v: 'home',   l: 'Nhà riêng',  icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -146,7 +146,7 @@ function AddressModal({ initial, onClose, onSave }) {
                     ? 'border-[var(--accent)] bg-orange-50 text-[var(--accent)]'
                     : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                 }`}>
-                  <input type="radio" name="addrType" value={t.v} checked={form.type === t.v} onChange={set('type')} className="hidden" />
+                  <input type="radio" aria-label={`Loại địa chỉ ${t.l}`} name="addrType" value={t.v} checked={form.type === t.v} onChange={set('type')} className="hidden" />
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={t.icon} />
                   </svg>
@@ -157,18 +157,13 @@ function AddressModal({ initial, onClose, onSave }) {
           </div>
 
           <label className="flex items-center gap-3 cursor-pointer select-none">
-            <div
-              onClick={() => setForm(prev => ({ ...prev, isDefault: !prev.isDefault }))}
-              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors shrink-0 ${
-                form.isDefault ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-gray-300 hover:border-[var(--accent)]'
-              }`}
-            >
-              {form.isDefault && (
-                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </div>
+            <input
+              type="checkbox"
+              aria-label="Đặt làm địa chỉ mặc định"
+              checked={form.isDefault}
+              onChange={(e) => setForm(prev => ({ ...prev, isDefault: e.target.checked }))}
+              className="w-5 h-5 rounded border-gray-300 text-[var(--accent)] focus:ring-[var(--accent)] cursor-pointer shrink-0"
+            />
             <div>
               <p className="text-sm font-semibold text-gray-800">Đặt làm địa chỉ mặc định</p>
               <p className="text-xs text-gray-400 mt-0.5">Địa chỉ này sẽ được chọn tự động khi đặt hàng</p>
@@ -177,8 +172,8 @@ function AddressModal({ initial, onClose, onSave }) {
         </div>
 
         <div className="flex items-center justify-end gap-3 px-7 py-5 border-t border-gray-100 bg-gray-50/60 rounded-b sticky bottom-0">
-          <button onClick={onClose} className="px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors bg-white cursor-pointer">Huỷ bỏ</button>
-          <button onClick={handleSave} className="px-6 py-2.5 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] rounded shadow-sm transition-colors border-none cursor-pointer">{initial ? 'Lưu thay đổi' : 'Thêm địa chỉ'}</button>
+          <button aria-label="Đóng" type="button" onClick={onClose} className="px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors bg-white cursor-pointer">Huỷ bỏ</button>
+          <button aria-label="Thao tác" type="button" onClick={handleSave} className="px-6 py-2.5 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] rounded shadow-sm transition-colors border-none cursor-pointer">{initial ? 'Lưu thay đổi' : 'Thêm địa chỉ'}</button>
         </div>
       </div>
     </div>
@@ -223,7 +218,7 @@ export default function AddressSection({ profile }) {
               {addresses.length === 0 ? 'Chưa có địa chỉ nào' : `${addresses.length} địa chỉ đã lưu`}
             </p>
           </div>
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={() => setModal('add')}
             className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] rounded shadow-sm transition-colors border-none cursor-pointer"
           >
@@ -244,7 +239,7 @@ export default function AddressSection({ profile }) {
             </div>
             <p className="text-base font-semibold text-gray-600">Bạn chưa có địa chỉ nào</p>
             <p className="text-sm text-gray-400 mt-1">Thêm địa chỉ để đặt hàng nhanh hơn</p>
-            <button
+            <button aria-label="Thao tác" type="button"
               onClick={() => setModal('add')}
               className="mt-5 flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] rounded transition-colors shadow-sm border-none cursor-pointer"
             >
@@ -279,11 +274,11 @@ export default function AddressSection({ profile }) {
                       </div>
                       <p className="text-sm text-gray-600 leading-relaxed">{fullAddr}</p>
                       <div className="flex items-center gap-1 mt-3">
-                        <button onClick={() => setModal({ editId: addr.id })} className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-d)] hover:bg-orange-50 border border-orange-200 px-3 py-1.5 rounded transition-colors bg-white cursor-pointer">Chỉnh sửa</button>
+                        <button aria-label={`Chỉnh sửa địa chỉ ${addr.name}`} type="button" onClick={() => setModal({ editId: addr.id })} className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-d)] hover:bg-orange-50 border border-orange-200 px-3 py-1.5 rounded transition-colors bg-white cursor-pointer">Chỉnh sửa</button>
                         {!addr.isDefault && (
-                          <button onClick={() => handleSetDefault(addr.id)} className="text-xs font-semibold text-gray-600 hover:text-gray-800 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded transition-colors bg-white cursor-pointer">Đặt làm mặc định</button>
+                          <button aria-label={`Đặt làm mặc định địa chỉ ${addr.name}`} type="button" onClick={() => handleSetDefault(addr.id)} className="text-xs font-semibold text-gray-600 hover:text-gray-800 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded transition-colors bg-white cursor-pointer">Đặt làm mặc định</button>
                         )}
-                        <button onClick={() => setDeletingId(addr.id)} className="text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 border border-red-200 px-3 py-1.5 rounded transition-colors ml-1 bg-white cursor-pointer">Xoá</button>
+                        <button aria-label={`Xoá địa chỉ ${addr.name}`} type="button" onClick={() => setDeletingId(addr.id)} className="text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 border border-red-200 px-3 py-1.5 rounded transition-colors ml-1 bg-white cursor-pointer">Xoá</button>
                       </div>
                     </div>
                   </div>
@@ -293,8 +288,8 @@ export default function AddressSection({ profile }) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
                       <p className="text-sm font-semibold text-red-700 flex-1">Xác nhận xoá địa chỉ này?</p>
-                      <button onClick={() => setDeletingId(null)} className="text-xs font-bold text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded hover:bg-white border border-gray-200 transition-colors bg-transparent cursor-pointer">Huỷ</button>
-                      <button onClick={() => handleDelete(addr.id)} className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-4 py-1.5 rounded transition-colors border-none cursor-pointer">Xoá</button>
+                      <button aria-label="Hủy xóa địa chỉ" type="button" onClick={() => setDeletingId(null)} className="text-xs font-bold text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded hover:bg-white border border-gray-200 transition-colors bg-transparent cursor-pointer">Huỷ</button>
+                      <button aria-label="Xác nhận xoá địa chỉ" type="button" onClick={() => handleDelete(addr.id)} className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-4 py-1.5 rounded transition-colors border-none cursor-pointer">Xoá</button>
                     </div>
                   )}
                 </div>

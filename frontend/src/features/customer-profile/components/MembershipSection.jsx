@@ -9,9 +9,11 @@ const TIER_DISPLAY = {
   DIAMOND:  { label: 'Kim Cương',  color: 'bg-purple-600', ring: 'ring-purple-300', text: 'text-purple-700' },
 }
 
+const vndFormatter = new Intl.NumberFormat('vi-VN')
+
 function formatVnd(value) {
   if (value === null || value === undefined) return '—'
-  return new Intl.NumberFormat('vi-VN').format(value) + 'đ'
+  return vndFormatter.format(value) + 'đ'
 }
 
 export default function MembershipSection() {
@@ -61,15 +63,15 @@ export default function MembershipSection() {
                 <span className="text-sm font-black text-white">{pct}%</span>
               </div>
               <div className="w-full bg-white/20 rounded-full h-3">
-                <div className="bg-white h-3 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                <div className="bg-white h-3 rounded-full transition-colors" style={{ width: `${pct}%` }} />
               </div>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-white/60">
                   Cần thêm <span className="font-black text-white">{formatVnd(data.amountToNextTier)}</span> chi tiêu để lên hạng {nextDisplay.label}
                 </p>
-                <button
+                <button aria-label="Thao tác" type="button"
                   onClick={() => onNavigate('list')}
-                  className="text-xs font-bold text-white hover:text-[var(--accent-h)] bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-md transition-all cursor-pointer border border-white/25 flex items-center gap-1 shadow-sm"
+                  className="text-xs font-bold text-white hover:text-[var(--accent-h)] bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-md transition-colors cursor-pointer border border-white/25 flex items-center gap-1 shadow-sm"
                 >
                   Mua thêm {formatVnd(data.amountToNextTier)} để đạt hạng {nextDisplay.label} — Mua sắm ngay
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

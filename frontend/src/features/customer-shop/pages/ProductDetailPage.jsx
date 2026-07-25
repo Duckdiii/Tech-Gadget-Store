@@ -10,17 +10,19 @@ import { useSimilarProducts, useFrequentlyBoughtTogether } from '../hooks/useRec
 
 import { ProductImages, ProductInfo, SpecsTab } from '../components/ProductDetailComponents'
 
+const PRODUCT_TABS = [
+  { id: 'desc', label: 'Mô tả sản phẩm' },
+  { id: 'specs', label: 'Thông số kỹ thuật' },
+]
+
 function ProductTabs({ product }) {
   const [activeTab, setActiveTab] = useState('desc')
-  const tabs = [
-    { id: 'desc', label: 'Mô tả sản phẩm' },
-    { id: 'specs', label: 'Thông số kỹ thuật' },
-  ]
+  const tabs = PRODUCT_TABS
   return (
     <div className="mt-10">
       <div className="flex" style={{ borderBottom: '2px solid var(--b1)' }}>
         {tabs.map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+          <button aria-label="Thao tác" type="button" key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`featured-tab px-5 py-3.5 text-sm font-extrabold cursor-pointer transition-all duration-200 ${activeTab === tab.id ? 'active' : ''}`}
             style={{
               color: activeTab === tab.id ? 'var(--accent)' : 'var(--t3)',
@@ -64,7 +66,7 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+      <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
         <StoreNavbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
@@ -75,18 +77,18 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+      <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
         <StoreNavbar />
         <div className="flex-1 flex flex-col items-center justify-center">
           <p className="text-lg font-bold text-gray-500">Không tìm thấy sản phẩm</p>
-          <button onClick={() => onNavigate('list')} className="mt-4 px-6 py-2 bg-slate-900 text-white rounded-lg">Quay lại cửa hàng</button>
+          <button aria-label="Thao tác" type="button" onClick={() => onNavigate('list')} className="mt-4 px-6 py-2 bg-slate-900 text-white rounded-lg">Quay lại cửa hàng</button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
+    <div className="flex-1 flex flex-col min-h-dvh" style={{ backgroundColor: 'var(--page)' }}>
       <StoreNavbar />
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-gray-900 text-white text-sm px-5 py-3 rounded shadow-2xl">
@@ -99,9 +101,9 @@ export default function ProductDetailPage() {
       <div className="flex-1 w-full max-w-7xl mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-[12.5px] mb-8" style={{ color: 'var(--t3)' }}>
-          <span onClick={() => onNavigate('home')} className="cursor-pointer transition-colors hover:text-slate-900">Trang chủ</span>
+          <button type="button" aria-label="Trang chủ" onClick={() => onNavigate('home')} className="border-none bg-transparent p-0 font-inherit cursor-pointer transition-colors hover:text-slate-900" style={{ color: 'inherit' }}>Trang chủ</button>
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          <span onClick={() => onNavigate('list')} className="cursor-pointer transition-colors hover:text-slate-900">{product.categoryName || 'Sản phẩm'}</span>
+          <button type="button" aria-label={product.categoryName || 'Danh mục sản phẩm'} onClick={() => onNavigate('list')} className="border-none bg-transparent p-0 font-inherit cursor-pointer transition-colors hover:text-slate-900" style={{ color: 'inherit' }}>{product.categoryName || 'Sản phẩm'}</button>
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           <span style={{ color: 'var(--t1)', fontWeight: 700 }}>{product.name}</span>
         </nav>

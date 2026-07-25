@@ -132,6 +132,8 @@ const timeAgo = (dateStr) => {
   return `${months} tháng trước`
 }
 
+const pad = n => String(n).padStart(2, '0')
+
 export default function HomePage() {
   const onNavigate = useNav()
   const { user } = useAuth()
@@ -241,8 +243,6 @@ export default function HomePage() {
     return () => clearInterval(interval)
   }, [flashEndAt])
 
-  const pad = n => String(n).padStart(2, '0')
-
   // ══ FEATURED PRODUCTS (real data) ══
   const [featuredProducts, setFeaturedProducts] = useState([])
   const [featuredLoading, setFeaturedLoading] = useState(true)
@@ -284,7 +284,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-dvh bg-gray-50">
       <StoreNavbar />
 
       {/* ══ HERO ══ */}
@@ -322,8 +322,7 @@ export default function HomePage() {
                 }`}
               >
                 {/* AI Toggle Button */}
-                <button
-                  type="button"
+                <button type="button"
                   onClick={() => setHeroAiMode(v => !v)}
                   title={heroAiMode ? 'Đang tìm bằng AI — bấm để tắt' : 'Bấm để bật tìm kiếm bằng câu hỏi tự nhiên'}
                   className={`shrink-0 flex items-center gap-1 px-3 py-2 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer ${
@@ -349,6 +348,7 @@ export default function HomePage() {
                         ? 'Tìm kiếm thông minh: "máy chụp hình đẹp dưới 15tr"...' 
                         : 'Tìm tên điện thoại, máy tính, phụ kiện...'
                     }
+                    aria-label="Tìm kiếm sản phẩm"
                     className="w-full pl-3.5 pr-14 py-2.5 text-sm text-gray-900 placeholder-gray-400 bg-transparent border-none outline-none focus:ring-0 min-w-0"
                   />
                 </div>
@@ -362,9 +362,8 @@ export default function HomePage() {
                     </svg>
                   </div>
                 ) : (
-                  <button
-                    type="submit"
-                    className="absolute right-2.5 p-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-all duration-200 cursor-pointer"
+                  <button type="submit" aria-label="Tìm kiếm sản phẩm"
+                    className="absolute right-2.5 p-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-colors duration-200 cursor-pointer border-none"
                   >
                     <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -382,14 +381,13 @@ export default function HomePage() {
                   { label: 'Máy dưới 10 triệu', q: 'điện thoại dưới 10 triệu' },
                   { label: 'Trả góp 0%', q: 'trả góp 0%' }
                 ].map(tag => (
-                  <button
-                    key={tag.label}
+                  <button key={tag.label}
                     type="button"
                     onClick={() => {
                       setHeroSearch(tag.q)
                       handleHeroSearch(null, tag.q)
                     }}
-                    className="text-xs text-gray-500 bg-gray-100 hover:bg-orange-50 hover:text-orange-600 border border-gray-200/40 rounded-lg px-2.5 py-1 transition-all duration-200 cursor-pointer"
+                    className="text-xs text-gray-500 bg-gray-100 hover:bg-orange-50 hover:text-orange-600 border border-gray-200/40 rounded-lg px-2.5 py-1 transition-colors duration-200 cursor-pointer"
                   >
                     {tag.label}
                   </button>
@@ -398,7 +396,7 @@ export default function HomePage() {
             </form>
 
             <div className="flex flex-wrap items-center gap-3 mb-10">
-              <button
+              <button type="button"
                 onClick={() => onNavigate('list')}
                 className="btn-orange w-full sm:w-auto bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl px-7 py-3.5 text-base font-bold flex items-center justify-center gap-2 shadow-[0_6px_20px_rgba(234,88,12,0.35)]"
               >
@@ -407,7 +405,7 @@ export default function HomePage() {
                   <path d="M3 9h12M10 4l5 5-5 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
                 </svg>
               </button>
-              <button
+              <button type="button"
                 onClick={() => {
                   const el = document.getElementById('flash-sale-section')
                   if (el) el.scrollIntoView({ behavior: 'smooth' })
@@ -552,7 +550,7 @@ export default function HomePage() {
                 Khám Phá Theo Loại
               </h2>
             </div>
-            <button
+            <button type="button"
               onClick={() => onNavigate('list')}
               className="text-sm font-semibold text-orange-600 hover:text-orange-700 transition-colors cursor-pointer border-none bg-transparent"
             >
@@ -564,10 +562,10 @@ export default function HomePage() {
               const hasRealPhoto = cat.imageUrl && !cat.imageUrl.includes('placehold.co')
               const visual = getCategoryVisual(cat.name)
               return (
-                <button
+                <button type="button"
                   key={cat.id}
                   onClick={() => onNavigate('list', { state: { categoryName: cat.name } })}
-                  className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-gray-100 bg-white hover:border-orange-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
+                  className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-gray-100 bg-white hover:border-orange-300 hover:shadow-md hover:-translate-y-0.5 transition-colors duration-200 cursor-pointer group"
                 >
                   {hasRealPhoto ? (
                     <img src={cat.imageUrl} alt={cat.name} className="w-12 h-12 rounded-xl object-cover group-hover:scale-110 transition-transform" />
@@ -601,7 +599,7 @@ export default function HomePage() {
               </h2>
               {historySuggestions.length > 0 && (
                 <div style={{ display: 'flex', gap: '4px', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '3px' }}>
-                  <button
+                  <button type="button"
                     className="tab-btn"
                     style={{
                       background: activeRecTab === 'forYou' ? 'linear-gradient(135deg,#F97316,#EA580C)' : 'transparent',
@@ -612,13 +610,13 @@ export default function HomePage() {
                       fontSize: '13px',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      transition: 'color 0.2s, background 0.2s'
                     }}
                     onClick={() => setActiveRecTab('forYou')}
                   >
                     Dành cho bạn
                   </button>
-                  <button
+                  <button type="button"
                     className="tab-btn"
                     style={{
                       background: activeRecTab === 'history' ? 'linear-gradient(135deg,#F97316,#EA580C)' : 'transparent',
@@ -629,7 +627,7 @@ export default function HomePage() {
                       fontSize: '13px',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      transition: 'color 0.2s, background 0.2s'
                     }}
                     onClick={() => setActiveRecTab('history')}
                   >
@@ -682,34 +680,34 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <span onClick={() => onNavigate('list')} style={{ fontSize: '14px', color: 'rgba(255,255,255,.9)', fontWeight: 600, cursor: 'pointer', background: 'rgba(255,255,255,.15)', padding: '6px 16px', borderRadius: '8px' }}>Xem tất cả →</span>
+            <button aria-label="Xem tất cả sản phẩm Flash Sale" type="button" onClick={() => onNavigate('list')} className="border-none bg-white/15 text-white/90 text-sm font-semibold cursor-pointer px-4 py-1.5 rounded-lg">Xem tất cả →</button>
           </div>
 
           {/* Flash products list */}
           <div style={{ position: 'relative' }}>
             {canScrollFlashLeft && (
-              <button
+              <button type="button"
                 onClick={() => scrollFlashByAmount(-1)}
                 aria-label="Cuộn sang trái"
-                className="rec-arrow"
+                className="rec-arrow border-none bg-white text-gray-900"
                 style={{
                   position: 'absolute', left: '-16px', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
-                  width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  backgroundColor: '#fff', border: '1px solid #E5E7EB', color: '#111827', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', cursor: 'pointer',
+                  width: '36px', height: '36px', borderRadius: '50%', display: 'flex', itemsCenter: 'center', justifyContent: 'center',
+                  border: '1px solid #E5E7EB', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', cursor: 'pointer',
                 }}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
               </button>
             )}
             {canScrollFlashRight && (
-              <button
+              <button type="button"
                 onClick={() => scrollFlashByAmount(1)}
                 aria-label="Cuộn sang phải"
-                className="rec-arrow"
+                className="rec-arrow border-none bg-white text-gray-900"
                 style={{
                   position: 'absolute', right: '-16px', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
-                  width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  backgroundColor: '#fff', border: '1px solid #E5E7EB', color: '#111827', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', cursor: 'pointer',
+                  width: '36px', height: '36px', borderRadius: '50%', display: 'flex', itemsCenter: 'center', justifyContent: 'center',
+                  border: '1px solid #E5E7EB', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', cursor: 'pointer',
                 }}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
@@ -720,7 +718,7 @@ export default function HomePage() {
               <div className="scroll-x" style={{ display: 'flex', gap: '12px' }}>
                 {[...Array(6)].map((_, i) => (
                   <div 
-                    key={i} 
+                    key={_?.id ?? _?.code ?? _?.name ?? i} 
                     style={{ flexShrink: 0, width: '196px', height: '260px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', overflow: 'hidden' }} 
                     className="animate-pulse flex flex-col"
                   >
@@ -754,6 +752,10 @@ export default function HomePage() {
                 {flashProducts.map((item) => (
                   <div
                     key={item.variantId || item.id}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Xem sản phẩm Flash Sale ${item.name}`}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('detail', { search: '?id=' + item.id }) }}
                     onClick={() => onNavigate('detail', { search: '?id=' + item.id })}
                     className="flash-card"
                     style={{ flexShrink: 0, width: '196px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer', scrollSnapAlign: 'start' }}
@@ -792,8 +794,8 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <h2 className="text-2xl font-black text-gray-900 tracking-tight font-['Be_Vietnam_Pro',sans-serif]">Sản phẩm nổi bật</h2>
             <div className="flex gap-1 bg-gray-100 border border-gray-200 rounded-xl p-1">
-              <button
-                className={`tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+              <button type="button"
+                className={`tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors duration-200 cursor-pointer ${
                   activeTab === 'bestseller' 
                     ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm' 
                     : 'bg-transparent text-gray-500 hover:text-gray-900'
@@ -802,8 +804,8 @@ export default function HomePage() {
               >
                 Bán chạy
               </button>
-              <button
-                className={`tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+              <button type="button"
+                className={`tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors duration-200 cursor-pointer ${
                   activeTab === 'new' 
                     ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm' 
                     : 'bg-transparent text-gray-500 hover:text-gray-900'
@@ -812,8 +814,8 @@ export default function HomePage() {
               >
                 Mới nhất
               </button>
-              <button
-                className={`tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+              <button type="button"
+                className={`tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors duration-200 cursor-pointer ${
                   activeTab === 'sale' 
                     ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm' 
                     : 'bg-transparent text-gray-500 hover:text-gray-900'
@@ -828,7 +830,7 @@ export default function HomePage() {
           {featuredLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (
-                <ProductCardSkeleton key={i} />
+                <ProductCardSkeleton key={_?.id ?? _?.code ?? _?.name ?? i} />
               ))}
             </div>
           ) : featuredProducts.length === 0 ? (
@@ -850,30 +852,40 @@ export default function HomePage() {
           )}
 
           <div className="text-center mt-7">
-            <button onClick={() => onNavigate('list')} className="btn-outline w-full sm:w-auto bg-transparent text-orange-600 border border-orange-500/30 rounded-xl px-7 py-3 text-sm md:text-base font-semibold cursor-pointer">Xem tất cả sản phẩm →</button>
+            <button type="button" onClick={() => onNavigate('list')} className="btn-outline w-full sm:w-auto bg-transparent text-orange-600 border border-orange-500/30 rounded-xl px-7 py-3 text-sm md:text-base font-semibold cursor-pointer">Xem tất cả sản phẩm →</button>
           </div>
         </section>
 
         {/* ══ PROMO BANNERS ══ */}
         <section className="pt-14">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-            <div onClick={() => onNavigate('list')} className="promo-banner lg:col-span-3 bg-gradient-to-br from-orange-600 via-orange-500 to-orange-400 rounded-2xl p-8 md:p-10 relative overflow-hidden cursor-pointer">
+            <div
+              tabIndex={0}
+              onClick={() => onNavigate('list')}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('list') }}
+              className="promo-banner lg:col-span-3 bg-gradient-to-br from-orange-600 via-orange-500 to-orange-400 rounded-2xl p-8 md:p-10 relative overflow-hidden cursor-pointer"
+            >
               <div className="absolute -right-[30px] -top-[30px] w-[200px] h-[200px] bg-white/8 rounded-full pointer-events-none"></div>
               <div className="absolute right-[60px] -bottom-[50px] w-[160px] h-[160px] bg-white/6 rounded-full pointer-events-none"></div>
               <div className="relative z-10">
                 <div className="inline-block bg-white/18 rounded-lg px-3 py-1 text-xs font-bold text-white mb-3.5 tracking-wide">THU CŨ ĐỔI MỚI</div>
                 <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-2.5 leading-[1.15] font-['Be_Vietnam_Pro',sans-serif]">Thu máy cũ<br />Giá cao nhất</h3>
                 <p className="text-sm text-white/78 mb-5 leading-relaxed">Đổi điện thoại cũ lấy máy mới — trợ giá <strong className="text-amber-100 font-bold">lên đến 3 triệu</strong></p>
-                <button className="btn-orange bg-white text-orange-600 border-none rounded-xl px-5.5 py-2.5 text-sm font-extrabold cursor-pointer">Định giá ngay →</button>
+                <span className="btn-orange bg-white text-orange-600 border-none rounded-xl px-5.5 py-2.5 text-sm font-extrabold inline-block">Định giá ngay →</span>
               </div>
             </div>
-            <div onClick={() => onNavigate('list')} className="promo-banner lg:col-span-2 bg-gray-900 rounded-2xl p-8 md:p-10 relative overflow-hidden cursor-pointer">
+            <div
+              tabIndex={0}
+              onClick={() => onNavigate('list')}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('list') }}
+              className="promo-banner lg:col-span-2 bg-gray-900 rounded-2xl p-8 md:p-10 relative overflow-hidden cursor-pointer"
+            >
               <div className="absolute -right-[30px] -top-[30px] w-[180px] h-[180px] bg-orange-500/8 rounded-full pointer-events-none"></div>
               <div className="relative z-10">
                 <div className="inline-block bg-orange-500/20 rounded-lg px-3 py-1 text-xs font-bold text-orange-500 mb-3.5 tracking-wide">TRẢ GÓP 0%</div>
                 <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-2.5 leading-[1.15] font-['Be_Vietnam_Pro',sans-serif]">Trả góp<br />0% lãi suất</h3>
                 <p className="text-sm text-gray-400 mb-5 leading-relaxed">Lên đến 24 tháng. Duyệt trong <strong className="text-orange-500 font-bold">5 phút</strong></p>
-                <button className="btn-orange bg-gradient-to-br from-orange-500 to-orange-600 text-white border-none rounded-xl px-5.5 py-2.5 text-sm font-extrabold cursor-pointer">Xem điều kiện →</button>
+                <span className="btn-orange bg-gradient-to-br from-orange-500 to-orange-600 text-white border-none rounded-xl px-5.5 py-2.5 text-sm font-extrabold inline-block">Xem điều kiện →</span>
               </div>
             </div>
           </div>
@@ -890,13 +902,15 @@ export default function HomePage() {
           ) : (
             <div className="flex items-center justify-center md:justify-around gap-6 md:gap-8 flex-wrap">
               {brandNames.map(brand => (
-                <div
+                <button
                   key={brand}
+                  type="button"
+                  aria-label={`Thương hiệu đối tác ${brand}`}
                   onClick={() => onNavigate('list', { search: '?keyword=' + encodeURIComponent(brand) })}
-                  className="brand-logo text-xl md:text-2xl font-bold text-gray-900 font-sans tracking-wide cursor-pointer transition-all duration-300 hover:scale-110"
+                  className="brand-logo text-xl md:text-2xl font-bold text-gray-900 font-sans tracking-wide cursor-pointer transition-colors duration-300 hover:scale-110 border-none bg-transparent"
                 >
                   {brand}
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -989,7 +1003,7 @@ export default function HomePage() {
           {reviewsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-[190px] bg-white border border-gray-200 rounded-2xl animate-pulse" />
+                <div key={_?.id ?? _?.code ?? _?.name ?? i} className="h-[190px] bg-white border border-gray-200 rounded-2xl animate-pulse" />
               ))}
             </div>
           ) : reviewHighlights.length === 0 ? (
@@ -1053,9 +1067,10 @@ export default function HomePage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Nhập email của bạn..."
-                    className="flex-1 bg-white/15 border border-white/25 rounded-xl px-4.5 py-3 text-sm text-white placeholder-white/60 outline-none focus:border-white/50 transition-all duration-200"
+                    aria-label="Email nhận bản tin"
+                    className="flex-1 bg-white/15 border border-white/25 rounded-xl px-4.5 py-3 text-sm text-white placeholder-white/60 outline-none focus:border-white/50 transition-colors duration-200"
                   />
-                  <button className="btn-orange w-full sm:w-auto bg-white text-orange-600 border-none rounded-xl px-6 py-3 text-sm font-extrabold whitespace-nowrap transition-all duration-300 cursor-pointer" type="submit">
+                  <button aria-label="Đăng ký nhận bản tin" className="btn-orange w-full sm:w-auto bg-white text-orange-600 border-none rounded-xl px-6 py-3 text-sm font-extrabold whitespace-nowrap transition-colors duration-300 cursor-pointer" type="submit">
                     Đăng ký
                   </button>
                 </form>
@@ -1145,14 +1160,14 @@ export default function HomePage() {
             <div>
               <h4 className="text-xs md:text-sm font-bold text-gray-50 mb-4 uppercase tracking-wider font-['Be_Vietnam_Pro',sans-serif]">Sản phẩm</h4>
               <div className="flex flex-col gap-2">
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">iPhone</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Samsung Galaxy</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">OPPO</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Xiaomi / Redmi</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Vivo</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Realme</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Google Pixel</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Phụ kiện</span>
+                <button aria-label="Xem sản phẩm iPhone" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">iPhone</button>
+                <button aria-label="Xem sản phẩm Samsung Galaxy" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Samsung Galaxy</button>
+                <button aria-label="Xem sản phẩm OPPO" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">OPPO</button>
+                <button aria-label="Xem sản phẩm Xiaomi / Redmi" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Xiaomi / Redmi</button>
+                <button aria-label="Xem sản phẩm Vivo" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Vivo</button>
+                <button aria-label="Xem sản phẩm Realme" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Realme</button>
+                <button aria-label="Xem sản phẩm Google Pixel" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Google Pixel</button>
+                <button aria-label="Xem phụ kiện" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Phụ kiện</button>
               </div>
             </div>
 
@@ -1160,13 +1175,13 @@ export default function HomePage() {
             <div>
               <h4 className="text-xs md:text-sm font-bold text-gray-50 mb-4 uppercase tracking-wider font-['Be_Vietnam_Pro',sans-serif]">Dịch vụ</h4>
               <div className="flex flex-col gap-2">
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Hướng dẫn mua hàng</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Chính sách bảo hành</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Đổi trả hàng</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Trả góp 0%</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Thu cũ đổi mới</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Kiểm tra đơn hàng</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">So sánh sản phẩm</span>
+                <button aria-label="Xem hướng dẫn mua hàng" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Hướng dẫn mua hàng</button>
+                <button aria-label="Xem chính sách bảo hành" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Chính sách bảo hành</button>
+                <button aria-label="Xem chính sách đổi trả hàng" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Đổi trả hàng</button>
+                <button aria-label="Xem thông tin trả góp 0%" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Trả góp 0%</button>
+                <button aria-label="Xem dịch vụ thu cũ đổi mới" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Thu cũ đổi mới</button>
+                <button aria-label="Kiểm tra đơn hàng" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Kiểm tra đơn hàng</button>
+                <button aria-label="So sánh sản phẩm" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">So sánh sản phẩm</button>
               </div>
             </div>
 
@@ -1174,12 +1189,12 @@ export default function HomePage() {
             <div>
               <h4 className="text-xs md:text-sm font-bold text-gray-50 mb-4 uppercase tracking-wider font-['Be_Vietnam_Pro',sans-serif]">Công ty</h4>
               <div className="flex flex-col gap-2">
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Giới thiệu</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Tuyển dụng</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Tin tức</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Hệ thống cửa hàng</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Chính sách bảo mật</span>
-                <span onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500">Điều khoản dịch vụ</span>
+                <button aria-label="Giới thiệu về công ty" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Giới thiệu</button>
+                <button aria-label="Thông tin tuyển dụng" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Tuyển dụng</button>
+                <button aria-label="Tin tức công nghệ" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Tin tức</button>
+                <button aria-label="Hệ thống cửa hàng" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Hệ thống cửa hàng</button>
+                <button aria-label="Chính sách bảo mật" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Chính sách bảo mật</button>
+                <button aria-label="Điều khoản dịch vụ" type="button" onClick={() => onNavigate('list')} className="footer-link text-xs md:text-sm text-gray-500 border-none bg-transparent cursor-pointer p-0 text-left">Điều khoản dịch vụ</button>
               </div>
             </div>
 

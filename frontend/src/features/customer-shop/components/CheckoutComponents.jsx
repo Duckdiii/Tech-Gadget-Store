@@ -1,7 +1,7 @@
 
 function fmt(n) { return (n || 0).toLocaleString('vi-VN') + ' đ' }
 
-export function SectionCard({ step, title, icon, children }) {
+function SectionCard({ step, title, icon, children }) {
   return (
     <div className="overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(15,23,42,0.02)' }}>
       <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid var(--b1)', backgroundColor: 'var(--s1)' }}>
@@ -18,13 +18,13 @@ export function ProductsSection({ items }) {
   return (
     <SectionCard step="1" title="Sản phẩm mua" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>}>
       <div className="divide-y divide-slate-100">
-        {items && items.map((item, i) => (
-          <div key={i} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0">
+        {items && items.map((item) => (
+          <div key={item.id || item.productId || item.productName} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0">
             <div>
               <p className="text-sm font-bold" style={{ color: 'var(--t1)' }}>{item.productName}</p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--t3)' }}>{item.variantName} x{item.quantity}</p>
-              {item.bundleServices && item.bundleServices.map((b, bi) => (
-                <p key={bi} className="text-[11px] mt-0.5" style={{ color: 'var(--accent)' }}>+ {b.name} ({fmt(b.price)})</p>
+              {item.bundleServices && item.bundleServices.map((b) => (
+                <p key={b.id || b.name} className="text-[11px] mt-0.5" style={{ color: 'var(--accent)' }}>+ {b.name} ({fmt(b.price)})</p>
               ))}
             </div>
             <span className="text-sm font-bold text-right shrink-0 pr-1" style={{ color: 'var(--t2)' }}>{fmt(item.totalPrice)}</span>
@@ -41,7 +41,13 @@ export function AddressSection({ addresses, selected, onSelect }) {
       {addresses && addresses.length > 0 ? (
         <div className="grid grid-cols-2 gap-4">
           {addresses.map(addr => (
-            <div key={addr.id} onClick={() => onSelect(addr.id)} className="p-4 relative transition-all duration-200 cursor-pointer flex flex-col justify-between"
+            <div key={addr.id}
+              role="button"
+              tabIndex={0}
+              aria-label={`Giao đến ${addr.name}, ${addr.street}`}
+              onClick={() => onSelect(addr.id)}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelect(addr.id)}
+              className="p-4 relative transition-colors duration-200 cursor-pointer flex flex-col justify-between"
               style={{
                 border: selected === addr.id ? '2px solid var(--accent)' : '1.5px solid var(--b1)',
                 backgroundColor: selected === addr.id ? 'transparent' : 'var(--card)',
@@ -87,7 +93,7 @@ export function PaymentSection({ methods, selected, onSelect }) {
             }}
           >
             <div className="flex items-center gap-3">
-              <input type="radio" checked={selected === method.id} onChange={() => {}} className="w-4 h-4 cursor-pointer accent-[var(--accent)]" />
+              <input type="radio" name="paymentMethod" checked={selected === method.id} onChange={() => {}} aria-label={method.name} className="w-4 h-4 cursor-pointer accent-[var(--accent)]" />
               <div>
                 <p className="text-xs font-extrabold" style={{ color: selected === method.id ? 'var(--accent)' : 'var(--t1)' }}>{method.name}</p>
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--t3)' }}>{method.description || 'Thanh toán trực tuyến an toàn'}</p>
@@ -136,10 +142,10 @@ export function OrderSummaryCard({ summary, onOrderSubmit, submitting }) {
           <p className="text-[28px] font-black mt-1" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{fmt(summary.totalAmount)}</p>
         </div>
 
-        <button
+        <button aria-label="Xác nhận đặt hàng" type="button"
           onClick={onOrderSubmit}
           disabled={submitting}
-          className="w-full flex items-center justify-center gap-2 text-white font-extrabold text-[14px] py-4 transition-all duration-200 cursor-pointer border-none disabled:opacity-50 mt-4"
+          className="w-full flex items-center justify-center gap-2 text-white font-extrabold text-[14px] py-4 transition-colors duration-200 cursor-pointer border-none disabled:opacity-50 mt-4"
           style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '12px', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
         >
           {submitting ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}

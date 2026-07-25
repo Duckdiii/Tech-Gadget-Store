@@ -21,10 +21,12 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
   const [toast, setToast] = useState('')
 
   useEffect(() => {
+    let active = true
     const loadProduct = async () => {
       try {
         setLoading(true)
         const data = await shopService.getProductById(productId)
+        if (!active) return
         setProduct(data)
         
         // Initialize default image
@@ -43,13 +45,16 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
           setSelectedVariant(first)
         }
       } catch (e) {
-        setError(e.message)
+        if (active) setError(e.message)
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     }
 
-    loadProduct()
+    if (productId) {
+      loadProduct()
+    }
+    return () => { active = false }
   }, [productId])
 
   // Recalculate selected variant based on selections
@@ -99,7 +104,7 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
           <span className="text-red-500 text-3xl">⚠️</span>
           <h3 className="text-sm font-extrabold text-slate-800">Không thể tải thông tin</h3>
           <p className="text-xs text-slate-500">{error || 'Sản phẩm không khả dụng.'}</p>
-          <button onClick={onClose} className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-200 border-none cursor-pointer">Đóng</button>
+          <button aria-label="Đóng" type="button" onClick={onClose} className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-200 border-none cursor-pointer">Đóng</button>
         </div>
       </div>
     )
@@ -173,7 +178,7 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" onClick={onClose}>
       <div 
-        className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] w-full max-w-4xl max-h-[90vh] md:max-h-[85vh] flex flex-col md:flex-row overflow-hidden animate-in fade-in zoom-in-95 duration-200 relative"
+        className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] w-full max-w-4xl max-h-[90vh] md:max-h-[85vh] flex flex-col md:flex-row overflow-hidden animate-in fade-in zoom-in-95 duration-200 transition-transform transition-opacity relative"
         onClick={e => e.stopPropagation()}
       >
         {/* Toast Notification */}
@@ -184,9 +189,9 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
         )}
 
         {/* Close button */}
-        <button 
+        <button aria-label="Đóng" type="button" 
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-all border-none bg-transparent cursor-pointer text-lg font-bold"
+          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors border-none bg-transparent cursor-pointer text-lg font-bold"
         >
           ×
         </button>
@@ -215,11 +220,11 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
           {/* Thumbnails */}
           {product.imageUrls && product.imageUrls.length > 1 && (
             <div className="flex items-center gap-2 overflow-x-auto pb-1 justify-center">
-              {product.imageUrls.map((url, i) => (
-                <button
-                  key={i}
+              {product.imageUrls.map((url) => (
+                <button aria-label="Thao tác" type="button"
+                  key={url}
                   onClick={() => setActiveImage(url)}
-                  className="w-12 h-12 rounded-lg p-1 bg-white border cursor-pointer shrink-0 transition-all focus:outline-none"
+                  className="w-12 h-12 rounded-lg p-1 bg-white border cursor-pointer shrink-0 transition-colors focus:outline-none"
                   style={{
                     borderColor: activeImage === url ? 'var(--accent)' : '#e2e8f0',
                     outline: activeImage === url ? '1.5px solid var(--accent)' : 'none',
@@ -265,8 +270,8 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
             <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
               <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Thông số kĩ thuật</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
-                {keySpecs.map((spec, i) => (
-                  <div key={i} className="flex justify-between border-b border-slate-100 pb-1 text-[10.5px]">
+                {keySpecs.map((spec) => (
+                  <div key={spec.label} className="flex justify-between border-b border-slate-100 pb-1 text-[10.5px]">
                     <span className="text-slate-400 font-bold">{spec.label}</span>
                     <span className="text-slate-800 font-extrabold truncate max-w-[130px]" title={spec.value}>{spec.value}</span>
                   </div>
@@ -283,10 +288,10 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
                 <p className="text-[10px] font-extrabold text-slate-450 uppercase tracking-wider mb-1.5">RAM</p>
                 <div className="flex flex-wrap gap-1.5">
                   {rams.map(ram => (
-                    <button
+                    <button aria-label="Thao tác" type="button"
                       key={ram}
                       onClick={() => setSelectedRam(ram)}
-                      className={`px-3 py-1 text-xs font-bold rounded-lg border cursor-pointer transition-all ${
+                      className={`px-3 py-1 text-xs font-bold rounded-lg border cursor-pointer transition-colors ${
                         selectedRam === ram
                           ? 'bg-[#E8420A]/5 border-[#E8420A] text-[#E8420A] font-extrabold shadow-sm'
                           : 'bg-white border-slate-200 text-slate-600 hover:border-slate-400'
@@ -305,10 +310,10 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
                 <p className="text-[10px] font-extrabold text-slate-450 uppercase tracking-wider mb-1.5">Dung lượng</p>
                 <div className="flex flex-wrap gap-1.5">
                   {storages.map(st => (
-                    <button
+                    <button aria-label="Thao tác" type="button"
                       key={st}
                       onClick={() => setSelectedStorage(st)}
-                      className={`px-3 py-1 text-xs font-bold rounded-lg border cursor-pointer transition-all ${
+                      className={`px-3 py-1 text-xs font-bold rounded-lg border cursor-pointer transition-colors ${
                         selectedStorage === st
                           ? 'bg-[#E8420A]/5 border-[#E8420A] text-[#E8420A] font-extrabold shadow-sm'
                           : 'bg-white border-slate-200 text-slate-600 hover:border-slate-400'
@@ -327,10 +332,10 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
                 <p className="text-[10px] font-extrabold text-slate-450 uppercase tracking-wider mb-1.5">Màu sắc</p>
                 <div className="flex flex-wrap gap-1.5">
                   {colors.map(color => (
-                    <button
+                    <button aria-label="Thao tác" type="button"
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-lg border cursor-pointer transition-all ${
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg border cursor-pointer transition-colors ${
                         selectedColor === color
                           ? 'bg-[#E8420A]/5 border-[#E8420A] text-[#E8420A] font-extrabold shadow-sm'
                           : 'bg-white border-slate-200 text-slate-600 hover:border-slate-400'
@@ -363,10 +368,10 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <button aria-label="Giỏ hàng" type="button"
                 onClick={handleAddToCart}
                 disabled={adding || !selectedVariant}
-                className={`px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all cursor-pointer border-none flex items-center gap-1.5 ${
+                className={`px-5 py-2.5 text-xs font-extrabold rounded-xl transition-colors cursor-pointer border-none flex items-center gap-1.5 ${
                   selectedVariant
                     ? 'bg-[#E8420A] text-white hover:bg-[#ff551c] active:scale-95 shadow-md shadow-orange-500/10'
                     : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
@@ -387,12 +392,12 @@ export default function QuickViewModal({ productId, onClose, onNavigate }) {
                 )}
               </button>
 
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => {
                   onClose()
                   onNavigate('detail', { search: '?id=' + product.id })
                 }}
-                className="px-4 py-2.5 text-xs font-bold bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all border-none cursor-pointer"
+                className="px-4 py-2.5 text-xs font-bold bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-colors border-none cursor-pointer"
               >
                 Xem chi tiết
               </button>

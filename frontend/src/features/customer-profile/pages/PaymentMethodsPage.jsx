@@ -62,24 +62,24 @@ function CreditCard({ brand, lastFour, holder, expiry, isDefault, dark }) {
 export default function PaymentMethodsPage() {
   const onNavigate = useNav()
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
 
       {/* ── Top header ── */}
       <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
           {['Shop', 'Support', 'Business'].map((link) => (
-            <button key={link} className="text-sm font-medium text-gray-700 hover:text-gray-900 cursor-pointer transition-colors">
+            <button aria-label="Thao tác" type="button" key={link} className="text-sm font-medium text-gray-700 hover:text-gray-900 cursor-pointer transition-colors">
               {link}
             </button>
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <button className="w-9 h-9 bg-gray-900 hover:bg-gray-800 rounded-full flex items-center justify-center cursor-pointer transition-colors">
+          <button aria-label="Thao tác" type="button" className="w-9 h-9 bg-gray-900 hover:bg-gray-800 rounded-full flex items-center justify-center cursor-pointer transition-colors">
             <svg className="w-4.5 h-4.5 text-white w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </button>
-          <button className="w-9 h-9 bg-gray-900 hover:bg-gray-800 rounded-full flex items-center justify-center cursor-pointer transition-colors">
+          <button aria-label="Thao tác" type="button" className="w-9 h-9 bg-gray-900 hover:bg-gray-800 rounded-full flex items-center justify-center cursor-pointer transition-colors">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -108,8 +108,8 @@ export default function PaymentMethodsPage() {
               </svg>
               <h2 className="text-base font-bold text-gray-900">Thẻ Tín Dụng / Ghi Nợ</h2>
             </div>
-            <button onClick={() => onNavigate('addCard')}
-              className="flex items-center gap-1.5 text-white font-bold py-2 px-4 rounded-xl text-sm transition-all duration-200 cursor-pointer"
+            <button aria-label="Thao tác" type="button" onClick={() => onNavigate('addCard')}
+              className="flex items-center gap-1.5 text-white font-bold py-2 px-4 rounded-xl text-sm transition-colors duration-200 cursor-pointer"
               style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
               onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
@@ -144,7 +144,7 @@ export default function PaymentMethodsPage() {
               </svg>
               <h2 className="text-base font-bold text-gray-900">Ví Điện Tử &amp; Phương Thức Khác</h2>
             </div>
-            <button className="flex items-center gap-1.5 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-xl text-sm transition-colors cursor-pointer">
+            <button aria-label="Thao tác" type="button" className="flex items-center gap-1.5 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-xl text-sm transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg>
@@ -168,7 +168,7 @@ export default function PaymentMethodsPage() {
                   <span className="text-xs text-gray-500">090 **** 123</span>
                 </div>
               </div>
-              <button className="flex items-center gap-1.5 text-sm font-medium text-rose-500 hover:text-rose-700 cursor-pointer transition-colors shrink-0">
+              <button aria-label="Thao tác" type="button" className="flex items-center gap-1.5 text-sm font-medium text-rose-500 hover:text-rose-700 cursor-pointer transition-colors shrink-0">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M18.364 5.636a9 9 0 010 12.728M5.636 5.636a9 9 0 000 12.728M12 12h.01" />
                 </svg>

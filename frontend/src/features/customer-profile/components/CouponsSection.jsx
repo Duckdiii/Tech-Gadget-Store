@@ -75,8 +75,8 @@ export default function CouponsSection() {
           { label: 'Mã còn hiệu lực', value: activeMineCount, color: 'var(--ok)', bg: 'rgba(34,197,94,0.06)', border: 'rgba(34,197,94,0.2)' },
           { label: 'Mã đã sử dụng', value: usedMineCount, color: 'var(--t2)', bg: 'var(--s1)', border: 'var(--b1)' },
           { label: 'Mã hết hạn', value: expiredMineCount, color: 'var(--t3)', bg: 'var(--s1)', border: 'var(--b1)' },
-        ].map((s, i) => (
-          <div key={i} className="rounded border px-5 py-4 text-center" style={{ backgroundColor: s.bg, borderColor: s.border }}>
+        ].map((s) => (
+          <div key={s.label} className="rounded border px-5 py-4 text-center" style={{ backgroundColor: s.bg, borderColor: s.border }}>
             <p className="text-3xl font-black" style={{ color: s.color }}>{s.value}</p>
             <p className="text-xs font-semibold mt-1" style={{ color: s.color }}>{s.label}</p>
           </div>
@@ -90,7 +90,7 @@ export default function CouponsSection() {
             { id: 'available', label: 'Kho mã giảm giá', count: available.length },
             { id: 'mine', label: 'Mã của tôi', count: mine.length },
           ].map(t => (
-            <button
+            <button aria-label="Thao tác" type="button"
               key={t.id}
               onClick={() => setTab(t.id)}
               className="px-5 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap bg-transparent cursor-pointer"
@@ -113,7 +113,7 @@ export default function CouponsSection() {
         {loading ? (
           <div className="p-5 grid grid-cols-1 gap-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-24 rounded animate-pulse" style={{ backgroundColor: 'var(--s1)' }} />
+              <div key={_?.id ?? _?.code ?? _?.name ?? i} className="h-24 rounded animate-pulse" style={{ backgroundColor: 'var(--s1)' }} />
             ))}
           </div>
         ) : tab === 'available' ? (
@@ -146,10 +146,10 @@ export default function CouponsSection() {
                           {coupon.claimed ? (
                             <span className="text-xs font-bold px-4 py-1.5 rounded" style={{ backgroundColor: 'var(--s2)', color: 'var(--t3)' }}>Đã lưu</span>
                           ) : (
-                            <button
+                            <button aria-label="Thao tác" type="button"
                               onClick={() => handleClaim(coupon)}
                               disabled={claiming === coupon.id}
-                              className="text-xs font-bold px-4 py-1.5 rounded transition-all border-none cursor-pointer text-white disabled:opacity-50"
+                              className="text-xs font-bold px-4 py-1.5 rounded transition-colors border-none cursor-pointer text-white disabled:opacity-50"
                               style={{ backgroundColor: 'var(--accent)' }}
                             >
                               {claiming === coupon.id ? 'Đang lưu...' : 'Lưu mã'}
@@ -194,9 +194,9 @@ export default function CouponsSection() {
                           <div className="px-5 py-4 flex flex-col items-center justify-center gap-2.5 min-w-[120px]">
                             <span className="font-mono text-sm font-black tracking-widest" style={{ color: 'var(--t1)' }}>{coupon.code}</span>
                             {!isInactive ? (
-                              <button
+                              <button aria-label="Thao tác" type="button"
                                 onClick={() => handleCopy(coupon.code)}
-                                className="text-xs font-bold px-4 py-1.5 rounded transition-all border-none cursor-pointer text-white"
+                                className="text-xs font-bold px-4 py-1.5 rounded transition-colors border-none cursor-pointer text-white"
                                 style={{ backgroundColor: copied === coupon.code ? 'var(--ok)' : 'var(--accent)' }}
                               >
                                 {copied === coupon.code ? '✓ Đã sao chép' : 'Sao chép'}

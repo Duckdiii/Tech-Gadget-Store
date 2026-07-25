@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 function formatPrice(price) {
   return price.toLocaleString('vi-VN') + ' đ'
@@ -6,15 +6,14 @@ function formatPrice(price) {
 
 
 export default function ProductCard({ product, onNavigate, viewMode = 'grid', isCompared = false, onToggleCompare, onQuickView, onNotifyBackInStock, isWished = false, onToggleWishlist }) {
-  const [wished, setWished] = useState(isWished)
   const [adding, setAdding] = useState(false)
   const [imgError, setImgError] = useState(false)
+  const [prevImg, setPrevImg] = useState(product.image)
 
-  useEffect(() => {
-    setWished(isWished)
-  }, [isWished])
-
-  useEffect(() => { setImgError(false) }, [product.image])
+  if (prevImg !== product.image) {
+    setPrevImg(product.image)
+    setImgError(false)
+  }
 
   const handleAddToCart = (e) => {
     e.stopPropagation()
@@ -59,8 +58,10 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
     const specsList = getSpecsList()
     return (
       <div
+        tabIndex={0}
         onClick={() => onNavigate('detail', { search: '?id=' + product.id })}
-        className="product-card group overflow-hidden flex flex-row items-stretch cursor-pointer relative transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(15,23,42,0.06)] hover:border-orange-500/30 h-44"
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('detail', { search: '?id=' + product.id }) }}
+        className="product-card group overflow-hidden flex flex-row items-stretch cursor-pointer relative transition-colors duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(15,23,42,0.06)] hover:border-orange-500/30 h-44"
         style={{
           backgroundColor: 'var(--card)',
           border: '1px solid var(--b1)',
@@ -129,24 +130,22 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
             return null
           })()}
 
-          <button
+          <button type="button"
             onClick={e => {
               e.stopPropagation()
-              const nextWished = !wished
-              setWished(nextWished)
-              if (onToggleWishlist) onToggleWishlist(product, nextWished)
+              if (onToggleWishlist) onToggleWishlist(product, !isWished)
             }}
-            aria-label={wished ? 'Bỏ khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'}
-            className="absolute top-3 right-3 z-10 w-7.5 h-7.5 flex items-center justify-center transition-all duration-200"
+            aria-label={isWished ? 'Bỏ khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'}
+            className="absolute top-3 right-3 z-10 w-7.5 h-7.5 flex items-center justify-center transition-colors duration-200"
             style={{
-              backgroundColor: wished ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.95)',
-              border: `1px solid ${wished ? 'rgba(239,68,68,0.25)' : 'var(--b1)'}`,
+              backgroundColor: isWished ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.95)',
+              border: `1px solid ${isWished ? 'rgba(239,68,68,0.25)' : 'var(--b1)'}`,
               borderRadius: '50%',
-              color: wished ? '#ef4444' : 'var(--t3)',
+              color: isWished ? '#ef4444' : 'var(--t3)',
               boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
             }}
           >
-            <svg className="w-3.5 h-3.5" fill={wished ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5" fill={isWished ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           </button>
@@ -174,12 +173,12 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
             </div>
           )}
           {onQuickView && (
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation()
                 onQuickView(product)
               }}
-              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 px-3.5 py-1.5 bg-white/95 backdrop-blur-sm text-slate-850 hover:text-orange-605 font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md border border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer whitespace-nowrap transform translate-y-2 group-hover:translate-y-0"
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 px-3.5 py-1.5 bg-white/95 backdrop-blur-sm text-slate-850 hover:text-orange-605 font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md border border-slate-100 opacity-0 group-hover:opacity-100 transition-colors duration-200 cursor-pointer whitespace-nowrap transform translate-y-2 group-hover:translate-y-0"
             >
               Xem nhanh
             </button>
@@ -246,8 +245,8 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
           {/* Technical specifications panel */}
           {specsList.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5 mt-1.5 bg-slate-50/50 p-2.5 rounded-xl border border-slate-100/80">
-              {specsList.slice(0, 6).map((spec, idx) => (
-                <div key={idx} className="text-[11px] leading-tight flex items-center gap-1.5 min-w-0">
+              {specsList.slice(0, 6).map((spec) => (
+                <div key={spec.label} className="text-[11px] leading-tight flex items-center gap-1.5 min-w-0">
                   <span className="text-slate-400 font-medium shrink-0">{spec.label}:</span>
                   <span className="text-slate-700 font-extrabold truncate" style={{ color: 'var(--t1)' }} title={spec.value}>{spec.value}</span>
                 </div>
@@ -297,9 +296,9 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
           </div>
 
           {product.available ? (
-            <button
+            <button aria-label="Giỏ hàng" type="button"
               onClick={handleAddToCart}
-              className="flex items-center justify-center gap-1.5 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer w-full transition-all duration-200 active:scale-95 shrink-0"
+              className="flex items-center justify-center gap-1.5 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer w-full transition-colors duration-200 active:scale-95 shrink-0"
               style={{
                 background: adding ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, var(--accent-h), var(--accent))',
                 border: 'none',
@@ -323,7 +322,7 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
               )}
             </button>
           ) : (
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation()
                 if (onNotifyBackInStock) onNotifyBackInStock(product)
@@ -344,8 +343,10 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
 
   return (
     <div
+      tabIndex={0}
       onClick={() => onNavigate('detail', { search: '?id=' + product.id })}
-      className="product-card group overflow-hidden flex flex-col cursor-pointer relative transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(15,23,42,0.06)] hover:border-orange-500/30"
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('detail', { search: '?id=' + product.id }) }}
+      className="product-card group overflow-hidden flex flex-col cursor-pointer relative transition-colors duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(15,23,42,0.06)] hover:border-orange-500/30"
       style={{
         backgroundColor: 'var(--card)',
         border: '1px solid var(--b1)',
@@ -414,24 +415,22 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
           return null
         })()}
 
-        <button
+        <button type="button"
           onClick={e => {
             e.stopPropagation()
-            const nextWished = !wished
-            setWished(nextWished)
-            if (onToggleWishlist) onToggleWishlist(product, nextWished)
+            if (onToggleWishlist) onToggleWishlist(product, !isWished)
           }}
-          aria-label={wished ? 'Bỏ khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'}
-          className="absolute top-3 right-3 z-10 w-7.5 h-7.5 flex items-center justify-center transition-all duration-200"
+          aria-label={isWished ? 'Bỏ khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'}
+          className="absolute top-3 right-3 z-10 w-7.5 h-7.5 flex items-center justify-center transition-colors duration-200"
           style={{
-            backgroundColor: wished ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.95)',
-            border: `1px solid ${wished ? 'rgba(239,68,68,0.25)' : 'var(--b1)'}`,
+            backgroundColor: isWished ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.95)',
+            border: `1px solid ${isWished ? 'rgba(239,68,68,0.25)' : 'var(--b1)'}`,
             borderRadius: '50%',
-            color: wished ? '#ef4444' : 'var(--t3)',
+            color: isWished ? '#ef4444' : 'var(--t3)',
             boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
           }}
         >
-          <svg className="w-3.5 h-3.5" fill={wished ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5" fill={isWished ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
         </button>
@@ -460,12 +459,12 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
         )}
 
         {onQuickView && (
-          <button
+          <button type="button"
             onClick={(e) => {
               e.stopPropagation()
               onQuickView(product)
             }}
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 px-3.5 py-1.5 bg-white/95 backdrop-blur-sm text-slate-850 hover:text-orange-605 font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md border border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer whitespace-nowrap transform translate-y-2 group-hover:translate-y-0"
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 px-3.5 py-1.5 bg-white/95 backdrop-blur-sm text-slate-850 hover:text-orange-605 font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md border border-slate-100 opacity-0 group-hover:opacity-100 transition-colors duration-200 cursor-pointer whitespace-nowrap transform translate-y-2 group-hover:translate-y-0"
           >
             Xem nhanh
           </button>
@@ -578,9 +577,9 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
           </div>
 
           {product.available ? (
-            <button
+            <button aria-label="Giỏ hàng" type="button"
               onClick={handleAddToCart}
-              className="w-9 h-9 flex items-center justify-center text-white shrink-0 shadow-sm transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
+              className="w-9 h-9 flex items-center justify-center text-white shrink-0 shadow-sm transition-colors duration-200 hover:scale-110 active:scale-95 cursor-pointer"
               style={{
                 background: adding ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, var(--accent-h), var(--accent))',
                 borderRadius: '50%',
@@ -599,7 +598,7 @@ export default function ProductCard({ product, onNavigate, viewMode = 'grid', is
               )}
             </button>
           ) : (
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation()
                 if (onNotifyBackInStock) onNotifyBackInStock(product)

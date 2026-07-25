@@ -15,23 +15,26 @@ export function useInvoice() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
+    let active = true
     const loadInvoice = async () => {
       if (!orderId) {
-        setLoading(false)
+        if (active) setLoading(false)
         return
       }
       try {
         setLoading(true)
         const data = await shopService.getInvoiceByOrderId(orderId)
+        if (!active) return
         setInvoice(data)
         setVisible(true)
       } catch (e) {
         console.error('Lỗi tải hóa đơn:', e)
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     }
     loadInvoice()
+    return () => { active = false }
   }, [orderId])
 
   return {

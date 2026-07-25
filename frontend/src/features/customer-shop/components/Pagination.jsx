@@ -24,7 +24,7 @@ export default function Pagination({ current, total, onChange }) {
   return (
     <div className="flex items-center justify-center gap-2 mt-12">
       {/* Prev Button */}
-      <button
+      <button aria-label="Thao tác" type="button"
         onClick={() => current > 1 && onChange(current - 1)}
         disabled={current === 1}
         className={`w-10 h-10 flex items-center justify-center transition-all rounded-[10px] border border-[var(--b1)] bg-[var(--card)] text-[var(--t3)] hover:border-slate-400 hover:text-slate-950 cursor-pointer ${
@@ -46,7 +46,7 @@ export default function Pagination({ current, total, onChange }) {
           )
         }
         return (
-          <button
+          <button aria-label="Thao tác" type="button"
             key={p}
             onClick={() => onChange(p)}
             className="w-10 h-10 flex items-center justify-center text-[13px] font-black transition-all cursor-pointer rounded-[10px]"
@@ -61,7 +61,7 @@ export default function Pagination({ current, total, onChange }) {
       })}
 
       {/* Next Button */}
-      <button
+      <button aria-label="Thao tác" type="button"
         onClick={() => current < total && onChange(current + 1)}
         disabled={current === total}
         className={`w-10 h-10 flex items-center justify-center transition-all rounded-[10px] border border-[var(--b1)] bg-[var(--card)] text-[var(--t3)] hover:border-slate-400 hover:text-slate-950 cursor-pointer ${

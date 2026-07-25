@@ -53,13 +53,13 @@ export default function BackInStockModal({ product, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" onClick={onClose}>
       <div 
-        className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(15,23,42,0.18)] border border-slate-200 w-full max-w-md p-6 relative overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(15,23,42,0.18)] border border-slate-200 w-full max-w-md p-6 relative overflow-hidden animate-in fade-in zoom-in-95 duration-200 transition-transform transition-opacity"
         onClick={e => e.stopPropagation()}
       >
         {/* Close Button */}
-        <button 
+        <button aria-label="Đóng" type="button" 
           onClick={onClose}
-          className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-450 hover:text-slate-700 transition-all border-none bg-transparent cursor-pointer text-lg font-bold"
+          className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-450 hover:text-slate-700 transition-colors border-none bg-transparent cursor-pointer text-lg font-bold"
         >
           ×
         </button>
@@ -107,6 +107,7 @@ export default function BackInStockModal({ product, onClose }) {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="Nhập địa chỉ email của bạn..."
+                    aria-label="Email nhận thông báo"
                     className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-[#E8420A] bg-white transition-colors font-medium text-slate-800"
                     required
                   />
@@ -130,6 +131,7 @@ export default function BackInStockModal({ product, onClose }) {
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
                     placeholder="Nhập số điện thoại của bạn (ví dụ: 0912345678)..."
+                    aria-label="Số điện thoại nhận thông báo"
                     className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-[#E8420A] bg-white transition-colors font-medium text-slate-800"
                     required
                   />
@@ -138,14 +140,14 @@ export default function BackInStockModal({ product, onClose }) {
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <button 
+              <button aria-label="Hủy" 
                 type="button" 
                 onClick={onClose}
                 className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-250 transition-colors border-none cursor-pointer"
               >
                 Hủy
               </button>
-              <button 
+              <button aria-label="Đăng ký nhận tin" 
                 type="submit"
                 disabled={loading}
                 className="px-5 py-2 bg-[#E8420A] text-white text-xs font-extrabold rounded-xl hover:bg-[#ff551c] transition-colors border-none cursor-pointer flex items-center gap-1.5 shadow-md shadow-orange-500/10 active:scale-95"
@@ -170,7 +172,7 @@ export default function BackInStockModal({ product, onClose }) {
             <p className="text-xs text-slate-500 leading-relaxed max-w-xs">
               Hệ thống đã ghi nhận yêu cầu của bạn. Chúng tôi sẽ thông báo ngay khi <strong>{product.name}</strong> có hàng trở lại tại cửa hàng.
             </p>
-            <button 
+            <button aria-label="Đóng" type="button" 
               onClick={onClose}
               className="mt-2 px-6 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-700 transition-colors border-none cursor-pointer shadow-md"
             >

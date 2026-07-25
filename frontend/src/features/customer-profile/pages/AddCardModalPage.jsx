@@ -30,7 +30,7 @@ export default function AddCardModalPage() {
         {/* ── Header ── */}
         <div className="px-6 pt-5 pb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900">Thêm Thẻ Mới</h2>
-          <button onClick={() => onNavigate('paymentMethods')} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 cursor-pointer text-xl leading-none font-light transition-colors">
+          <button aria-label="Đóng" type="button" onClick={() => onNavigate('paymentMethods')} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 cursor-pointer text-xl leading-none font-light transition-colors">
             ×
           </button>
         </div>
@@ -83,7 +83,7 @@ export default function AddCardModalPage() {
 
           {/* ── Số thẻ ── */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Số thẻ</label>
+            <label htmlFor="card-num" className="block text-sm font-medium text-gray-700 mb-1.5">Số thẻ</label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,10 +91,12 @@ export default function AddCardModalPage() {
                 </svg>
               </span>
               <input
+                id="card-num"
                 type="text"
                 value={cardNum}
                 onChange={(e) => setCardNum(fmtCard(e.target.value))}
                 placeholder="0000 0000 0000 0000"
+                aria-label="Số thẻ"
                 maxLength={19}
                 className="w-full pl-10 pr-24 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] font-mono transition"
               />
@@ -111,12 +113,14 @@ export default function AddCardModalPage() {
 
           {/* ── Tên chủ thẻ ── */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Tên chủ thẻ</label>
+            <label htmlFor="card-holder" className="block text-sm font-medium text-gray-700 mb-1.5">Tên chủ thẻ</label>
             <input
+              id="card-holder"
               type="text"
               value={holder}
               onChange={(e) => setHolder(e.target.value.toUpperCase())}
               placeholder="NGUYEN VAN A"
+              aria-label="Tên chủ thẻ"
               className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] uppercase tracking-wider transition"
             />
           </div>
@@ -124,28 +128,32 @@ export default function AddCardModalPage() {
           {/* ── Ngày hết hạn + CVV/CVC ── */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Ngày hết hạn</label>
+              <label htmlFor="card-expiry" className="block text-sm font-medium text-gray-700 mb-1.5">Ngày hết hạn</label>
               <input
+                id="card-expiry"
                 type="text"
                 value={expiry}
                 onChange={(e) => setExpiry(fmtExpiry(e.target.value))}
                 placeholder="MM/YY"
+                aria-label="Ngày hết hạn"
                 maxLength={5}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] text-center font-mono transition"
               />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="card-cvv" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
                 CVV/CVC
                 <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </label>
               <input
+                id="card-cvv"
                 type="text"
                 value={cvv}
                 onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 placeholder="123"
+                aria-label="Mã CVV hoặc CVC"
                 maxLength={4}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] text-center font-mono transition"
               />
@@ -167,10 +175,10 @@ export default function AddCardModalPage() {
 
         {/* ── Footer ── */}
         <div className="border-t border-gray-200 px-6 py-4 flex items-center justify-end gap-3">
-          <button onClick={() => onNavigate('paymentMethods')} className="text-gray-600 hover:text-gray-800 font-bold text-sm cursor-pointer transition-colors px-3 py-1.5">
+          <button aria-label="Hủy" type="button" onClick={() => onNavigate('paymentMethods')} className="text-gray-600 hover:text-gray-800 font-bold text-sm cursor-pointer transition-colors px-3 py-1.5">
             Hủy
           </button>
-          <button onClick={() => onNavigate('paymentMethods')} className="flex items-center gap-2 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all duration-200 cursor-pointer"
+          <button aria-label="Thêm thẻ" type="button" onClick={() => onNavigate('paymentMethods')} className="flex items-center gap-2 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors duration-200 cursor-pointer"
             style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}

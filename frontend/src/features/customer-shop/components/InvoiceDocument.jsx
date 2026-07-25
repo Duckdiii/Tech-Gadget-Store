@@ -32,7 +32,7 @@ export default function InvoiceDocument({ orderId, invoice, onClose }) {
         {/* Top Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
           <span className="text-sm font-bold text-slate-800">Chi tiết hóa đơn mua hàng</span>
-          <button onClick={onClose} className="p-1.5 hover:bg-slate-200 rounded-full transition-colors cursor-pointer text-slate-500 hover:text-slate-800 border-none bg-transparent">
+          <button aria-label="Đóng" type="button" onClick={onClose} className="p-1.5 hover:bg-slate-200 rounded-full transition-colors cursor-pointer text-slate-500 hover:text-slate-800 border-none bg-transparent">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -77,8 +77,8 @@ export default function InvoiceDocument({ orderId, invoice, onClose }) {
               <span className="text-right">Thành tiền</span>
             </div>
             <div className="divide-y divide-slate-100">
-              {items.map((item, i) => (
-                <div key={i} className="grid grid-cols-[1fr_60px_110px_110px] px-4 py-3.5 items-center text-sm">
+              {items.map((item) => (
+                <div key={item.id || item.productId || item.productName} className="grid grid-cols-[1fr_60px_110px_110px] px-4 py-3.5 items-center text-sm">
                   <div className="flex flex-col pr-2">
                     <span className="font-semibold text-slate-800">{item.productName}</span>
                     {item.variantInfo && <span className="text-[11px] text-slate-400 mt-0.5">{item.variantInfo}</span>}
@@ -119,10 +119,10 @@ export default function InvoiceDocument({ orderId, invoice, onClose }) {
 
         {/* Footer actions */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50 border-t border-slate-100 rounded-b-2xl">
-          <button onClick={onClose} className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold py-2 px-4 rounded-xl text-xs transition-colors cursor-pointer">
+          <button aria-label="Đóng" type="button" onClick={onClose} className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold py-2 px-4 rounded-xl text-xs transition-colors cursor-pointer">
             Đóng
           </button>
-          <button onClick={downloadPdf} className="flex items-center gap-1.5 text-white font-extrabold py-2 px-4 rounded-xl text-xs transition-all duration-200 cursor-pointer"
+          <button aria-label="Quay lại" type="button" onClick={downloadPdf} className="flex items-center gap-1.5 text-white font-extrabold py-2 px-4 rounded-xl text-xs transition-colors duration-200 cursor-pointer"
             style={{ backgroundColor: 'var(--accent)', boxShadow: '0 2px 8px rgba(232, 66, 10, 0.15)' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}

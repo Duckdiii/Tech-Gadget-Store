@@ -23,7 +23,7 @@ export default function CartItem({ item, onToggleItem, onToggleBundle, onQtyChan
       {/* Main row */}
       <div className="flex gap-4 p-5">
         <div className="flex items-center shrink-0">
-          <input type="checkbox" checked={item.checked} onChange={() => onToggleItem(item.id)} className="w-5 h-5 cursor-pointer accent-[var(--accent)]" />
+          <input type="checkbox" checked={item.checked} onChange={() => onToggleItem(item.id)} aria-label={`Chọn ${item.name}`} className="w-5 h-5 cursor-pointer accent-[var(--accent)]" />
         </div>
         <div className="w-28 h-24 shrink-0 flex items-center justify-center" style={{ backgroundColor: 'var(--s1)', border: '1px solid var(--b1)', borderRadius: '10px' }}>
           <img src={item.image} alt={item.name} className="w-full h-full object-contain p-2" />
@@ -35,7 +35,7 @@ export default function CartItem({ item, onToggleItem, onToggleBundle, onQtyChan
               <h3 className="text-[15px] font-bold leading-snug mt-0.5" style={{ color: 'var(--t1)' }}>{item.name}</h3>
               <p className="text-[12.5px] mt-1" style={{ color: 'var(--t3)' }}>{item.variant}</p>
             </div>
-            <button onClick={() => onRemove(item.id)}
+            <button aria-label={`Xoá ${item.name} khỏi giỏ hàng`} type="button" onClick={() => onRemove(item.id)}
               className="shrink-0 w-8 h-8 flex items-center justify-center transition-colors cursor-pointer border-none bg-transparent"
               style={{ color: 'var(--t3)' }}
               onMouseEnter={e => { e.currentTarget.style.color = 'var(--err)'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.06)'; e.currentTarget.style.borderRadius = '8px' }}

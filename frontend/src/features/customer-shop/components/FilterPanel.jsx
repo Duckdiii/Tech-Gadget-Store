@@ -1,27 +1,33 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 function useClickOutside(ref, onOutside) {
+  const onOutsideRef = useRef(onOutside)
+  useEffect(() => {
+    onOutsideRef.current = onOutside
+  }, [onOutside])
+
   useEffect(() => {
     function handler(e) {
-      if (ref.current && !ref.current.contains(e.target)) onOutside()
+      if (ref.current && !ref.current.contains(e.target)) onOutsideRef.current?.()
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [ref, onOutside])
+  }, [ref])
 }
 
 // Nút mở dropdown filter trên thanh ngang — panel bung xuống khi bấm, tự đóng khi click ra ngoài.
 function FilterDropdown({ label, count = 0, children, panelClassName = '' }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
-  useClickOutside(ref, () => setOpen(false))
+  const handleClose = useCallback(() => setOpen(false), [])
+  useClickOutside(ref, handleClose)
   const active = count > 0
 
   return (
     <div className="relative" ref={ref}>
-      <button
+      <button aria-label="Thao tác" type="button"
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1.5 px-3.5 py-2 text-[12.5px] font-semibold rounded-lg border transition-all cursor-pointer whitespace-nowrap"
+        className="flex items-center gap-1.5 px-3.5 py-2 text-[12.5px] font-semibold rounded-lg border transition-colors cursor-pointer whitespace-nowrap"
         style={{
           borderColor: active ? 'var(--accent)' : 'var(--b1)',
           backgroundColor: active ? 'rgba(234,88,12,0.06)' : 'var(--card)',
@@ -57,22 +63,26 @@ function FilterGroupLabel({ children }) {
 function CheckGroup({ items, selected, onToggle, counts = {} }) {
   return (
     <div className="space-y-2">
-      {items.map(({ value, label }) => {
-        const count = counts[value] ?? 0
-        return (
-          <label key={value} className="flex items-center gap-2.5 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={selected.includes(value)}
-              onChange={() => onToggle(value)}
-              className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
-            />
-            <span className="text-[12.5px] transition-colors" style={{ color: selected.includes(value) ? 'var(--t1)' : 'var(--t2)' }}>
-              {label} <span className="text-[10.5px] text-slate-400 font-bold">({count})</span>
-            </span>
-          </label>
-        )
-      })}
+      {(() => {
+        const selectedSet = new Set(selected)
+        return items.map(({ value, label }) => {
+          const count = counts[value] ?? 0
+          const isChecked = selectedSet.has(value)
+          return (
+            <label key={value} className="flex items-center gap-2.5 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={isChecked}
+                onChange={() => onToggle(value)}
+                className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
+              />
+              <span className="text-[12.5px] transition-colors" style={{ color: isChecked ? 'var(--t1)' : 'var(--t2)' }}>
+                {label} <span className="text-[10.5px] text-slate-400 font-bold">({count})</span>
+              </span>
+            </label>
+          )
+        })
+      })()}
     </div>
   )
 }
@@ -103,14 +113,21 @@ function RadioGroup({ name, items, value, onChange }) {
 // filter thật trên mỗi phím bấm.
 function useDebouncedCommit(externalValue, onCommit, delayMs = 450) {
   const [text, setText] = useState(externalValue)
-  useEffect(() => { setText(externalValue) }, [externalValue])
+  const [prevExternal, setPrevExternal] = useState(externalValue)
+
+  if (prevExternal !== externalValue) {
+    setPrevExternal(externalValue)
+    setText(externalValue)
+  }
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (text !== externalValue) onCommit(text)
     }, delayMs)
     return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text])
+    // react-doctor-disable-next-line react-doctor/effect-dependency-recreated-every-render, react-doctor/exhaustive-deps
+  }, [text, externalValue, delayMs])
+
   return [text, setText]
 }
 
@@ -334,35 +351,40 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
           <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style={{ color: 'var(--t3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input
+          <input aria-label="Tìm sản phẩm..."
             type="text"
             placeholder="Tìm sản phẩm..."
             value={keywordText}
             onChange={e => setKeywordText(e.target.value)}
-            className="w-40 sm:w-48 pl-8 pr-3 py-2 text-[12px] rounded-lg border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] transition-all bg-[var(--s1)]"
+            className="w-40 sm:w-48 pl-8 pr-3 py-2 text-[12px] rounded-lg border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] transition-colors bg-[var(--s1)]"
           />
         </div>
 
         {categories.length > 0 && (
           <FilterDropdown label="Danh mục" count={selectedCategories.length}>
             <div className="space-y-2">
-              {categories.map(cat => (
-                <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.includes(cat.name)}
-                    onChange={() => {
-                      const wasSelected = selectedCategories.includes(cat.name)
-                      toggleList('categoryNames', cat.name)
-                      if (wasSelected) resetCategoryScopedFilters()
-                    }}
-                    className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
-                  />
-                  <span className="text-[12.5px] transition-colors" style={{ color: selectedCategories.includes(cat.name) ? 'var(--t1)' : 'var(--t2)' }}>
-                    {cat.name} <span className="text-[10.5px] text-slate-400 font-bold">({facetCounts.categories?.[cat.name] ?? 0})</span>
-                  </span>
-                </label>
-              ))}
+              {(() => {
+                const catSet = new Set(selectedCategories)
+                return categories.map(cat => {
+                  const isCatSelected = catSet.has(cat.name)
+                  return (
+                    <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={isCatSelected}
+                        onChange={() => {
+                          toggleList('categoryNames', cat.name)
+                          if (isCatSelected) resetCategoryScopedFilters()
+                        }}
+                        className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
+                      />
+                      <span className="text-[12.5px] transition-colors" style={{ color: isCatSelected ? 'var(--t1)' : 'var(--t2)' }}>
+                        {cat.name} <span className="text-[10.5px] text-slate-400 font-bold">({facetCounts.categories?.[cat.name] ?? 0})</span>
+                      </span>
+                    </label>
+                  )
+                })
+              })()}
             </div>
           </FilterDropdown>
         )}
@@ -370,19 +392,25 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
         {brands.length > 0 && (
           <FilterDropdown label="Thương hiệu" count={selectedBrands.length}>
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
-              {brands.map(brand => (
-                <label key={brand} className="flex items-center gap-2.5 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={selectedBrands.includes(brand)}
-                    onChange={() => toggleList('brandNames', brand)}
-                    className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
-                  />
-                  <span className="text-[12.5px] transition-colors" style={{ color: selectedBrands.includes(brand) ? 'var(--t1)' : 'var(--t2)' }}>
-                    {brand} <span className="text-[10.5px] text-slate-400 font-bold">({facetCounts.brands?.[brand] ?? 0})</span>
-                  </span>
-                </label>
-              ))}
+              {(() => {
+                const brandSet = new Set(selectedBrands)
+                return brands.map(brand => {
+                  const isBrandSelected = brandSet.has(brand)
+                  return (
+                    <label key={brand} className="flex items-center gap-2.5 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={isBrandSelected}
+                        onChange={() => toggleList('brandNames', brand)}
+                        className="w-4 h-4 cursor-pointer accent-[var(--accent)]"
+                      />
+                      <span className="text-[12.5px] transition-colors" style={{ color: isBrandSelected ? 'var(--t1)' : 'var(--t2)' }}>
+                        {brand} <span className="text-[10.5px] text-slate-400 font-bold">({facetCounts.brands?.[brand] ?? 0})</span>
+                      </span>
+                    </label>
+                  )
+                })
+              })()}
             </div>
           </FilterDropdown>
         )}
@@ -481,7 +509,7 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
 
                 {/* Text boxes */}
                 <div className="flex items-center gap-1.5">
-                  <input
+                  <input aria-label="Từ (triệu)"
                     type="text"
                     inputMode="decimal"
                     placeholder="Từ (triệu)"
@@ -490,7 +518,7 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
                     className="w-full px-2.5 py-1.5 text-[12px] font-semibold rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)] text-center"
                   />
                   <span className="text-[11px] shrink-0" style={{ color: 'var(--t3)' }}>–</span>
-                  <input
+                  <input aria-label="Đến (triệu)"
                     type="text"
                     inputMode="decimal"
                     placeholder="Đến (triệu)"
@@ -516,11 +544,11 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
         <FilterDropdown label="Màu sắc" count={selectedColors.length}>
           <div className="flex flex-wrap gap-2">
             {COLOR_OPTIONS.map(({ value, hex }) => (
-              <button
+              <button aria-label="Thao tác" type="button"
                 key={value}
                 onClick={() => toggleList('colors', value)}
                 title={`${value} (${facetCounts.colors?.[value] ?? 0})`}
-                className="w-6 h-6 transition-all cursor-pointer rounded-full border-none"
+                className="w-6 h-6 transition-transform cursor-pointer rounded-full border-none"
                 style={{
                   backgroundColor: hex,
                   border: '1px solid var(--b2)',
@@ -561,7 +589,7 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
         {isLaptopScope && (
           <FilterDropdown label="Bộ lọc laptop" count={laptopExtraCount}>
             <FilterGroupLabel>CPU / Bộ xử lý</FilterGroupLabel>
-            <input
+            <input aria-label="VD: Core i7, Ryzen 5..."
               type="text"
               placeholder="VD: Core i7, Ryzen 5..."
               value={cpuText}
@@ -569,7 +597,7 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
               className="w-full px-2.5 py-1.5 text-[12px] rounded-md border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-[var(--s1)]"
             />
             <FilterGroupLabel>GPU / Card đồ họa</FilterGroupLabel>
-            <input
+            <input aria-label="VD: RTX 4060, Iris Xe..."
               type="text"
               placeholder="VD: RTX 4060, Iris Xe..."
               value={gpuText}
@@ -649,7 +677,7 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
         </FilterDropdown>
 
         {activeCount > 0 && (
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={onReset}
             className="ml-auto flex items-center gap-1 text-[12px] font-bold transition-colors cursor-pointer border-none bg-transparent shrink-0"
             style={{ color: 'var(--t3)' }}
@@ -664,11 +692,11 @@ export default function FilterPanel({ filters, onChange, onReset, categories = [
       {/* Chip hiển thị các tiêu chí đang được chọn */}
       {activeChips.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-3">
-          {activeChips.map((chip, i) => (
-            <button
-              key={i}
+          {activeChips.map((chip) => (
+            <button aria-label="Quay lại" type="button"
+              key={chip.label}
               onClick={chip.clear}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer border-none transition-all"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer border-none transition-colors"
               style={{ backgroundColor: 'rgba(234,88,12,0.08)', color: 'var(--accent)', border: '1px solid rgba(234,88,12,0.2)' }}
             >
               {chip.label}

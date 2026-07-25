@@ -39,7 +39,7 @@ export default function OrdersSection({ orders = [], loading = false, onNavigate
       {/* Filter tabs */}
       <div className="flex items-center border-b border-gray-200 overflow-x-auto">
         {ORDER_FILTER_TABS.map(tab => (
-          <button
+          <button aria-label={tab.label} type="button"
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`shrink-0 px-6 py-4 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors border-none bg-transparent cursor-pointer ${
@@ -66,6 +66,7 @@ export default function OrdersSection({ orders = [], loading = false, onNavigate
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Tìm theo mã đơn hoặc tên sản phẩm..."
+            aria-label="Tìm theo mã đơn hoặc tên sản phẩm"
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[var(--accent)] bg-white shadow-sm"
           />
         </div>
@@ -75,7 +76,7 @@ export default function OrdersSection({ orders = [], loading = false, onNavigate
       {loading ? (
         <div className="divide-y divide-gray-100">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="px-6 py-5">
+            <div key={_?.id ?? _?.code ?? _?.name ?? i} className="px-6 py-5">
               <div className="flex items-center justify-between mb-4">
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-5 w-24 rounded-full" />
@@ -134,7 +135,7 @@ export default function OrdersSection({ orders = [], loading = false, onNavigate
                   <div className="text-right shrink-0">
                     <p className="text-xs text-gray-500 mb-1">Tổng thanh toán</p>
                     <p className="text-xl font-black text-[var(--accent)]">{fmt(order.total)}</p>
-                    <button
+                    <button aria-label="Thao tác" type="button"
                       onClick={() => onNavigate('invoice', { search: `?orderId=${order.id}` })}
                       className="mt-2.5 text-sm font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-d)] px-4 py-1.5 rounded transition-colors flex items-center gap-1 ml-auto border-none cursor-pointer"
                     >
@@ -158,7 +159,7 @@ export default function OrdersSection({ orders = [], loading = false, onNavigate
           </div>
           <p className="text-base font-semibold text-gray-600">Không có đơn hàng nào</p>
           <p className="text-sm text-gray-400 mt-1">Hãy mua sắm ngay để xem lịch sử đơn hàng</p>
-          <button onClick={() => onNavigate('list')} className="mt-5 bg-[var(--accent)] hover:bg-[var(--accent-d)] text-white text-sm font-bold px-6 py-2.5 rounded transition-colors border-none cursor-pointer">
+          <button aria-label="Thao tác" type="button" onClick={() => onNavigate('list')} className="mt-5 bg-[var(--accent)] hover:bg-[var(--accent-d)] text-white text-sm font-bold px-6 py-2.5 rounded transition-colors border-none cursor-pointer">
             Mua sắm ngay
           </button>
         </div>

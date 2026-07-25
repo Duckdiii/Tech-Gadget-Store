@@ -68,7 +68,7 @@ export default function PaymentSection() {
 
         {loading ? (
           <div className="p-6 space-y-3">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-20 rounded animate-pulse" style={{ backgroundColor: 'var(--s1)' }} />)}
+            {[...Array(3)].map((_, i) => <div key={_?.id ?? _?.code ?? _?.name ?? i} className="h-20 rounded animate-pulse" style={{ backgroundColor: 'var(--s1)' }} />)}
           </div>
         ) : available.length === 0 ? (
           <div className="py-16 text-center" style={{ color: 'var(--t3)' }}>
@@ -80,11 +80,11 @@ export default function PaymentSection() {
               const style = METHOD_STYLE[method.type] || { label: method.name, desc: method.description, gradient: 'linear-gradient(135deg, var(--t2), var(--t3))' }
               const isSelected = preferred === method.type
               return (
-                <button
+                <button aria-label="Thao tác" type="button"
                   key={method.id}
                   onClick={() => handleSelect(method)}
                   disabled={saving === method.type}
-                  className="flex items-center gap-4 px-5 py-4 rounded-xl border text-left transition-all cursor-pointer disabled:opacity-60"
+                  className="flex items-center gap-4 px-5 py-4 rounded-xl border text-left transition-colors cursor-pointer disabled:opacity-60"
                   style={{
                     borderColor: isSelected ? 'var(--accent)' : 'var(--b1)',
                     backgroundColor: isSelected ? 'var(--accent-dim)' : 'var(--card)',

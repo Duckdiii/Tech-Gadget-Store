@@ -25,7 +25,7 @@ export default function OrderCard({ order, onNavigate, onCancel }) {
   return (
     
     <div
-      className="overflow-hidden transition-all duration-200"
+      className="overflow-hidden transition-colors duration-200"
       style={{
         backgroundColor: 'var(--card)',
         border: '1.5px solid var(--cb)',
@@ -59,7 +59,7 @@ export default function OrderCard({ order, onNavigate, onCancel }) {
           <p className="text-base font-bold" style={{ color: 'var(--accent)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
             {fmt(order.total)}
           </p>
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={() => setExpanded(e => !e)}
             className="p-1.5 transition-colors border-none bg-transparent cursor-pointer"
             style={{ borderRadius: '3px', color: 'var(--ct3)' }}
@@ -83,8 +83,8 @@ export default function OrderCard({ order, onNavigate, onCancel }) {
       <div className="px-5 pb-4" style={{ borderTop: '1px solid var(--cb)' }}>
         <p className="text-xs mt-3 mb-2" style={{ color: 'var(--ct3)' }}>{items.length} sản phẩm</p>
         <div className={`space-y-1.5 overflow-hidden transition-all ${expanded ? '' : 'max-h-[60px]'}`}>
-          {items.map((item, i) => (
-            <div key={i} className="flex items-center justify-between">
+          {items.map((item) => (
+            <div key={item.id || item.productId || item.productName} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--page)', border: '1px solid var(--cb)', borderRadius: '8px' }}>
                   <svg className="w-3.5 h-3.5" style={{ color: 'var(--ct3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +105,7 @@ export default function OrderCard({ order, onNavigate, onCancel }) {
       {/* Actions */}
       <div className="flex items-center justify-end gap-2.5 px-5 py-3" style={{ borderTop: '1px solid var(--cb)', backgroundColor: 'var(--page)' }}>
         {mappedStatus === 'pending' && (
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={() => onCancel(order.id)}
             className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
             style={{
@@ -120,7 +120,7 @@ export default function OrderCard({ order, onNavigate, onCancel }) {
             Hủy đơn
           </button>
         )}
-        <button
+        <button aria-label="Thao tác" type="button"
           onClick={() => onNavigate('invoice', { search: `?orderId=${order.id}` })}
           className="text-xs font-bold px-4 py-2 transition-colors cursor-pointer"
           style={{ color: 'var(--ct2)', border: '1px solid var(--cb)', backgroundColor: 'var(--card)', borderRadius: '8px' }}

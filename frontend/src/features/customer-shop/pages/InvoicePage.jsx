@@ -74,7 +74,7 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col bg-gray-50 min-h-screen">
+      <div className="flex-1 flex flex-col bg-gray-50 min-h-dvh">
         <StoreNavbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
@@ -85,11 +85,11 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
 
   if (!invoice) {
     return (
-      <div className="flex-1 flex flex-col bg-gray-50 min-h-screen">
+      <div className="flex-1 flex flex-col bg-gray-50 min-h-dvh">
         <StoreNavbar />
         <div className="flex-1 flex flex-col items-center justify-center">
           <p className="text-lg font-bold text-gray-500">Không tìm thấy thông tin đơn hàng này</p>
-          <button onClick={() => onNavigate('home')} className="mt-4 px-6 py-2 bg-slate-900 text-white rounded-lg">Về trang chủ</button>
+          <button aria-label="Thao tác" type="button" onClick={() => onNavigate('home')} className="mt-4 px-6 py-2 bg-slate-900 text-white rounded-lg">Về trang chủ</button>
         </div>
       </div>
     )
@@ -99,7 +99,7 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
   const totalSavings = invoice.discountAmount || 0
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-50 min-h-screen">
+    <div className="flex-1 flex flex-col bg-gray-50 min-h-dvh">
       <StoreNavbar />
 
       <div className="flex-1 flex items-start justify-center px-6 py-10">
@@ -193,7 +193,7 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
 
             {/* Actions bar inside card */}
             <div className="px-7 py-4 bg-slate-50/50 flex items-center justify-end">
-              <button onClick={() => onNavigate('myOrders')} className="text-xs font-bold px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer bg-white transition-colors">
+              <button aria-label="Thao tác" type="button" onClick={() => onNavigate('myOrders')} className="text-xs font-bold px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer bg-white transition-colors">
                 Quản lý đơn hàng
               </button>
             </div>
@@ -203,15 +203,15 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
           {success ? (
             <div className="space-y-6">
               <div className="flex gap-4">
-                <button onClick={() => setShowInvoice(true)} className="flex-1 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-3.5 rounded-xl text-sm transition-colors cursor-pointer flex items-center justify-center gap-2">
+                <button aria-label="Thao tác" type="button" onClick={() => setShowInvoice(true)} className="flex-1 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-3.5 rounded-xl text-sm transition-colors cursor-pointer flex items-center justify-center gap-2">
                   <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   Xem hóa đơn
                 </button>
-                <button onClick={downloadPdf} className="flex-1 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-3.5 rounded-xl text-sm transition-colors cursor-pointer flex items-center justify-center gap-2">
+                <button aria-label="Thao tác" type="button" onClick={downloadPdf} className="flex-1 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-3.5 rounded-xl text-sm transition-colors cursor-pointer flex items-center justify-center gap-2">
                   <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   In hóa đơn
                 </button>
-                <button onClick={() => onNavigate('home')} className="flex-1 text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+                <button aria-label="Thao tác" type="button" onClick={() => onNavigate('home')} className="flex-1 text-white font-bold py-3.5 rounded-xl text-sm transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2"
                   style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
@@ -222,21 +222,21 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
               </div>
               
               <div className="flex justify-center gap-6 text-xs font-semibold text-slate-500">
-                <button onClick={() => onNavigate('myOrders')} className="hover:text-slate-800 cursor-pointer underline bg-transparent border-none">
+                <button aria-label="Thao tác" type="button" onClick={() => onNavigate('myOrders')} className="hover:text-slate-800 cursor-pointer underline bg-transparent border-none">
                   Quản lý đơn hàng của tôi
                 </button>
                 <span>•</span>
-                <button onClick={() => onNavigate('list')} className="hover:text-slate-800 cursor-pointer underline bg-transparent border-none">
+                <button aria-label="Thao tác" type="button" onClick={() => onNavigate('list')} className="hover:text-slate-800 cursor-pointer underline bg-transparent border-none">
                   Tiếp tục mua sắm sản phẩm khác
                 </button>
               </div>
             </div>
           ) : (
             <div className="flex gap-4">
-              <button onClick={() => onNavigate('home')} className="flex-1 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-3.5 rounded-xl text-sm transition-colors cursor-pointer">
+              <button aria-label="Thao tác" type="button" onClick={() => onNavigate('home')} className="flex-1 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-3.5 rounded-xl text-sm transition-colors cursor-pointer">
                 Về trang chủ
               </button>
-              <button onClick={handleRetryPayment} disabled={retrying} className="flex-[2] text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+              <button aria-label="Quay lại" type="button" onClick={handleRetryPayment} disabled={retrying} className="flex-[2] text-white font-bold py-3.5 rounded-xl text-sm transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2"
                 style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}

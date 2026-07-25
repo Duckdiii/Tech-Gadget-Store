@@ -25,8 +25,7 @@ export default function OverviewSection({ profile, orders = [], ordersLoading = 
       .finally(() => setWishlistLoading(false))
   }, [])
 
-  const recentOrders = [...orders]
-    .sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate))
+  const recentOrders = orders.toSorted((a, b) => new Date(b.orderDate) - new Date(a.orderDate))
     .slice(0, 3)
 
   // Banner chỉ hiện khi điều kiện thật sự đúng (chưa có địa chỉ / chưa chọn thanh toán ưu tiên)
@@ -56,9 +55,9 @@ export default function OverviewSection({ profile, orders = [], ordersLoading = 
             </div>
             <span className="font-bold truncate" style={{ color: 'var(--t1)' }}>{b.text}</span>
           </div>
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={() => onNavigate(b.action)}
-            className="shrink-0 text-xs font-black text-white px-4 py-2 transition-all cursor-pointer border-none"
+            className="shrink-0 text-xs font-black text-white px-4 py-2 transition-colors cursor-pointer border-none"
             style={{ backgroundColor: 'var(--accent)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(232,66,10,0.15)' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
@@ -72,7 +71,7 @@ export default function OverviewSection({ profile, orders = [], ordersLoading = 
       <div style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(15,23,42,0.02)' }} className="overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid var(--b1)' }}>
           <h2 className="text-base font-bold" style={{ color: 'var(--t1)' }}>Đơn hàng gần đây</h2>
-          <button onClick={() => onNavigate('orders')} className="text-sm font-bold transition-all cursor-pointer flex items-center gap-1 border-none bg-transparent" style={{ color: 'var(--accent)' }}>
+          <button aria-label="Thao tác" type="button" onClick={() => onNavigate('orders')} className="text-sm font-bold transition-colors cursor-pointer flex items-center gap-1 border-none bg-transparent" style={{ color: 'var(--accent)' }}>
             Xem tất cả
             <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -82,7 +81,7 @@ export default function OverviewSection({ profile, orders = [], ordersLoading = 
         {ordersLoading ? (
           <div className="divide-y" style={{ borderColor: 'var(--b1)' }}>
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="px-6 py-5 flex items-center gap-5">
+              <div key={_?.id ?? _?.code ?? _?.name ?? i} className="px-6 py-5 flex items-center gap-5">
                 <Skeleton className="w-16 h-16 shrink-0 rounded-xl" />
                 <div className="flex-1 min-w-0 space-y-2">
                   <Skeleton className="h-3 w-32" />
@@ -98,7 +97,7 @@ export default function OverviewSection({ profile, orders = [], ordersLoading = 
         ) : recentOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <p className="text-sm font-semibold" style={{ color: 'var(--t2)' }}>Bạn chưa có đơn hàng nào</p>
-            <button onClick={() => onNavigate('list')} className="mt-4 text-sm font-bold text-white px-5 py-2.5 rounded transition-colors border-none cursor-pointer" style={{ backgroundColor: 'var(--accent)' }}>
+            <button aria-label="Thao tác" type="button" onClick={() => onNavigate('list')} className="mt-4 text-sm font-bold text-white px-5 py-2.5 rounded transition-colors border-none cursor-pointer" style={{ backgroundColor: 'var(--accent)' }}>
               Mua sắm ngay
             </button>
           </div>
@@ -114,7 +113,11 @@ export default function OverviewSection({ profile, orders = [], ordersLoading = 
               return (
                 <div
                   key={order.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Xem chi tiết đơn hàng #${order.id.substring(0, 8).toUpperCase()}`}
                   onClick={() => onNavigate('invoice', { search: `?orderId=${order.id}` })}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('invoice', { search: `?orderId=${order.id}` }) }}
                   className="px-6 py-5 flex items-center gap-5 transition-colors cursor-pointer"
                   style={{ backgroundColor: 'transparent' }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--page)'}
@@ -157,14 +160,14 @@ export default function OverviewSection({ profile, orders = [], ordersLoading = 
       <div style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(15,23,42,0.02)' }} className="overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid var(--b1)' }}>
           <h2 className="text-base font-bold" style={{ color: 'var(--t1)' }}>Sản phẩm yêu thích</h2>
-          <button onClick={() => onNavigate('wishlist')} className="text-sm font-bold transition-all cursor-pointer flex items-center gap-1 border-none bg-transparent" style={{ color: 'var(--accent)' }}>
+          <button aria-label="Thao tác" type="button" onClick={() => onNavigate('wishlist')} className="text-sm font-bold transition-colors cursor-pointer flex items-center gap-1 border-none bg-transparent" style={{ color: 'var(--accent)' }}>
             Xem tất cả <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
         {wishlistLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-px" style={{ backgroundColor: 'var(--b1)' }}>
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="p-4 animate-pulse" style={{ backgroundColor: 'var(--card)' }}>
+              <div key={_?.id ?? _?.code ?? _?.name ?? i} className="p-4 animate-pulse" style={{ backgroundColor: 'var(--card)' }}>
                 <div className="w-full h-28 rounded-xl mb-3" style={{ backgroundColor: 'var(--s2)' }} />
                 <div className="h-3 w-3/4 rounded mb-2" style={{ backgroundColor: 'var(--s2)' }} />
                 <div className="h-3 w-1/2 rounded" style={{ backgroundColor: 'var(--s2)' }} />
@@ -174,7 +177,7 @@ export default function OverviewSection({ profile, orders = [], ordersLoading = 
         ) : wishlistPreview.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <p className="text-sm font-semibold" style={{ color: 'var(--t2)' }}>Bạn chưa yêu thích sản phẩm nào</p>
-            <button onClick={() => onNavigate('list')} className="mt-4 text-sm font-bold text-white px-5 py-2.5 rounded transition-colors border-none cursor-pointer" style={{ backgroundColor: 'var(--accent)' }}>
+            <button aria-label="Khám phá sản phẩm" type="button" onClick={() => onNavigate('list')} className="mt-4 text-sm font-bold text-white px-5 py-2.5 rounded transition-colors border-none cursor-pointer" style={{ backgroundColor: 'var(--accent)' }}>
               Khám phá sản phẩm
             </button>
           </div>
@@ -183,7 +186,11 @@ export default function OverviewSection({ profile, orders = [], ordersLoading = 
             {wishlistPreview.map(item => (
               <div
                 key={item.productId}
+                role="button"
+                tabIndex={0}
+                aria-label={`Xem sản phẩm ${item.name || item.productId}`}
                 onClick={() => onNavigate('detail', { search: `?id=${item.productId}` })}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('detail', { search: `?id=${item.productId}` }) }}
                 className="px-4 py-4 cursor-pointer transition-colors group"
                 style={{ backgroundColor: 'var(--card)' }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--page)'}

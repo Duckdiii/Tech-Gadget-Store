@@ -126,6 +126,67 @@ function buildPageSubtitle(categoryNames, aiFilter, aiSummary, keyword) {
   return 'Khám phá toàn bộ sản phẩm công nghệ mới nhất với các ưu đãi trả góp 0% độc quyền tại TechStore.'
 }
 
+function evaluateProductMatch(product, activeFilters, excludeKey = null) {
+  // Check keyword
+  if (excludeKey !== 'keyword' && activeFilters.keyword) {
+    const kw = activeFilters.keyword.toLowerCase()
+    if (!product.name.toLowerCase().includes(kw) && !product.brand?.toLowerCase().includes(kw)) {
+      return false
+    }
+  }
+  // Check brand
+  if (excludeKey !== 'brandNames' && activeFilters.brandNames?.length > 0) {
+    if (!activeFilters.brandNames.includes(product.brand)) {
+      return false
+    }
+  }
+  // Check category
+  if (excludeKey !== 'categoryNames' && activeFilters.categoryNames?.length > 0) {
+    if (!activeFilters.categoryNames.includes(product.category)) {
+      return false
+    }
+  }
+  // Check price
+  if (excludeKey !== 'price') {
+    if (activeFilters.minPrice !== undefined && product.price < activeFilters.minPrice) return false
+    if (activeFilters.maxPrice !== undefined && product.price > activeFilters.maxPrice) return false
+  }
+  // Check ram
+  if (excludeKey !== 'ramGb' && activeFilters.ramGb?.length > 0) {
+    const ramVal = product.ram ? parseInt(product.ram) : null
+    if (!ramVal || !activeFilters.ramGb.includes(ramVal)) return false
+  }
+  // Check storage
+  if (excludeKey !== 'storageGb' && activeFilters.storageGb?.length > 0) {
+    const storageVal = product.storage ? parseInt(product.storage) : null
+    if (!storageVal || !activeFilters.storageGb.includes(storageVal)) return false
+  }
+  // Check colors
+  if (excludeKey !== 'colors' && activeFilters.colors?.length > 0) {
+    if (!product.color || !activeFilters.colors.includes(product.color)) return false
+  }
+
+  // Category-specific filters
+  // Monitor
+  if (excludeKey !== 'monitor') {
+    if (activeFilters.minRefreshRate !== undefined && product.refreshRate < activeFilters.minRefreshRate) return false
+    if (activeFilters.maxRefreshRate !== undefined && product.refreshRate > activeFilters.maxRefreshRate) return false
+    if (activeFilters.panelType && product.panelType !== activeFilters.panelType) return false
+  }
+  // Headphones
+  if (excludeKey !== 'headphones') {
+    if (activeFilters.isWireless !== undefined && product.isWireless !== activeFilters.isWireless) return false
+    if (activeFilters.hasNoiseCancelling !== undefined && product.hasNoiseCancelling !== activeFilters.hasNoiseCancelling) return false
+  }
+  // Smartwatch
+  if (excludeKey !== 'smartwatch') {
+    if (activeFilters.hasGps !== undefined && product.hasGps !== activeFilters.hasGps) return false
+    if (activeFilters.isWaterResistant !== undefined && product.isWaterResistant !== activeFilters.isWaterResistant) return false
+  }
+
+  return true
+}
+
 export default function ProductsPage() {
   const onNavigate = useNav()
   const [searchParams] = useSearchParams()
@@ -209,9 +270,15 @@ export default function ProductsPage() {
       const first = await shopService.getProductsByFilter({ page: 0, size: FACET_FETCH_SIZE })
       const items = Array.isArray(first?.items) ? [...first.items] : []
       const totalPages = first?.totalPages ?? 1
-      for (let p = 1; p < totalPages; p++) {
-        const next = await shopService.getProductsByFilter({ page: p, size: FACET_FETCH_SIZE })
-        if (Array.isArray(next?.items)) items.push(...next.items)
+      if (totalPages > 1) {
+        const pagePromises = []
+        for (let p = 1; p < totalPages; p++) {
+          pagePromises.push(shopService.getProductsByFilter({ page: p, size: FACET_FETCH_SIZE }))
+        }
+        const pages = await Promise.all(pagePromises)
+        pages.forEach(next => {
+          if (Array.isArray(next?.items)) items.push(...next.items)
+        })
       }
       return items
     }
@@ -227,66 +294,7 @@ export default function ProductsPage() {
   })
   const manualFiltersActive = !isFiltersEmpty(filters)
 
-  const evaluateProductMatch = (product, activeFilters, excludeKey = null) => {
-    // Check keyword
-    if (excludeKey !== 'keyword' && activeFilters.keyword) {
-      const kw = activeFilters.keyword.toLowerCase()
-      if (!product.name.toLowerCase().includes(kw) && !product.brand?.toLowerCase().includes(kw)) {
-        return false
-      }
-    }
-    // Check brand
-    if (excludeKey !== 'brandNames' && activeFilters.brandNames?.length > 0) {
-      if (!activeFilters.brandNames.includes(product.brand)) {
-        return false
-      }
-    }
-    // Check category
-    if (excludeKey !== 'categoryNames' && activeFilters.categoryNames?.length > 0) {
-      if (!activeFilters.categoryNames.includes(product.category)) {
-        return false
-      }
-    }
-    // Check price
-    if (excludeKey !== 'price') {
-      if (activeFilters.minPrice !== undefined && product.price < activeFilters.minPrice) return false
-      if (activeFilters.maxPrice !== undefined && product.price > activeFilters.maxPrice) return false
-    }
-    // Check ram
-    if (excludeKey !== 'ramGb' && activeFilters.ramGb?.length > 0) {
-      const ramVal = product.ram ? parseInt(product.ram) : null
-      if (!ramVal || !activeFilters.ramGb.includes(ramVal)) return false
-    }
-    // Check storage
-    if (excludeKey !== 'storageGb' && activeFilters.storageGb?.length > 0) {
-      const storageVal = product.storage ? parseInt(product.storage) : null
-      if (!storageVal || !activeFilters.storageGb.includes(storageVal)) return false
-    }
-    // Check colors
-    if (excludeKey !== 'colors' && activeFilters.colors?.length > 0) {
-      if (!product.color || !activeFilters.colors.includes(product.color)) return false
-    }
 
-    // Category-specific filters
-    // Monitor
-    if (excludeKey !== 'monitor') {
-      if (activeFilters.minRefreshRate !== undefined && product.refreshRate < activeFilters.minRefreshRate) return false
-      if (activeFilters.maxRefreshRate !== undefined && product.refreshRate > activeFilters.maxRefreshRate) return false
-      if (activeFilters.panelType && product.panelType !== activeFilters.panelType) return false
-    }
-    // Headphones
-    if (excludeKey !== 'headphones') {
-      if (activeFilters.isWireless !== undefined && product.isWireless !== activeFilters.isWireless) return false
-      if (activeFilters.hasNoiseCancelling !== undefined && product.hasNoiseCancelling !== activeFilters.hasNoiseCancelling) return false
-    }
-    // Smartwatch
-    if (excludeKey !== 'smartwatch') {
-      if (activeFilters.hasGps !== undefined && product.hasGps !== activeFilters.hasGps) return false
-      if (activeFilters.isWaterResistant !== undefined && product.isWaterResistant !== activeFilters.isWaterResistant) return false
-    }
-
-    return true
-  }
 
   const getBrandCount = (brandName) => {
     return allProducts.filter(p => evaluateProductMatch(p, filters, 'brandNames') && p.brand === brandName).length
@@ -373,7 +381,7 @@ export default function ProductsPage() {
   const pageSubtitle = buildPageSubtitle(selectedCategories, aiFilter, aiSummary, keyword)
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
+    <div className="flex-1 flex flex-col min-h-dvh" style={{ backgroundColor: 'var(--page)' }}>
       <StoreNavbar />
 
       {/* Category header */}
@@ -394,9 +402,9 @@ export default function ProductsPage() {
           </h1>
           <p className="text-xs mt-1 text-slate-400">{pageSubtitle}</p>
           {aiFilter && (
-            <button
+            <button aria-label="Xoá tìm kiếm AI" type="button"
               onClick={() => onNavigate('list', { search: '' })}
-              className="mt-1.5 text-[12px] font-semibold underline decoration-dotted"
+              className="mt-1.5 text-[12px] font-semibold underline decoration-dotted border-none bg-transparent p-0 cursor-pointer"
               style={{ color: 'var(--accent)' }}
             >
               Xoá tìm kiếm AI, quay lại duyệt thường
@@ -408,9 +416,9 @@ export default function ProductsPage() {
       <div className="flex-1 max-w-screen-2xl mx-auto w-full px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-[12.5px] mb-6" style={{ color: 'var(--t3)' }}>
-          <button
+          <button aria-label="Trang chủ" type="button"
             onClick={() => onNavigate('home')}
-            className="transition-colors cursor-pointer hover:text-slate-900"
+            className="transition-colors cursor-pointer hover:text-slate-900 border-none bg-transparent p-0"
           >
             Trang chủ
           </button>
@@ -419,7 +427,7 @@ export default function ProductsPage() {
           </svg>
           {selectedCategories.length === 1 ? (
             <>
-              <button onClick={() => onNavigate('list')} className="transition-colors cursor-pointer hover:text-slate-900">
+              <button aria-label="Sản phẩm" type="button" onClick={() => onNavigate('list')} className="transition-colors cursor-pointer hover:text-slate-900 border-none bg-transparent p-0">
                 Sản phẩm
               </button>
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -452,6 +460,7 @@ export default function ProductsPage() {
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
+              aria-label="Sắp xếp danh sách sản phẩm"
               className="px-3.5 py-2 text-[12.5px] font-semibold rounded-lg border border-[var(--b1)] focus:outline-none focus:border-[var(--accent)] bg-white cursor-pointer"
             >
               {SORT_OPTIONS.map(opt => (
@@ -460,7 +469,7 @@ export default function ProductsPage() {
             </select>
 
             <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 ml-1">
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => { setViewMode('grid'); localStorage.setItem('shop-view-mode', 'grid') }}
                 className={`p-1.5 rounded-md transition-all cursor-pointer flex items-center justify-center border-none ${
                   viewMode === 'grid'
@@ -471,7 +480,7 @@ export default function ProductsPage() {
               >
                 <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
               </button>
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => { setViewMode('list'); localStorage.setItem('shop-view-mode', 'list') }}
                 className={`p-1.5 rounded-md transition-all cursor-pointer flex items-center justify-center border-none ${
                   viewMode === 'list'
@@ -514,7 +523,7 @@ export default function ProductsPage() {
             {loading ? (
               <div className={viewMode === 'list' ? 'flex flex-col gap-4' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'}>
                 {[...Array(8)].map((_, i) => (
-                  <ProductCardSkeleton key={i} viewMode={viewMode} />
+                  <ProductCardSkeleton key={_?.id ?? _?.code ?? _?.name ?? i} viewMode={viewMode} />
                 ))}
               </div>
             ) : products.length === 0 && !error ? (
@@ -546,9 +555,9 @@ export default function ProductsPage() {
                   </p>
 
                   {manualFiltersActive && (
-                    <button
+                    <button aria-label="Xoá tất cả bộ lọc" type="button"
                       onClick={resetFilters}
-                      className="px-6 py-2.5 text-[13px] font-bold text-white rounded-xl hover:bg-[#ff551c] transition-all cursor-pointer shadow-md shadow-orange-500/10 active:scale-95 border-none"
+                      className="px-6 py-2.5 text-[13px] font-bold text-white rounded-xl hover:bg-[#ff551c] transition-colors cursor-pointer shadow-md shadow-orange-500/10 active:scale-95 border-none"
                       style={{ backgroundColor: 'var(--accent)' }}
                     >
                       Xoá tất cả bộ lọc
@@ -608,7 +617,7 @@ export default function ProductsPage() {
 
       {/* Comparison Drawer */}
       <div 
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.15)] border border-slate-200 rounded-2xl px-5 py-3 flex items-center gap-5 transition-all duration-300 transform ${
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.15)] border border-slate-200 rounded-2xl px-5 py-3 flex items-center gap-5 transition-colors duration-300 transform ${
           comparedProducts.length > 0 ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0 pointer-events-none'
         }`}
       >
@@ -629,7 +638,7 @@ export default function ProductsPage() {
                   ) : (
                     <div className="w-8 h-8 flex items-center justify-center bg-orange-50 text-[10px] font-bold text-orange-500 rounded-lg">SP</div>
                   )}
-                  <button 
+                  <button aria-label="Thao tác" type="button" 
                     onClick={() => handleRemoveCompare(prod.id)}
                     className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-slate-800 text-white rounded-full flex items-center justify-center text-[10px] font-bold hover:bg-red-500 border border-white cursor-pointer"
                     title="Xóa"
@@ -640,7 +649,7 @@ export default function ProductsPage() {
               )
             }
             return (
-              <div key={idx} className="w-12 h-12 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center text-slate-300 text-sm font-semibold select-none">
+              <div key={_?.id ?? _?.code ?? _?.name ?? _?.key ?? _?.val ?? _} className="w-12 h-12 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center text-slate-300 text-sm font-semibold select-none">
                 +
               </div>
             )
@@ -648,10 +657,10 @@ export default function ProductsPage() {
         </div>
 
         <div className="flex items-center gap-2 pl-2">
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={() => setCompareModalOpen(true)}
             disabled={comparedProducts.length < 2}
-            className={`px-4 py-2 text-xs font-black rounded-xl transition-all cursor-pointer border-none shadow-md ${
+            className={`px-4 py-2 text-xs font-black rounded-xl transition-colors cursor-pointer border-none shadow-md ${
               comparedProducts.length >= 2 
                 ? 'bg-[#E8420A] text-white hover:bg-[#ff551c] shadow-orange-500/10 active:scale-95' 
                 : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
@@ -659,7 +668,7 @@ export default function ProductsPage() {
           >
             So sánh ngay
           </button>
-          <button 
+          <button aria-label="Thao tác" type="button" 
             onClick={handleClearCompare}
             className="text-[11px] font-bold text-slate-500 hover:text-red-500 transition-colors border-none bg-transparent cursor-pointer"
           >
@@ -672,7 +681,7 @@ export default function ProductsPage() {
       {compareModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div 
-            className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 transition-transform transition-opacity"
             onClick={e => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -681,9 +690,9 @@ export default function ProductsPage() {
                 <span className="w-1.5 h-5 bg-[#E8420A] rounded-full" />
                 So sánh chi tiết thông số kỹ thuật
               </h2>
-              <button 
+              <button aria-label="Thao tác" type="button" 
                 onClick={() => setCompareModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-all border-none bg-transparent cursor-pointer text-lg font-bold"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors border-none bg-transparent cursor-pointer text-lg font-bold"
               >
                 ×
               </button>
@@ -709,17 +718,18 @@ export default function ProductsPage() {
                     ))}
                     {/* Fill remaining empty columns to keep layout consistent */}
                     {[...Array(3 - comparedProducts.length)].map((_, i) => (
-                      <th key={i} className="w-1/4" />
+                      <th key={_?.id ?? _?.code ?? _?.name ?? i} className="w-1/4" />
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {COMPARISON_FIELDS.filter(f => f.key !== 'image' && f.key !== 'name').map(field => {
+                  {COMPARISON_FIELDS.reduce((acc, field) => {
+                    if (field.key === 'image' || field.key === 'name') return acc
                     // Check if at least one product has a value for this field
                     const hasValue = comparedProducts.some(p => p[field.key] !== null && p[field.key] !== undefined && p[field.key] !== '')
-                    if (!hasValue) return null
+                    if (!hasValue) return acc
 
-                    return (
+                    acc.push(
                       <tr key={field.key} className="hover:bg-slate-50/50 transition-colors">
                         <td className="py-3 px-4 text-xs font-bold text-slate-500">{field.label}</td>
                         {comparedProducts.map(p => {
@@ -748,20 +758,21 @@ export default function ProductsPage() {
                           )
                         })}
                         {[...Array(3 - comparedProducts.length)].map((_, i) => (
-                          <td key={i} className="py-3 px-4" />
+                          <td key={_?.id ?? _?.code ?? _?.name ?? i} className="py-3 px-4" />
                         ))}
                       </tr>
                     )
-                  })}
+                    return acc
+                  }, [])}
                 </tbody>
               </table>
             </div>
 
             {/* Modal Footer */}
             <div className="px-6 py-4 border-t border-slate-150 flex justify-end bg-slate-50">
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => setCompareModalOpen(false)}
-                className="px-5 py-2 text-xs font-bold bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 transition-all cursor-pointer border-none"
+                className="px-5 py-2 text-xs font-bold bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 transition-colors cursor-pointer border-none"
               >
                 Đóng
               </button>

@@ -8,7 +8,7 @@ function Stars({ value, size = 'w-4 h-4' }) {
       {[...Array(5)].map((_, i) => {
         const fill = Math.max(0, Math.min(1, (value ?? 0) - i))
         return (
-          <span key={i} className={`relative ${size} inline-block`}>
+          <span key={_?.id ?? _?.code ?? _?.name ?? _?.key ?? _?.val ?? _} className={`relative ${size} inline-block`}>
             <svg className={`absolute inset-0 ${size}`} style={{ color: '#e2e8f0' }} fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
             </svg>
@@ -29,8 +29,7 @@ function StarPicker({ rating, onChange }) {
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map(n => (
-        <button
-          key={n}
+        <button key={n}
           type="button"
           onClick={() => onChange(n)}
           onMouseEnter={() => setHover(n)}
@@ -89,13 +88,13 @@ export default function ReviewsSection({ reviews, loading, submitting, error, su
             value={content}
             onChange={e => setContent(e.target.value)}
             placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
+            aria-label="Nội dung đánh giá sản phẩm"
             rows={3}
             className="w-full mt-3 p-3 text-sm outline-none resize-none"
             style={{ border: '1.5px solid var(--b1)', borderRadius: '10px', backgroundColor: 'var(--card)', color: 'var(--t1)' }}
           />
           {error && <p className="text-xs font-semibold text-red-600 mt-2">{error}</p>}
-          <button
-            type="submit"
+          <button aria-label="Gửi đánh giá" type="submit"
             disabled={submitting || !rating || !content.trim()}
             className="mt-3 px-5 py-2.5 text-xs font-extrabold text-white cursor-pointer disabled:opacity-50 border-none"
             style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '8px' }}
@@ -113,7 +112,7 @@ export default function ReviewsSection({ reviews, loading, submitting, error, su
       {loading ? (
         <div className="flex flex-col gap-4">
           {[...Array(2)].map((_, i) => (
-            <div key={i} className="h-20 animate-pulse" style={{ backgroundColor: 'var(--s2)', borderRadius: '10px' }} />
+            <div key={_?.id ?? _?.code ?? _?.name ?? i} className="h-20 animate-pulse" style={{ backgroundColor: 'var(--s2)', borderRadius: '10px' }} />
           ))}
         </div>
       ) : reviews.length === 0 ? (
@@ -135,7 +134,7 @@ export default function ReviewsSection({ reviews, loading, submitting, error, su
                     <span className="text-xs ml-2" style={{ color: 'var(--t3)' }}>{formatDate(review.createdAt)}</span>
                   </div>
                   {review.mine && (
-                    <button
+                    <button type="button"
                       onClick={() => removeReview(review.id)}
                       className="text-xs font-semibold text-red-500 hover:text-red-600 cursor-pointer border-none bg-transparent"
                     >

@@ -26,11 +26,11 @@ export default function CartPage() { // hiển thị trang giỏ hàng
     onNavigate,
   } = useCart()
 
-  const cartProductIds = [...new Set(items.map(i => i.rawItem?.productId).filter(Boolean))]
+  const cartProductIds = [...new Set(items.flatMap(i => i.rawItem?.productId ? [i.rawItem.productId] : []))]
   const { products: cartRecommendations, loading: cartRecommendationsLoading } = useCartRecommendations(cartProductIds)
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
+    <div className="flex-1 flex flex-col min-h-dvh" style={{ backgroundColor: 'var(--page)' }}>
       <StoreNavbar />
 
       <div className="max-w-screen-2xl mx-auto w-full px-8 py-8 pb-32">
@@ -40,7 +40,7 @@ export default function CartPage() { // hiển thị trang giỏ hàng
             <h1 className="text-2xl font-black" style={{ color: 'var(--t1)', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Giỏ hàng của bạn</h1>
             <p className="text-xs mt-1" style={{ color: 'var(--t3)' }}>Kiểm tra lại sản phẩm trước khi thanh toán</p>
           </div>
-          <button
+          <button aria-label="Tiếp tục mua sắm" type="button"
             onClick={() => onNavigate('list')}
             className="flex items-center gap-1.5 text-xs font-bold transition-colors cursor-pointer hover:text-slate-950 border-none bg-transparent"
             style={{ color: 'var(--t3)' }}
@@ -60,8 +60,8 @@ export default function CartPage() { // hiển thị trang giỏ hàng
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             <p className="text-base font-bold" style={{ color: 'var(--t2)' }}>Giỏ hàng của bạn đang trống</p>
-            <button onClick={() => onNavigate('list')}
-              className="mt-4 text-white px-6 py-2.5 text-xs font-extrabold transition-all duration-200 cursor-pointer border-none"
+            <button aria-label="Khám phá sản phẩm" type="button" onClick={() => onNavigate('list')}
+              className="mt-4 text-white px-6 py-2.5 text-xs font-extrabold transition-colors duration-200 cursor-pointer border-none"
               style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
             >Khám phá sản phẩm</button>
           </div>
@@ -70,10 +70,10 @@ export default function CartPage() { // hiển thị trang giỏ hàng
             <div className="flex-1 min-w-0">
               {/* Select all bar */}
               <div className="flex items-center gap-3 px-5 py-4 mb-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(15,23,42,0.02)' }}>
-                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-5 h-5 cursor-pointer accent-[var(--accent)]" />
+                <input type="checkbox" checked={allChecked} onChange={toggleAll} aria-label="Chọn tất cả sản phẩm" className="w-5 h-5 cursor-pointer accent-[var(--accent)]" />
                 <span className="text-sm font-bold" style={{ color: 'var(--t1)' }}>Chọn tất cả ({items.length} sản phẩm)</span>
                 {someChecked && (
-                  <button onClick={removeCheckedItems}
+                  <button aria-label="Xoá các sản phẩm đã chọn" type="button" onClick={removeCheckedItems}
                     className="ml-auto text-[12.5px] font-bold transition-colors cursor-pointer border-none bg-transparent"
                     style={{ color: 'var(--err)' }}
                     onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
@@ -124,9 +124,9 @@ export default function CartPage() { // hiển thị trang giỏ hàng
                 </div>
               )}
             </div>
-            <button
+            <button aria-label="Đặt hàng ngay" type="button"
               onClick={() => onNavigate('checkout', { state: { cartItemIds: checkedItems.map(i => i.id) } })}
-              className="flex items-center gap-2 text-white font-extrabold text-[14px] px-10 py-3.5 transition-all duration-200 cursor-pointer border-none"
+              className="flex items-center gap-2 text-white font-extrabold text-[14px] px-10 py-3.5 transition-colors duration-200 cursor-pointer border-none"
               style={{ background: 'linear-gradient(135deg, var(--accent-h), var(--accent))', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
             >
               Đặt hàng ngay

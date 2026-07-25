@@ -83,7 +83,10 @@ export function useCart() {
     const updatedBundles = targetItem.bundles.map((b) =>
       b.id === bundleId ? { ...b, checked: !b.checked } : b
     )
-    const selectedBundleIds = updatedBundles.filter((b) => b.checked).map((b) => b.id)
+    const selectedBundleIds = updatedBundles.reduce((acc, b) => {
+      if (b.checked) acc.push(b.id)
+      return acc
+    }, [])
 
     try {
       await shopService.updateCartItemBundles(itemId, selectedBundleIds)

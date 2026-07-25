@@ -3,15 +3,18 @@ import { useNav } from '../../../hooks/useNav'
 import { profileService } from '../services/profileService'
 
 function SelectField({ label, required, value, onChange, placeholder, options }) {
+  const selectId = 'select-' + label.replace(/[^a-zA-Z0-9]/g, '')
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+      <label htmlFor={selectId} className="block text-sm font-medium text-gray-700 mb-1.5">
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       <div className="relative">
         <select
+          id={selectId}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
           className={`w-full appearance-none border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] pr-8 cursor-pointer transition ${
             value ? 'text-gray-800' : 'text-gray-400'
           }`}
@@ -46,7 +49,7 @@ const WARDS = [
 
 function RadioOption({ id, checked, onSelect, icon, label }) {
   return (
-    <button
+    <button aria-label={label}
       type="button"
       onClick={() => onSelect(id)}
       className="flex items-center gap-2 cursor-pointer select-none"
@@ -114,7 +117,7 @@ export default function AddressModalPage() {
         {/* Header */}
         <div className="px-7 pt-6 pb-5 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900">Thêm địa chỉ mới</h2>
-          <button onClick={() => onNavigate('userProfile')} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 cursor-pointer transition-colors text-xl leading-none font-light">
+          <button aria-label="Đóng" type="button" onClick={() => onNavigate('userProfile')} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 cursor-pointer transition-colors text-xl leading-none font-light">
             ×
           </button>
         </div>
@@ -126,26 +129,30 @@ export default function AddressModalPage() {
           {/* Row 1: Name + Phone */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="addr-name" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Họ và tên<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
+                id="addr-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Nhập họ và tên"
+                aria-label="Họ và tên"
                 className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="addr-phone" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Số điện thoại<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
+                id="addr-phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Nhập số điện thoại"
+                aria-label="Số điện thoại"
                 className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] transition"
               />
             </div>
@@ -175,13 +182,15 @@ export default function AddressModalPage() {
 
           {/* Row 3: Detail address */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="addr-detail" className="block text-sm font-medium text-gray-700 mb-1.5">
               Địa chỉ chi tiết<span className="text-red-500 ml-0.5">*</span>
             </label>
             <textarea
+              id="addr-detail"
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
               placeholder="Số nhà, tên đường, tòa nhà..."
+              aria-label="Địa chỉ chi tiết"
               rows={4}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]/30 focus:border-[#E8420A] resize-none transition"
             />
@@ -227,10 +236,10 @@ export default function AddressModalPage() {
 
         {/* Footer */}
         <div className="border-t border-gray-200 bg-gray-50 px-7 py-4 flex items-center justify-end gap-3">
-          <button onClick={() => onNavigate('userProfile')} className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors cursor-pointer">
+          <button aria-label="Hủy" type="button" onClick={() => onNavigate('userProfile')} className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors cursor-pointer">
             Hủy
           </button>
-          <button onClick={handleSave} className="text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all duration-200 cursor-pointer"
+          <button aria-label="Thêm địa chỉ" type="button" onClick={handleSave} className="text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors duration-200 cursor-pointer"
             style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 12px rgba(232, 66, 10, 0.18)' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-d)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}

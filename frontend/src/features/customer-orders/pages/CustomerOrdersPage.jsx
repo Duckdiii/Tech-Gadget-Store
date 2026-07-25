@@ -3,6 +3,15 @@ import StoreNavbar from '../../../components/StoreNavbar'
 import OrderCard from '../components/OrderCard'
 import { useCustomerOrders } from '../hooks/useCustomerOrders'
 
+const FILTER_TABS = [
+  { id: 'all',        label: 'Tất cả' },
+  { id: 'pending',    label: 'Chờ xác nhận' },
+  { id: 'processing', label: 'Đang xử lý' },
+  { id: 'shipping',   label: 'Đang giao' },
+  { id: 'completed',  label: 'Đã hoàn thành' },
+  { id: 'cancelled',  label: 'Đã hủy' },
+]
+
 export default function CustomerOrdersPage() {
   const onNavigate = useNav()
   const {
@@ -16,17 +25,10 @@ export default function CustomerOrdersPage() {
     handleCancelOrder,
   } = useCustomerOrders()
 
-  const filterTabs = [
-    { id: 'all',        label: 'Tất cả' },
-    { id: 'pending',    label: 'Chờ xác nhận' },
-    { id: 'processing', label: 'Đang xử lý' },
-    { id: 'shipping',   label: 'Đang giao' },
-    { id: 'completed',  label: 'Đã hoàn thành' },
-    { id: 'cancelled',  label: 'Đã hủy' },
-  ]
+  const filterTabs = FILTER_TABS
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen" style={{ backgroundColor: 'var(--page)' }}>
+    <div className="flex-1 flex flex-col min-h-dvh" style={{ backgroundColor: 'var(--page)' }}>
       <StoreNavbar />
 
       {/* Dark header */}
@@ -40,15 +42,17 @@ export default function CustomerOrdersPage() {
       <div className="max-w-3xl mx-auto w-full px-4 py-6 text-gray-800">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm mb-5" style={{ color: 'var(--ct3)' }}>
-          <span onClick={() => onNavigate('home')} className="cursor-pointer transition-colors"
+          <button aria-label="Trang chủ" type="button" onClick={() => onNavigate('home')} className="cursor-pointer transition-colors border-none bg-transparent p-0"
+            style={{ color: 'var(--ct3)' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--ct1)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--ct3)'}
-          >Trang chủ</span>
+          >Trang chủ</button>
           <span>›</span>
-          <span onClick={() => onNavigate('userProfile')} className="cursor-pointer transition-colors"
+          <button aria-label="Tài khoản" type="button" onClick={() => onNavigate('userProfile')} className="cursor-pointer transition-colors border-none bg-transparent p-0"
+            style={{ color: 'var(--ct3)' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--ct1)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--ct3)'}
-          >Tài khoản</span>
+          >Tài khoản</button>
           <span>›</span>
           <span style={{ color: 'var(--ct1)', fontWeight: 500 }}>Đơn hàng của tôi</span>
         </nav>
@@ -60,6 +64,7 @@ export default function CustomerOrdersPage() {
           </svg>
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Tìm theo mã đơn hàng..."
+            aria-label="Tìm theo mã đơn hàng"
             className="field-light w-full pl-9 pr-4 py-2.5 text-sm"
           />
         </div>
@@ -67,7 +72,7 @@ export default function CustomerOrdersPage() {
         {/* Filter tabs */}
         <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
           {filterTabs.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            <button aria-label={tab.label} type="button" key={tab.id} onClick={() => setActiveTab(tab.id)}
               className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold transition-all duration-200 cursor-pointer border-none bg-transparent"
               style={activeTab === tab.id
                 ? { backgroundColor: 'var(--accent)', color: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }
@@ -106,8 +111,8 @@ export default function CustomerOrdersPage() {
             </div>
             <p className="font-bold" style={{ color: 'var(--ct2)' }}>Không có đơn hàng nào</p>
             <p className="text-sm mt-1" style={{ color: 'var(--ct3)' }}>Hãy thử thay đổi bộ lọc hoặc tìm kiếm khác</p>
-            <button onClick={() => onNavigate('list')}
-              className="mt-5 text-white text-sm font-bold px-5 py-2.5 transition-all duration-200 cursor-pointer border-none"
+            <button aria-label="Mua sắm ngay" type="button" onClick={() => onNavigate('list')}
+              className="mt-5 text-white text-sm font-bold px-5 py-2.5 transition-colors duration-200 cursor-pointer border-none"
               style={{ backgroundColor: 'var(--accent)', borderRadius: '10px', boxShadow: '0 4px 12px rgba(232,66,10,0.18)' }}
             >Mua sắm ngay</button>
           </div>

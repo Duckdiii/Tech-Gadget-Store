@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import { profileService } from '../services/profileService'
 
+const ADDRESS_TYPE_INFO = {
+  home: { label: 'Nhà riêng', icon: '🏠', bg: 'bg-teal-50 text-teal-700 border-teal-100' },
+  office: { label: 'Văn phòng', icon: '🏢', bg: 'bg-[#E8420A]/5 text-[#E8420A] border-[#E8420A]/10' },
+}
+
 export function useAddressSection({ profile }) {
   const [addresses, setAddresses] = useState([])
   const [modal, setModal] = useState(null) // null | 'add' | { editId }
@@ -14,7 +19,6 @@ export function useAddressSection({ profile }) {
   }
 
   const fetchAddresses = () => {
-    setLoading(true)
     profileService.getAddresses()
       .then(data => {
         const mapped = data.map(addr => ({
@@ -35,8 +39,27 @@ export function useAddressSection({ profile }) {
   }
 
   useEffect(() => {
-    fetchAddresses()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let active = true
+    profileService.getAddresses()
+      .then(data => {
+        if (!active) return
+        const mapped = data.map(addr => ({
+          id: addr.id,
+          name: addr.name || profile?.fullName || '',
+          phone: addr.phone || profile?.phone || '',
+          province: addr.province,
+          district: addr.district,
+          ward: addr.ward,
+          detail: addr.street,
+          type: addr.type || 'home',
+          isDefault: addr.isDefault,
+        }))
+        setAddresses(mapped)
+      })
+      .catch(err => console.error(err))
+      .finally(() => { if (active) setLoading(false) })
+
+    return () => { active = false }
   }, [profile])
 
   const handleSave = async (form) => {
@@ -99,10 +122,7 @@ export function useAddressSection({ profile }) {
     }
   }
 
-  const typeInfo = {
-    home: { label: 'Nhà riêng', icon: '🏠', bg: 'bg-teal-50 text-teal-700 border-teal-100' },
-    office: { label: 'Văn phòng', icon: '🏢', bg: 'bg-[#E8420A]/5 text-[#E8420A] border-[#E8420A]/10' },
-  }
+  const typeInfo = ADDRESS_TYPE_INFO
 
   return {
     addresses,
