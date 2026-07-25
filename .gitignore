@@ -30,6 +30,7 @@ backend/surefire-reports/
 backend/failsafe-reports/
 
 # Node / frontend
+node_modules/
 frontend/node_modules/
 frontend/dist/
 frontend/build/
