@@ -277,14 +277,16 @@ export default function ManagerDashboardPage() {
 
   // Auto-focus command palette input when opened
   useEffect(() => {
+    let timer
     if (commandMenuOpen && commandInputRef.current) {
-      setTimeout(() => {
-        commandInputRef.current.focus()
+      timer = setTimeout(() => {
+        commandInputRef.current?.focus()
       }, 50)
     } else {
       setCmdSearch('')
       setSearchResults({ products: [], customers: [], navs: [] })
     }
+    return () => clearTimeout(timer)
   }, [commandMenuOpen])
 
   // Debounced global search
@@ -406,14 +408,24 @@ export default function ManagerDashboardPage() {
 
   const closeMenus = () => { setNotifOpen(false); setAvatarOpen(false) }
 
+  // Escape closes the notif/avatar dropdowns for keyboard users — the invisible backdrop below
+  // only handles mouse click-outside, and can't be a real tab stop without adding a confusing,
+  // unlabeled focus stop to the page every time a menu opens.
+  useEffect(() => {
+    if (!notifOpen && !avatarOpen) return
+    const handleKeyDown = (e) => { if (e.key === 'Escape') closeMenus() }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [notifOpen, avatarOpen])
+
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       {/* Header */}
       <header className="relative bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-4">
         <div className="flex-1 max-w-sm">
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={() => setCommandMenuOpen(true)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 bg-gray-100 border-0 rounded text-sm text-gray-400 hover:bg-gray-200/50 transition-all text-left cursor-pointer focus:outline-none"
+            className="w-full flex items-center gap-2.5 px-3 py-2 bg-gray-100 border-0 rounded text-sm text-gray-400 hover:bg-gray-200/50 transition-colors text-left cursor-pointer focus:outline-none"
           >
             <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -427,7 +439,7 @@ export default function ManagerDashboardPage() {
 
         <div className="flex items-center gap-2 ml-auto">
           <div className="relative z-20">
-            <button
+            <button aria-label="Thao tác" type="button"
               onClick={() => { setNotifOpen((o) => !o); setAvatarOpen(false) }}
               className="relative p-2 hover:bg-gray-100 rounded-full cursor-pointer"
             >
@@ -445,7 +457,7 @@ export default function ManagerDashboardPage() {
                     Thông báo{unreadCount > 0 ? ` (${unreadCount})` : ''}
                   </span>
                   {unreadCount > 0 && (
-                    <button onClick={markAllRead} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer">
+                    <button aria-label="Thao tác" type="button" onClick={markAllRead} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer">
                       Đánh dấu tất cả đã đọc
                     </button>
                   )}
@@ -457,7 +469,7 @@ export default function ManagerDashboardPage() {
                     <p className="text-xs text-gray-400 text-center py-6">Không có thông báo nào.</p>
                   ) : (
                     notifications.slice(0, 8).map((n) => (
-                      <button
+                      <button aria-label="Thao tác" type="button"
                         key={n.id}
                         onClick={() => markRead(n.id)}
                         className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer ${!n.readAt ? 'bg-orange-50/40' : ''}`}
@@ -473,7 +485,7 @@ export default function ManagerDashboardPage() {
           </div>
 
           <div className="relative z-20">
-            <button
+            <button aria-label="Thao tác" type="button"
               onClick={() => { setAvatarOpen((o) => !o); setNotifOpen(false) }}
               className="w-8 h-8 rounded-full bg-[#E8420A] text-white text-xs font-bold flex items-center justify-center cursor-pointer"
             >
@@ -485,7 +497,7 @@ export default function ManagerDashboardPage() {
                   <p className="text-sm font-semibold text-gray-800 truncate">{user?.name || 'Quản lý'}</p>
                   <p className="text-xs text-gray-400 truncate">{user?.email}</p>
                 </div>
-                <button
+                <button aria-label="Thao tác" type="button"
                   onClick={() => onNavigate('login')}
                   className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
                 >
@@ -497,6 +509,8 @@ export default function ManagerDashboardPage() {
         </div>
 
         {(notifOpen || avatarOpen) && (
+          // Mouse-only click-outside backdrop; keyboard users get the Escape handler above instead
+          // of tabIndex/role="button" here, which would add an unlabeled, invisible focus stop.
           <div className="fixed inset-0 z-10" onClick={closeMenus} />
         )}
       </header>
@@ -518,10 +532,10 @@ export default function ManagerDashboardPage() {
                 Cập nhật lúc {lastUpdated.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
-            <button
+            <button aria-label="Thao tác" type="button"
               onClick={handleRefreshAll}
               disabled={refreshing}
-              className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2 px-3.5 rounded text-sm transition-all cursor-pointer"
+              className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2 px-3.5 rounded text-sm transition-colors cursor-pointer"
               title="Làm mới dữ liệu tức thì"
             >
               <svg className={`w-4 h-4 text-gray-500 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -529,7 +543,7 @@ export default function ManagerDashboardPage() {
               </svg>
               {refreshing ? 'Đang làm mới...' : 'Làm mới'}
             </button>
-            <button
+            <button aria-label="Lọc" type="button"
               onClick={handleExport}
               disabled={exporting || !chartFilterReady}
               className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2 px-4 rounded text-sm transition-colors cursor-pointer"
@@ -544,7 +558,7 @@ export default function ManagerDashboardPage() {
 
         {/* Pending confirmation alert */}
         {pendingOrdersCount > 0 && (
-          <button
+          <button aria-label="Thao tác" type="button"
             onClick={() => onNavigate('orderHistory', { state: { filter: 'AWAITING_CONFIRMATION' } })}
             className="w-full flex items-center gap-3 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded px-4 py-3 text-left cursor-pointer transition-colors"
           >
@@ -583,10 +597,10 @@ export default function ManagerDashboardPage() {
               )
             }
             return (
-              <button
+              <button aria-label="Thao tác" type="button"
                 key={card.key}
                 onClick={() => handleKpiClick(card.key)}
-                className="bg-white rounded border border-gray-200 p-5 flex flex-col gap-3 text-left cursor-pointer hover:border-gray-300 hover:shadow-sm transition-all"
+                className="bg-white rounded border border-gray-200 p-5 flex flex-col gap-3 text-left cursor-pointer hover:border-gray-300 hover:shadow-sm transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <span className={`w-9 h-9 rounded flex items-center justify-center text-white shrink-0 ${c.icon}`}>
@@ -624,13 +638,13 @@ export default function ManagerDashboardPage() {
               <div className="flex items-center gap-3 flex-wrap">
                 {/* Metric Selector */}
                 <div className="flex gap-1 bg-gray-100 p-1 rounded border border-gray-200/50">
-                  <button
+                  <button aria-label="Xem theo doanh thu" type="button"
                     onClick={() => setChartMetric('revenue')}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${chartMetric === 'revenue' ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   >
                     Doanh thu
                   </button>
-                  <button
+                  <button aria-label="Xem theo số đơn hàng" type="button"
                     onClick={() => setChartMetric('orders')}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${chartMetric === 'orders' ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   >
@@ -640,7 +654,7 @@ export default function ManagerDashboardPage() {
                 {/* Period Selector */}
                 <div className="flex gap-1 bg-gray-100 p-1 rounded">
                   {['week', 'month', 'year', 'custom'].map((p) => (
-                    <button
+                    <button aria-label={p === 'week' ? 'Tuần' : p === 'month' ? 'Tháng' : p === 'year' ? 'Năm' : 'Tuỳ chỉnh'} type="button"
                       key={p}
                       onClick={() => setChartPeriod(p)}
                       className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${chartPeriod === p ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
@@ -655,6 +669,7 @@ export default function ManagerDashboardPage() {
                       type="date"
                       value={customRange.startDate}
                       onChange={(e) => setCustomRange((r) => ({ ...r, startDate: e.target.value }))}
+                      aria-label="Từ ngày"
                       className="border border-gray-300 rounded px-2 py-1.5 text-xs text-gray-700"
                     />
                     <span className="text-xs text-gray-400">đến</span>
@@ -662,6 +677,7 @@ export default function ManagerDashboardPage() {
                       type="date"
                       value={customRange.endDate}
                       onChange={(e) => setCustomRange((r) => ({ ...r, endDate: e.target.value }))}
+                      aria-label="Đến ngày"
                       className="border border-gray-300 rounded px-2 py-1.5 text-xs text-gray-700"
                     />
                   </div>
@@ -673,6 +689,7 @@ export default function ManagerDashboardPage() {
             ) : chartLoading ? (
               <div className="w-full h-[180px] flex items-end gap-2">
                 {CHART_SKELETON_HEIGHTS.map((h, i) => (
+                  // react-doctor-disable-next-line react-doctor/no-array-index-as-key
                   <Skeleton key={i} className="flex-1 rounded-t" style={{ height: `${h}%` }} />
                 ))}
               </div>
@@ -688,7 +705,7 @@ export default function ManagerDashboardPage() {
               {QUICK_ACTIONS.map((qa) => {
                 const c = QA_COLOR[qa.color]
                 return (
-                  <button
+                  <button aria-label="Thao tác" type="button"
                     key={qa.id}
                     onClick={() => onNavigate(qa.id)}
                     className={`flex flex-col items-center gap-2 p-3 rounded transition-colors cursor-pointer text-center ${c.bg} ${c.hover}`}
@@ -716,13 +733,14 @@ export default function ManagerDashboardPage() {
                 </svg>
                 <input
                   type="text"
+                  aria-label="Lọc theo mã hoặc khách hàng"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Lọc theo mã hoặc khách hàng..."
                   className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-xs placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#E8420A] focus:border-[#E8420A]"
                 />
               </div>
-              <button
+              <button aria-label="Xem tất cả đơn hàng" type="button"
                 onClick={() => onNavigate('orderHistory')}
                 className="text-sm text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer shrink-0"
               >
@@ -732,7 +750,7 @@ export default function ManagerDashboardPage() {
             <div className="divide-y divide-gray-50">
               {ordersLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 px-6 py-3.5">
+                  <div key={_?.id ?? _?.code ?? _?.name ?? i} className="flex items-center gap-4 px-6 py-3.5">
                     <div className="min-w-0 flex-1 space-y-2">
                       <Skeleton className="w-32 h-3" />
                       <Skeleton className="w-48 h-3.5" />
@@ -773,7 +791,7 @@ export default function ManagerDashboardPage() {
                           {order.orderStatus === 'AWAITING_CONFIRMATION' ? (
                             <>
                               <div className="hidden group-hover:flex items-center gap-1.5 bg-transparent pl-2">
-                                <button
+                                <button aria-label="Thao tác" type="button"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     if (window.confirm(`Xác nhận duyệt đơn hàng ${order.id.substring(0, 10).toUpperCase()}?`)) {
@@ -787,7 +805,7 @@ export default function ManagerDashboardPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                   </svg>
                                 </button>
-                                <button
+                                <button aria-label="Thao tác" type="button"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     if (window.confirm(`Bạn có chắc chắn muốn hủy đơn hàng ${order.id.substring(0, 10).toUpperCase()}?`)) {
@@ -820,7 +838,7 @@ export default function ManagerDashboardPage() {
             </div>
             {!searchTerm.trim() && ordersHasNext && (
               <div className="px-6 py-3 border-t border-gray-50">
-                <button
+                <button aria-label="Thao tác" type="button"
                   onClick={loadMoreOrders}
                   disabled={ordersLoadingMore}
                   className="w-full text-center text-sm text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed py-1"
@@ -842,7 +860,7 @@ export default function ManagerDashboardPage() {
               <div className="space-y-3">
                 {chartLoading ? (
                   Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i}>
+                    <div key={_?.id ?? _?.code ?? _?.name ?? i}>
                       <div className="flex items-center justify-between mb-1">
                         <Skeleton className="w-24 h-3" />
                         <Skeleton className="w-14 h-3" />
@@ -878,7 +896,7 @@ export default function ManagerDashboardPage() {
             <div className="bg-white rounded border border-gray-200 p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-semibold text-gray-800">Cảnh báo tồn kho</h2>
-                <button
+                <button aria-label="Thao tác" type="button"
                   onClick={() => onNavigate('inventory')}
                   className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer"
                 >
@@ -888,7 +906,7 @@ export default function ManagerDashboardPage() {
               <div className="space-y-2.5">
                 {lowStockLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-2.5 py-0.5">
+                    <div key={_?.id ?? _?.code ?? _?.name ?? i} className="flex items-center gap-2.5 py-0.5">
                       <Skeleton className="w-2 h-2 rounded-full" />
                       <Skeleton className="flex-1 h-3" />
                       <Skeleton className="w-8 h-3" />
@@ -905,7 +923,7 @@ export default function ManagerDashboardPage() {
                         <span className={`text-xs font-bold transition-all group-hover:hidden ${item.stock === 0 ? 'text-red-600' : 'text-amber-600'}`}>
                           {item.stock === 0 ? 'Hết hàng' : item.stock}
                         </span>
-                        <button
+                        <button aria-label="Thao tác" type="button"
                           onClick={() => onNavigate('importStock', { state: { prefilledProductName: item.name } })}
                           className="hidden group-hover:flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold text-white bg-[#E8420A] hover:bg-[#C4350A] rounded cursor-pointer transition-colors shadow-sm"
                           title="Tạo phiếu nhập hàng nhanh"
@@ -945,10 +963,11 @@ export default function ManagerDashboardPage() {
                 type="text"
                 value={cmdSearch}
                 onChange={(e) => setCmdSearch(e.target.value)}
+                aria-label="Tìm kiếm nhanh"
                 placeholder="Tìm sản phẩm, khách hàng, chức năng..."
                 className="flex-1 bg-transparent border-0 outline-none text-gray-800 placeholder-gray-400 text-sm focus:ring-0 focus:outline-none"
               />
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => setCommandMenuOpen(false)}
                 className="text-[10px] font-bold text-gray-400 hover:text-gray-600 bg-white border border-gray-200 shadow-sm px-2 py-0.5 rounded cursor-pointer"
               >
@@ -971,7 +990,7 @@ export default function ManagerDashboardPage() {
                   {QUICK_ACTIONS.map((act) => {
                     const c = QA_COLOR[act.color]
                     return (
-                      <button
+                      <button aria-label="Thao tác" type="button"
                         key={act.id}
                         onClick={() => {
                           onNavigate(act.id)
@@ -999,7 +1018,7 @@ export default function ManagerDashboardPage() {
                     <div className="space-y-0.5">
                       <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Trang chức năng</p>
                       {searchResults.navs.map((act) => (
-                        <button
+                        <button aria-label="Thao tác" type="button"
                           key={act.id}
                           onClick={() => {
                             onNavigate(act.id)
@@ -1022,7 +1041,7 @@ export default function ManagerDashboardPage() {
                     <div className="space-y-0.5">
                       <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sản phẩm</p>
                       {searchResults.products.map((prod) => (
-                        <button
+                        <button aria-label="Thao tác" type="button"
                           key={prod.id}
                           onClick={() => {
                             onNavigate('productManagement', { state: { searchKey: prod.name } })
@@ -1051,7 +1070,7 @@ export default function ManagerDashboardPage() {
                     <div className="space-y-0.5">
                       <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Khách hàng</p>
                       {searchResults.customers.map((cust) => (
-                        <button
+                        <button aria-label="Thao tác" type="button"
                           key={cust.id}
                           onClick={() => {
                             onNavigate('customerDetail', { search: `?id=${cust.id}` })

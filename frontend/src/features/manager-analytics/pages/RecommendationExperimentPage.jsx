@@ -11,7 +11,7 @@ export default function RecommendationExperimentPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col bg-gray-50 min-h-screen">
+      <div className="flex-1 flex flex-col bg-gray-50 min-h-dvh">
         <StoreNavbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
@@ -21,7 +21,7 @@ export default function RecommendationExperimentPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50 text-gray-800">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50 text-gray-800">
       <StoreNavbar />
 
       <div className="flex-1 px-8 py-7 space-y-6">

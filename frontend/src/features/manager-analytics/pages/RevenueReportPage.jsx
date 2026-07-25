@@ -61,7 +61,7 @@ const TOP_PROFIT_HEADERS = [
 ]
 
 function sortRows(rows, key, dir) {
-  return [...rows].sort((a, b) => {
+  return rows.toSorted((a, b) => {
     const diff = (Number(a[key]) || 0) - (Number(b[key]) || 0)
     return dir === 'asc' ? diff : -diff
   })
@@ -77,7 +77,7 @@ function SortHeaderCell({ label, sortKey, activeSort, onSort }) {
   }
   const isActive = activeSort.key === sortKey
   return (
-    <button
+    <button aria-label={`Sắp xếp theo ${label}`} type="button"
       onClick={() => onSort(sortKey)}
       className="flex items-center gap-1 text-xs font-bold text-gray-400 tracking-wider uppercase text-left last:justify-end cursor-pointer hover:text-gray-600 transition-colors bg-transparent border-0 p-0"
     >
@@ -87,6 +87,10 @@ function SortHeaderCell({ label, sortKey, activeSort, onSort }) {
       </span>
     </button>
   )
+}
+
+function toggleSort(setSort, key) {
+  setSort((s) => (s.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: 'desc' }))
 }
 
 export default function RevenueReportPage() {
@@ -99,10 +103,6 @@ export default function RevenueReportPage() {
 
   const handleProductClick = (productName) => {
     onNavigate('productManagement', { state: { searchKey: productName } })
-  }
-
-  const toggleSort = (setSort, key) => {
-    setSort((s) => (s.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: 'desc' }))
   }
 
   // Date range the "so với kỳ trước" comparisons are actually measured against — null for an
@@ -238,21 +238,21 @@ export default function RevenueReportPage() {
   }))
 
   // Brand revenue bars, sorted highest first
-  const sortedBrands = [...(report.revenueByBrand || [])].sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
+  const sortedBrands = (report.revenueByBrand || []).toSorted((a, b) => (b.revenue || 0) - (a.revenue || 0))
   const maxBrandRevenue = Math.max(...sortedBrands.map((b) => Number(b.revenue) || 0), 0)
 
   const sortedBestSellers = sortRows(report.topSellingProducts, bestSellersSort.key, bestSellersSort.dir)
   const sortedTopProfit = sortRows(report.topProfitProducts, topProfitSort.key, topProfitSort.dir)
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50 text-gray-800">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50 text-gray-800">
       {/* Page content */}
       <div className="flex-1 px-4 sm:px-6 lg:px-8 py-7 space-y-6">
         {/* Title row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h1 className="text-3xl font-bold text-gray-900">Báo cáo doanh thu</h1>
           <div className="flex items-center gap-3">
-            <button onClick={handleExport} className="flex items-center gap-2 bg-[#0D0F14] hover:bg-slate-900 text-white font-semibold py-2 px-5 rounded text-sm transition-colors cursor-pointer border-none">
+            <button aria-label="Xuất báo cáo CSV" type="button" onClick={handleExport} className="flex items-center gap-2 bg-[#0D0F14] hover:bg-slate-900 text-white font-semibold py-2 px-5 rounded text-sm transition-colors cursor-pointer border-none">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
@@ -265,13 +265,13 @@ export default function RevenueReportPage() {
         <div className="flex items-center gap-4 flex-wrap">
           {/* Metric Selector */}
           <div className="flex gap-1 bg-gray-100 p-1 rounded border border-gray-200/50">
-            <button
+            <button aria-label="Xem theo Doanh thu" type="button"
               onClick={() => setChartMetric('revenue')}
               className={`px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer ${chartMetric === 'revenue' ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
               Doanh thu
             </button>
-            <button
+            <button aria-label="Xem theo Số đơn hàng" type="button"
               onClick={() => setChartMetric('orders')}
               className={`px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer ${chartMetric === 'orders' ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
@@ -282,7 +282,7 @@ export default function RevenueReportPage() {
           {/* Period Selector */}
           <div className="flex gap-1 bg-gray-100 p-1 rounded">
             {PERIOD_OPTIONS.map((opt) => (
-              <button
+              <button aria-label={`Lọc theo ${opt.label}`} type="button"
                 key={opt.value}
                 onClick={() => handlePeriodChange(opt.value)}
                 className={`px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer ${filter.period === opt.value ? 'bg-white text-[#E8420A] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
@@ -297,6 +297,7 @@ export default function RevenueReportPage() {
                 type="date"
                 value={filter.startDate || ''}
                 onChange={(e) => handleCustomDateChange('startDate', e.target.value)}
+                aria-label="Từ ngày"
                 className="border border-gray-300 rounded px-2 py-1.5 text-xs text-gray-700"
               />
               <span className="text-xs text-gray-400">đến</span>
@@ -304,6 +305,7 @@ export default function RevenueReportPage() {
                 type="date"
                 value={filter.endDate || ''}
                 onChange={(e) => handleCustomDateChange('endDate', e.target.value)}
+                aria-label="Đến ngày"
                 className="border border-gray-300 rounded px-2 py-1.5 text-xs text-gray-700"
               />
             </div>
@@ -330,8 +332,8 @@ export default function RevenueReportPage() {
               </div>
             ))
           ) : (
-            kpis.map((card, i) => (
-              <div key={i} className="bg-white rounded border border-gray-200 px-5 py-5">
+            kpis.map((card) => (
+              <div key={card.label} className="bg-white rounded border border-gray-200 px-5 py-5">
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-xs font-bold text-gray-400 tracking-wider">{card.label}</span>
                   <span className={`w-9 h-9 flex items-center justify-center rounded ${card.iconBg} ${card.iconColor}`}>
@@ -361,6 +363,7 @@ export default function RevenueReportPage() {
             {loading ? (
               <div className="flex-1 flex items-end gap-2 h-[190px]">
                 {CHART_SKELETON_HEIGHTS.map((h, i) => (
+                  // react-doctor-disable-next-line react-doctor/no-array-index-as-key
                   <Skeleton key={i} className="flex-1 rounded-t" style={{ height: `${h}%` }} />
                 ))}
               </div>
@@ -390,6 +393,7 @@ export default function RevenueReportPage() {
             {/* Legend */}
             {loading ? (
               <div className="space-y-2.5 mt-2">
+                {/* react-doctor-disable-next-line react-doctor/no-array-index-as-key */}
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <Skeleton className="w-20 h-3" />
@@ -399,8 +403,8 @@ export default function RevenueReportPage() {
               </div>
             ) : segments.length > 0 && (
               <div className="space-y-2.5 mt-2">
-                {segments.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between">
+                {segments.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className={`w-2.5 h-2.5 rounded-full`} style={{ backgroundColor: item.color }} />
                       <span className="text-sm text-gray-700">{item.label}</span>
@@ -420,6 +424,7 @@ export default function RevenueReportPage() {
             <h2 className="text-base font-bold text-gray-800 mb-4">Doanh thu theo thương hiệu</h2>
             <div className="space-y-3">
               {loading ? (
+                /* react-doctor-disable-next-line react-doctor/no-array-index-as-key */
                 Array.from({ length: 5 }).map((_, i) => (
                   <div key={i}>
                     <div className="flex items-center justify-between mb-1">
@@ -469,6 +474,7 @@ export default function RevenueReportPage() {
 
             {loading ? (
               <div className="space-y-2.5 mt-2">
+                {/* react-doctor-disable-next-line react-doctor/no-array-index-as-key */}
                 {Array.from({ length: 2 }).map((_, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <Skeleton className="w-20 h-3" />
@@ -478,8 +484,8 @@ export default function RevenueReportPage() {
               </div>
             ) : paymentSegments.length > 0 && (
               <div className="space-y-2.5 mt-2">
-                {paymentSegments.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between">
+                {paymentSegments.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                       <span className="text-sm text-gray-700">{item.label}</span>
@@ -514,7 +520,7 @@ export default function RevenueReportPage() {
           {/* Table rows */}
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center`}>
+              <div key={_?.id ?? _?.code ?? _?.name ?? i} className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center`}>
                 <Skeleton className="w-5 h-3" />
                 <Skeleton className="w-32 h-3" />
                 <Skeleton className="w-8 h-3" />
@@ -527,7 +533,11 @@ export default function RevenueReportPage() {
             sortedBestSellers.map((row, idx) => (
               <div
                 key={row.productId}
+                role="button"
+                tabIndex={0}
+                aria-label={`Xem sản phẩm ${row.productName}`}
                 onClick={() => handleProductClick(row.productName)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleProductClick(row.productName) }}
                 className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left cursor-pointer hover:bg-gray-50 transition-colors`}
               >
                 <span className="text-sm text-gray-500 font-medium">{idx + 1}</span>
@@ -565,7 +575,7 @@ export default function RevenueReportPage() {
           {/* Table rows */}
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center`}>
+              <div key={_?.id ?? _?.code ?? _?.name ?? i} className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center`}>
                 <Skeleton className="w-5 h-3" />
                 <Skeleton className="w-32 h-3" />
                 <Skeleton className="w-8 h-3" />
@@ -580,7 +590,11 @@ export default function RevenueReportPage() {
             sortedTopProfit.map((row, idx) => (
               <div
                 key={row.productId}
+                role="button"
+                tabIndex={0}
+                aria-label={`Xem sản phẩm ${row.productName}`}
                 onClick={() => handleProductClick(row.productName)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleProductClick(row.productName) }}
                 className={`grid ${PRODUCT_TABLE_COLS} gap-2 sm:gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 items-center text-left cursor-pointer hover:bg-gray-50 transition-colors`}
               >
                 <span className="text-sm text-gray-500 font-medium">{idx + 1}</span>

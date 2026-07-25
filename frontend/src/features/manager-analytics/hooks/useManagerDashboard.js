@@ -85,7 +85,7 @@ export function useManagerDashboard() {
     } catch (e) {
       console.error('Lỗi tải số liệu KPI:', e)
     } finally {
-      if (!silent) setKpiLoading(false)
+      setKpiLoading(false)
       setLastUpdated(new Date())
     }
   }, [])
@@ -101,8 +101,8 @@ export function useManagerDashboard() {
     } catch (e) {
       console.error('Lỗi tải biểu đồ doanh thu:', e)
     } finally {
+      setChartLoading(false)
       if (chartFilterRef.current === requestFilter) {
-        if (!silent) setChartLoading(false)
         setLastUpdated(new Date())
       }
     }
@@ -127,7 +127,7 @@ export function useManagerDashboard() {
     } catch (e) {
       console.error('Lỗi tải đơn hàng gần đây:', e)
     } finally {
-      if (!silent) setOrdersLoading(false)
+      setOrdersLoading(false)
       setLastUpdated(new Date())
     }
   }, [])

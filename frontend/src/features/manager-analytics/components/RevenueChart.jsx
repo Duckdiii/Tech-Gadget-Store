@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 
 const CW = 700, CH = 180, CPAD_B = 36
 const CHART_TOP_Y = 8
+const GRID_YS = [CH * 0.25 + CHART_TOP_Y, CH * 0.5 + CHART_TOP_Y, CH * 0.75 + CHART_TOP_Y]
 
 function formatLabel(label) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(label)) {
@@ -33,8 +34,10 @@ function catmullPath(pts) {
   return d
 }
 
+const EMPTY_DATA = []
+
 /** data: [{ label, revenue }] — real revenue-report trend points from the backend. */
-export default function RevenueChart({ data = [], metric = 'revenue' }) {
+export default function RevenueChart({ data = EMPTY_DATA, metric = 'revenue' }) {
   const [hoveredIndex, setHoveredIndex] = useState(null)
   const [pathLength, setPathLength] = useState(0)
   const pathRef = useRef(null)
@@ -70,7 +73,7 @@ export default function RevenueChart({ data = [], metric = 'revenue' }) {
 
   const linePath = pts.length > 1 ? catmullPath(pts) : `M 0 ${pts[0].y.toFixed(1)} L ${CW} ${pts[0].y.toFixed(1)}`
   const areaPath = `${linePath} L ${CW} ${CH + CHART_TOP_Y} L 0 ${CH + CHART_TOP_Y} Z`
-  const gridYs = [CH * 0.25 + CHART_TOP_Y, CH * 0.5 + CHART_TOP_Y, CH * 0.75 + CHART_TOP_Y]
+  const gridYs = GRID_YS
 
   // Thin out x-axis labels when there are many points (e.g. one per day for a month) to avoid overlap.
   const labelStep = Math.max(1, Math.ceil(pts.length / 12))
@@ -133,7 +136,7 @@ export default function RevenueChart({ data = [], metric = 'revenue' }) {
         </defs>
 
         {gridYs.map((y, i) => (
-          <line key={i} x1="0" y1={y} x2={CW} y2={y} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4 4" />
+          <line key={y?.id ?? y?.code ?? y?.name ?? i} x1="0" y1={y} x2={CW} y2={y} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4 4" />
         ))}
 
         {/* Shaded Area Under Spline - Fades In */}
@@ -169,7 +172,7 @@ export default function RevenueChart({ data = [], metric = 'revenue' }) {
           {pts.map((pt, i) => {
             const isActive = hoveredIndex === i
             return (
-              <g key={i} className="transition-all duration-150">
+              <g key={pt?.id ?? pt?.code ?? pt?.name ?? i} className="transition-colors duration-150">
                 {/* Outermost shadow ring on hover */}
                 {isActive && (
                   <circle
@@ -187,14 +190,14 @@ export default function RevenueChart({ data = [], metric = 'revenue' }) {
                   cy={pt.y}
                   r={isActive ? 6 : 4.5}
                   fill="#E8420A"
-                  className="transition-all duration-150 pointer-events-none"
+                  className="transition-colors duration-150 pointer-events-none"
                 />
                 <circle
                   cx={pt.x}
                   cy={pt.y}
                   r={isActive ? 3 : 2}
                   fill="white"
-                  className="transition-all duration-150 pointer-events-none"
+                  className="transition-colors duration-150 pointer-events-none"
                 />
               </g>
             )
@@ -204,7 +207,7 @@ export default function RevenueChart({ data = [], metric = 'revenue' }) {
         {/* X-axis Labels */}
         {pts.map((pt, i) => (i % labelStep === 0) && (
           <text
-            key={i}
+            key={pt?.id ?? pt?.code ?? pt?.name ?? pt?.key ?? pt?.val ?? pt}
             x={pt.x}
             y={CH + CPAD_B - 4}
             textAnchor="middle"
@@ -221,7 +224,7 @@ export default function RevenueChart({ data = [], metric = 'revenue' }) {
       {/* Floating HTML Custom Tooltip */}
       {activePt && (
         <div
-          className="absolute bg-slate-900/95 text-white px-3 py-2 rounded-lg shadow-xl border border-slate-700 pointer-events-none transition-all duration-100 flex flex-col gap-0.5 z-30 min-w-[140px]"
+          className="absolute bg-slate-900/95 text-white px-3 py-2 rounded-lg shadow-xl border border-slate-700 pointer-events-none transition-colors duration-100 flex flex-col gap-0.5 z-30 min-w-[140px]"
           style={{
             left: `${(activePt.x / CW) * 100}%`,
             top: `${(activePt.y / (CH + CPAD_B)) * 100}%`,

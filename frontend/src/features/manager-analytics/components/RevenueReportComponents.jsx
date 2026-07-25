@@ -30,7 +30,8 @@ export function DonutChart({ segments }) {
     const startAngle = acc.length ? acc[acc.length - 1].endAngle : -Math.PI / 2
     const endAngle = startAngle + (seg.pct || 0) * 2 * Math.PI
     const d = segPath(startAngle, endAngle - 0.01)
-    return [...acc, { ...seg, d, endAngle }]
+    acc.push({ ...seg, d, endAngle })
+    return acc
   }, [])
 
   const majorSeg = segments[0] || { label: 'Trống', pct: 0 }
@@ -40,7 +41,7 @@ export function DonutChart({ segments }) {
     <svg viewBox="0 0 180 180" width="170" height="170" className="mx-auto" onMouseLeave={() => setHoveredIndex(null)}>
       {paths.map((seg, i) => (
         <path
-          key={i}
+          key={seg?.id ?? seg?.code ?? seg?.name ?? i}
           d={seg.d}
           fill={seg.color}
           className="cursor-pointer"
