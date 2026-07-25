@@ -1,7 +1,7 @@
 
 export default function Toggle({ checked, onChange }) {
   return (
-    <button
+    <button aria-label="Thao tác" type="button"
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer focus:outline-none border-none ${
         checked ? 'bg-[#E8420A]' : 'bg-gray-300'

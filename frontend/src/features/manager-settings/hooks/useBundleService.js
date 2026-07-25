@@ -152,7 +152,8 @@ export function useBundleService() {
   }
 
   async function handleBulkUpdateActive(ids, newActive) {
-    const selectedItems = items.filter(x => ids.includes(x.id))
+    const idSet = new Set(ids)
+    const selectedItems = items.filter(x => idSet.has(x.id))
     try {
       const dtos = await Promise.all(selectedItems.map(item =>
         settingsService.updateBundleService(item.id, {

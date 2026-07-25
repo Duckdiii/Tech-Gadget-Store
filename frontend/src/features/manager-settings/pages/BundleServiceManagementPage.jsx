@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useBundleService } from '../hooks/useBundleService'
 import Field from '../components/Field'
 
 const TYPE_LABELS = { WARRANTY: 'Bảo hành', SCREEN_PROTECTION: 'Dán màn hình' }
 
+const vndCurrencyFormatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+
 function formatCurrency(value) {
   if (value === null || value === undefined) return '—'
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
+  return vndCurrencyFormatter.format(value)
 }
 
 export default function BundleServiceManagementPage() {
@@ -38,12 +40,15 @@ export default function BundleServiceManagementPage() {
   const [tabFilter, setTabFilter] = useState('all') // 'all' | 'WARRANTY' | 'SCREEN_PROTECTION' | 'active' | 'inactive'
   const [selectedIds, setSelectedIds] = useState([])
   const [updatingBulk, setUpdatingBulk] = useState(false)
+  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds])
 
   const handleSelectAllToggle = () => {
     const allFilteredIds = finalFiltered.map(x => x.id)
-    const isAllSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => selectedIds.includes(id))
+    const selectedSet = new Set(selectedIds)
+    const isAllSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => selectedSet.has(id))
     if (isAllSelected) {
-      setSelectedIds(prev => prev.filter(id => !allFilteredIds.includes(id)))
+      const allFilteredSet = new Set(allFilteredIds)
+      setSelectedIds(prev => prev.filter(id => !allFilteredSet.has(id)))
     } else {
       setSelectedIds(prev => [...new Set([...prev, ...allFilteredIds])])
     }
@@ -79,14 +84,14 @@ export default function BundleServiceManagementPage() {
   const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]'
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       <div className="flex-1 px-8 py-7 space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Dịch vụ đi kèm</h1>
             <p className="text-sm text-gray-500 mt-0.5">Quản lý gói bảo hành, dán màn hình và các dịch vụ đi kèm khác</p>
           </div>
-          <button onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
+          <button aria-label="Thao tác" type="button" onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
             Thêm dịch vụ
           </button>
@@ -102,7 +107,7 @@ export default function BundleServiceManagementPage() {
           ].map(t => {
             const isActive = tabFilter === t.id
             return (
-              <button
+              <button aria-label="Thao tác" type="button"
                 key={t.id}
                 onClick={() => { setTabFilter(t.id); setSearch(''); setSelectedIds([]) }}
                 className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${
@@ -120,7 +125,7 @@ export default function BundleServiceManagementPage() {
         <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex items-center gap-3">
           <div className="relative flex-1 max-w-xs">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên dịch vụ..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên dịch vụ..." aria-label="Tìm kiếm dịch vụ" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
           <span className="ml-auto text-xs text-gray-400 shrink-0">{finalFiltered.length} / {items.length} dịch vụ</span>
         </div>
@@ -130,7 +135,7 @@ export default function BundleServiceManagementPage() {
             <div className="flex items-center gap-2 text-gray-700">
               <span className="font-semibold">Đã chọn {selectedIds.length} dịch vụ</span>
               <span className="text-gray-300">|</span>
-              <button
+              <button aria-label="Bỏ chọn tất cả dịch vụ" type="button"
                 onClick={() => setSelectedIds([])}
                 className="text-xs text-[#E8420A] hover:underline font-semibold bg-transparent border-none p-0 cursor-pointer"
               >
@@ -138,14 +143,14 @@ export default function BundleServiceManagementPage() {
               </button>
             </div>
             <div className="flex gap-2">
-              <button
+              <button aria-label="Kích hoạt hàng loạt dịch vụ" type="button"
                 onClick={() => handleBulkAction(true)}
                 disabled={updatingBulk}
                 className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold cursor-pointer transition-colors border-none disabled:opacity-50"
               >
                 {updatingBulk ? 'Đang kích hoạt...' : 'Kích hoạt hàng loạt'}
               </button>
-              <button
+              <button aria-label="Ngừng hoạt động hàng loạt dịch vụ" type="button"
                 onClick={() => handleBulkAction(false)}
                 disabled={updatingBulk}
                 className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold cursor-pointer transition-colors border-none disabled:opacity-50"
@@ -167,13 +172,14 @@ export default function BundleServiceManagementPage() {
                   <th className="px-4 py-3.5 w-10 text-left">
                     <input
                       type="checkbox"
-                      checked={finalFiltered.length > 0 && finalFiltered.every(x => selectedIds.includes(x.id))}
+                      aria-label="Chọn tất cả dịch vụ"
+                      checked={finalFiltered.length > 0 && finalFiltered.every(x => selectedIdSet.has(x.id))}
                       onChange={handleSelectAllToggle}
                       className="rounded border-gray-300 text-[#E8420A] focus:ring-[#E8420A] cursor-pointer"
                     />
                   </th>
-                  {['Tên dịch vụ', 'Loại', 'Giá', 'Thời hạn', 'Trạng thái', 'Thao tác'].map((h, i) => (
-                    <th key={i} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
+                  {['Tên dịch vụ', 'Loại', 'Giá', 'Thời hạn', 'Trạng thái', 'Thao tác'].map((h) => (
+                    <th key={h} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -185,7 +191,8 @@ export default function BundleServiceManagementPage() {
                       <td className="px-4 py-4 w-10">
                         <input
                           type="checkbox"
-                          checked={selectedIds.includes(item.id)}
+                          aria-label={`Chọn dịch vụ ${item.name || item.id}`}
+                          checked={selectedIdSet.has(item.id)}
                           onChange={() => handleSelectRowToggle(item.id)}
                           className="rounded border-gray-300 text-[#E8420A] focus:ring-[#E8420A] cursor-pointer"
                         />
@@ -198,11 +205,12 @@ export default function BundleServiceManagementPage() {
                         <label className="relative inline-flex items-center cursor-pointer select-none">
                           <input
                             type="checkbox"
+                            aria-label={`Kích hoạt ${item.name}`}
                             checked={item.active}
                             onChange={() => handleToggleActive(item)}
                             className="sr-only peer"
                           />
-                          <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                          <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-transform peer-checked:bg-emerald-500"></div>
                           <span className="ml-2 text-xs font-semibold text-gray-700 w-8">
                             {item.active ? 'Bật' : 'Tắt'}
                           </span>
@@ -210,7 +218,7 @@ export default function BundleServiceManagementPage() {
                       </td>
                       <td className="px-4 py-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <button
+                          <button aria-label={`Chỉnh sửa dịch vụ ${item.name}`} type="button"
                             onClick={() => openEdit(item)}
                             className="p-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-[#E8420A] rounded transition-colors cursor-pointer border-none"
                             title="Chỉnh sửa"
@@ -220,7 +228,7 @@ export default function BundleServiceManagementPage() {
                             </svg>
                           </button>
                           {item.active ? (
-                            <button
+                            <button aria-label={`Ngừng hoạt động dịch vụ ${item.name}`} type="button"
                               onClick={() => setDeactivateId(item.id)}
                               className="p-1.5 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded transition-colors cursor-pointer border-none"
                               title="Ngừng hoạt động"
@@ -235,15 +243,14 @@ export default function BundleServiceManagementPage() {
                         </div>
                       </td>
                     </tr>
-                  ))
-                }
+                  ))}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      {panel && <div className="fixed inset-0 bg-black/30 z-40" onClick={closePanel} />}
+      {panel && <button type="button" aria-label="Đóng bảng dịch vụ" onClick={closePanel} className="fixed inset-0 bg-black/30 z-40 cursor-pointer border-none" />}
 
       {panel && (
         <div className="fixed top-0 right-0 h-full w-[440px] bg-white shadow-2xl z-50 flex flex-col">
@@ -252,14 +259,14 @@ export default function BundleServiceManagementPage() {
               <h2 className="text-lg font-bold text-gray-900">{panel === 'add' ? 'Thêm dịch vụ mới' : 'Sửa dịch vụ'}</h2>
               <p className="text-xs text-gray-400 mt-0.5">Điền đầy đủ thông tin bên dưới</p>
             </div>
-            <button onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer border-none bg-transparent"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
             <Field label="Tên dịch vụ *" error={formErrors.name}>
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Bảo hành 12 tháng" className={inp} />
+              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Bảo hành 12 tháng" aria-label="Tên dịch vụ" className={inp} />
             </Field>
             <Field label="Loại dịch vụ *">
-              <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} className={inp}>
+              <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} aria-label="Loại dịch vụ" className={inp}>
                 <option value="WARRANTY">Bảo hành</option>
                 <option value="SCREEN_PROTECTION">Dán màn hình</option>
               </select>
@@ -286,8 +293,8 @@ export default function BundleServiceManagementPage() {
             </label>
           </div>
           <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-            <button onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
-            <button onClick={handleSubmit} disabled={saving} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
+            <button aria-label="Thao tác" type="button" onClick={handleSubmit} disabled={saving} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
               {saving ? 'Đang lưu...' : 'Lưu'}
             </button>
           </div>
@@ -305,8 +312,8 @@ export default function BundleServiceManagementPage() {
                 Dịch vụ{target ? ` "${target.name}"` : ''} sẽ không còn hiển thị cho khách hàng chọn. Bạn có thể bật lại bất cứ lúc nào bằng cách sửa và tick "Đang hoạt động"
               </p>
               <div className="flex gap-3 mt-6">
-                <button onClick={() => setDeactivateId(null)} disabled={deactivating} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer">Hủy</button>
-                <button onClick={() => handleDeactivate(deactivateId)} disabled={deactivating} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+                <button  type="button" onClick={() => setDeactivateId(null)} disabled={deactivating} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer">Hủy</button>
+                <button aria-label="Thao tác" type="button" onClick={() => handleDeactivate(deactivateId)} disabled={deactivating} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
                   {deactivating ? 'Đang xử lý...' : 'Xác nhận'}
                 </button>
               </div>

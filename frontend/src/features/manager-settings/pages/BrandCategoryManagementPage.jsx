@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '../../../services/api'
 import Field from '../components/Field'
@@ -85,12 +85,13 @@ function ImageUploader({ value, onChange, label, error }) {
               value={value}
               onChange={e => onChange(e.target.value)}
               placeholder="https://..."
+              aria-label="URL ảnh"
               className={INP_CLASS}
             />
-            <button
+            <button aria-label="Chọn file ảnh"
               type="button"
               onClick={() => setShowManualInput(false)}
-              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded cursor-pointer shrink-0 transition-colors"
+              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded cursor-pointer shrink-0 transition-colors border-none"
             >
               Chọn file
             </button>
@@ -115,10 +116,10 @@ function ImageUploader({ value, onChange, label, error }) {
                 <div className="flex items-center gap-2 mt-1">
                   <label className="text-xs text-[#E8420A] hover:text-[#C4350A] font-semibold cursor-pointer">
                     Thay ảnh
-                    <input type="file" accept="image/*" className="hidden" onChange={onFileSelect} disabled={uploading} />
+                    <input type="file" accept="image/*" aria-label="Chọn file ảnh từ máy tính" className="hidden" onChange={onFileSelect} disabled={uploading} />
                   </label>
                   <span className="text-gray-300 text-xs">|</span>
-                  <button
+                  <button aria-label="Xóa ảnh"
                     type="button"
                     onClick={() => onChange('')}
                     className="text-xs text-red-500 hover:text-red-700 font-semibold cursor-pointer bg-transparent border-none p-0"
@@ -126,7 +127,7 @@ function ImageUploader({ value, onChange, label, error }) {
                     Xóa
                   </button>
                   <span className="text-gray-300 text-xs">|</span>
-                  <button
+                  <button aria-label="Nhập URL ảnh"
                     type="button"
                     onClick={() => setShowManualInput(true)}
                     className="text-xs text-gray-500 hover:text-gray-700 font-semibold cursor-pointer bg-transparent border-none p-0"
@@ -141,6 +142,8 @@ function ImageUploader({ value, onChange, label, error }) {
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
+              role="region"
+              aria-label="Khu vực tải ảnh"
               className={`border-2 border-dashed rounded-lg p-5 transition-all text-center flex flex-col items-center justify-center cursor-pointer ${
                 isDragOver ? 'border-[#E8420A] bg-orange-50/40' : 'border-gray-300 hover:border-gray-400 bg-gray-50/20'
               }`}
@@ -171,7 +174,7 @@ function ImageUploader({ value, onChange, label, error }) {
                     Kéo thả ảnh vào đây hoặc <span className="text-[#E8420A] underline hover:text-[#C4350A]">chọn từ thiết bị</span>
                   </p>
                   <p className="text-[10px] text-gray-400 mt-1">Hỗ trợ PNG, JPG, JPEG, GIF...</p>
-                  <button
+                  <button aria-label="Thao tác"
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation()
@@ -201,7 +204,8 @@ export default function BrandCategoryManagementPage() {
   const [search, setSearch]         = useState('')
 
   const [panel, setPanel]           = useState(null) // 'add' | 'edit' | null
-  const [editingId, setEditingId]   = useState(null)
+  const editingIdRef = useRef(null)
+  const setEditingId = (v) => { editingIdRef.current = v }
   const [brandForm, setBrandForm]       = useState(EMPTY_BRAND_FORM)
   const [categoryForm, setCategoryForm] = useState(EMPTY_CATEGORY_FORM)
   const [formErrors, setFormErrors] = useState({})
@@ -211,15 +215,18 @@ export default function BrandCategoryManagementPage() {
   const [toast, setToast]           = useState(null)
   const [selectedIds, setSelectedIds] = useState([])
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
+  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds])
 
   const items = tab === 'brands' ? brands : categories
   const filtered = items.filter(x => !search || x.name.toLowerCase().includes(search.toLowerCase()))
 
   const handleSelectAllToggle = () => {
     const allFilteredIds = filtered.map(x => x.id)
-    const isAllSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => selectedIds.includes(id))
+    const selectedSet = new Set(selectedIds)
+    const isAllSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => selectedSet.has(id))
     if (isAllSelected) {
-      setSelectedIds(prev => prev.filter(id => !allFilteredIds.includes(id)))
+      const allFilteredSet = new Set(allFilteredIds)
+      setSelectedIds(prev => prev.filter(id => !allFilteredSet.has(id)))
     } else {
       setSelectedIds(prev => [...new Set([...prev, ...allFilteredIds])])
     }
@@ -231,7 +238,8 @@ export default function BrandCategoryManagementPage() {
     )
   }
 
-  const selectedItems = items.filter(x => selectedIds.includes(x.id))
+  const selectedSet = new Set(selectedIds)
+  const selectedItems = items.filter(x => selectedSet.has(x.id))
   const deletableItems = selectedItems.filter(x => x.productCount === 0)
   const nonDeletableItems = selectedItems.filter(x => x.productCount > 0)
 
@@ -240,12 +248,13 @@ export default function BrandCategoryManagementPage() {
     const isBrand = tab === 'brands'
     const base = isBrand ? '/api/manager/brands' : '/api/manager/categories'
     const idsToDelete = deletableItems.map(x => x.id)
+    const deleteSet = new Set(idsToDelete)
     try {
       await Promise.all(idsToDelete.map(id => apiFetch(`${base}/${id}`, { method: 'DELETE' })))
       if (isBrand) {
-        setBrands(p => p.filter(x => !idsToDelete.includes(x.id)))
+        setBrands(p => p.filter(x => !deleteSet.has(x.id)))
       } else {
-        setCategories(p => p.filter(x => !idsToDelete.includes(x.id)))
+        setCategories(p => p.filter(x => !deleteSet.has(x.id)))
       }
       showToast(isBrand ? `Đã xóa ${idsToDelete.length} thương hiệu` : `Đã xóa ${idsToDelete.length} danh mục`)
       setSelectedIds([])
@@ -324,9 +333,9 @@ export default function BrandCategoryManagementPage() {
         else setCategories(p => [...p, normalizeCategory(dto)].sort((a, b) => a.displayOrder - b.displayOrder))
         showToast(isBrand ? 'Đã thêm thương hiệu' : 'Đã thêm danh mục')
       } else {
-        const dto = await apiFetch(`${base}/${editingId}`, { method: 'PUT', body: JSON.stringify(payload) })
-        if (isBrand) setBrands(p => p.map(x => x.id === editingId ? normalizeBrand(dto) : x))
-        else setCategories(p => p.map(x => x.id === editingId ? normalizeCategory(dto) : x).sort((a, b) => a.displayOrder - b.displayOrder))
+        const dto = await apiFetch(`${base}/${editingIdRef.current}`, { method: 'PUT', body: JSON.stringify(payload) })
+        if (isBrand) setBrands(p => p.map(x => x.id === editingIdRef.current ? normalizeBrand(dto) : x))
+        else setCategories(p => p.map(x => x.id === editingIdRef.current ? normalizeCategory(dto) : x).sort((a, b) => a.displayOrder - b.displayOrder))
         showToast(isBrand ? 'Đã cập nhật thương hiệu' : 'Đã cập nhật danh mục')
       }
       closePanel()
@@ -357,24 +366,25 @@ export default function BrandCategoryManagementPage() {
   const target = items.find(x => x.id === deleteId)
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       <div className="flex-1 px-8 py-7 space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Thương hiệu &amp; Danh mục</h1>
             <p className="text-sm text-gray-500 mt-0.5">Quản lý thương hiệu và danh mục sản phẩm</p>
           </div>
-          <button onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
+          <button aria-label="Thao tác" type="button" onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
             {tab === 'brands' ? 'Thêm thương hiệu' : 'Thêm danh mục'}
           </button>
         </div>
 
-        <div className="flex items-center gap-2 border-b border-gray-200">
-          <button onClick={() => { setTab('brands'); setSearch(''); setSelectedIds([]) }} className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${tab === 'brands' ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 gap-2">
+          <button aria-label="Tab Thương hiệu" type="button" onClick={() => { setTab('brands'); setSearch(''); setSelectedIds([]) }} className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${tab === 'brands' ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
             Thương hiệu ({brands.length})
           </button>
-          <button onClick={() => { setTab('categories'); setSearch(''); setSelectedIds([]) }} className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${tab === 'categories' ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+          <button aria-label="Tab Danh mục" type="button" onClick={() => { setTab('categories'); setSearch(''); setSelectedIds([]) }} className={`px-4 py-2.5 text-sm font-semibold cursor-pointer border-b-2 -mb-px transition-colors ${tab === 'categories' ? 'border-[#E8420A] text-[#E8420A]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
             Danh mục ({categories.length})
           </button>
         </div>
@@ -382,7 +392,7 @@ export default function BrandCategoryManagementPage() {
         <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex items-center gap-3">
           <div className="relative flex-1 max-w-xs">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm theo tên..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm theo tên..." aria-label="Tìm theo tên" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
           <span className="ml-auto text-xs text-gray-400 shrink-0">{filtered.length} / {items.length}</span>
         </div>
@@ -392,14 +402,14 @@ export default function BrandCategoryManagementPage() {
             <div className="flex items-center gap-2 text-gray-700">
               <span className="font-semibold">Đã chọn {selectedIds.length} mục</span>
               <span className="text-gray-300">|</span>
-              <button
+              <button aria-label="Bỏ chọn tất cả" type="button"
                 onClick={() => setSelectedIds([])}
                 className="text-xs text-[#E8420A] hover:underline font-semibold bg-transparent border-none p-0 cursor-pointer"
               >
                 Bỏ chọn tất cả
               </button>
             </div>
-            <button
+            <button aria-label="Xóa các mục đã chọn" type="button"
               onClick={() => setShowBulkDeleteModal(true)}
               className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold cursor-pointer transition-colors border-none"
             >
@@ -419,13 +429,14 @@ export default function BrandCategoryManagementPage() {
                   <th className="px-4 py-3.5 w-10 text-left">
                     <input
                       type="checkbox"
-                      checked={filtered.length > 0 && filtered.every(x => selectedIds.includes(x.id))}
+                      aria-label="Chọn tất cả dòng"
+                      checked={filtered.length > 0 && filtered.every(x => selectedIdSet.has(x.id))}
                       onChange={handleSelectAllToggle}
                       className="rounded border-gray-300 text-[#E8420A] focus:ring-[#E8420A] cursor-pointer"
                     />
                   </th>
-                  {(tab === 'brands' ? ['Ảnh', 'Tên thương hiệu', 'Số sản phẩm', 'Mô tả', 'Thao tác'] : ['Ảnh', 'Tên danh mục', 'Thứ tự', 'Số sản phẩm', 'Thao tác']).map((h, i) => (
-                    <th key={i} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
+                  {(tab === 'brands' ? ['Ảnh', 'Tên thương hiệu', 'Số sản phẩm', 'Mô tả', 'Thao tác'] : ['Ảnh', 'Tên danh mục', 'Thứ tự', 'Số sản phẩm', 'Thao tác']).map((h) => (
+                    <th key={h} className={`px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide ${h === 'Thao tác' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -437,7 +448,8 @@ export default function BrandCategoryManagementPage() {
                       <td className="px-4 py-3 w-10">
                         <input
                           type="checkbox"
-                          checked={selectedIds.includes(item.id)}
+                          aria-label={`Chọn ${item.name}`}
+                          checked={selectedIdSet.has(item.id)}
                           onChange={() => handleSelectRowToggle(item.id)}
                           className="rounded border-gray-300 text-[#E8420A] focus:ring-[#E8420A] cursor-pointer"
                         />
@@ -469,7 +481,7 @@ export default function BrandCategoryManagementPage() {
                       {tab === 'brands' && <td className="px-4 py-4 text-gray-500 max-w-sm truncate">{item.description || '—'}</td>}
                       <td className="px-4 py-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <button
+                          <button aria-label={`Chỉnh sửa ${item.name}`} type="button"
                             onClick={() => openEdit(item)}
                             className="p-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-[#E8420A] rounded transition-colors cursor-pointer border-none"
                             title="Chỉnh sửa"
@@ -478,27 +490,26 @@ export default function BrandCategoryManagementPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                           </button>
-                          <button
+                          <button aria-label={`Xóa ${item.name}`} type="button"
                             onClick={() => setDeleteId(item.id)}
                             className="p-1.5 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded transition-colors cursor-pointer border-none"
                             title="Xóa"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
                         </div>
                       </td>
                     </tr>
-                  ))
-                }
+                  ))}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      {panel && <div className="fixed inset-0 bg-black/30 z-40" onClick={closePanel} />}
+      {panel && <button type="button" aria-label="Đóng bảng thương hiệu danh mục" onClick={closePanel} className="fixed inset-0 bg-black/30 z-40 cursor-pointer border-none" />}
 
       {panel && (
         <div className="fixed top-0 right-0 h-full w-[440px] bg-white shadow-2xl z-50 flex flex-col">
@@ -509,13 +520,13 @@ export default function BrandCategoryManagementPage() {
               </h2>
               <p className="text-xs text-gray-400 mt-0.5">Điền đầy đủ thông tin bên dưới</p>
             </div>
-            <button onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer border-none bg-transparent"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
             {tab === 'brands' ? (
               <>
                 <Field label="Tên thương hiệu *" error={formErrors.name}>
-                  <input value={brandForm.name} onChange={e => setBrandForm(f => ({ ...f, name: e.target.value }))} placeholder="Apple" className={inp} />
+                  <input value={brandForm.name} onChange={e => setBrandForm(f => ({ ...f, name: e.target.value }))} placeholder="Apple" aria-label="Tên thương hiệu" className={inp} />
                 </Field>
                 <ImageUploader
                   label="Logo thương hiệu *"
@@ -524,13 +535,13 @@ export default function BrandCategoryManagementPage() {
                   error={formErrors.logoUrl}
                 />
                 <Field label="Mô tả *" error={formErrors.description}>
-                  <textarea value={brandForm.description} onChange={e => setBrandForm(f => ({ ...f, description: e.target.value }))} rows={3} className={inp} />
+                  <textarea value={brandForm.description} onChange={e => setBrandForm(f => ({ ...f, description: e.target.value }))} rows={3} aria-label="Mô tả thương hiệu" className={inp} />
                 </Field>
               </>
             ) : (
               <>
                 <Field label="Tên danh mục *" error={formErrors.name}>
-                  <input value={categoryForm.name} onChange={e => setCategoryForm(f => ({ ...f, name: e.target.value }))} placeholder="Điện thoại" className={inp} />
+                  <input value={categoryForm.name} onChange={e => setCategoryForm(f => ({ ...f, name: e.target.value }))} placeholder="Điện thoại" aria-label="Tên danh mục" className={inp} />
                 </Field>
                 <ImageUploader
                   label="Ảnh danh mục *"
@@ -545,6 +556,7 @@ export default function BrandCategoryManagementPage() {
                     value={categoryForm.displayOrder}
                     onChange={e => setCategoryForm(f => ({ ...f, displayOrder: e.target.value }))}
                     placeholder="0"
+                    aria-label="Thứ tự hiển thị"
                     className={inp}
                   />
                 </Field>
@@ -552,8 +564,8 @@ export default function BrandCategoryManagementPage() {
             )}
           </div>
           <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-            <button onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
-            <button onClick={handleSubmit} disabled={saving} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
+            <button aria-label="Thao tác" type="button" onClick={handleSubmit} disabled={saving} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
               {saving ? 'Đang lưu...' : 'Lưu'}
             </button>
           </div>
@@ -580,7 +592,7 @@ export default function BrandCategoryManagementPage() {
                     Bạn phải chuyển các sản phẩm này sang thương hiệu/danh mục khác hoặc xóa chúng trước khi thực hiện xóa mục này.
                   </p>
                   <div className="flex gap-3 mt-6">
-                    <button
+                    <button aria-label="Thao tác" type="button"
                       onClick={() => setDeleteId(null)}
                       className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
                     >
@@ -607,8 +619,8 @@ export default function BrandCategoryManagementPage() {
                     Bạn có chắc muốn xóa{target ? ` "${target.name}"` : ''}? Hành động này không thể hoàn tác
                   </p>
                   <div className="flex gap-3 mt-6">
-                    <button onClick={() => setDeleteId(null)} disabled={removing} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer">Hủy</button>
-                    <button onClick={() => handleRemove(deleteId)} disabled={removing} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+                    <button  type="button" onClick={() => setDeleteId(null)} disabled={removing} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer">Hủy</button>
+                    <button aria-label="Thao tác" type="button" onClick={() => handleRemove(deleteId)} disabled={removing} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
                       {removing ? 'Đang xóa...' : 'Xác nhận'}
                     </button>
                   </div>
@@ -653,14 +665,14 @@ export default function BrandCategoryManagementPage() {
               </div>
 
               <div className="flex gap-3 mt-6">
-                <button
+                <button aria-label="Thao tác" type="button"
                   onClick={() => setShowBulkDeleteModal(false)}
                   disabled={removing}
                   className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer"
                 >
                   Hủy
                 </button>
-                <button
+                <button aria-label="Xóa" type="button"
                   onClick={handleBulkRemove}
                   disabled={removing || deletableItems.length === 0}
                   className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded text-sm font-semibold cursor-pointer transition-colors"

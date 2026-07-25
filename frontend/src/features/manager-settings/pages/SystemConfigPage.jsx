@@ -22,7 +22,7 @@ export default function SystemConfigPage() {
   } = useSystemConfig()
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-white">
+    <div className="flex-1 flex flex-col min-h-dvh bg-white">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-8 py-3 flex items-center gap-4">
         <div className="flex-1 max-w-lg">
@@ -30,7 +30,7 @@ export default function SystemConfigPage() {
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input
+            <input aria-label="Search..."
               type="text"
               placeholder="Search..."
               className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
@@ -39,19 +39,19 @@ export default function SystemConfigPage() {
         </div>
 
         <div className="flex items-center gap-3 ml-auto">
-          <button className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button aria-label="Thao tác" type="button" className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button aria-label="Thao tác" type="button" className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </button>
           <div className="flex items-center gap-1 text-sm">
-            <button className="text-gray-600 hover:text-gray-900 font-medium cursor-pointer px-1">Support</button>
-            <button className="text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-1">Logout</button>
+            <button  type="button" className="text-gray-600 hover:text-gray-900 font-medium cursor-pointer px-1">Support</button>
+            <button aria-label="Thao tác" type="button" className="text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-1">Logout</button>
           </div>
           <img src="https://placehold.co/34x34/374151/ffffff?text=AD" alt="avatar" className="w-8 h-8 rounded-full object-cover cursor-pointer" />
         </div>
@@ -68,7 +68,7 @@ export default function SystemConfigPage() {
         {/* Tabs */}
         <div className="flex border-b border-gray-200 mb-6">
           {TABS.map((tab) => (
-            <button
+            <button aria-label="Thao tác" type="button"
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`py-3 px-5 text-sm font-medium transition-colors cursor-pointer border-b-2 -mb-px ${
@@ -101,6 +101,7 @@ export default function SystemConfigPage() {
                         <FormLabel>Tên cửa hàng</FormLabel>
                         <input
                           type="text"
+                          aria-label="Tên cửa hàng"
                           value={form.storeName}
                           onChange={handleChange('storeName')}
                           className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
@@ -113,6 +114,7 @@ export default function SystemConfigPage() {
                           <FormLabel>Email liên hệ</FormLabel>
                           <input
                             type="email"
+                            aria-label="Email liên hệ"
                             value={form.contactEmail}
                             onChange={handleChange('contactEmail')}
                             className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
@@ -122,6 +124,7 @@ export default function SystemConfigPage() {
                           <FormLabel>Số điện thoại</FormLabel>
                           <input
                             type="text"
+                            aria-label="Số điện thoại"
                             value={form.contactPhone}
                             onChange={handleChange('contactPhone')}
                             className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
@@ -134,6 +137,7 @@ export default function SystemConfigPage() {
                         <FormLabel>Địa chỉ chính</FormLabel>
                         <input
                           type="text"
+                          aria-label="Địa chỉ chính"
                           value={form.address}
                           onChange={handleChange('address')}
                           className="w-full border border-gray-300 rounded px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] focus:border-transparent"
@@ -191,7 +195,7 @@ export default function SystemConfigPage() {
                     Định dạng JPG, PNG hoặc SVG. Kích thước tối đa 2MB. Tỉ lệ 1:1 hoặc 16:9.
                   </p>
 
-                  <button className="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 rounded text-sm transition-colors cursor-pointer">
+                  <button aria-label="Thao tác" type="button" className="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 rounded text-sm transition-colors cursor-pointer">
                     Tải ảnh lên
                   </button>
                 </div>
@@ -219,14 +223,14 @@ export default function SystemConfigPage() {
               {!error && savedAt && (
                 <p className="text-sm text-green-600 mr-auto">Đã lưu lúc {savedAt.toLocaleTimeString('vi-VN')}</p>
               )}
-              <button
+              <button aria-label="Đóng" type="button"
                 onClick={handleCancel}
                 disabled={loading || saving}
                 className="border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2.5 px-6 rounded text-sm transition-colors cursor-pointer"
               >
                 Hủy
               </button>
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={handleSave}
                 disabled={loading || saving}
                 className="bg-[#0D0F14] hover:bg-[#0D0F14] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-6 rounded text-sm transition-colors cursor-pointer"

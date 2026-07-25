@@ -55,6 +55,7 @@ function Dropdown({ label, value, onChange, options = [] }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        aria-label={label}
         className="appearance-none border border-gray-200 rounded px-3 py-2 pr-7 text-sm text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
       >
         <option value="">{label}</option>
@@ -190,7 +191,7 @@ export default function PromotionSettingsPage() {
   ]
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 px-8 py-3 flex items-center gap-4">
         <div className="flex-1 max-w-sm">
@@ -198,11 +199,11 @@ export default function PromotionSettingsPage() {
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input type="text" placeholder="Search..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
+            <input aria-label="Tìm kiếm..." type="text" placeholder="Search..." className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <button className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button aria-label="Thông báo" type="button" className="p-2 hover:bg-gray-100 rounded-full cursor-pointer border-none bg-transparent">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
@@ -225,8 +226,8 @@ export default function PromotionSettingsPage() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-4 gap-4">
-          {kpiCards.map((card, i) => (
-            <div key={i} className="bg-white rounded border border-gray-200 px-5 py-4">
+          {kpiCards.map((card) => (
+            <div key={card.label} className="bg-white rounded border border-gray-200 px-5 py-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs text-gray-500 font-medium">{card.label}</span>
                 <span className={`w-8 h-8 flex items-center justify-center rounded ${card.iconBg} ${card.iconColor}`}>
@@ -244,7 +245,7 @@ export default function PromotionSettingsPage() {
           <div className="bg-white rounded border border-gray-200 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <h2 className="text-base font-bold text-gray-800">Active Promotions</h2>
-              <button
+              <button aria-label="Tạo khuyến mãi mới" type="button"
                 onClick={() => setFormModal({ open: true, initialData: null })}
                 className="flex items-center gap-1.5 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2 px-4 rounded text-sm transition-colors cursor-pointer"
               >
@@ -266,6 +267,7 @@ export default function PromotionSettingsPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Tìm tên chiến dịch, mã..."
+                  aria-label="Tìm tên chiến dịch hoặc mã"
                   className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white text-gray-700"
                 />
               </div>
@@ -305,7 +307,7 @@ export default function PromotionSettingsPage() {
                     </span>
                     {/* Switch Toggle */}
                     <div className="flex items-center">
-                      <button
+                      <button aria-label={`Bật tắt khuyến mãi ${p.name}`} type="button"
                         onClick={() => handleToggleActive(p)}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer border-none ${
                           p.active ? 'bg-orange-600' : 'bg-gray-200'
@@ -321,30 +323,30 @@ export default function PromotionSettingsPage() {
                     {/* Actions */}
                     <div className="flex items-center gap-1">
                       {/* Edit */}
-                      <button
+                      <button aria-label={`Chỉnh sửa khuyến mãi ${p.name}`} type="button"
                         onClick={() => setFormModal({ open: true, initialData: p })}
                         title="Chỉnh sửa"
-                        className="p-1.5 text-gray-400 hover:text-[#E8420A] hover:bg-orange-50 rounded transition-colors cursor-pointer"
+                        className="p-1.5 text-gray-400 hover:text-[#E8420A] hover:bg-orange-50 rounded transition-colors cursor-pointer border-none bg-transparent"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </button>
                       {/* Performance */}
-                      <button
+                      <button aria-label={`Xem hiệu suất khuyến mãi ${p.name}`} type="button"
                         onClick={() => setPerfModal({ open: true, promotionId: p.id })}
                         title="Xem hiệu suất"
-                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors cursor-pointer"
+                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors cursor-pointer border-none bg-transparent"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
                       </button>
                       {/* Delete */}
-                      <button
+                      <button aria-label={`Xóa khuyến mãi ${p.name}`} type="button"
                         onClick={() => setDeleteModal({ open: true, promotion: p, loading: false })}
                         title="Xóa"
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer border-none bg-transparent"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -387,7 +389,7 @@ export default function PromotionSettingsPage() {
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-gray-500">HSD: {expiry}</span>
-                            <button
+                            <button aria-label={`Copy mã ${p.code}`} type="button"
                               onClick={() => handleCopy(p.id, p.code)}
                               className={`text-[11px] font-semibold cursor-pointer transition-all px-1.5 py-0.5 rounded border border-transparent ${
                                 copiedPromoId === p.id 
