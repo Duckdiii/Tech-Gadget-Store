@@ -32,7 +32,7 @@ export default function ChatWidget() {
         />
       )}
 
-      <button
+      <button type="button"
         onClick={() => setOpen((prev) => !prev)}
         className="w-14 h-14 flex items-center justify-center text-white transition-transform"
         style={{

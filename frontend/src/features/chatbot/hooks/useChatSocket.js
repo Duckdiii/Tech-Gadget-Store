@@ -32,17 +32,19 @@ export function useChatSocket(user) {
           }
 
           setMessages((prev) => {
-            const next = [...prev]
-            const last = next[next.length - 1]
+            const last = prev[prev.length - 1]
             if (last && last.role === 'assistant' && last.streaming) {
-              last.content += chunk.delta
-            } else {
-              next.push({ role: 'assistant', content: chunk.delta, streaming: true })
+              const updatedLast = {
+                ...last,
+                content: last.content + chunk.delta,
+                streaming: !chunk.done,
+              }
+              return [...prev.slice(0, -1), updatedLast]
             }
-            if (chunk.done) {
-              next[next.length - 1].streaming = false
-            }
-            return next
+            return [
+              ...prev,
+              { role: 'assistant', content: chunk.delta, streaming: !chunk.done },
+            ]
           })
 
           if (chunk.done) {

@@ -40,7 +40,7 @@ export default function ChatPanel({ messages, isStreaming, onSend, onClose }) {
         >
           Trợ lý tư vấn TechStore
         </span>
-        <button
+        <button type="button"
           onClick={onClose}
           className="w-6 h-6 flex items-center justify-center"
           style={{ color: 'var(--t3)' }}
@@ -58,8 +58,8 @@ export default function ChatPanel({ messages, isStreaming, onSend, onClose }) {
             Hỏi mình về sản phẩm, gợi ý mua sắm hoặc trạng thái đơn hàng của bạn nhé!
           </p>
         )}
-        {messages.map((message, idx) => (
-          <ChatMessageBubble key={idx} role={message.role} content={message.content} />
+        {messages.map((message) => (
+          <ChatMessageBubble key={message.id || message.timestamp || message.content} role={message.role} content={message.content} />
         ))}
       </div>
 
@@ -69,6 +69,7 @@ export default function ChatPanel({ messages, isStreaming, onSend, onClose }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Nhập câu hỏi..."
+          aria-label="Nhập câu hỏi"
           disabled={isStreaming}
           className="flex-1 px-3 py-2 text-[13px]"
           style={{
@@ -80,6 +81,7 @@ export default function ChatPanel({ messages, isStreaming, onSend, onClose }) {
           }}
         />
         <button
+          aria-label="Gửi tin nhắn"
           type="submit"
           disabled={isStreaming || !input.trim()}
           className="px-3 py-2 text-[12px] font-bold text-white shrink-0"
