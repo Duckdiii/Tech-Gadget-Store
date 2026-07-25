@@ -71,7 +71,7 @@ public class PromotionService {
         }
         products.forEach(promotion::addProduct);
         Promotion savedPromotion = promotionRepository.save(promotion);
-        eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ProductPromotionAppliedEvent(savedPromotion, products));
+        eventPublisher.publishEvent(new ProductPromotionAppliedEvent(savedPromotion, products));
         return promotionMapper.toResponseDto(savedPromotion);
     }
 
@@ -96,7 +96,7 @@ public class PromotionService {
         promotion.setDiscountPercent(dto.getDiscountPercent());
         promotion.setStartAt(dto.getStartAt());
         promotion.setEndAt(dto.getEndAt());
-        promotion.setActive(dto.getActive());
+        promotion.changeActive(dto.getActive());
         promotion.setImageUrl(dto.getImageUrl());
         if (dto.getTargetTiers() != null) {
             promotion.setTargetTiers(new ArrayList<>(dto.getTargetTiers()));
@@ -104,7 +104,7 @@ public class PromotionService {
             promotion.getTargetTiers().clear();
         }
         Promotion savedPromotion = promotionRepository.save(promotion);
-        eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ProductPromotionAppliedEvent(savedPromotion, products));
+        eventPublisher.publishEvent(new ProductPromotionAppliedEvent(savedPromotion, products));
         return promotionMapper.toResponseDto(savedPromotion);
     }
 

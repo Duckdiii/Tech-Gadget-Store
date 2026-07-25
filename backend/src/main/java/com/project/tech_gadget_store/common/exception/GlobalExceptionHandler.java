@@ -46,6 +46,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<Map<String, Object>> handleDuplicateResource(DuplicateResourceException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
@@ -151,6 +156,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RevenueReportLoadException.class)
     public ResponseEntity<Map<String, Object>> handleRevenueReportLoad(RevenueReportLoadException ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(PaymentInitializationException.class)
+    public ResponseEntity<Map<String, Object>> handlePaymentInitialization(PaymentInitializationException ex) {
+        log.error("Payment initialization failed", ex);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(InvoicePdfGenerationException.class)
+    public ResponseEntity<Map<String, Object>> handleInvoicePdfGeneration(InvoicePdfGenerationException ex) {
+        log.error("Invoice PDF generation failed", ex);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(PaymentGatewayException.class)
+    public ResponseEntity<Map<String, Object>> handlePaymentGateway(PaymentGatewayException ex) {
+        log.error("Payment gateway error", ex);
+        return buildResponse(HttpStatus.BAD_GATEWAY, ex.getMessage(), null);
     }
 
     @ExceptionHandler(RuntimeException.class)

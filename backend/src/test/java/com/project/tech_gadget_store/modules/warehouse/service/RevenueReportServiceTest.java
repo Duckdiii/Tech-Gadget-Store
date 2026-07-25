@@ -106,9 +106,11 @@ class RevenueReportServiceTest {
         // Payment Methods
         MomoPaymentMethod momo = mock(MomoPaymentMethod.class);
         lenient().when(momo.getName()).thenReturn("Ví MoMo");
+        lenient().when(momo.getPaymentType()).thenReturn("MOMO");
 
         VNPayPaymentMethod vnpay = mock(VNPayPaymentMethod.class);
         lenient().when(vnpay.getName()).thenReturn("VNPay");
+        lenient().when(vnpay.getPaymentType()).thenReturn("VNPAY");
 
         // Order Items
         OrderItem item1 = mock(OrderItem.class);

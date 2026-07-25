@@ -41,6 +41,7 @@ public class Promotion extends BaseEntity {
         @Column(name = "end_at", nullable = false)
         private LocalDateTime endAt;
 
+        @Setter(AccessLevel.NONE)
         @Column(name = "active", nullable = false)
         private Boolean active = true;
 
@@ -137,5 +138,17 @@ public class Promotion extends BaseEntity {
 
         public void deactivate() {
                 active = false;
+        }
+
+        /**
+         * Generic active-flag change for callers (e.g. the "update promotion" form) that only
+         * have a target boolean value in hand. Prefer {@link #activate()}/{@link #deactivate()}
+         * when the intent is already known.
+         */
+        public void changeActive(Boolean active) {
+                if (active == null) {
+                        throw new IllegalArgumentException("active must not be null");
+                }
+                this.active = active;
         }
 }

@@ -7,16 +7,12 @@ import com.project.tech_gadget_store.modules.catalog.dto.response.ProductSalesDt
 import com.project.tech_gadget_store.modules.catalog.entity.Brand;
 import com.project.tech_gadget_store.modules.catalog.entity.Category;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
-import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
 import com.project.tech_gadget_store.modules.order.entity.Order;
 import com.project.tech_gadget_store.modules.order.entity.OrderItem;
 import com.project.tech_gadget_store.modules.order.entity.enums.OrderStatus;
 import com.project.tech_gadget_store.modules.order.repository.OrderRepository;
 import com.project.tech_gadget_store.modules.payment.dto.response.PaymentMethodRevenueDto;
-import com.project.tech_gadget_store.modules.payment.entity.CODPaymentMethod;
-import com.project.tech_gadget_store.modules.payment.entity.MomoPaymentMethod;
 import com.project.tech_gadget_store.modules.payment.entity.PaymentMethod;
-import com.project.tech_gadget_store.modules.payment.entity.VNPayPaymentMethod;
 import com.project.tech_gadget_store.modules.warehouse.dto.request.RevenueReportFilterRequestDto;
 import com.project.tech_gadget_store.modules.warehouse.dto.response.RevenueReportResponseDto;
 import com.project.tech_gadget_store.modules.warehouse.dto.response.RevenueTrendPointDto;
@@ -50,6 +46,61 @@ public class RevenueReportService {
     }
 
     public RevenueReportResponseDto getRevenueReport(RevenueReportFilterRequestDto filter) {
+        DateRange range = resolveDateRange(filter);
+        List<Order> orders = loadAllOrders();
+
+        List<Order> completedOrdersInRange = filterCompletedOrdersInRange(orders, range);
+        double cancellationRate = calculateCancellationRate(orders, range);
+        Map<String, BigDecimal> avgCostByVariantId = loadAverageImportCostPerVariant();
+
+        List<MatchedItem> matchedItems = matchOrderItems(completedOrdersInRange, filter);
+        if (matchedItems.isEmpty()) {
+            return RevenueReportResponseDto.builder()
+                    .totalRevenue(BigDecimal.ZERO)
+                    .totalOrders(0)
+                    .totalQuantitySold(0)
+                    .message("No revenue data found for the selected period")
+                    .trend(Collections.emptyList())
+                    .revenueByCategory(Collections.emptyList())
+                    .revenueByBrand(Collections.emptyList())
+                    .topSellingProducts(Collections.emptyList())
+                    .topProfitProducts(Collections.emptyList())
+                    .revenueByPaymentMethod(Collections.emptyList())
+                    .cancellationRate(cancellationRate)
+                    .build();
+        }
+
+        Map<Product, ProductSalesAggregate> productSalesMap = aggregateProductSales(matchedItems, avgCostByVariantId);
+        List<RevenueTrendPointDto> trend = generateTrend(matchedItems, range.start().toLocalDate(), range.end().toLocalDate());
+
+        // Total units sold across ALL products, not just the top 5 in topSellingProducts —
+        // that list is capped at 5 so its .length can't be used as a "products sold" count.
+        int totalQuantitySold = productSalesMap.values().stream()
+                .mapToInt(agg -> agg.quantitySold)
+                .sum();
+
+        return RevenueReportResponseDto.builder()
+                .totalRevenue(calculateTotalRevenue(matchedItems))
+                .totalOrders(countDistinctOrders(matchedItems))
+                .totalQuantitySold(totalQuantitySold)
+                .trend(trend)
+                .revenueByCategory(calculateRevenueByCategory(matchedItems))
+                .revenueByBrand(calculateRevenueByBrand(matchedItems))
+                .topSellingProducts(topSellingFrom(productSalesMap))
+                .topProfitProducts(topProfitFrom(productSalesMap))
+                .revenueByPaymentMethod(calculateRevenueByPaymentMethod(matchedItems))
+                .cancellationRate(cancellationRate)
+                .build();
+    }
+
+    // -------------------------------------------------------------------------
+    // Report steps — each mirrors one section of the RevenueReportResponseDto
+    // -------------------------------------------------------------------------
+
+    private record DateRange(LocalDateTime start, LocalDateTime end) {}
+
+    /** Resolves the report's date window from {@code filter.period} (DAILY/WEEKLY/MONTHLY/CUSTOM). */
+    private DateRange resolveDateRange(RevenueReportFilterRequestDto filter) {
         LocalDateTime calculatedStart;
         LocalDateTime calculatedEnd = LocalDateTime.now().with(LocalTime.MAX);
 
@@ -94,56 +145,68 @@ public class RevenueReportService {
                 break;
         }
 
-        List<Order> orders;
+        return new DateRange(calculatedStart, calculatedEnd);
+    }
+
+    private List<Order> loadAllOrders() {
         try {
-            orders = orderRepository.findAll();
+            return orderRepository.findAll();
         } catch (Exception e) {
             log.error("Failed to retrieve orders from database", e);
             throw new RevenueReportLoadException("Unable to load report data. Please try again later.", e);
         }
+    }
 
-        // Filter: Keep completed orders within the calculated date range
-        final LocalDateTime finalStart = calculatedStart;
-        final LocalDateTime finalEnd = calculatedEnd;
-        List<Order> completedOrdersInRange = orders.stream()
+    private List<Order> filterCompletedOrdersInRange(List<Order> orders, DateRange range) {
+        return orders.stream()
                 .filter(o -> OrderStatus.COMPLETED.equals(o.getOrderStatus()))
-                .filter(o -> o.getOrderDate() != null &&
-                        !o.getOrderDate().isBefore(finalStart) &&
-                        !o.getOrderDate().isAfter(finalEnd))
+                .filter(o -> isWithin(o, range))
                 .collect(Collectors.toList());
+    }
 
-        // Cancellation rate: cancelled/refunded vs. all orders placed in the same date range
-        // (not just completed ones), since a cancelled order never reaches COMPLETED.
+    /**
+     * Cancellation rate: cancelled/refunded vs. all orders placed in the same date range
+     * (not just completed ones), since a cancelled order never reaches COMPLETED.
+     */
+    private double calculateCancellationRate(List<Order> orders, DateRange range) {
         List<Order> ordersInRange = orders.stream()
-                .filter(o -> o.getOrderDate() != null &&
-                        !o.getOrderDate().isBefore(finalStart) &&
-                        !o.getOrderDate().isAfter(finalEnd))
+                .filter(o -> isWithin(o, range))
                 .collect(Collectors.toList());
         long cancelledOrRefundedCount = ordersInRange.stream()
                 .filter(o -> o.getOrderStatus() == OrderStatus.CANCELLED || o.getOrderStatus() == OrderStatus.REFUNDED)
                 .count();
-        Double cancellationRate = ordersInRange.isEmpty()
+        return ordersInRange.isEmpty()
                 ? 0.0
                 : (cancelledOrRefundedCount * 100.0) / ordersInRange.size();
+    }
 
-        // Average import cost per variant, for the top-profit-products report below.
+    private boolean isWithin(Order o, DateRange range) {
+        return o.getOrderDate() != null
+                && !o.getOrderDate().isBefore(range.start())
+                && !o.getOrderDate().isAfter(range.end());
+    }
+
+    /** Average import cost per variant, for the top-profit-products report below. */
+    private Map<String, BigDecimal> loadAverageImportCostPerVariant() {
         Map<String, BigDecimal> avgCostByVariantId = new HashMap<>();
         for (Object[] row : importLogItemRepository.findAverageImportPricePerVariant()) {
             String variantId = (String) row[0];
             Number avgPrice = (Number) row[1];
             avgCostByVariantId.put(variantId, BigDecimal.valueOf(avgPrice.doubleValue()));
         }
+        return avgCostByVariantId;
+    }
 
-        // Process matching order items based on filters
+    /** Flattens completed orders into per-item rows, applying the payment method / category / brand filters. */
+    private List<MatchedItem> matchOrderItems(List<Order> completedOrdersInRange, RevenueReportFilterRequestDto filter) {
         List<MatchedItem> matchedItems = new ArrayList<>();
-        Set<String> distinctOrderIds = new HashSet<>();
 
         for (Order order : completedOrdersInRange) {
             // Apply payment method filter on Order level
             if (filter.getPaymentMethod() != null && !filter.getPaymentMethod().isBlank()) {
                 String filterPm = filter.getPaymentMethod().trim();
                 PaymentMethod pm = order.getSelectedPaymentMethod();
-                String pmType = getPaymentMethodType(pm);
+                String pmType = pm.getPaymentType();
                 String pmName = pm.getName();
 
                 boolean typeMatches = pmType.equalsIgnoreCase(filterPm);
@@ -155,8 +218,7 @@ public class RevenueReportService {
             }
 
             for (OrderItem item : order.getItems()) {
-                ProductVariant variant = item.getProductVariant();
-                Product product = variant.getProduct();
+                Product product = item.getProductVariant().getProduct();
                 Category category = product.getCategory();
                 Brand brand = product.getBrand();
 
@@ -175,43 +237,30 @@ public class RevenueReportService {
                 }
 
                 matchedItems.add(new MatchedItem(order, item, product, category, brand));
-                distinctOrderIds.add(order.getId());
             }
         }
 
-        // Exception Flow 4a: No completed orders / matched items found
-        if (matchedItems.isEmpty()) {
-            return RevenueReportResponseDto.builder()
-                    .totalRevenue(BigDecimal.ZERO)
-                    .totalOrders(0)
-                    .totalQuantitySold(0)
-                    .message("No revenue data found for the selected period")
-                    .trend(Collections.emptyList())
-                    .revenueByCategory(Collections.emptyList())
-                    .revenueByBrand(Collections.emptyList())
-                    .topSellingProducts(Collections.emptyList())
-                    .topProfitProducts(Collections.emptyList())
-                    .revenueByPaymentMethod(Collections.emptyList())
-                    .cancellationRate(cancellationRate)
-                    .build();
-        }
+        return matchedItems;
+    }
 
-        // 1. Total Revenue
-        BigDecimal totalRevenue = matchedItems.stream()
+    private int countDistinctOrders(List<MatchedItem> matchedItems) {
+        return (int) matchedItems.stream().map(mi -> mi.order.getId()).distinct().count();
+    }
+
+    private BigDecimal calculateTotalRevenue(List<MatchedItem> matchedItems) {
+        return matchedItems.stream()
                 .map(mi -> mi.item.calculateTotal())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 
-        // 2. Total Orders
-        int totalOrders = distinctOrderIds.size();
-
-        // 3. Revenue By Category
+    private List<CategoryRevenueDto> calculateRevenueByCategory(List<MatchedItem> matchedItems) {
         Map<Category, BigDecimal> categoryRevenueMap = new HashMap<>();
         for (MatchedItem mi : matchedItems) {
             Category cat = mi.category;
             BigDecimal rev = mi.item.calculateTotal();
             categoryRevenueMap.put(cat, categoryRevenueMap.getOrDefault(cat, BigDecimal.ZERO).add(rev));
         }
-        List<CategoryRevenueDto> revenueByCategory = categoryRevenueMap.entrySet().stream()
+        return categoryRevenueMap.entrySet().stream()
                 .map(e -> CategoryRevenueDto.builder()
                         .categoryId(e.getKey().getId())
                         .categoryName(e.getKey().getName())
@@ -219,15 +268,16 @@ public class RevenueReportService {
                         .build())
                 .sorted(Comparator.comparing(CategoryRevenueDto::getRevenue).reversed())
                 .collect(Collectors.toList());
+    }
 
-        // 4. Revenue By Brand
+    private List<BrandRevenueDto> calculateRevenueByBrand(List<MatchedItem> matchedItems) {
         Map<Brand, BigDecimal> brandRevenueMap = new HashMap<>();
         for (MatchedItem mi : matchedItems) {
             Brand br = mi.brand;
             BigDecimal rev = mi.item.calculateTotal();
             brandRevenueMap.put(br, brandRevenueMap.getOrDefault(br, BigDecimal.ZERO).add(rev));
         }
-        List<BrandRevenueDto> revenueByBrand = brandRevenueMap.entrySet().stream()
+        return brandRevenueMap.entrySet().stream()
                 .map(e -> BrandRevenueDto.builder()
                         .brandId(e.getKey().getId())
                         .brandName(e.getKey().getName())
@@ -235,8 +285,11 @@ public class RevenueReportService {
                         .build())
                 .sorted(Comparator.comparing(BrandRevenueDto::getRevenue).reversed())
                 .collect(Collectors.toList());
+    }
 
-        // 5. Top 5 Selling Products (+ profit, when import cost data is available)
+    /** Per-product quantity/revenue/profit totals — profit only computed when import cost data is available. */
+    private Map<Product, ProductSalesAggregate> aggregateProductSales(
+            List<MatchedItem> matchedItems, Map<String, BigDecimal> avgCostByVariantId) {
         Map<Product, ProductSalesAggregate> productSalesMap = new HashMap<>();
         for (MatchedItem mi : matchedItems) {
             Product prod = mi.product;
@@ -253,7 +306,12 @@ public class RevenueReportService {
                 agg.hasCostData = true;
             }
         }
-        List<ProductSalesDto> topSellingProducts = productSalesMap.entrySet().stream()
+        return productSalesMap;
+    }
+
+    /** Top 5 best-selling products by quantity (revenue as tiebreaker). */
+    private List<ProductSalesDto> topSellingFrom(Map<Product, ProductSalesAggregate> productSalesMap) {
+        return productSalesMap.entrySet().stream()
                 .map(e -> ProductSalesDto.builder()
                         .productId(e.getKey().getId())
                         .productName(e.getKey().getName())
@@ -268,9 +326,11 @@ public class RevenueReportService {
                 })
                 .limit(5)
                 .collect(Collectors.toList());
+    }
 
-        // 5b. Top 5 Most Profitable Products (only products with known import cost)
-        List<ProductSalesDto> topProfitProducts = productSalesMap.entrySet().stream()
+    /** Top 5 most profitable products — only products with known import cost. */
+    private List<ProductSalesDto> topProfitFrom(Map<Product, ProductSalesAggregate> productSalesMap) {
+        return productSalesMap.entrySet().stream()
                 .filter(e -> e.getValue().hasCostData)
                 .map(e -> ProductSalesDto.builder()
                         .productId(e.getKey().getId())
@@ -282,19 +342,20 @@ public class RevenueReportService {
                 .sorted(Comparator.comparing(ProductSalesDto::getProfit).reversed())
                 .limit(5)
                 .collect(Collectors.toList());
+    }
 
-        // 6. Revenue By Payment Method
+    private List<PaymentMethodRevenueDto> calculateRevenueByPaymentMethod(List<MatchedItem> matchedItems) {
         Map<String, PaymentMethodRevenueAggregate> pmRevenueMap = new HashMap<>();
         for (MatchedItem mi : matchedItems) {
             PaymentMethod pm = mi.order.getSelectedPaymentMethod();
-            String pmType = getPaymentMethodType(pm);
+            String pmType = pm.getPaymentType();
             String pmName = pm.getName();
             BigDecimal rev = mi.item.calculateTotal();
 
             PaymentMethodRevenueAggregate agg = pmRevenueMap.computeIfAbsent(pmName, k -> new PaymentMethodRevenueAggregate(pmType));
             agg.revenue = agg.revenue.add(rev);
         }
-        List<PaymentMethodRevenueDto> revenueByPaymentMethod = pmRevenueMap.entrySet().stream()
+        return pmRevenueMap.entrySet().stream()
                 .map(e -> PaymentMethodRevenueDto.builder()
                         .paymentMethodName(e.getKey())
                         .paymentMethodType(e.getValue().type)
@@ -302,29 +363,11 @@ public class RevenueReportService {
                         .build())
                 .sorted(Comparator.comparing(PaymentMethodRevenueDto::getRevenue).reversed())
                 .collect(Collectors.toList());
-
-        // 7. Trend Chart
-        List<RevenueTrendPointDto> trend = generateTrend(matchedItems, calculatedStart.toLocalDate(), calculatedEnd.toLocalDate());
-
-        // Total units sold across ALL products, not just the top 5 in topSellingProducts —
-        // that list is capped at 5 so its .length can't be used as a "products sold" count.
-        int totalQuantitySold = productSalesMap.values().stream()
-                .mapToInt(agg -> agg.quantitySold)
-                .sum();
-
-        return RevenueReportResponseDto.builder()
-                .totalRevenue(totalRevenue)
-                .totalOrders(totalOrders)
-                .totalQuantitySold(totalQuantitySold)
-                .trend(trend)
-                .revenueByCategory(revenueByCategory)
-                .revenueByBrand(revenueByBrand)
-                .topSellingProducts(topSellingProducts)
-                .topProfitProducts(topProfitProducts)
-                .revenueByPaymentMethod(revenueByPaymentMethod)
-                .cancellationRate(cancellationRate)
-                .build();
     }
+
+    // -------------------------------------------------------------------------
+    // CSV export
+    // -------------------------------------------------------------------------
 
     public String exportRevenueReportToCsv(RevenueReportFilterRequestDto filter) {
         RevenueReportResponseDto report = getRevenueReport(filter);
@@ -404,6 +447,10 @@ public class RevenueReportService {
         return sb.toString();
     }
 
+    // -------------------------------------------------------------------------
+    // Trend chart
+    // -------------------------------------------------------------------------
+
     private List<RevenueTrendPointDto> generateTrend(List<MatchedItem> matchedItems, LocalDate start, LocalDate end) {
         List<RevenueTrendPointDto> trend = new ArrayList<>();
 
@@ -477,17 +524,6 @@ public class RevenueReportService {
         }
 
         return trend;
-    }
-
-    private String getPaymentMethodType(PaymentMethod pm) {
-        if (pm instanceof MomoPaymentMethod) {
-            return "MOMO";
-        } else if (pm instanceof VNPayPaymentMethod) {
-            return "VNPAY";
-        } else if (pm instanceof CODPaymentMethod) {
-            return "COD";
-        }
-        return "UNKNOWN";
     }
 
     private String escapeCsv(String val) {

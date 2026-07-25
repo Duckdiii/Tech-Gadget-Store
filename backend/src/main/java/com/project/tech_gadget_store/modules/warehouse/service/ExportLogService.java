@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,7 +71,7 @@ public class ExportLogService {
     public ExportLogResponseDto exportProducts(ExportLogRequestDto requestDto) {
         // 1. Validate performedById exists
         if (!userRepository.existsById(requestDto.getPerformedById())) {
-            eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ExportStockEvent(
+            eventPublisher.publishEvent(new ExportStockEvent(
                     requestDto.getPerformedById(), false, "Performer not found"));
             throw new ResourceNotFoundException("Performer not found");
         }
@@ -192,7 +194,7 @@ public class ExportLogService {
             }
 
             // Publish ExportStockEvent success
-            eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ExportStockEvent(
+            eventPublisher.publishEvent(new ExportStockEvent(
                     requestDto.getPerformedById(), true, requestDto.getReason()));
 
             // Publish ProductStockChangedEvent
@@ -201,7 +203,7 @@ public class ExportLogService {
                 try {
                     long oldStock = oldStocks.getOrDefault(product.getId(), 0L);
                     long newStock = productVariantRepository.countAvailablePhysicalUnitsByProductId(product.getId());
-                    eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ProductStockChangedEvent(product, oldStock, newStock));
+                    eventPublisher.publishEvent(new ProductStockChangedEvent(product, oldStock, newStock));
                 } catch (Exception e) {
                     log.error("Failed to publish ProductStockChangedEvent: {}", e.getMessage(), e);
                 }
@@ -220,7 +222,7 @@ public class ExportLogService {
 
         } catch (Exception e) {
             // Publish ExportStockEvent failure
-            eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ExportStockEvent(
+            eventPublisher.publishEvent(new ExportStockEvent(
                     requestDto.getPerformedById(), false, e.getMessage()));
             throw e;
         }
@@ -248,37 +250,18 @@ public class ExportLogService {
                 });
     }
 
-    public com.project.tech_gadget_store.common.dto.CursorPageResponseDto<ExportLogResponseDto> getExportLogsCursor(String cursor, int limit) {
-        LocalDateTime cursorTimestamp = null;
-        String cursorId = null;
+    public CursorPageResponseDto<ExportLogResponseDto> getExportLogsCursor(String cursor, int limit) {
+        CursorUtil.DecodedCursor decoded = CursorUtil.decodeCursorOrStart(cursor);
 
-        com.project.tech_gadget_store.common.util.CursorUtil.DecodedCursor decoded = com.project.tech_gadget_store.common.util.CursorUtil.decodeCursor(cursor);
-        if (decoded != null) {
-            cursorTimestamp = decoded.getTimestamp();
-            cursorId = decoded.getId();
-        }
+        Pageable pageable = PageRequest.of(0, limit + 1);
+        List<ExportLog> logs = exportLogRepository.findExportLogsCursor(
+                decoded.getTimestamp(), decoded.getId(), pageable);
 
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit + 1);
-        List<ExportLog> logs = exportLogRepository.findExportLogsCursor(cursorTimestamp, cursorId, pageable);
-
-        boolean hasNext = logs.size() > limit;
-        List<ExportLog> resultLogs = hasNext ? logs.subList(0, limit) : logs;
-
-        List<ExportLogResponseDto> dtos = resultLogs.stream()
-                .map(log -> {
-                    String receiptId = receiptRepository.findByExportLogId(log.getId())
-                            .map(Receipt::getId)
-                            .orElse(null);
-                    return exportLogMapper.toExportLogResponseDto(log, receiptId, "Success");
-                })
-                .collect(Collectors.toList());
-
-        String nextCursor = null;
-        if (hasNext && !resultLogs.isEmpty()) {
-            ExportLog lastLog = resultLogs.get(resultLogs.size() - 1);
-            nextCursor = com.project.tech_gadget_store.common.util.CursorUtil.encodeCursor(lastLog.getExportedAt(), lastLog.getId());
-        }
-
-        return new com.project.tech_gadget_store.common.dto.CursorPageResponseDto<>(dtos, nextCursor, hasNext);
+        return CursorUtil.paginate(logs, limit, ExportLog::getExportedAt, log -> {
+            String receiptId = receiptRepository.findByExportLogId(log.getId())
+                    .map(Receipt::getId)
+                    .orElse(null);
+            return exportLogMapper.toExportLogResponseDto(log, receiptId, "Success");
+        });
     }
 }

@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,7 +79,7 @@ public class ImportLogService {
     public ImportLogResponseDto importProducts(ImportLogRequestDto requestDto) {
         // 1. Validate performedById exists
         if (!userRepository.existsById(requestDto.getPerformedById())) {
-            eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ImportStockEvent(
+            eventPublisher.publishEvent(new ImportStockEvent(
                     requestDto.getPerformedById(), false, "Performer not found"));
             throw new ResourceNotFoundException("Performer not found");
         }
@@ -185,7 +187,7 @@ public class ImportLogService {
             ImportLog savedLog = importLogRepository.save(importLog);
 
             // Publish ImportStockEvent success
-            eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ImportStockEvent(
+            eventPublisher.publishEvent(new ImportStockEvent(
                     requestDto.getPerformedById(), true, requestDto.getNote()));
 
             // Publish ProductStockChangedEvent for existing products
@@ -195,7 +197,7 @@ public class ImportLogService {
                     if (product != null) {
                         long oldStock = oldStocks.getOrDefault(id, 0L);
                         long newStock = productVariantRepository.countAvailablePhysicalUnitsByProductId(id);
-                        eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ProductStockChangedEvent(product, oldStock, newStock));
+                        eventPublisher.publishEvent(new ProductStockChangedEvent(product, oldStock, newStock));
                     }
                 } catch (Exception e) {
                     log.error("Failed to publish ProductStockChangedEvent: {}", e.getMessage(), e);
@@ -210,7 +212,7 @@ public class ImportLogService {
                             Product product = productRepository.findByNameIgnoreCase(item.getNewProduct().getName()).orElse(null);
                             if (product != null) {
                                 long newStock = productVariantRepository.countAvailablePhysicalUnitsByProductId(product.getId());
-                                eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ProductStockChangedEvent(product, 0L, newStock));
+                                eventPublisher.publishEvent(new ProductStockChangedEvent(product, 0L, newStock));
                             }
                         } catch (Exception e) {
                             log.error("Failed to publish ProductStockChangedEvent for new product: {}", e.getMessage(), e);
@@ -221,7 +223,7 @@ public class ImportLogService {
 
         } catch (Exception e) {
             // Publish ImportStockEvent failure
-            eventPublisher.publishEvent(new com.project.tech_gadget_store.modules.notification.event.ImportStockEvent(
+            eventPublisher.publishEvent(new ImportStockEvent(
                     requestDto.getPerformedById(), false, e.getMessage()));
             throw e;
         }
@@ -239,32 +241,13 @@ public class ImportLogService {
                 .map(importLogMapper::toImportLogResponseDto);
     }
 
-    public com.project.tech_gadget_store.common.dto.CursorPageResponseDto<ImportLogResponseDto> getImportLogsCursor(String cursor, int limit) {
-        LocalDateTime cursorTimestamp = null;
-        String cursorId = null;
+    public CursorPageResponseDto<ImportLogResponseDto> getImportLogsCursor(String cursor, int limit) {
+        CursorUtil.DecodedCursor decoded = CursorUtil.decodeCursorOrStart(cursor);
 
-        com.project.tech_gadget_store.common.util.CursorUtil.DecodedCursor decoded = com.project.tech_gadget_store.common.util.CursorUtil.decodeCursor(cursor);
-        if (decoded != null) {
-            cursorTimestamp = decoded.getTimestamp();
-            cursorId = decoded.getId();
-        }
+        Pageable pageable = PageRequest.of(0, limit + 1);
+        List<ImportLog> logs = importLogRepository.findImportLogsCursor(
+                decoded.getTimestamp(), decoded.getId(), pageable);
 
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit + 1);
-        List<ImportLog> logs = importLogRepository.findImportLogsCursor(cursorTimestamp, cursorId, pageable);
-
-        boolean hasNext = logs.size() > limit;
-        List<ImportLog> resultLogs = hasNext ? logs.subList(0, limit) : logs;
-
-        List<ImportLogResponseDto> dtos = resultLogs.stream()
-                .map(importLogMapper::toImportLogResponseDto)
-                .collect(Collectors.toList());
-
-        String nextCursor = null;
-        if (hasNext && !resultLogs.isEmpty()) {
-            ImportLog lastLog = resultLogs.get(resultLogs.size() - 1);
-            nextCursor = com.project.tech_gadget_store.common.util.CursorUtil.encodeCursor(lastLog.getImportedAt(), lastLog.getId());
-        }
-
-        return new com.project.tech_gadget_store.common.dto.CursorPageResponseDto<>(dtos, nextCursor, hasNext);
+        return CursorUtil.paginate(logs, limit, ImportLog::getImportedAt, importLogMapper::toImportLogResponseDto);
     }
 }

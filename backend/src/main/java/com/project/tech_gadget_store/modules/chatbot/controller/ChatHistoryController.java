@@ -1,5 +1,7 @@
 package com.project.tech_gadget_store.modules.chatbot.controller;
 
+import com.project.tech_gadget_store.common.constants.ErrorMessages;
+import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.modules.auth.entity.Customer;
 import com.project.tech_gadget_store.modules.auth.repository.CustomerRepository;
 import com.project.tech_gadget_store.modules.chatbot.dto.response.ChatMessageResponseDto;
@@ -8,13 +10,11 @@ import com.project.tech_gadget_store.modules.chatbot.repository.ChatConversation
 import com.project.tech_gadget_store.modules.chatbot.repository.ChatMessageRepository;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/chatbot")
@@ -58,7 +58,7 @@ public class ChatHistoryController {
     private String resolveCustomerId(Authentication authentication) {
         Customer customer = customerRepository
                 .findByAccountEmail(authentication.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CUSTOMER_NOT_FOUND));
         return customer.getId();
     }
 }

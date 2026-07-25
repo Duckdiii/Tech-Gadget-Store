@@ -31,8 +31,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -171,33 +172,14 @@ public class SupplyOrderService {
                 .map(supplyOrderMapper::toResponseDto);
     }
 
-    public com.project.tech_gadget_store.common.dto.CursorPageResponseDto<SupplyOrderResponseDto> getAllCursor(String cursor, int limit) {
-        LocalDateTime cursorTimestamp = null;
-        String cursorId = null;
+    public CursorPageResponseDto<SupplyOrderResponseDto> getAllCursor(String cursor, int limit) {
+        CursorUtil.DecodedCursor decoded = CursorUtil.decodeCursorOrStart(cursor);
 
-        com.project.tech_gadget_store.common.util.CursorUtil.DecodedCursor decoded = com.project.tech_gadget_store.common.util.CursorUtil.decodeCursor(cursor);
-        if (decoded != null) {
-            cursorTimestamp = decoded.getTimestamp();
-            cursorId = decoded.getId();
-        }
+        Pageable pageable = PageRequest.of(0, limit + 1);
+        List<SupplyOrder> orders = supplyOrderRepository.findSupplyOrdersCursor(
+                decoded.getTimestamp(), decoded.getId(), pageable);
 
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit + 1);
-        List<com.project.tech_gadget_store.modules.warehouse.entity.SupplyOrder> orders = supplyOrderRepository.findSupplyOrdersCursor(cursorTimestamp, cursorId, pageable);
-
-        boolean hasNext = orders.size() > limit;
-        List<com.project.tech_gadget_store.modules.warehouse.entity.SupplyOrder> resultOrders = hasNext ? orders.subList(0, limit) : orders;
-
-        List<SupplyOrderResponseDto> dtos = resultOrders.stream()
-                .map(supplyOrderMapper::toResponseDto)
-                .collect(Collectors.toList());
-
-        String nextCursor = null;
-        if (hasNext && !resultOrders.isEmpty()) {
-            com.project.tech_gadget_store.modules.warehouse.entity.SupplyOrder lastOrder = resultOrders.get(resultOrders.size() - 1);
-            nextCursor = com.project.tech_gadget_store.common.util.CursorUtil.encodeCursor(lastOrder.getCreatedAt(), lastOrder.getId());
-        }
-
-        return new com.project.tech_gadget_store.common.dto.CursorPageResponseDto<>(dtos, nextCursor, hasNext);
+        return CursorUtil.paginate(orders, limit, SupplyOrder::getCreatedAt, supplyOrderMapper::toResponseDto);
     }
 
     public SupplyOrderResponseDto getById(String id) {

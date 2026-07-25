@@ -71,7 +71,7 @@ public class Membership extends BaseEntity {
         if (!customers.contains(customer)) {
             customers.add(customer);
         }
-        customer.setMembership(this);
+        customer.applyMembership(this);
     }
 
     public void removeCustomer(Customer customer) {
@@ -79,7 +79,7 @@ public class Membership extends BaseEntity {
             return;
         }
         if (customers.remove(customer)) {
-            customer.setMembership(null);
+            customer.applyMembership(null);
         }
     }
 
