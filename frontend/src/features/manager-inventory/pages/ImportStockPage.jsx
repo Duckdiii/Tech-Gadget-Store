@@ -44,7 +44,8 @@ export default function ImportStockPage() {
   }
 
   const addItem = () => {
-    setItems((prev) => [...prev, { id: nextId++, name: '', unit: '', qty: 0, unitPrice: 0 }])
+    const id = nextId++
+    setItems((prev) => [...prev, { id, name: '', unit: '', qty: 0, unitPrice: 0 }])
   }
 
   const filledItems = items.filter((i) => i.name.trim() !== '')
@@ -52,7 +53,7 @@ export default function ImportStockPage() {
   const totalAmount = items.reduce((sum, i) => sum + (Number(i.qty) || 0) * (Number(i.unitPrice) || 0), 0)
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       {/* Top bar */}
       <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-4">
         <span className="text-lg font-bold text-[#C4350A] shrink-0">TechStore Warehouse</span>
@@ -62,7 +63,7 @@ export default function ImportStockPage() {
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input
+            <input aria-label="Tìm kiếm sản phẩm..."
               type="text"
               placeholder="Tìm kiếm sản phẩm..."
               className="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
@@ -72,13 +73,13 @@ export default function ImportStockPage() {
 
         <div className="flex items-center gap-3 ml-auto">
           {/* Bell */}
-          <button className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button aria-label="Thao tác" type="button" className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
           </button>
           {/* Settings */}
-          <button className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button aria-label="Thao tác" type="button" className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -109,24 +110,26 @@ export default function ImportStockPage() {
           <div className="grid grid-cols-4 gap-5">
             {/* Mã phiếu */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 tracking-wider uppercase mb-2">
+              <label htmlFor="import-code" className="block text-xs font-semibold text-gray-500 tracking-wider uppercase mb-2">
                 Mã phiếu
               </label>
               <input
+                id="import-code"
                 type="text"
                 value="PN-2023-0045"
                 readOnly
+                aria-label="Mã phiếu nhập"
                 className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm text-gray-700 bg-gray-50 focus:outline-none cursor-default"
               />
             </div>
 
             {/* Nhà cung cấp */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 tracking-wider uppercase mb-2">
+              <label htmlFor="import-supplier" className="block text-xs font-semibold text-gray-500 tracking-wider uppercase mb-2">
                 Nhà cung cấp <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <select className="w-full border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#E8420A] appearance-none cursor-pointer bg-white">
+                <select id="import-supplier" aria-label="Nhà cung cấp" className="w-full border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#E8420A] appearance-none cursor-pointer bg-white">
                   <option value="">Chọn nhà cung cấp</option>
                   <option value="apple">Apple Vietnam</option>
                   <option value="samsung">Samsung Vietnam</option>
@@ -139,24 +142,28 @@ export default function ImportStockPage() {
 
             {/* Ngày nhập */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 tracking-wider uppercase mb-2">
+              <label htmlFor="import-date" className="block text-xs font-semibold text-gray-500 tracking-wider uppercase mb-2">
                 Ngày nhập <span className="text-red-500">*</span>
               </label>
               <input
+                id="import-date"
                 type="date"
                 defaultValue="2023-10-24"
+                aria-label="Ngày nhập"
                 className="w-full border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
               />
             </div>
 
             {/* Người thực hiện */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 tracking-wider uppercase mb-2">
+              <label htmlFor="import-staff" className="block text-xs font-semibold text-gray-500 tracking-wider uppercase mb-2">
                 Người thực hiện
               </label>
               <input
+                id="import-staff"
                 type="text"
                 defaultValue="Nguyễn Văn A"
+                aria-label="Người thực hiện"
                 className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm text-gray-700 bg-gray-50 focus:outline-none cursor-default"
                 readOnly
               />
@@ -168,7 +175,7 @@ export default function ImportStockPage() {
         <div className="bg-white rounded border border-gray-200 px-6 py-5">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-gray-800">Danh sách sản phẩm nhập</h2>
-            <button
+            <button aria-label="Thêm sản phẩm nhập" type="button"
               onClick={addItem}
               className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2 px-4 rounded text-sm transition-colors cursor-pointer"
             >
@@ -209,6 +216,7 @@ export default function ImportStockPage() {
                       value={item.name}
                       onChange={(e) => updateItem(item.id, 'name', e.target.value)}
                       placeholder="Chọn hoặc nhập tên s..."
+                      aria-label={`Tên sản phẩm dòng ${index + 1}`}
                       className={`w-full pr-8 pl-3 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-[#E8420A] ${
                         isEmpty
                           ? 'border border-dashed border-gray-300 text-gray-400 placeholder-gray-400'
@@ -232,6 +240,7 @@ export default function ImportStockPage() {
                     onChange={(e) => updateItem(item.id, 'qty', e.target.value)}
                     placeholder="0"
                     min="0"
+                    aria-label={`Số lượng dòng ${index + 1}`}
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] text-center"
                   />
 
@@ -242,6 +251,7 @@ export default function ImportStockPage() {
                     onChange={(e) => updateItem(item.id, 'unitPrice', e.target.value)}
                     placeholder="0"
                     min="0"
+                    aria-label={`Đơn giá nhập dòng ${index + 1}`}
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#E8420A] text-right"
                   />
 
@@ -264,6 +274,7 @@ export default function ImportStockPage() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Nhập ghi chú cho phiếu nhập kho này (không bắt buộc)..."
+              aria-label="Ghi chú phiếu nhập kho"
               rows={6}
               className="w-full border border-gray-200 rounded px-3 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E8420A] resize-none"
             />
@@ -293,7 +304,7 @@ export default function ImportStockPage() {
               </div>
             </div>
 
-            <button className="w-full bg-[#0D0F14] hover:bg-[#0D0F14] text-white font-semibold py-3 px-4 rounded transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
+            <button aria-label="Thao tác" type="button" className="w-full bg-[#0D0F14] hover:bg-[#0D0F14] text-white font-semibold py-3 px-4 rounded transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>

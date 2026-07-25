@@ -13,7 +13,7 @@ function ImportReceiptModal({ log, onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
+      <button type="button" aria-label="Đóng modal lịch sử nhập kho" onClick={onClose} className="fixed inset-0 bg-black/40 z-50 cursor-pointer border-none" />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded shadow-2xl w-full max-w-[560px] max-h-[90vh] overflow-y-auto">
           <div ref={ref} className="p-8">
@@ -49,8 +49,8 @@ function ImportReceiptModal({ log, onClose }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-gray-800">
-                  {log.items.map((it, i) => (
-                    <tr key={i}>
+                  {log.items.map((it) => (
+                    <tr key={it.id || it.sku || it.name}>
                       <td className="px-4 py-3">
                         <p className="font-medium text-gray-800">{it.name}</p>
                         <p className="text-xs text-gray-400 font-mono">{it.sku}</p>
@@ -109,8 +109,8 @@ function ImportReceiptModal({ log, onClose }) {
 
           {/* Actions */}
           <div className="flex gap-3 px-8 pb-6">
-            <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Đóng</button>
-            <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">
+            <button aria-label="Đóng phiếu nhập kho" type="button" onClick={onClose} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Đóng</button>
+            <button aria-label="In phiếu nhập kho" type="button" onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
               </svg>
@@ -129,7 +129,7 @@ export default function ImportLogTab({ logsList }) {
   const [status, setStatus]       = useState('')
   const [receipt, setReceipt]     = useState(null)
 
-  const suppliers = [...new Set(logsList.map(l => l.supplier).filter(Boolean))]
+  const suppliers = [...new Set(logsList.flatMap(l => l.supplier ? [l.supplier] : []))]
 
   const filtered = logsList.filter(l => {
     const q = search.toLowerCase()
@@ -164,7 +164,7 @@ export default function ImportLogTab({ logsList }) {
           <h1 className="text-2xl font-bold text-gray-900">Nhật ký nhập hàng</h1>
           <p className="text-sm text-gray-500 mt-0.5">{filtered.length} phiếu · Tổng giá trị: <span className="font-semibold text-[#E8420A]">{fmt(totalValue)}</span></p>
         </div>
-        <button
+        <button aria-label="Xuất dữ liệu Excel" type="button"
           onClick={handleExportExcel}
           className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer transition-colors bg-white"
         >
@@ -181,13 +181,13 @@ export default function ImportLogTab({ logsList }) {
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã phiếu, NCC, sản phẩm..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã phiếu, NCC, sản phẩm..." aria-label="Tìm kiếm nhật ký nhập kho" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A] bg-white" />
         </div>
-        <select value={supplier} onChange={e => setSupplier(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer bg-white">
+        <select value={supplier} onChange={e => setSupplier(e.target.value)} aria-label="Lọc theo nhà cung cấp" className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer bg-white">
           <option value="">Tất cả NCC</option>
           {suppliers.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select value={status} onChange={e => setStatus(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer bg-white">
+        <select value={status} onChange={e => setStatus(e.target.value)} aria-label="Lọc theo trạng thái" className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer bg-white">
           <option value="">Tất cả trạng thái</option>
           <option value="completed">Hoàn thành</option>
           <option value="pending">Chờ duyệt</option>
@@ -200,8 +200,8 @@ export default function ImportLogTab({ logsList }) {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
-              {['Mã phiếu','Ngày nhập','Nhà cung cấp','Mặt hàng','Tổng tiền','Thủ kho','Trạng thái',''].map((h,i) => (
-                <th key={i} className={`px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide ${i >= 4 ? 'text-right' : 'text-left'}`}>{h}</th>
+              {['Mã phiếu','Ngày nhập','Nhà cung cấp','Mặt hàng','Tổng tiền','Thủ kho','Trạng thái',''].map((h) => (
+                <th key={h} className={`px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide ${['Tổng tiền','Thủ kho','Trạng thái'].includes(h) ? 'text-right' : 'text-left'}`}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -222,8 +222,8 @@ export default function ImportLogTab({ logsList }) {
                 </td>
                 <td className="px-4 py-4">
                   <div className="space-y-0.5">
-                    {log.items.slice(0, 2).map((it, i) => (
-                      <p key={i} className="text-xs text-gray-500 truncate max-w-[160px]">· {it.name} <span className="text-gray-400">(×{it.qty})</span></p>
+                    {log.items.slice(0, 2).map((it) => (
+                      <p key={it.id || it.sku || it.name} className="text-xs text-gray-500 truncate max-w-[160px]">· {it.name} <span className="text-gray-400">(×{it.qty})</span></p>
                     ))}
                     {log.items.length > 2 && <p className="text-xs text-gray-400">+{log.items.length - 2} mặt hàng khác</p>}
                   </div>
@@ -238,7 +238,7 @@ export default function ImportLogTab({ logsList }) {
                   </span>
                 </td>
                 <td className="px-4 py-4 text-right">
-                  <button
+                  <button aria-label={`Xem chi tiết phiếu nhập ${log.id}`} type="button"
                     onClick={() => setReceipt(log)}
                     className="p-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-[#E8420A] rounded transition-colors cursor-pointer border-none"
                     title="Xem chi tiết phiếu nhập"

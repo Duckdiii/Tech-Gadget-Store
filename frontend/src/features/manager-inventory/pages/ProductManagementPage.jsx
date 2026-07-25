@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useReducer, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { apiFetch } from '../../../services/api'
 
@@ -25,35 +25,123 @@ const EMPTY_FORM = {
 const EMPTY_VARIANT_FORM = { ramGb: '', storageGb: '', color: '', price: '' }
 const EMPTY_IMAGE_FORM = { name: '', imageUrl: '' }
 
+const vndCurrencyFormatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+
 function formatCurrency(value) {
   if (value === null || value === undefined) return '—'
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
+  return vndCurrencyFormatter.format(value)
 }
 
-function Field({ label, error, children }) {
+function Field({ label, error, children, htmlFor }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</label>
+      {htmlFor ? (
+        <label htmlFor={htmlFor} className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</label>
+      ) : (
+        <span className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</span>
+      )}
       {children}
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
   )
 }
 
+const initialPageState = {
+  items: [],
+  categories: [],
+  brands: [],
+  loading: true,
+  error: null,
+  search: '',
+  debouncedSearch: '',
+  selectedCategory: 'ALL',
+  selectedBrand: 'ALL',
+  selectedStatus: 'ALL',
+  page: 0,
+  panel: null,
+  form: EMPTY_FORM,
+  formErrors: {},
+  saving: false,
+  showSpecs: false,
+  variants: [],
+  images: [],
+  variantForm: EMPTY_VARIANT_FORM,
+  imageForm: EMPTY_IMAGE_FORM,
+  subError: null,
+  subSaving: false,
+  discontinueId: null,
+  discontinuing: false,
+  toast: null,
+  stats: null,
+  activeKpi: null,
+  activeTab: 'active',
+  totalPages: 0,
+  totalItems: 0,
+}
+
+function pageStateReducer(state, action) {
+  switch (action.type) {
+    case 'SET':
+      // action.value may be an updater fn (prevValue => nextValue) — resolve it against the
+      // reducer's own fresh `state`, not a value closed over at render time, so setters that
+      // support functional updates (see setItems/setPage below) can be memoized without going stale.
+      return {
+        ...state,
+        [action.key]: typeof action.value === 'function' ? action.value(state[action.key]) : action.value,
+      }
+    case 'BATCH_SET':
+      return { ...state, ...action.payload }
+    default:
+      return state
+  }
+}
+
 export default function ProductManagementPage() {
   const location = useLocation()
-  const [products, setProducts]   = useState([])
-  const [brands, setBrands]       = useState([])
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [error, setError]         = useState(null)
-  const [search, setSearch]       = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [selectedBrand, setSelectedBrand] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
-  const [page, setPage]           = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
-  const [totalItems, setTotalItems] = useState(0)
+  const [pageState, dispatchPage] = useReducer(pageStateReducer, initialPageState)
+  const {
+    items, categories, brands, loading, error, search, debouncedSearch,
+    selectedCategory, selectedBrand, page, panel, form,
+    formErrors, saving, showSpecs, variants, images, variantForm, imageForm,
+    subError, subSaving, discontinueId, discontinuing, toast, stats, activeKpi, activeTab,
+    totalPages, totalItems
+  } = pageState
+
+  // Memoized (stable identity) because they're referenced from useEffect/useCallback dependency
+  // arrays below — the reducer resolves functional updates itself now, so no closure over
+  // `pageState` is needed here, and stale-closure re-runs are no longer a risk.
+  const setItems = useCallback((v) => dispatchPage({ type: 'SET', key: 'items', value: v }), [])
+  const setCategories = (v) => dispatchPage({ type: 'SET', key: 'categories', value: v })
+  const setBrands = (v) => dispatchPage({ type: 'SET', key: 'brands', value: v })
+  const setLoading = (v) => dispatchPage({ type: 'SET', key: 'loading', value: v })
+  const setError = (v) => dispatchPage({ type: 'SET', key: 'error', value: v })
+  const setSearch = (v) => dispatchPage({ type: 'SET', key: 'search', value: v })
+  const setDebouncedSearch = (v) => dispatchPage({ type: 'SET', key: 'debouncedSearch', value: v })
+  const setSelectedCategory = (v) => dispatchPage({ type: 'SET', key: 'selectedCategory', value: v })
+  const setSelectedBrand = (v) => dispatchPage({ type: 'SET', key: 'selectedBrand', value: v })
+  const setPage = useCallback((v) => dispatchPage({ type: 'SET', key: 'page', value: v }), [])
+  const setPanel = (v) => dispatchPage({ type: 'SET', key: 'panel', value: v })
+  const setForm = (v) => dispatchPage({ type: 'SET', key: 'form', value: typeof v === 'function' ? v(pageState.form) : v })
+  const setFormErrors = (v) => dispatchPage({ type: 'SET', key: 'formErrors', value: v })
+  const setSaving = (v) => dispatchPage({ type: 'SET', key: 'saving', value: v })
+  const setShowSpecs = (v) => dispatchPage({ type: 'SET', key: 'showSpecs', value: typeof v === 'function' ? v(pageState.showSpecs) : v })
+  const setVariants = (v) => dispatchPage({ type: 'SET', key: 'variants', value: typeof v === 'function' ? v(pageState.variants) : v })
+  const setImages = (v) => dispatchPage({ type: 'SET', key: 'images', value: typeof v === 'function' ? v(pageState.images) : v })
+  const setVariantForm = (v) => dispatchPage({ type: 'SET', key: 'variantForm', value: typeof v === 'function' ? v(pageState.variantForm) : v })
+  const setImageForm = (v) => dispatchPage({ type: 'SET', key: 'imageForm', value: typeof v === 'function' ? v(pageState.imageForm) : v })
+  const setSubError = (v) => dispatchPage({ type: 'SET', key: 'subError', value: v })
+  const setSubSaving = (v) => dispatchPage({ type: 'SET', key: 'subSaving', value: v })
+  const setDiscontinueId = (v) => dispatchPage({ type: 'SET', key: 'discontinueId', value: v })
+  const setDiscontinuing = (v) => dispatchPage({ type: 'SET', key: 'discontinuing', value: v })
+  const setToast = (v) => dispatchPage({ type: 'SET', key: 'toast', value: v })
+  const setStats = (v) => dispatchPage({ type: 'SET', key: 'stats', value: v })
+  const setActiveKpi = (v) => dispatchPage({ type: 'SET', key: 'activeKpi', value: v })
+  const setActiveTab = (v) => dispatchPage({ type: 'SET', key: 'activeTab', value: v })
+  const setTotalPages = (v) => dispatchPage({ type: 'SET', key: 'totalPages', value: v })
+  const setTotalItems = (v) => dispatchPage({ type: 'SET', key: 'totalItems', value: v })
+
+  const editingIdRef = useRef(null)
+  const setEditingId = (v) => { editingIdRef.current = v }
   const pageSize = 20
 
   useEffect(() => {
@@ -76,30 +164,7 @@ export default function ProductManagementPage() {
       setPage(0)
     }, 300)
     return () => clearTimeout(handler)
-  }, [search])
-
-  const [panel, setPanel]         = useState(null) // 'add' | 'edit' | null
-  const [editingId, setEditingId] = useState(null)
-  const [form, setForm]           = useState(EMPTY_FORM)
-  const [formErrors, setFormErrors] = useState({})
-  const [saving, setSaving]       = useState(false)
-  const [showSpecs, setShowSpecs] = useState(false)
-
-  const [variants, setVariants]     = useState([])
-  const [images, setImages]         = useState([])
-  const [variantForm, setVariantForm] = useState(EMPTY_VARIANT_FORM)
-  const [imageForm, setImageForm]     = useState(EMPTY_IMAGE_FORM)
-  const [subError, setSubError]       = useState(null)
-  const [subSaving, setSubSaving]     = useState(false)
-
-  const [discontinueId, setDiscontinueId] = useState(null)
-  const [discontinuing, setDiscontinuing] = useState(false)
-  const [toast, setToast]         = useState(null)
-
-  // ── KPI stats ──────────────────────────────────────────────────
-  const [stats, setStats]         = useState(null)
-  const [activeKpi, setActiveKpi] = useState(null) // null | 'outOfStock' | 'noVariants' | 'noImages'
-  const [activeTab, setActiveTab] = useState('active') // 'active' | 'discontinued'
+  }, [search, setPage])
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(null), 3200) }
   function reloadStats() { apiFetch('/api/manager/products/stats').then(setStats).catch(() => {}) }
@@ -135,13 +200,13 @@ export default function ProductManagementPage() {
 
     apiFetch(`/api/products/filter?${params.toString()}`)
       .then(data => {
-        setProducts((data.items || []).map(normalizeProduct))
+        setItems((data.items || []).map(normalizeProduct))
         setTotalPages(data.totalPages || 0)
         setTotalItems(data.totalItems || 0)
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
-  }, [debouncedSearch, selectedBrand, selectedCategory, activeKpi, activeTab, page])
+  }, [debouncedSearch, selectedBrand, selectedCategory, activeKpi, activeTab, page, setItems])
 
   useEffect(() => {
     loadProducts()
@@ -261,7 +326,7 @@ export default function ProductManagementPage() {
 
     setSaving(true)
     try {
-      const dto = await apiFetch(`/api/manager/products/${editingId}`, { method: 'PUT', body: JSON.stringify(buildPayload()) })
+      const dto = await apiFetch(`/api/manager/products/${editingIdRef.current}`, { method: 'PUT', body: JSON.stringify(buildPayload()) })
       applyDetail(dto)
       loadProducts()
       showToast('Đã cập nhật sản phẩm')
@@ -276,9 +341,9 @@ export default function ProductManagementPage() {
     setDiscontinuing(true)
     try {
       await apiFetch(`/api/manager/products/${id}/discontinue`, { method: 'PATCH' })
-      setProducts(p => p.filter(x => x.id !== id))
+      setItems(p => p.filter(x => x.id !== id))
       setDiscontinueId(null)
-      if (editingId === id) closePanel()
+      if (editingIdRef.current === id) closePanel()
       showToast('Đã ngừng kinh doanh sản phẩm')
       reloadStats()
     } catch (err) {
@@ -291,7 +356,7 @@ export default function ProductManagementPage() {
   async function handleReactivate(id) {
     try {
       await apiFetch(`/api/manager/products/${id}/reactivate`, { method: 'PATCH' })
-      setProducts(p => p.filter(x => x.id !== id))
+      setItems(p => p.filter(x => x.id !== id))
       showToast('Đã kích hoạt lại sản phẩm')
       reloadStats()
     } catch (err) {
@@ -313,7 +378,7 @@ export default function ProductManagementPage() {
         color: variantForm.color.trim(),
         price: Number(variantForm.price),
       }
-      const dto = await apiFetch(`/api/manager/products/${editingId}/variants`, { method: 'POST', body: JSON.stringify(payload) })
+      const dto = await apiFetch(`/api/manager/products/${editingIdRef.current}/variants`, { method: 'POST', body: JSON.stringify(payload) })
       setVariants(v => [...v, dto])
       setVariantForm(EMPTY_VARIANT_FORM)
       loadProducts()
@@ -327,7 +392,7 @@ export default function ProductManagementPage() {
   async function handleRemoveVariant(variantId) {
     setSubError(null)
     try {
-      await apiFetch(`/api/manager/products/${editingId}/variants/${variantId}`, { method: 'DELETE' })
+      await apiFetch(`/api/manager/products/${editingIdRef.current}/variants/${variantId}`, { method: 'DELETE' })
       setVariants(v => v.filter(x => x.id !== variantId))
       loadProducts()
     } catch (err) {
@@ -344,7 +409,7 @@ export default function ProductManagementPage() {
     setSubError(null)
     try {
       const payload = { name: imageForm.name.trim() || null, imageUrl: imageForm.imageUrl.trim() }
-      const dto = await apiFetch(`/api/manager/products/${editingId}/images`, { method: 'POST', body: JSON.stringify(payload) })
+      const dto = await apiFetch(`/api/manager/products/${editingIdRef.current}/images`, { method: 'POST', body: JSON.stringify(payload) })
       setImages(i => [...i, dto])
       setImageForm(EMPTY_IMAGE_FORM)
       loadProducts()
@@ -358,7 +423,7 @@ export default function ProductManagementPage() {
   async function handleRemoveImage(imageId) {
     setSubError(null)
     try {
-      await apiFetch(`/api/manager/products/${editingId}/images/${imageId}`, { method: 'DELETE' })
+      await apiFetch(`/api/manager/products/${editingIdRef.current}/images/${imageId}`, { method: 'DELETE' })
       setImages(i => i.filter(x => x.id !== imageId))
       loadProducts()
     } catch (err) {
@@ -376,14 +441,14 @@ export default function ProductManagementPage() {
   const panelOpen = panel === 'add' || panel === 'edit'
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       <div className="flex-1 px-8 py-7 space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Sản phẩm</h1>
             <p className="text-sm text-gray-500 mt-0.5">Thêm mới và quản lý sản phẩm, phiên bản, hình ảnh</p>
           </div>
-          <button onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
+          <button aria-label="Thao tác" type="button" onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
             Thêm sản phẩm
           </button>
@@ -451,7 +516,7 @@ export default function ProductManagementPage() {
             }
             const c = colorMap[card.color]
             return (
-              <button
+              <button aria-label="Thao tác" type="button"
                 key={card.label}
                 onClick={() => {
                   if (card.key === null) { setActiveKpi(null); setPage(0); return }
@@ -478,7 +543,7 @@ export default function ProductManagementPage() {
           </div>
         )}
 
-        {/* ── Active/Discontinued Tabs ─────────────────────────────────── */}
+          {/* ── Active/Discontinued Tabs ─────────────────────────────────── */}
         <div className="border-b border-gray-200 flex items-center justify-between">
           <div className="flex gap-6">
             {[
@@ -487,7 +552,7 @@ export default function ProductManagementPage() {
             ].map(tab => {
               const active = activeTab === tab.id
               return (
-                <button
+                <button aria-label={tab.label} type="button"
                   key={tab.id}
                   onClick={() => { setActiveTab(tab.id); setActiveKpi(null); setPage(0) }}
                   className={`pb-3 text-sm font-bold relative transition-colors cursor-pointer border-none bg-transparent ${
@@ -507,12 +572,13 @@ export default function ProductManagementPage() {
         <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:max-w-xs">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm sản phẩm..." className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm sản phẩm..." aria-label="Tìm kiếm sản phẩm" className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
 
           <select
             value={selectedBrand}
             onChange={handleBrandChange}
+            aria-label="Lọc theo thương hiệu"
             className="border border-gray-200 rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
           >
             <option value="">Tất cả thương hiệu</option>
@@ -524,6 +590,7 @@ export default function ProductManagementPage() {
           <select
             value={selectedCategory}
             onChange={handleCategoryChange}
+            aria-label="Lọc theo danh mục"
             className="border border-gray-200 rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
           >
             <option value="">Tất cả danh mục</option>
@@ -533,7 +600,7 @@ export default function ProductManagementPage() {
           </select>
 
           {(search || selectedBrand || selectedCategory || activeKpi) && (
-            <button
+            <button aria-label="Xóa tất cả bộ lọc" type="button"
               onClick={handleClearFilters}
               className="text-xs text-gray-500 hover:text-red-500 font-semibold px-2 py-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer border-none bg-transparent"
             >
@@ -557,7 +624,7 @@ export default function ProductManagementPage() {
             ].map(chip => {
               const isActive = activeKpi === chip.key
               return (
-                <button
+                <button aria-label={`Lọc ${chip.label}`} type="button"
                   key={chip.label}
                   onClick={() => { setActiveKpi(isActive && chip.key !== null ? null : chip.key); setPage(0) }}
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold transition-all cursor-pointer ${
@@ -585,15 +652,15 @@ export default function ProductManagementPage() {
               <table className="w-full text-sm min-w-[950px]">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    {['Ảnh', 'Tên sản phẩm', 'Thương hiệu', 'Danh mục', 'Giá từ', 'Tồn kho', 'Phiên bản', ''].map((h, i) => (
-                      <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                    {['Ảnh', 'Tên sản phẩm', 'Thương hiệu', 'Danh mục', 'Giá từ', 'Tồn kho', 'Phiên bản', ''].map((h) => (
+                      <th key={h || 'actions'} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {products.length === 0
+                  {items.length === 0
                     ? <tr><td colSpan={8} className="text-center py-12 text-gray-400">Không tìm thấy sản phẩm nào</td></tr>
-                    : products.map(p => (
+                    : items.map(p => (
                       <tr key={p.id} className="hover:bg-gray-50/70 transition-colors group">
                         <td className="px-4 py-3">
                           {p.imageUrl ? (
@@ -672,15 +739,15 @@ export default function ProductManagementPage() {
                         </td>
                         <td className="px-4 py-4">
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
-                            <button onClick={() => openEdit(p)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
+                            <button aria-label="Thao tác" type="button" onClick={() => openEdit(p)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
                               Sửa →
                             </button>
                             {activeTab === 'active' ? (
-                              <button onClick={() => setDiscontinueId(p.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50">
+                              <button aria-label="Thao tác" type="button" onClick={() => setDiscontinueId(p.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50">
                                 Ngừng kinh doanh
                               </button>
                             ) : (
-                              <button onClick={() => handleReactivate(p.id)} className="text-xs text-emerald-600 hover:text-emerald-800 font-medium cursor-pointer px-2 py-1 rounded hover:bg-emerald-50">
+                              <button aria-label="Thao tác" type="button" onClick={() => handleReactivate(p.id)} className="text-xs text-emerald-600 hover:text-emerald-800 font-medium cursor-pointer px-2 py-1 rounded hover:bg-emerald-50">
                                 Kích hoạt lại
                               </button>
                             )}
@@ -699,7 +766,7 @@ export default function ProductManagementPage() {
                 {totalItems === 0 ? 'Không có sản phẩm nào' : `Hiển thị ${rangeStart} - ${rangeEnd} trên ${totalItems.toLocaleString('vi-VN')}`}
               </span>
               <div className="flex items-center gap-1">
-                <button
+                <button aria-label="Thao tác" type="button"
                   onClick={() => setPage((p) => Math.max(0, p - 1))}
                   disabled={page === 0}
                   className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
@@ -710,7 +777,7 @@ export default function ProductManagementPage() {
                 </button>
 
                 {pageButtons.map((p) => (
-                  <button
+                  <button aria-label="Thao tác" type="button"
                     key={p}
                     onClick={() => setPage(p)}
                     className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium cursor-pointer transition-colors ${
@@ -721,7 +788,7 @@ export default function ProductManagementPage() {
                   </button>
                 ))}
 
-                <button
+                <button aria-label="Thao tác" type="button"
                   onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                   disabled={page >= totalPages - 1}
                   className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
@@ -736,7 +803,7 @@ export default function ProductManagementPage() {
         )}
       </div>
 
-      {panelOpen && <div className="fixed inset-0 bg-black/30 z-40" onClick={closePanel} />}
+      {panelOpen && <button type="button" aria-label="Đóng bảng sản phẩm" onClick={closePanel} className="fixed inset-0 bg-black/30 z-40 cursor-pointer border-none" />}
 
       {panelOpen && (
         <div className="fixed top-0 right-0 h-full w-full sm:w-[520px] bg-white shadow-2xl z-50 flex flex-col">
@@ -745,26 +812,26 @@ export default function ProductManagementPage() {
               <h2 className="text-lg font-bold text-gray-900">{panel === 'add' ? 'Thêm sản phẩm mới' : 'Sửa sản phẩm'}</h2>
               <p className="text-xs text-gray-400 mt-0.5">Điền đầy đủ thông tin bên dưới</p>
             </div>
-            <button onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer border-none bg-transparent"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
             <div className="space-y-4">
               <Field label="Tên sản phẩm *" error={formErrors.name}>
-                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="iPhone 15 Pro Max" className={inp} />
+                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="iPhone 15 Pro Max" aria-label="Tên sản phẩm" className={inp} />
               </Field>
               <Field label="Mô tả">
-                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Mô tả sản phẩm..." className={inp} />
+                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Mô tả sản phẩm..." aria-label="Mô tả sản phẩm" className={inp} />
               </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Thương hiệu *" error={formErrors.brandId}>
-                  <select value={form.brandId} onChange={e => setForm(f => ({ ...f, brandId: e.target.value }))} className={inp}>
+                  <select value={form.brandId} onChange={e => setForm(f => ({ ...f, brandId: e.target.value }))} aria-label="Chọn thương hiệu" className={inp}>
                     <option value="">Chọn thương hiệu</option>
                     {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                   </select>
                 </Field>
                 <Field label="Danh mục *" error={formErrors.categoryId}>
-                  <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} className={inp}>
+                  <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} aria-label="Chọn danh mục" className={inp}>
                     <option value="">Chọn danh mục</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
@@ -773,7 +840,7 @@ export default function ProductManagementPage() {
             </div>
 
             <div className="border-t border-gray-100 pt-4">
-              <button onClick={() => setShowSpecs(s => !s)} className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 cursor-pointer">
+              <button aria-label="Thao tác" type="button" onClick={() => setShowSpecs(s => !s)} className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 cursor-pointer">
                 Thông số kỹ thuật
                 <svg className={`w-4 h-4 transition-transform ${showSpecs ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               </button>
@@ -820,18 +887,18 @@ export default function ProductManagementPage() {
                     {variants.map(v => (
                       <div key={v.id} className="flex items-center justify-between bg-gray-50 rounded px-3 py-2 text-xs">
                         <span className="text-gray-700">{v.ramGb}GB / {v.storageGb}GB / {v.color} — {formatCurrency(v.price)}</span>
-                        <button onClick={() => handleRemoveVariant(v.id)} className="text-red-500 hover:text-red-700 cursor-pointer font-medium">Xóa</button>
+                        <button aria-label="Thao tác" type="button" onClick={() => handleRemoveVariant(v.id)} className="text-red-500 hover:text-red-700 cursor-pointer font-medium">Xóa</button>
                       </div>
                     ))}
                     {variants.length === 0 && <p className="text-xs text-gray-400">Chưa có phiên bản nào</p>}
                   </div>
                   <div className="grid grid-cols-4 gap-1.5">
-                    <input type="number" placeholder="RAM (GB)" value={variantForm.ramGb} onChange={e => setVariantForm(f => ({ ...f, ramGb: e.target.value }))} className={`${inp} text-xs px-2 py-1.5`} />
-                    <input type="number" placeholder="Bộ nhớ (GB)" value={variantForm.storageGb} onChange={e => setVariantForm(f => ({ ...f, storageGb: e.target.value }))} className={`${inp} text-xs px-2 py-1.5`} />
-                    <input placeholder="Màu sắc" value={variantForm.color} onChange={e => setVariantForm(f => ({ ...f, color: e.target.value }))} className={`${inp} text-xs px-2 py-1.5`} />
-                    <input type="number" placeholder="Giá" value={variantForm.price} onChange={e => setVariantForm(f => ({ ...f, price: e.target.value }))} className={`${inp} text-xs px-2 py-1.5`} />
+                    <input aria-label="RAM (GB)" type="number" placeholder="RAM (GB)" value={variantForm.ramGb} onChange={e => setVariantForm(f => ({ ...f, ramGb: e.target.value }))} className={`${inp} text-xs px-2 py-1.5`} />
+                    <input aria-label="Bộ nhớ (GB)" type="number" placeholder="Bộ nhớ (GB)" value={variantForm.storageGb} onChange={e => setVariantForm(f => ({ ...f, storageGb: e.target.value }))} className={`${inp} text-xs px-2 py-1.5`} />
+                    <input aria-label="Màu sắc" placeholder="Màu sắc" value={variantForm.color} onChange={e => setVariantForm(f => ({ ...f, color: e.target.value }))} className={`${inp} text-xs px-2 py-1.5`} />
+                    <input aria-label="Giá" type="number" placeholder="Giá" value={variantForm.price} onChange={e => setVariantForm(f => ({ ...f, price: e.target.value }))} className={`${inp} text-xs px-2 py-1.5`} />
                   </div>
-                  <button onClick={handleAddVariant} disabled={subSaving} className="mt-2 w-full py-1.5 border border-dashed border-gray-300 rounded text-xs font-medium text-gray-500 hover:border-[#E8420A] hover:text-[#E8420A] cursor-pointer disabled:opacity-60">
+                  <button aria-label="Thao tác" type="button" onClick={handleAddVariant} disabled={subSaving} className="mt-2 w-full py-1.5 border border-dashed border-gray-300 rounded text-xs font-medium text-gray-500 hover:border-[#E8420A] hover:text-[#E8420A] cursor-pointer disabled:opacity-60">
                     + Thêm phiên bản
                   </button>
                 </div>
@@ -843,14 +910,14 @@ export default function ProductManagementPage() {
                       <div key={img.id} className="flex items-center justify-between bg-gray-50 rounded px-3 py-2 text-xs gap-2">
                         <img src={img.imageUrl} alt={img.name || ''} className="w-8 h-8 rounded object-cover border border-gray-100 shrink-0" />
                         <span className="text-gray-700 truncate flex-1">{img.name || img.imageUrl}</span>
-                        <button onClick={() => handleRemoveImage(img.id)} className="text-red-500 hover:text-red-700 cursor-pointer font-medium shrink-0">Xóa</button>
+                        <button aria-label="Thao tác" type="button" onClick={() => handleRemoveImage(img.id)} className="text-red-500 hover:text-red-700 cursor-pointer font-medium shrink-0">Xóa</button>
                       </div>
                     ))}
                     {images.length === 0 && <p className="text-xs text-gray-400">Chưa có hình ảnh nào</p>}
                   </div>
                   <div className="grid grid-cols-3 gap-1.5">
-                    <input placeholder="Tên ảnh (tùy chọn)" value={imageForm.name} onChange={e => setImageForm(f => ({ ...f, name: e.target.value }))} className={`${inp} text-xs px-2 py-1.5 col-span-1`} />
-                    <input placeholder="URL ảnh" value={imageForm.imageUrl} onChange={e => setImageForm(f => ({ ...f, imageUrl: e.target.value }))} className={`${inp} text-xs px-2 py-1.5 col-span-2`} />
+                    <input aria-label="Tên ảnh (tùy chọn)" placeholder="Tên ảnh (tùy chọn)" value={imageForm.name} onChange={e => setImageForm(f => ({ ...f, name: e.target.value }))} className={`${inp} text-xs px-2 py-1.5 col-span-1`} />
+                    <input aria-label="URL ảnh" placeholder="URL ảnh" value={imageForm.imageUrl} onChange={e => setImageForm(f => ({ ...f, imageUrl: e.target.value }))} className={`${inp} text-xs px-2 py-1.5 col-span-2`} />
                   </div>
                   {/* Live URL preview */}
                   {imageForm.imageUrl.trim() && (
@@ -878,7 +945,7 @@ export default function ProductManagementPage() {
                       </div>
                     </div>
                   )}
-                  <button onClick={handleAddImage} disabled={subSaving} className="mt-2 w-full py-1.5 border border-dashed border-gray-300 rounded text-xs font-medium text-gray-500 hover:border-[#E8420A] hover:text-[#E8420A] cursor-pointer disabled:opacity-60">
+                  <button aria-label="Thao tác" type="button" onClick={handleAddImage} disabled={subSaving} className="mt-2 w-full py-1.5 border border-dashed border-gray-300 rounded text-xs font-medium text-gray-500 hover:border-[#E8420A] hover:text-[#E8420A] cursor-pointer disabled:opacity-60">
                     + Thêm ảnh
                   </button>
                 </div>
@@ -887,8 +954,8 @@ export default function ProductManagementPage() {
           </div>
 
           <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-            <button onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
-            <button onClick={panel === 'add' ? handleAdd : handleSaveEdit} disabled={saving} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Đóng</button>
+            <button aria-label="Chỉnh sửa" type="button" onClick={panel === 'add' ? handleAdd : handleSaveEdit} disabled={saving} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
               {saving ? 'Đang lưu...' : 'Lưu'}
             </button>
           </div>
@@ -896,7 +963,7 @@ export default function ProductManagementPage() {
       )}
 
       {discontinueId && (() => {
-        const target = products.find(p => p.id === discontinueId)
+        const target = items.find(p => p.id === discontinueId)
         return (
           <>
             <div className="fixed inset-0 bg-black/50 z-[60]" />
@@ -908,8 +975,8 @@ export default function ProductManagementPage() {
                   Sản phẩm{target ? ` "${target.name}"` : ''} sẽ bị ẩn khỏi cửa hàng. Lịch sử đơn hàng liên quan vẫn được giữ nguyên
                 </p>
                 <div className="flex gap-3 mt-6">
-                  <button onClick={() => setDiscontinueId(null)} disabled={discontinuing} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer">Hủy</button>
-                  <button onClick={() => handleDiscontinue(discontinueId)} disabled={discontinuing} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+                  <button  type="button" onClick={() => setDiscontinueId(null)} disabled={discontinuing} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer">Hủy</button>
+                  <button aria-label="Thao tác" type="button" onClick={() => handleDiscontinue(discontinueId)} disabled={discontinuing} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
                     {discontinuing ? 'Đang xử lý...' : 'Xác nhận'}
                   </button>
                 </div>

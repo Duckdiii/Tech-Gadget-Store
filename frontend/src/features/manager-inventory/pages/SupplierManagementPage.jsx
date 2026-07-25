@@ -12,10 +12,14 @@ function normalizeSupplier(dto) {
   }
 }
 
-function Field({ label, error, children }) {
+function Field({ label, error, children, htmlFor }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</label>
+      {htmlFor ? (
+        <label htmlFor={htmlFor} className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</label>
+      ) : (
+        <span className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</span>
+      )}
       {children}
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
@@ -128,14 +132,14 @@ export default function SupplierManagementPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       <div className="flex-1 px-8 py-7 space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Nhà cung cấp</h1>
             <p className="text-sm text-gray-500 mt-0.5">Thêm mới và quản lý nhà cung cấp</p>
           </div>
-          <button onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
+          <button aria-label="Thêm nhà cung cấp mới" type="button" onClick={openAdd} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
             Thêm nhà cung cấp
           </button>
@@ -144,7 +148,7 @@ export default function SupplierManagementPage() {
         <div className="bg-white rounded border border-gray-200 px-5 py-3.5 flex items-center gap-3">
           <div className="relative flex-1 max-w-xs">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên, SĐT, email..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tên, SĐT, email..." aria-label="Tìm kiếm nhà cung cấp" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]" />
           </div>
           <span className="ml-auto text-xs text-gray-400 shrink-0">{filtered.length} / {suppliers.length} nhà cung cấp</span>
         </div>
@@ -157,8 +161,8 @@ export default function SupplierManagementPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Tên nhà cung cấp', 'Số điện thoại', 'Email', 'Địa chỉ', ''].map((h, i) => (
-                    <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                  {['Tên nhà cung cấp', 'Số điện thoại', 'Email', 'Địa chỉ', ''].map((h) => (
+                    <th key={h || 'actions'} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -178,10 +182,10 @@ export default function SupplierManagementPage() {
                       <td className="px-4 py-4 text-gray-500">{s.address || '—'}</td>
                       <td className="px-4 py-4">
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-1">
-                          <button onClick={() => openEdit(s)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50">
+                          <button aria-label={`Sửa nhà cung cấp ${s.name}`} type="button" onClick={() => openEdit(s)} className="text-xs text-[#E8420A] hover:text-[#C4350A] font-medium cursor-pointer px-2 py-1 rounded hover:bg-orange-50 border-none bg-transparent">
                             Sửa →
                           </button>
-                          <button onClick={() => setDeleteId(s.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50">
+                          <button aria-label={`Xóa nhà cung cấp ${s.name}`} type="button" onClick={() => setDeleteId(s.id)} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50 border-none bg-transparent">
                             Xóa
                           </button>
                         </div>
@@ -195,31 +199,31 @@ export default function SupplierManagementPage() {
         )}
       </div>
 
-      {panel && <div className="fixed inset-0 bg-black/30 z-40" onClick={closePanel} />}
+      {panel && <button type="button" aria-label="Đóng bảng nhà cung cấp" onClick={closePanel} className="fixed inset-0 bg-black/30 z-40 cursor-pointer border-none" />}
 
       {panel === 'add' && (
         <div className="fixed top-0 right-0 h-full w-[440px] bg-white shadow-2xl z-50 flex flex-col">
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <div><h2 className="text-lg font-bold text-gray-900">Thêm nhà cung cấp mới</h2><p className="text-xs text-gray-400 mt-0.5">Điền đầy đủ thông tin bên dưới</p></div>
-            <button onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer border-none bg-transparent"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
             <Field label="Tên nhà cung cấp *" error={formErrors.name}>
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Tech Corp" className={inp} />
+              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Tech Corp" aria-label="Tên nhà cung cấp" className={inp} />
             </Field>
             <Field label="Số điện thoại *" error={formErrors.phone}>
-              <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="0901234567" className={inp} />
+              <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="0901234567" aria-label="Số điện thoại nhà cung cấp" className={inp} />
             </Field>
             <Field label="Email *" error={formErrors.email}>
-              <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="contact@techcorp.com" type="email" className={inp} />
+              <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="contact@techcorp.com" type="email" aria-label="Email nhà cung cấp" className={inp} />
             </Field>
             <Field label="Địa chỉ *" error={formErrors.address}>
-              <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="123 Tech Street" className={inp} />
+              <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="123 Tech Street" aria-label="Địa chỉ nhà cung cấp" className={inp} />
             </Field>
           </div>
           <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-            <button onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
-            <button onClick={handleAdd} disabled={saving} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ</button>
+            <button aria-label="Thêm nhà cung cấp" type="button" onClick={handleAdd} disabled={saving} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">
               {saving ? 'Đang lưu...' : 'Lưu'}
             </button>
           </div>
@@ -230,7 +234,7 @@ export default function SupplierManagementPage() {
         <div className="fixed top-0 right-0 h-full w-[440px] bg-white shadow-2xl z-50 flex flex-col">
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <div><h2 className="text-lg font-bold text-gray-900">Sửa nhà cung cấp</h2><p className="text-xs text-gray-400 mt-0.5">Cập nhật thông tin bên dưới</p></div>
-            <button onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="p-2 hover:bg-gray-100 rounded cursor-pointer border-none bg-transparent"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
             {editLocked && (
@@ -239,21 +243,21 @@ export default function SupplierManagementPage() {
               </div>
             )}
             <Field label="Tên nhà cung cấp *" error={formErrors.name}>
-              <input value={form.name} disabled={editLocked} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Tech Corp" className={`${inp} disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`} />
+              <input value={form.name} disabled={editLocked} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Tech Corp" aria-label="Tên nhà cung cấp" className={`${inp} disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`} />
             </Field>
             <Field label="Số điện thoại *" error={formErrors.phone}>
-              <input value={form.phone} disabled={editLocked} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="0901234567" className={`${inp} disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`} />
+              <input value={form.phone} disabled={editLocked} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="0901234567" aria-label="Số điện thoại nhà cung cấp" className={`${inp} disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`} />
             </Field>
             <Field label="Email *" error={formErrors.email}>
-              <input value={form.email} disabled={editLocked} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="contact@techcorp.com" type="email" className={`${inp} disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`} />
+              <input value={form.email} disabled={editLocked} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="contact@techcorp.com" type="email" aria-label="Email nhà cung cấp" className={`${inp} disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`} />
             </Field>
             <Field label="Địa chỉ *" error={formErrors.address}>
-              <input value={form.address} disabled={editLocked} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="123 Tech Street" className={`${inp} disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`} />
+              <input value={form.address} disabled={editLocked} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="123 Tech Street" aria-label="Địa chỉ nhà cung cấp" className={`${inp} disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`} />
             </Field>
           </div>
           <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
-            <button onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">Huỷ</button>
-            <button onClick={handleSaveEdit} disabled={saving} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+            <button aria-label="Đóng" type="button" onClick={closePanel} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer bg-white">Huỷ</button>
+            <button aria-label="Lưu sửa nhà cung cấp" type="button" onClick={handleSaveEdit} disabled={saving} className="flex-1 py-2.5 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors border-none">
               {saving ? 'Đang lưu...' : 'Lưu'}
             </button>
           </div>
@@ -273,8 +277,8 @@ export default function SupplierManagementPage() {
                   Are you sure you want to remove this supplier{target ? ` "${target.name}"` : ''}? This action cannot be undone
                 </p>
                 <div className="flex gap-3 mt-6">
-                  <button onClick={() => setDeleteId(null)} disabled={removing} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer">Cancel</button>
-                  <button onClick={() => handleRemove(deleteId)} disabled={removing} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+                  <button  type="button" onClick={() => setDeleteId(null)} disabled={removing} className="flex-1 py-2.5 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 cursor-pointer">Cancel</button>
+                  <button aria-label="Thao tác" type="button" onClick={() => handleRemove(deleteId)} disabled={removing} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
                     {removing ? 'Đang xóa...' : 'Confirm'}
                   </button>
                 </div>

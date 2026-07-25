@@ -54,7 +54,7 @@ export default function InventoryTab({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button
+          <button aria-label="Xuất CSV" type="button"
             onClick={handleExportCSV}
             className="flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded text-sm cursor-pointer transition-colors bg-white"
           >
@@ -104,7 +104,7 @@ export default function InventoryTab({
         ].map(card => {
           const isSelected = statusFilter === card.id
           return (
-            <button
+            <button aria-label={`Lọc theo ${card.label}`} type="button"
               key={card.label}
               onClick={() => setStatusFilter(card.id)}
               className={`text-left p-5 rounded-xl bg-gradient-to-br ${card.color} text-white shadow-md transition-all hover:shadow-lg cursor-pointer border-none relative overflow-hidden ${
@@ -131,6 +131,7 @@ export default function InventoryTab({
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Tìm sản phẩm..."
+            aria-label="Tìm kiếm sản phẩm"
             className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]"
           />
         </div>
@@ -138,6 +139,7 @@ export default function InventoryTab({
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
+          aria-label="Lọc theo trạng thái kho"
           className="border border-gray-200 rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E8420A] cursor-pointer"
         >
           <option value="">Trạng thái kho</option>
@@ -149,7 +151,7 @@ export default function InventoryTab({
         </select>
 
         {(search || statusFilter) && (
-          <button
+          <button aria-label="Xóa bộ lọc" type="button"
             onClick={() => { setSearch(''); setStatusFilter('') }}
             className="text-xs text-gray-500 hover:text-red-500 font-semibold px-2 py-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer border-none bg-transparent"
           >
@@ -168,8 +170,8 @@ export default function InventoryTab({
       <div className="bg-white rounded border border-gray-200 overflow-hidden">
         {/* Header row */}
         <div className="grid grid-cols-[3.5rem_1fr_8rem_8rem_12rem_8rem] gap-2 px-5 py-3 border-b border-gray-100 bg-gray-50">
-          {['ẢNH', 'SẢN PHẨM', 'DANH MỤC', 'GIÁ (VNĐ)', 'MỨC TỒN KHO', 'TRẠNG THÁI'].map((h, i) => (
-            <span key={i} className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">{h}</span>
+          {['ẢNH', 'SẢN PHẨM', 'DANH MỤC', 'GIÁ (VNĐ)', 'MỨC TỒN KHO', 'TRẠNG THÁI'].map((h) => (
+            <span key={h} className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">{h}</span>
           ))}
         </div>
 
@@ -209,14 +211,14 @@ export default function InventoryTab({
               {totalItems === 0 ? '' : `Hiển thị ${rangeStart}–${rangeEnd} trên ${totalItems.toLocaleString('vi-VN')} sản phẩm`}
             </span>
             <div className="flex items-center gap-1">
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={page === 0}
                 className="w-8 h-8 rounded text-sm font-medium cursor-pointer border-none bg-transparent text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
               >‹</button>
 
               {pageButtons.map(p => (
-                <button
+                <button aria-label="Thao tác" type="button"
                   key={p}
                   onClick={() => setPage(p)}
                   className={`w-8 h-8 rounded text-sm font-medium cursor-pointer border-none bg-transparent ${
@@ -225,7 +227,7 @@ export default function InventoryTab({
                 >{p + 1}</button>
               ))}
 
-              <button
+              <button aria-label="Thao tác" type="button"
                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
                 className="w-8 h-8 rounded text-sm font-medium cursor-pointer border-none bg-transparent text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"

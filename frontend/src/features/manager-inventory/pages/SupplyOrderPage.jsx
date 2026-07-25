@@ -207,7 +207,7 @@ export default function SupplyOrderPage() {
   const inp = 'w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8420A]'
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-dvh bg-gray-50">
       <div className="flex-1 px-8 py-7 space-y-5">
 
         {mode === 'list' && (
@@ -217,7 +217,7 @@ export default function SupplyOrderPage() {
                 <h1 className="text-2xl font-bold text-gray-900">Đơn nhập hàng</h1>
                 <p className="text-sm text-gray-500 mt-0.5">Quản lý các đơn nhập hàng từ nhà cung cấp</p>
               </div>
-              <button onClick={openCreate} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
+              <button aria-label="Tạo đơn nhập hàng mới" type="button" onClick={openCreate} className="flex items-center gap-2 bg-[#E8420A] hover:bg-[#C4350A] text-white font-semibold py-2.5 px-4 rounded text-sm transition-colors cursor-pointer">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                 Tạo đơn nhập hàng
               </button>
@@ -231,8 +231,8 @@ export default function SupplyOrderPage() {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>
-                      {['Nhà cung cấp', 'Trạng thái', 'Ngày đặt', 'Ngày giao dự kiến', 'Tổng giá trị'].map((h, i) => (
-                        <th key={i} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
+                      {['Nhà cung cấp', 'Trạng thái', 'Ngày đặt', 'Ngày giao dự kiến', 'Tổng giá trị'].map((h) => (
+                        <th key={h} className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wide text-left">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -242,7 +242,15 @@ export default function SupplyOrderPage() {
                       : orders.map(o => {
                         const st = STATUS_LABEL[o.status] || STATUS_LABEL.PENDING
                         return (
-                          <tr key={o.id} onClick={() => openDetail(o.id)} className="hover:bg-gray-50/70 transition-colors cursor-pointer">
+                          <tr
+                            key={o.id}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Xem chi tiết đơn nhập hàng của ${o.supplierName}`}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openDetail(o.id) }}
+                            onClick={() => openDetail(o.id)}
+                            className="hover:bg-gray-50/70 transition-colors cursor-pointer"
+                          >
                             <td className="px-4 py-4 font-semibold text-gray-800">{o.supplierName}</td>
                             <td className="px-4 py-4">
                               <span className={`inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full ${st.bg} ${st.text}`}>{st.label}</span>
@@ -268,27 +276,27 @@ export default function SupplyOrderPage() {
                 <h1 className="text-2xl font-bold text-gray-900">Tạo đơn nhập hàng</h1>
                 <p className="text-sm text-gray-500 mt-0.5">Chọn nhà cung cấp và sản phẩm cần nhập</p>
               </div>
-              <button onClick={backToList} className="text-sm text-gray-500 hover:text-gray-700 font-medium cursor-pointer">← Quay lại danh sách</button>
+              <button aria-label="Quay lại danh sách đơn nhập hàng" type="button" onClick={backToList} className="text-sm text-gray-500 hover:text-gray-700 font-medium cursor-pointer border-none bg-transparent">← Quay lại danh sách</button>
             </div>
 
             <div className="bg-white rounded border border-gray-200 px-6 py-5">
               <h2 className="text-base font-bold text-gray-800 mb-4">Thông tin chung</h2>
               <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Nhà cung cấp *</label>
-                  <select value={supplierId} onChange={e => setSupplierId(e.target.value)} className={inp}>
+                  <label htmlFor="supplier-select" className="block text-xs font-semibold text-gray-500 uppercase mb-2">Nhà cung cấp *</label>
+                  <select id="supplier-select" value={supplierId} onChange={e => setSupplierId(e.target.value)} aria-label="Nhà cung cấp" className={inp}>
                     <option value="">Chọn nhà cung cấp</option>
                     {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Ngày giao dự kiến *</label>
-                  <input type="date" value={expectedDeliveryDate} onChange={e => setExpectedDeliveryDate(e.target.value)} className={inp} />
+                  <label htmlFor="delivery-date-input" className="block text-xs font-semibold text-gray-500 uppercase mb-2">Ngày giao dự kiến *</label>
+                  <input id="delivery-date-input" type="date" value={expectedDeliveryDate} onChange={e => setExpectedDeliveryDate(e.target.value)} aria-label="Ngày giao dự kiến" className={inp} />
                 </div>
               </div>
               <div className="mt-4">
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Ghi chú</label>
-                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Không bắt buộc" className={`${inp} resize-none`} />
+                <label htmlFor="order-notes-textarea" className="block text-xs font-semibold text-gray-500 uppercase mb-2">Ghi chú</label>
+                <textarea id="order-notes-textarea" value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Không bắt buộc" aria-label="Ghi chú đơn nhập hàng" className={`${inp} resize-none`} />
               </div>
             </div>
 
@@ -296,29 +304,29 @@ export default function SupplyOrderPage() {
               <h2 className="text-base font-bold text-gray-800 mb-4">Thêm sản phẩm</h2>
               <div className="grid grid-cols-[1fr_1fr_6rem_9rem_auto] gap-3 items-end">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Sản phẩm</label>
-                  <select value={newItem.productId} onChange={e => onSelectProduct(e.target.value)} className={inp}>
+                  <label htmlFor="product-select" className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Sản phẩm</label>
+                  <select id="product-select" value={newItem.productId} onChange={e => onSelectProduct(e.target.value)} aria-label="Chọn sản phẩm" className={inp}>
                     <option value="">Chọn sản phẩm</option>
                     {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Phiên bản</label>
-                  <select value={newItem.variantId} onChange={e => onSelectVariant(e.target.value)} disabled={newItem.variants.length <= 1} className={`${inp} disabled:bg-gray-100`}>
+                  <label htmlFor="variant-select" className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Phiên bản</label>
+                  <select id="variant-select" value={newItem.variantId} onChange={e => onSelectVariant(e.target.value)} disabled={newItem.variants.length <= 1} aria-label="Chọn phiên bản sản phẩm" className={`${inp} disabled:bg-gray-100`}>
                     {newItem.variants.length === 0 && <option value="">—</option>}
                     {newItem.variants.length > 1 && <option value="">Chọn phiên bản</option>}
                     {newItem.variants.map(v => <option key={v.id} value={v.id}>{variantLabel(v)}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">SL</label>
-                  <input type="number" min="1" value={newItem.quantity} onChange={e => setNewItem(f => ({ ...f, quantity: e.target.value }))} className={inp} />
+                  <label htmlFor="quantity-input" className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">SL</label>
+                  <input id="quantity-input" type="number" min="1" value={newItem.quantity} onChange={e => setNewItem(f => ({ ...f, quantity: e.target.value }))} aria-label="Số lượng" className={inp} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Đơn giá</label>
-                  <input type="number" min="0" value={newItem.unitPrice} onChange={e => setNewItem(f => ({ ...f, unitPrice: e.target.value }))} className={inp} />
+                  <label htmlFor="price-input" className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Đơn giá</label>
+                  <input id="price-input" type="number" min="0" value={newItem.unitPrice} onChange={e => setNewItem(f => ({ ...f, unitPrice: e.target.value }))} aria-label="Đơn giá" className={inp} />
                 </div>
-                <button onClick={addItem} className="py-2 px-4 bg-gray-900 hover:bg-black text-white rounded text-sm font-semibold cursor-pointer">Thêm vào đơn</button>
+                <button aria-label="Thêm vào đơn nhập hàng" type="button" onClick={addItem} className="py-2 px-4 bg-gray-900 hover:bg-black text-white rounded text-sm font-semibold cursor-pointer border-none">Thêm vào đơn</button>
               </div>
 
               <div className="mt-5">
@@ -328,20 +336,20 @@ export default function SupplyOrderPage() {
                     <table className="w-full text-sm">
                       <thead className="border-b border-gray-100">
                         <tr>
-                          {['Sản phẩm', 'SL', 'Đơn giá', 'Thành tiền', ''].map((h, i) => (
-                            <th key={i} className="py-2 text-xs font-bold text-gray-400 uppercase text-left">{h}</th>
+                          {['Sản phẩm', 'SL', 'Đơn giá', 'Thành tiền', 'Xóa'].map((h) => (
+                            <th key={h} className="py-2 text-xs font-bold text-gray-400 uppercase text-left">{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
                         {items.map((it, i) => (
-                          <tr key={i}>
+                          <tr key={it.id || it.variantId || it.productVariantId || it.label}>
                             <td className="py-2.5 text-gray-800">{it.label}</td>
                             <td className="py-2.5 text-gray-600">{it.quantity}</td>
                             <td className="py-2.5 text-gray-600">{formatCurrency(it.unitPrice)}</td>
                             <td className="py-2.5 font-semibold text-gray-800">{formatCurrency(it.quantity * it.unitPrice)}</td>
                             <td className="py-2.5 text-right">
-                              <button onClick={() => removeItem(i)} className="text-xs text-red-500 hover:text-red-700 cursor-pointer">Xóa</button>
+                              <button aria-label={`Xóa ${it.label} khỏi đơn`} type="button" onClick={() => removeItem(i)} className="text-xs text-red-500 hover:text-red-700 cursor-pointer border-none bg-transparent">Xóa</button>
                             </td>
                           </tr>
                         ))}
@@ -357,7 +365,7 @@ export default function SupplyOrderPage() {
                 <span className="text-sm text-gray-600">Tổng cộng: </span>
                 <span className="text-xl font-black text-[#E8420A]">{formatCurrency(itemsTotal)}</span>
               </div>
-              <button onClick={handleSubmit} disabled={submitting} className="py-2.5 px-6 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+              <button aria-label="Thao tác" type="button" onClick={handleSubmit} disabled={submitting} className="py-2.5 px-6 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
                 {submitting ? 'Đang gửi...' : 'Gửi đơn'}
               </button>
             </div>
@@ -375,7 +383,7 @@ export default function SupplyOrderPage() {
                   <h1 className="text-2xl font-bold text-gray-900">Chi tiết đơn nhập hàng</h1>
                   <p className="text-sm text-gray-500 mt-0.5">{selectedOrder.supplierName}</p>
                 </div>
-                <button onClick={backToList} className="text-sm text-gray-500 hover:text-gray-700 font-medium cursor-pointer">← Quay lại danh sách</button>
+                <button aria-label="Quay lại" type="button" onClick={backToList} className="text-sm text-gray-500 hover:text-gray-700 font-medium cursor-pointer">← Quay lại danh sách</button>
               </div>
 
               <div className="bg-white rounded border border-gray-200 px-6 py-5">
@@ -395,8 +403,8 @@ export default function SupplyOrderPage() {
                 <table className="w-full text-sm">
                   <thead className="border-b border-gray-100">
                     <tr>
-                      {['Sản phẩm', 'SL', 'Đơn giá', 'Thành tiền'].map((h, i) => (
-                        <th key={i} className="py-2 text-xs font-bold text-gray-400 uppercase text-left">{h}</th>
+                      {['Sản phẩm', 'SL', 'Đơn giá', 'Thành tiền'].map((h) => (
+                        <th key={h} className="py-2 text-xs font-bold text-gray-400 uppercase text-left">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -420,11 +428,11 @@ export default function SupplyOrderPage() {
                 </div>
                 {!isFinal && (
                   <div className="flex gap-3">
-                    <button onClick={() => handleUpdateStatus('CANCELLED')} disabled={updating} className="py-2.5 px-5 border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60 rounded text-sm font-semibold cursor-pointer transition-colors">
+                    <button aria-label="Thao tác" type="button" onClick={() => handleUpdateStatus('CANCELLED')} disabled={updating} className="py-2.5 px-5 border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60 rounded text-sm font-semibold cursor-pointer transition-colors">
                       Hủy đơn
                     </button>
                     {next && (
-                      <button onClick={() => handleUpdateStatus(next.status)} disabled={updating} className="py-2.5 px-6 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
+                      <button aria-label="Thao tác" type="button" onClick={() => handleUpdateStatus(next.status)} disabled={updating} className="py-2.5 px-6 bg-[#E8420A] hover:bg-[#C4350A] disabled:opacity-60 text-white rounded text-sm font-semibold cursor-pointer transition-colors">
                         {updating ? 'Đang cập nhật...' : next.label}
                       </button>
                     )}
