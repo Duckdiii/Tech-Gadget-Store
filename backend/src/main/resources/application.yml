@@ -90,6 +90,7 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
   # 2b. Cấu hình RabbitMQ (xử lý bất đồng bộ sau khi đặt hàng: email xác nhận, hoá đơn, thông báo)
   rabbitmq:
