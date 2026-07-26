@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Client } from '@stomp/stompjs'
 import { getToken } from '../../../utils/authToken'
+import { getWsBrokerUrl } from '../../../utils/wsUrl'
 
 /**
  * Kết nối STOMP riêng cho chatbot (độc lập với useNotificationSocket) — subscribe
@@ -17,9 +18,8 @@ export function useChatSocket(user) {
     const token = getToken()
     if (!token) return
 
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
     const client = new Client({
-      brokerURL: `${protocol}://${window.location.host}/ws`,
+      brokerURL: getWsBrokerUrl(),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
       onConnect: () => {

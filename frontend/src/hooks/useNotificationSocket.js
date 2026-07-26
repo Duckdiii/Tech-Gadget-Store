@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Client } from '@stomp/stompjs'
 import { getToken } from '../utils/authToken'
+import { getWsBrokerUrl } from '../utils/wsUrl'
 
 export function useNotificationSocket(user, onNotification) {// Hook này dùng để lắng nghe các thông báo từ server gửi về qua WebSocket
   const callbackRef = useRef(onNotification)// Dùng useRef để lưu trữ callback onNotification, tránh việc tạo lại hàm khi component re-render
@@ -15,9 +16,8 @@ export function useNotificationSocket(user, onNotification) {// Hook này dùng 
     const token = getToken()
     if (!token) return
 
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
     const client = new Client({
-      brokerURL: `${protocol}://${window.location.host}/ws`,
+      brokerURL: getWsBrokerUrl(),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
       onConnect: () => { // Khi kết nối thành công, đăng ký lắng nghe thông báo từ server

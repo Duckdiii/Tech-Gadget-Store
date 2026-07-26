@@ -1,5 +1,7 @@
 server:
-  port: 8080 # Port để chạy API cục bộ (http://localhost:8080)
+  # Local mặc định 8080; trên Railway (và các PaaS tương tự) nền tảng tự inject biến PORT,
+  # app phải lắng nghe đúng cổng đó thì mới nhận được traffic.
+  port: ${PORT:8080}
 
 # Danh sách origin frontend được phép gọi API (CORS). Nhiều origin cách nhau bởi dấu phẩy.
 # Ở Prod BẮT BUỘC set biến môi trường CORS_ALLOWED_ORIGINS thành domain frontend thật,

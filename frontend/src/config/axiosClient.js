@@ -1,7 +1,10 @@
 import axios from 'axios'
 import { getToken, clearToken, clearPersistedUser, getPersistedUser } from '../utils/authToken'
 
+// Để trống (relative path, cùng origin qua Nginx) khi không set VITE_API_BASE_URL — chỉ cần
+// set biến này khi frontend/backend deploy tách domain (vd. Vercel + Render).
 const axiosClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
   headers: {
     'Content-Type': 'application/json',
   },
