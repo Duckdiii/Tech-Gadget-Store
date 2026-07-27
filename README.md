@@ -16,7 +16,8 @@ Hệ thống bán lẻ thiết bị công nghệ full-stack (điện thoại, la
 | Thanh toán | COD, MoMo, VNPay (tích hợp redirect + IPN webhook) |
 | API Docs | springdoc-openapi (Swagger UI tại `/swagger-ui.html`) |
 | Giám sát & vận hành | Spring Actuator (`health`/`info`/`metrics`), Correlation ID logging (truy vết request qua các service/queue) |
-| Kiểm thử | JUnit 5, Mockito, AssertJ (unit test tầng service, mock repository) |
+| Kiểm thử | Backend: JUnit 5, Mockito, AssertJ (unit test tầng service, mock repository). Frontend: Vitest, React Testing Library (test hook/component) |
+| CI/CD | GitHub Actions — chạy test backend + lint/test/build frontend trên mỗi push/PR vào `main`/`dev`; React Doctor quét sức khoẻ code React trên mỗi PR |
 
 ## Kiến trúc tổng quan
 
@@ -27,7 +28,7 @@ tech_gadget_store/
 └── ml-service/    Python — huấn luyện & phục vụ model recommendation (offline batch)
 ```
 
-Backend chia theo domain module: `auth`, `catalog`, `order`, `payment`, `loyalty`, `notification`, `review`, `warehouse`, `chatbot`. Frontend chia theo vai trò: `customer-shop`, `customer-orders`, `customer-profile`, `staff-*`, `manager-*`.
+Backend chia theo domain module: `auth`, `catalog`, `order`, `payment`, `loyalty`, `notification`, `review`, `warehouse`, `chatbot`, `coupon`, `support`, `settings`, `stats`. Frontend chia theo vai trò: `customer-shop`, `customer-orders`, `customer-profile`, `staff-*` (bao gồm `staff-inventory`, `staff-fulfillment`, `staff-profile`), `manager-*`.
 
 ## Tính năng chính
 
@@ -41,6 +42,8 @@ Backend chia theo domain module: `auth`, `catalog`, `order`, `payment`, `loyalty
 - Quản lý hồ sơ, địa chỉ, phương thức thanh toán đã lưu
 - Yêu thích sản phẩm (favorites/subscriptions), đánh giá & bình luận sản phẩm
 - Xem hạng thành viên (membership tier) và quyền lợi
+- Claim & quản lý mã giảm giá (coupon) cá nhân, dùng khi checkout
+- Gửi & theo dõi yêu cầu hỗ trợ (support ticket) ngay trong hồ sơ tài khoản
 - Thông báo trong ứng dụng (đẩy real-time qua WebSocket)
 - **Gợi ý sản phẩm cá nhân hoá** (xem chi tiết bên dưới)
 
@@ -58,6 +61,7 @@ Backend chia theo domain module: `auth`, `catalog`, `order`, `payment`, `loyalty
 - Báo cáo **A/B test** cho gợi ý "Dành cho bạn" — so sánh CTR giữa MF và rule-based holdout (xem chi tiết bên dưới)
 - Quản lý tài khoản nhân viên/khách hàng, log đăng nhập
 - Báo cáo doanh thu (revenue report, xuất file)
+- Cấu hình thông tin chung của cửa hàng (tên, liên hệ, địa chỉ, bật/tắt đánh giá sản phẩm)
 - **Sao lưu & phục hồi dữ liệu** (backup/restore)
 
 ### Bảo mật & hạ tầng
@@ -146,13 +150,22 @@ Management UI xem queue/exchange trực quan tại `http://localhost:15672` (m�
 
 ## Kiểm thử
 
-Unit test tầng service với JUnit 5 + Mockito (`@ExtendWith(MockitoExtension.class)`, mock toàn bộ repository/client bên ngoài) + AssertJ cho assertion, đặt cạnh code ở `backend/src/test/java`. Có chủ đích không dùng `@SpringBootTest`/`@DataJpaTest` cho các test này — logic nghiệp vụ (tính giá, áp khuyến mãi, phân quyền xoá tài khoản...) không cần DB thật mới verify được, nên chạy nhanh và không phụ thuộc môi trường.
+**Backend:** unit test tầng service với JUnit 5 + Mockito (`@ExtendWith(MockitoExtension.class)`, mock toàn bộ repository/client bên ngoài) + AssertJ cho assertion, đặt cạnh code ở `backend/src/test/java` (~30 file test). Có chủ đích không dùng `@SpringBootTest`/`@DataJpaTest` cho các test này — logic nghiệp vụ (tính giá, áp khuyến mãi, phân quyền xoá tài khoản...) không cần DB thật mới verify được, nên chạy nhanh và không phụ thuộc môi trường.
 
-Chạy toàn bộ test:
 ```bash
 cd backend
 ./mvnw test
 ```
+
+**Frontend:** unit test hook/component với Vitest + React Testing Library, đặt cạnh code theo tên file (`*.test.jsx`/`*.test.js`, ~50 file test), mock tầng service (axios) để test logic hook độc lập với API thật.
+
+```bash
+cd frontend
+npm run test    # chạy 1 lần
+npm run lint    # ESLint
+```
+
+**CI:** GitHub Actions (`.github/workflows/ci.yml`) tự chạy test backend (kèm Postgres/Redis/RabbitMQ thật qua service container) và lint + test + build frontend trên mỗi push/PR vào `main`/`dev`.
 
 ## Dữ liệu giả (seed data)
 

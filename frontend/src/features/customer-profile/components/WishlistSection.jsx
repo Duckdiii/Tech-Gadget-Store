@@ -47,7 +47,7 @@ function fmt(n) {
   return (n || 0).toLocaleString('vi-VN') + 'đ'
 }
 
-export default function WishlistSection() {
+export default function WishlistSection({ onNavigate }) {
   const {
     items,
     loading,
@@ -128,7 +128,12 @@ export default function WishlistSection() {
                 const disc = getDiscount(item)
                 return (
                   <div key={item.id}
-                    className={`border border-gray-100 rounded overflow-hidden hover:border-[#E8420A]/30 hover:shadow-md transition-all duration-300 ${removing === item.id ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Xem chi tiết sản phẩm ${item.name}`}
+                    onClick={() => onNavigate?.('detail', { search: `?id=${item.productId}` })}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate?.('detail', { search: `?id=${item.productId}` }) }}
+                    className={`border border-gray-100 rounded overflow-hidden hover:border-[#E8420A]/30 hover:shadow-md transition-all duration-300 cursor-pointer ${removing === item.id ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
                     {/* Thumb */}
                     <div className="relative aspect-[4/3]">
                       {item.imageUrl ? (
@@ -139,7 +144,7 @@ export default function WishlistSection() {
                       {disc > 0 && (
                         <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">-{disc}%</span>
                       )}
-                      <button aria-label="Thao tác" type="button" onClick={() => removeItem(item.id)}
+                      <button aria-label="Xoá khỏi yêu thích" type="button" onClick={(e) => { e.stopPropagation(); removeItem(item.id) }}
                         className="absolute top-2 right-2 w-7 h-7 bg-white/90 hover:bg-red-50 rounded-full flex items-center justify-center shadow transition-colors border-none cursor-pointer group">
                         <svg className="w-4 h-4 text-red-300 group-hover:text-red-500 transition-colors" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -177,7 +182,12 @@ export default function WishlistSection() {
                 const disc = getDiscount(item)
                 return (
                   <div key={item.id}
-                    className={`flex gap-4 border border-gray-100 rounded p-4 hover:border-[#E8420A]/30 hover:shadow-sm transition-all duration-300 ${removing === item.id ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0'}`}>
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Xem chi tiết sản phẩm ${item.name}`}
+                    onClick={() => onNavigate?.('detail', { search: `?id=${item.productId}` })}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate?.('detail', { search: `?id=${item.productId}` }) }}
+                    className={`flex gap-4 border border-gray-100 rounded p-4 hover:border-[#E8420A]/30 hover:shadow-sm transition-all duration-300 cursor-pointer ${removing === item.id ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0'}`}>
                     {/* Thumb */}
                     <div className="w-24 h-24 rounded overflow-hidden shrink-0 relative">
                       {item.imageUrl ? (
@@ -201,7 +211,7 @@ export default function WishlistSection() {
                             <span className="text-[11px] text-gray-400">({item.reviews})</span>
                           </div>
                         </div>
-                        <button aria-label="Thao tác" type="button" onClick={() => removeItem(item.id)}
+                        <button aria-label="Xoá khỏi yêu thích" type="button" onClick={(e) => { e.stopPropagation(); removeItem(item.id) }}
                           className="w-7 h-7 shrink-0 flex items-center justify-center rounded-full hover:bg-red-50 transition-colors border-none cursor-pointer group bg-transparent">
                           <svg className="w-4 h-4 text-gray-300 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

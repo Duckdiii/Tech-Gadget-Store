@@ -415,7 +415,7 @@ export default function UserProfilePage() {
             {activeSection === 'orders' ? (
               <OrdersSection orders={orders} loading={ordersLoading} onNavigate={onNavigate} />
             ) : activeSection === 'wishlist' ? (
-              <WishlistSection />
+              <WishlistSection onNavigate={onNavigate} />
             ) : activeSection === 'membership' ? (
               <MembershipSection />
             ) : activeSection === 'coupons' ? (
