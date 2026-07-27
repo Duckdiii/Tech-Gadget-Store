@@ -2,6 +2,7 @@ package com.project.tech_gadget_store.modules.warehouse.service;
 
 import com.project.tech_gadget_store.common.exception.DuplicateResourceException;
 import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
+import com.project.tech_gadget_store.modules.auth.repository.AccountRepository;
 import com.project.tech_gadget_store.modules.auth.repository.UserRepository;
 import com.project.tech_gadget_store.modules.catalog.entity.Brand;
 import com.project.tech_gadget_store.modules.catalog.entity.Category;
@@ -49,6 +50,8 @@ class ImportLogServiceTest {
     private ProductSerialRepository productSerialRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private AccountRepository accountRepository;
     @Mock
     private BrandRepository brandRepository;
     @Mock

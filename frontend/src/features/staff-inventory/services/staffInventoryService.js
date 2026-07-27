@@ -13,6 +13,18 @@ export const staffInventoryService = {
     return axiosClient.get('/api/manager/warehouse-logs')
   },
 
+  getSuppliers: () => {
+    return axiosClient.get('/api/manager/suppliers')
+  },
+
+  getBrands: () => {
+    return axiosClient.get('/api/manager/brands')
+  },
+
+  getCategories: () => {
+    return axiosClient.get('/api/categories')
+  },
+
   createImportLog: (payload) => {
     return axiosClient.post('/api/import-logs', payload)
   },

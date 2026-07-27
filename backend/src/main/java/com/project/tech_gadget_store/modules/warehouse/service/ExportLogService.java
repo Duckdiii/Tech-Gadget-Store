@@ -3,6 +3,7 @@ package com.project.tech_gadget_store.modules.warehouse.service;
 import com.project.tech_gadget_store.common.dto.CursorPageResponseDto;
 import com.project.tech_gadget_store.common.exception.ResourceNotFoundException;
 import com.project.tech_gadget_store.common.util.CursorUtil;
+import com.project.tech_gadget_store.modules.auth.repository.AccountRepository;
 import com.project.tech_gadget_store.modules.auth.repository.UserRepository;
 import com.project.tech_gadget_store.modules.catalog.entity.Product;
 import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
@@ -44,6 +45,7 @@ public class ExportLogService {
     private final ProductVariantRepository productVariantRepository;
     private final ProductSerialRepository productSerialRepository;
     private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
     private final ReceiptRepository receiptRepository;
     private final ExportLogMapper exportLogMapper;
     private final ApplicationEventPublisher eventPublisher;
@@ -55,6 +57,7 @@ public class ExportLogService {
             ProductVariantRepository productVariantRepository,
             ProductSerialRepository productSerialRepository,
             UserRepository userRepository,
+            AccountRepository accountRepository,
             ReceiptRepository receiptRepository,
             ExportLogMapper exportLogMapper,
             ApplicationEventPublisher eventPublisher) {
@@ -62,15 +65,33 @@ public class ExportLogService {
         this.productVariantRepository = productVariantRepository;
         this.productSerialRepository = productSerialRepository;
         this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
         this.receiptRepository = receiptRepository;
         this.exportLogMapper = exportLogMapper;
         this.eventPublisher = eventPublisher;
     }
 
+    private String resolveUserId(String performedById) {
+        if (performedById == null || performedById.isBlank()) {
+            return performedById;
+        }
+        if (userRepository.existsById(performedById)) {
+            return performedById;
+        }
+        if (accountRepository != null) {
+            return accountRepository.findByEmailWithUser(performedById)
+                    .map(a -> a.getUser() != null ? a.getUser().getId() : performedById)
+                    .orElse(performedById);
+        }
+        return performedById;
+    }
+
     @Transactional
     public ExportLogResponseDto exportProducts(ExportLogRequestDto requestDto) {
-        // 1. Validate performedById exists
-        if (!userRepository.existsById(requestDto.getPerformedById())) {
+        String performedUserId = resolveUserId(requestDto.getPerformedById());
+
+        // 1. Validate performedUserId exists
+        if (!userRepository.existsById(performedUserId)) {
             eventPublisher.publishEvent(new ExportStockEvent(
                     requestDto.getPerformedById(), false, "Performer not found"));
             throw new ResourceNotFoundException("Performer not found");
@@ -92,7 +113,7 @@ public class ExportLogService {
 
         try {
             ExportLog exportLog = ExportLog.builder()
-                    .performedBy(requestDto.getPerformedById())
+                    .performedBy(performedUserId)
                     .reason(requestDto.getReason())
                     .status(ImportAndExportStatus.SUCCESS)
                     .exportedAt(java.time.LocalDateTime.now())

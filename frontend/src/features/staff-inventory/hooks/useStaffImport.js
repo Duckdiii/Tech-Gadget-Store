@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { staffInventoryService } from '../services/staffInventoryService'
 import { USER_EMAIL_TO_ID, WAREHOUSES, today } from '../utils/inventoryHelpers'
 
-const BLANK_ROW = () => ({
+const BLANK_ROW = (defaultBrandId = '', defaultCategoryId = '') => ({
   isNewProduct: false,
   productId: '',
   productVariantId: '',
@@ -13,8 +13,8 @@ const BLANK_ROW = () => ({
   // For new products
   newName: '',
   newDescription: '',
-  newBrandId: 'brand-apple',
-  newCategoryId: 'cat-phone',
+  newBrandId: defaultBrandId,
+  newCategoryId: defaultCategoryId,
   newRamGb: '',
   newStorageGb: '',
   newColor: '',
@@ -23,6 +23,9 @@ const BLANK_ROW = () => ({
 
 export function useStaffImport(user) {
   const [productsList, setProductsList] = useState([])
+  const [suppliersList, setSuppliersList] = useState([])
+  const [brandsList, setBrandsList] = useState([])
+  const [categoriesList, setCategoriesList] = useState([])
   const [supplier, setSupplier] = useState('')
   const [warehouse, setWarehouse] = useState(WAREHOUSES[0])
   const [date, setDate] = useState(() => today())
@@ -33,35 +36,75 @@ export function useStaffImport(user) {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
-  const userPerfId = USER_EMAIL_TO_ID[user?.email] || 'user-stf-01'
+  const userPerfId = user?.id || user?.email || USER_EMAIL_TO_ID[user?.email] || 'user-stf-01'
 
-  const loadProducts = async () => {
+  const loadInitialData = async () => {
     try {
       setLoading(true)
-      const raw = await staffInventoryService.getProducts()
-      const detailed = await Promise.all(
-        (raw.items || []).map(async (p) => {
-          try {
-            return await staffInventoryService.getProductById(p.id)
-          } catch {
-            return { ...p, variants: [] }
-          }
-        })
-      )
-      setProductsList(detailed)
+      const [prodsRes, suppsRes, brandsRes, catsRes] = await Promise.allSettled([
+        staffInventoryService.getProducts(),
+        staffInventoryService.getSuppliers(),
+        staffInventoryService.getBrands(),
+        staffInventoryService.getCategories(),
+      ])
+
+      let loadedBrands = []
+      let loadedCats = []
+
+      if (brandsRes.status === 'fulfilled') {
+        loadedBrands = brandsRes.value || []
+        setBrandsList(loadedBrands)
+      }
+
+      if (catsRes.status === 'fulfilled') {
+        loadedCats = catsRes.value || []
+        setCategoriesList(loadedCats)
+      }
+
+      if (suppsRes.status === 'fulfilled') {
+        const supps = suppsRes.value || []
+        setSuppliersList(supps)
+      }
+
+      if (prodsRes.status === 'fulfilled') {
+        const raw = prodsRes.value
+        const detailed = await Promise.all(
+          (raw.items || []).map(async (p) => {
+            try {
+              return await staffInventoryService.getProductById(p.id)
+            } catch {
+              return { ...p, variants: [] }
+            }
+          })
+        )
+        setProductsList(detailed)
+      }
+
+      // Pre-set blank row defaults with real brand and category IDs if available
+      const firstBrandId = loadedBrands[0]?.id || ''
+      const firstCatId = loadedCats[0]?.id || ''
+      if (firstBrandId || firstCatId) {
+        setRows(r => r.map(row => ({
+          ...row,
+          newBrandId: row.newBrandId || firstBrandId,
+          newCategoryId: row.newCategoryId || firstCatId,
+        })))
+      }
     } catch (err) {
-      console.error('Failed to load products list', err)
+      console.error('Failed to load initial import data', err)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadProducts()
+    loadInitialData()
   }, [])
 
   function addRow() {
-    setRows(r => [...r, BLANK_ROW()])
+    const firstBrandId = brandsList[0]?.id || ''
+    const firstCatId = categoriesList[0]?.id || ''
+    setRows(r => [...r, BLANK_ROW(firstBrandId, firstCatId)])
   }
 
   function removeRow(i) {
@@ -204,6 +247,9 @@ export function useStaffImport(user) {
 
   return {
     productsList,
+    suppliersList,
+    brandsList,
+    categoriesList,
     supplier,
     setSupplier,
     warehouse,

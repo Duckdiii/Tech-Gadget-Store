@@ -5,24 +5,6 @@ import { useStaffImport } from '../hooks/useStaffImport'
 import ImportReceiptModal from '../components/ImportReceiptModal'
 import { WAREHOUSES, fmt } from '../utils/inventoryHelpers'
 
-const SUPPLIERS  = ['Apple VN', 'Samsung Electronics VN', 'Sony VN', 'LG Electronics VN', 'Xiaomi VN', 'ASUS VN', 'Dell Technologies VN']
-
-const BRANDS = [
-  { id: 'brand-apple', name: 'Apple' },
-  { id: 'brand-samsung', name: 'Samsung' },
-  { id: 'brand-xiaomi', name: 'Xiaomi' },
-  { id: 'brand-oppo', name: 'OPPO' },
-  { id: 'brand-vivo', name: 'Vivo' },
-  { id: 'brand-realme', name: 'Realme' },
-  { id: 'brand-google', name: 'Google' },
-]
-
-const CATEGORIES = [
-  { id: 'cat-phone', name: 'Điện thoại' },
-  { id: 'cat-tablet', name: 'Máy tính bảng' },
-  { id: 'cat-accessory', name: 'Phụ kiện' },
-]
-
 export default function StaffImportPage() {
   const { user } = useAuth()
   const location = useLocation()
@@ -31,6 +13,9 @@ export default function StaffImportPage() {
 
   const {
     productsList,
+    suppliersList,
+    brandsList,
+    categoriesList,
     supplier,
     setSupplier,
     warehouse,
@@ -130,7 +115,10 @@ export default function StaffImportPage() {
                   <span className="block text-xs font-semibold text-gray-500 mb-1.5">Nhà cung cấp *</span>
                   <select value={supplier} onChange={e => setSupplier(e.target.value)} aria-label="Nhà cung cấp" className={sel}>
                     <option value="">-- Chọn NCC --</option>
-                    {SUPPLIERS.map(s => <option key={s} value={s}>{s}</option>)}
+                    {suppliersList.map(s => {
+                      const name = typeof s === 'string' ? s : s.name
+                      return <option key={s.id || name} value={name}>{name}</option>
+                    })}
                   </select>
                   {errors.supplier && <p className="text-xs text-red-500 mt-1">{errors.supplier}</p>}
                 </div>
@@ -212,12 +200,14 @@ export default function StaffImportPage() {
                           </div>
                           <div>
                             <select value={row.newBrandId} onChange={e => updateRow(i, 'newBrandId', e.target.value)} aria-label="Thương hiệu sản phẩm mới" className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer">
-                              {BRANDS.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                              <option value="">-- Chọn Thương hiệu --</option>
+                              {brandsList.map(b => <option key={b.id || b.name} value={b.id}>{b.name}</option>)}
                             </select>
                           </div>
                           <div>
                             <select value={row.newCategoryId} onChange={e => updateRow(i, 'newCategoryId', e.target.value)} aria-label="Danh mục sản phẩm mới" className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer">
-                              {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                              <option value="">-- Chọn Danh mục --</option>
+                              {categoriesList.map(c => <option key={c.id || c.name} value={c.id}>{c.name}</option>)}
                             </select>
                           </div>
                           <div>
