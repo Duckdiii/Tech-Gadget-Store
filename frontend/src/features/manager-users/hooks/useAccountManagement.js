@@ -19,6 +19,8 @@ function normalizeAccount(dto, index) {
   }
 }
 
+const PAGE_SIZE = 20
+
 export function useAccountManagement() {
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -28,6 +30,7 @@ export function useAccountManagement() {
   const [roleFilter, setRoleFilter] = useState('')
   const [selected, setSelected] = useState(null)
   const [toast, setToast] = useState(null)
+  const [page, setPage] = useState(0)
 
   const fetchAccounts = () => {
     setLoading(true)
@@ -58,6 +61,14 @@ export function useAccountManagement() {
       (!roleFilter || a.role === roleFilter)
     )
   })
+
+  // Về trang đầu mỗi khi bộ lọc đổi — tránh đứng ở trang 5/6 rồi lọc còn 1 trang, hiện danh sách rỗng.
+  useEffect(() => {
+    setPage(0)
+  }, [search, statusFilter, roleFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   async function handleBlock(id) {
     try {
@@ -106,6 +117,11 @@ export function useAccountManagement() {
     active,
     blocked,
     filtered,
+    page,
+    setPage,
+    totalPages,
+    paginated,
+    pageSize: PAGE_SIZE,
     handleBlock,
     handleUnblock,
     handleDelete,

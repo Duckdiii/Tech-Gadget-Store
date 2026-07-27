@@ -1,5 +1,6 @@
 import { useAccountManagement } from '../hooks/useAccountManagement'
 import AccountDetailDrawer from '../components/AccountDetailDrawer'
+import Pagination from '../../../components/Pagination'
 
 const STATUS_CFG = {
   active:   { label:'Hoạt động',  bg:'bg-green-100',  text:'text-green-700',  dot:'bg-green-500'  },
@@ -36,6 +37,11 @@ export default function AccountManagementPage() {
     active,
     blocked,
     filtered,
+    page,
+    setPage,
+    totalPages,
+    paginated,
+    pageSize,
     handleBlock,
     handleUnblock,
     handleDelete,
@@ -133,7 +139,7 @@ export default function AccountManagementPage() {
               <tbody className="divide-y divide-gray-50">
                 {filtered.length === 0
                   ? <tr><td colSpan={6} className="text-center py-12 text-gray-400">Không tìm thấy tài khoản nào</td></tr>
-                  : filtered.map(acc => {
+                  : paginated.map(acc => {
                     const st = STATUS_CFG[acc.status] || STATUS_CFG.active
                     const rl = ROLE_CFG[acc.role] || ROLE_CFG.STAFF
                     return (
@@ -171,6 +177,15 @@ export default function AccountManagementPage() {
                 }
               </tbody>
             </table>
+
+            {filtered.length > 0 && (
+              <div className="px-5 py-4 flex items-center justify-between border-t border-gray-100">
+                <span className="text-sm text-gray-500">
+                  Hiển thị {page * pageSize + 1} - {Math.min((page + 1) * pageSize, filtered.length)} trên {filtered.length}
+                </span>
+                <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+              </div>
+            )}
           </div>
         )}
       </div>
