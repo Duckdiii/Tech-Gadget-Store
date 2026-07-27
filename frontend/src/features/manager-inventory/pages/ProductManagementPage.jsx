@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useReducer, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../../../services/api'
 
 function normalizeProduct(dto) {
@@ -98,6 +98,7 @@ function pageStateReducer(state, action) {
 
 export default function ProductManagementPage() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [pageState, dispatchPage] = useReducer(pageStateReducer, initialPageState)
   const {
     items, categories, brands, loading, error, search, debouncedSearch,
@@ -185,6 +186,11 @@ export default function ProductManagementPage() {
     setSelectedCategory('')
     setActiveKpi(null)
     setPage(0)
+    // Xóa luôn ?brand=/?category= khỏi URL — nếu không, effect đọc location.search ở trên sẽ
+    // áp lại filter cũ này ngay khi trang mount lại (vd. rời sang tab khác rồi quay lại).
+    if (location.search) {
+      navigate(location.pathname, { replace: true })
+    }
   }
 
   const loadProducts = useCallback(() => {
