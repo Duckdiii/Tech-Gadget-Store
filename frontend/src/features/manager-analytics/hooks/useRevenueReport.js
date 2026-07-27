@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { analyticsService } from '../services/analyticsService'
-import { getToken } from '../../../utils/authToken'
+import { downloadFile } from '../../../utils/downloadFile'
 import { resolveReportFilterRange, previousPeriodOf } from '../utils/dateRanges'
 
 const DEFAULT_FILTER = { period: 'MONTHLY' }
@@ -41,21 +41,8 @@ export function useRevenueReport(initialFilter) {
 
   const handleExport = async () => {
     try {
-      const token = getToken()
       const query = analyticsService.buildExportQuery(filter)
-      const res = await fetch(`/api/manager/revenue-report/export${query}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (!res.ok) throw new Error('Lỗi xuất báo cáo')
-      const blob = await res.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `revenue_report.csv`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      window.URL.revokeObjectURL(url)
+      await downloadFile(`/api/manager/revenue-report/export${query}`, 'revenue_report.csv', 'Lỗi xuất báo cáo')
     } catch (e) {
       alert('Lỗi xuất file báo cáo: ' + e.message)
     }

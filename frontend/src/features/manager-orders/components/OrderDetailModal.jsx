@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiFetch } from '../../../services/api'
-import { getToken } from '../../../utils/authToken'
+import { downloadFile } from '../../../utils/downloadFile'
 import PayIcon from './PayIcon'
 
 function fmt(n) {
@@ -40,20 +40,11 @@ export default function OrderDetailModal({ orderId, onClose }) {
   const handleDownloadPdf = async () => {
     setDownloading(true)
     try {
-      const token = getToken()
-      const res = await fetch(`/api/customer/invoices/order/${orderId}/pdf`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (!res.ok) throw new Error('Không thể xuất file PDF')
-      const blob = await res.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `Invoice-${orderId.substring(0, 8).toUpperCase()}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      window.URL.revokeObjectURL(url)
+      await downloadFile(
+        `/api/customer/invoices/order/${orderId}/pdf`,
+        `Invoice-${orderId.substring(0, 8).toUpperCase()}.pdf`,
+        'Không thể xuất file PDF'
+      )
     } catch (err) {
       alert('Không tải được file PDF: ' + err.message)
     } finally {

@@ -6,7 +6,7 @@ function fmt(n) { return (n || 0).toLocaleString('vi-VN') + ' đ' }
 import InvoiceDocument from '../components/InvoiceDocument'
 
 import { useState } from 'react'
-import { getToken } from '../../../utils/authToken'
+import { downloadFile } from '../../../utils/downloadFile'
 import { shopService } from '../services/shopService'
 
 /* ─── Order Result Page ─── */
@@ -26,20 +26,11 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
 
   const downloadPdf = async () => {
     try {
-      const token = getToken()
-      const res = await fetch(`/api/customer/invoices/order/${orderId}/pdf`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (!res.ok) throw new Error('Download failed')
-      const blob = await res.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `Invoice-${orderId.substring(0, 8)}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      window.URL.revokeObjectURL(url)
+      await downloadFile(
+        `/api/customer/invoices/order/${orderId}/pdf`,
+        `Invoice-${orderId.substring(0, 8)}.pdf`,
+        'Download failed'
+      )
     } catch (e) {
       alert('Không tải được file PDF: ' + e.message)
     }
