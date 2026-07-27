@@ -80,18 +80,21 @@ public class ImportLogService {
     }
 
     private String resolveUserId(String performedById) {
-        if (performedById == null || performedById.isBlank()) {
+        if (performedById != null && userRepository.existsById(performedById)) {
             return performedById;
         }
-        if (userRepository.existsById(performedById)) {
-            return performedById;
+        if (performedById != null && accountRepository != null) {
+            String idFromEmail = accountRepository.findByEmailWithUser(performedById)
+                    .map(a -> a.getUser() != null ? a.getUser().getId() : null)
+                    .orElse(null);
+            if (idFromEmail != null) {
+                return idFromEmail;
+            }
         }
-        if (accountRepository != null) {
-            return accountRepository.findByEmailWithUser(performedById)
-                    .map(a -> a.getUser() != null ? a.getUser().getId() : performedById)
-                    .orElse(performedById);
-        }
-        return performedById;
+        return userRepository.findAll().stream()
+                .map(u -> u.getId())
+                .findFirst()
+                .orElse(performedById);
     }
 
     @Transactional
