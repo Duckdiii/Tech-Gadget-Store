@@ -16,6 +16,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 
@@ -40,6 +41,7 @@ public class ManagerNotificationListener {
         this.lowStockThreshold = lowStockThreshold;
     }
 
+    @Async
     @EventListener
     public void handleProductStockChanged(ProductStockChangedEvent event) {
         Product product = event.getProduct();
@@ -54,6 +56,7 @@ public class ManagerNotificationListener {
         }
     }
 
+    @Async
     @EventListener
     public void handleImportStock(ImportStockEvent event) {
         String title = event.isSuccess() ? "Nhập hàng thành công" : "Nhập hàng thất bại";
@@ -65,6 +68,7 @@ public class ManagerNotificationListener {
         sendNotificationsToManagersAndStaff(title, message, type);
     }
 
+    @Async
     @EventListener
     public void handleExportStock(ExportStockEvent event) {
         String title = event.isSuccess() ? "Xuất kho thành công" : "Xuất kho thất bại";

@@ -16,6 +16,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 
@@ -29,6 +30,7 @@ public class CustomerNotificationListener {
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
 
+    @Async
     @EventListener
     public void handleProductStockChanged(ProductStockChangedEvent event) {
         Product product = event.getProduct();
@@ -75,6 +77,7 @@ public class CustomerNotificationListener {
         }
     }
 
+    @Async
     @EventListener
     public void handleProductPromotionApplied(ProductPromotionAppliedEvent event) {
         Promotion promotion = event.getPromotion();
