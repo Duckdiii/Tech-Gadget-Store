@@ -7,15 +7,17 @@ const TIER_OPTIONS = ['STANDARD', 'BRONZE', 'SILVER', 'GOLD', 'DIAMOND']
 const TIER_LABELS = { STANDARD: 'Thành viên', BRONZE: 'Đồng', SILVER: 'Bạc', GOLD: 'Vàng', DIAMOND: 'Kim Cương' }
 
 function normalizeMembership(dto) {
+  const benefit = dto?.benefit || {}
   return {
     id: dto.id,
     tier: dto.tier || 'STANDARD',
-    minSpending: dto.minSpending || 0,
-    maxSpending: dto.maxSpending || 0,
-    discountPercentage: dto.discountPercentage || 0,
-    freeShipping: dto.freeShipping || false,
-    description: dto.description || '',
-    customerCount: dto.customerCount || 0,
+    minSpending: dto.minSpending ?? 0,
+    maxSpending: dto.maxSpending ?? 0,
+    discountPercentage: benefit.discountPercentage ?? dto.discountPercentage ?? 0,
+    freeShipping: benefit.freeShipping ?? dto.freeShipping ?? false,
+    description: benefit.description ?? dto.description ?? '',
+    customerCount: dto.customerCount || dto.customersIds?.length || 0,
+    customersIds: dto.customersIds || [],
   }
 }
 
