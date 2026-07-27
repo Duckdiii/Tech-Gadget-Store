@@ -56,8 +56,14 @@ axiosClient.interceptors.response.use(
       window.location.href = `${loginPath}?sessionExpired=1`
     }
 
-    // Standardize error message extraction
-    const serverMessage = error.response?.data?.message || error.response?.data
+    // Standardize error message extraction — chỉ dùng error.response.data làm message khi nó
+    // THỰC SỰ là string; nếu backend trả về 1 object không có field .message (vd body lỗi mặc
+    // định của Spring Security khi request bị chặn ở tầng filter, trước khi tới
+    // GlobalExceptionHandler), new Error(object) sẽ bị JS ép thành chuỗi "[object Object]".
+    const responseData = error.response?.data
+    const serverMessage = typeof responseData?.message === 'string'
+      ? responseData.message
+      : (typeof responseData === 'string' ? responseData : null)
     const message = serverMessage || error.message || 'Đã có lỗi xảy ra'
     return Promise.reject(new Error(message))
   }

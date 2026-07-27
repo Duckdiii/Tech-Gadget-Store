@@ -1,5 +1,9 @@
 import { getToken } from '../utils/authToken'
 
+// Giống axiosClient: để trống (relative, cùng origin qua Nginx) khi không set
+// VITE_API_BASE_URL; set khi frontend/backend deploy tách domain (vd. Vercel + Railway).
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+
 export async function apiFetch(path, options = {}) {
   const token = getToken()
   const headers = {
@@ -9,7 +13,7 @@ export async function apiFetch(path, options = {}) {
   if (!(options.body instanceof FormData) && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json'
   }
-  const res = await fetch(path, {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers,
   })
