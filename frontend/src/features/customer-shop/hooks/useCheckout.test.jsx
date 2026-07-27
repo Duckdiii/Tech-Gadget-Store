@@ -42,7 +42,6 @@ const SAMPLE_ADDRESSES = [{ id: 'addr-1', label: 'Nhà riêng' }, { id: 'addr-2'
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.spyOn(window, 'alert').mockImplementation(() => {})
 })
 
 describe('useCheckout', () => {
@@ -73,7 +72,7 @@ describe('useCheckout', () => {
 
     await act(async () => { await result.current.handleOrderSubmit() })
 
-    expect(window.alert).toHaveBeenCalledWith('Vui lòng chọn địa chỉ giao nhận hàng')
+    expect(result.current.toast).toEqual({ message: 'Vui lòng chọn địa chỉ giao nhận hàng', type: 'error' })
     expect(shopService.confirmPayment).not.toHaveBeenCalled()
   })
 
@@ -86,7 +85,7 @@ describe('useCheckout', () => {
 
     await act(async () => { await result.current.handleOrderSubmit() })
 
-    expect(window.alert).toHaveBeenCalledWith('Vui lòng chọn phương thức thanh toán')
+    expect(result.current.toast).toEqual({ message: 'Vui lòng chọn phương thức thanh toán', type: 'error' })
     expect(shopService.confirmPayment).not.toHaveBeenCalled()
   })
 
@@ -114,7 +113,20 @@ describe('useCheckout', () => {
 
     await act(async () => { await result.current.handleOrderSubmit() })
 
-    expect(window.alert).toHaveBeenCalledWith('Đã xảy ra lỗi khi xử lý đơn hàng: Server quá tải')
+    expect(result.current.toast).toEqual({ message: 'Đã xảy ra lỗi khi xử lý đơn hàng: Server quá tải', type: 'error' })
     expect(result.current.submitting).toBe(false)
+  })
+
+  it('handleOrderSubmit: đơn COD (PENDING kèm orderId, không có redirectUrl) vẫn điều hướng sang trang hoá đơn', async () => {
+    shopService.getCheckoutSummary.mockResolvedValue(SAMPLE_SUMMARY)
+    profileService.getAddresses.mockResolvedValue(SAMPLE_ADDRESSES)
+    shopService.confirmPayment.mockResolvedValue({ status: 'PENDING', orderId: 888, message: 'Đặt hàng COD thành công, chờ xác nhận' })
+    const { result } = renderHook(() => useCheckout(), { wrapper: makeWrapper([1]) })
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => { await result.current.handleOrderSubmit() })
+
+    expect(mockNavigate).toHaveBeenCalledWith('/invoice?orderId=888&success=true', undefined)
+    expect(result.current.toast).toBeNull()
   })
 })

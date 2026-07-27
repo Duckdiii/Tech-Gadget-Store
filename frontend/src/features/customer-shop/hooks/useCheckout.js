@@ -15,6 +15,12 @@ export function useCheckout() {
   const [paymentMethodId, setPaymentMethodId] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  const showToast = (message, type = 'error') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3200)
+  }
 
   useEffect(() => {
     const loadData = async () => {
@@ -50,11 +56,11 @@ export function useCheckout() {
 
   const handleOrderSubmit = async () => {
     if (!addressId) {
-      alert('Vui lòng chọn địa chỉ giao nhận hàng')
+      showToast('Vui lòng chọn địa chỉ giao nhận hàng')
       return
     }
     if (!paymentMethodId) {
-      alert('Vui lòng chọn phương thức thanh toán')
+      showToast('Vui lòng chọn phương thức thanh toán')
       return
     }
 
@@ -68,17 +74,18 @@ export function useCheckout() {
         clientIp: '127.0.0.1',
       })
 
-      if (confirmData.status === 'SUCCESS') {
-        onNavigate('invoice', { search: `?orderId=${confirmData.orderId}&success=true` })
-      } else if (confirmData.status === 'PENDING' && confirmData.redirectUrl) {
+      if (confirmData.redirectUrl) {
         // Online payment gateway redirect
         window.location.href = confirmData.redirectUrl
+      } else if (confirmData.status === 'SUCCESS' || (confirmData.status === 'PENDING' && confirmData.orderId)) {
+        // PENDING + orderId (no redirectUrl) là đơn COD đã tạo thành công, chờ xác nhận
+        onNavigate('invoice', { search: `?orderId=${confirmData.orderId}&success=true` })
       } else {
-        alert(confirmData.message || 'Đặt hàng thất bại')
+        showToast(confirmData.message || 'Đặt hàng thất bại')
       }
     } catch (e) {
       console.error('Lỗi xác nhận đơn hàng:', e)
-      alert('Đã xảy ra lỗi khi xử lý đơn hàng: ' + e.message)
+      showToast('Đã xảy ra lỗi khi xử lý đơn hàng: ' + e.message)
     } finally {
       setSubmitting(false)
     }
@@ -94,6 +101,7 @@ export function useCheckout() {
     setPaymentMethodId,
     loading,
     submitting,
+    toast,
     handleOrderSubmit,
     onNavigate,
   }
