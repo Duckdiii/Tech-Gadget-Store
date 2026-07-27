@@ -14,6 +14,7 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
   const {
     orderId,
     invoice,
+    error,
     showInvoice,
     setShowInvoice,
     visible,
@@ -78,8 +79,8 @@ export default function InvoicePage() { // hiển thị trang thông báo đặt
     return (
       <div className="flex-1 flex flex-col bg-gray-50 min-h-dvh">
         <StoreNavbar />
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <p className="text-lg font-bold text-gray-500">Không tìm thấy thông tin đơn hàng này</p>
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+          <p className="text-lg font-bold text-gray-500">{error || 'Không tìm thấy thông tin đơn hàng này'}</p>
           <button aria-label="Thao tác" type="button" onClick={() => onNavigate('home')} className="mt-4 px-6 py-2 bg-slate-900 text-white rounded-lg">Về trang chủ</button>
         </div>
       </div>

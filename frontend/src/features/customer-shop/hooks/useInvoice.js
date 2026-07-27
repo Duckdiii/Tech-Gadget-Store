@@ -13,6 +13,7 @@ export function useInvoice() {
   const [loading, setLoading] = useState(true)
   const [showInvoice, setShowInvoice] = useState(false)
   const [visible, setVisible] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     let active = true
@@ -29,6 +30,7 @@ export function useInvoice() {
         setVisible(true)
       } catch (e) {
         console.error('Lỗi tải hóa đơn:', e)
+        if (active) setError(e.message || 'Không tìm thấy thông tin đơn hàng này')
       } finally {
         if (active) setLoading(false)
       }
@@ -41,6 +43,7 @@ export function useInvoice() {
     orderId,
     invoice,
     loading,
+    error,
     showInvoice,
     setShowInvoice,
     visible,

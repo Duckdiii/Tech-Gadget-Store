@@ -433,9 +433,9 @@ export default function UserProfilePage() {
                 profile={profile}
                 orders={orders}
                 ordersLoading={ordersLoading}
-                onNavigate={(key) => {
+                onNavigate={(key, options) => {
                   if (NAV_ITEMS.some(item => item?.id === key)) setActiveSection(key)
-                  else onNavigate(key)
+                  else onNavigate(key, options)
                 }}
               />
             )}

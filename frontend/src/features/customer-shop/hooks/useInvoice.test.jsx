@@ -55,11 +55,12 @@ describe('useInvoice', () => {
     expect(result.current.success).toBe(false)
   })
 
-  it('lỗi API: không crash, tắt loading và giữ invoice là null', async () => {
-    shopService.getInvoiceByOrderId.mockRejectedValue(new Error('Không tìm thấy hoá đơn'))
+  it('lỗi API: không crash, tắt loading, giữ invoice là null và lộ ra thông báo lỗi thật từ backend', async () => {
+    shopService.getInvoiceByOrderId.mockRejectedValue(new Error('Không thể xuất hoá đơn cho đơn hàng đã huỷ'))
     const { result } = renderHook(() => useInvoice(), { wrapper: makeWrapper('/invoice?orderId=999') })
 
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.invoice).toBeNull()
+    expect(result.current.error).toBe('Không thể xuất hoá đơn cho đơn hàng đã huỷ')
   })
 })
