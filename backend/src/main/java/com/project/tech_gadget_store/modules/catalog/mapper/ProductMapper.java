@@ -12,6 +12,8 @@ import com.project.tech_gadget_store.modules.catalog.entity.ProductVariant;
 import com.project.tech_gadget_store.modules.loyalty.dto.response.BundleServiceResponseDto;
 import com.project.tech_gadget_store.modules.loyalty.entity.BundleService;
 import com.project.tech_gadget_store.modules.loyalty.entity.Promotion;
+import com.project.tech_gadget_store.modules.catalog.entity.enums.SerialStatus;
+import com.project.tech_gadget_store.modules.catalog.repository.ProductSerialRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +24,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ProductMapper {
+
+        private final ProductSerialRepository productSerialRepository;
+
+        public ProductMapper(ProductSerialRepository productSerialRepository) {
+                this.productSerialRepository = productSerialRepository;
+        }
 
         public ProductResponseDto toProductResponseDto(Product product, List<ProductVariant> variants, Integer salesCount) {
                 return toProductResponseDto(product, variants, salesCount, null, null, 0L);
@@ -203,6 +211,9 @@ public class ProductMapper {
         }
 
         public ProductVariantResponseDto toVariantResponseDto(ProductVariant variant) {
+                long stock = (productSerialRepository != null && variant != null)
+                                ? productSerialRepository.countByProductVariantIdAndStatus(variant.getId(), SerialStatus.IN_STOCK)
+                                : 0L;
                 return ProductVariantResponseDto.builder()
                                 .id(variant.getId())
                                 .createdAt(variant.getCreatedAt())
@@ -212,6 +223,7 @@ public class ProductMapper {
                                 .storageGb(variant.getStorageGb())
                                 .color(variant.getColor())
                                 .price(variant.getPrice())
+                                .stock(stock)
                                 .build();
         }
 

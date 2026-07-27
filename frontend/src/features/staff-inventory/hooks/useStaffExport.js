@@ -34,46 +34,19 @@ export function useStaffExport(user) {
           })
         )
 
-        let logs = []
-        try {
-          logs = await staffInventoryService.getWarehouseLogs()
-        } catch (e) {
-          console.warn('Failed to load warehouse logs', e)
-        }
-
-        const exportedCounts = {}
-        logs.forEach(log => {
-          if (log.type !== 'EXPORT') return
-          const { ram, storage, color } = parseDetails(log.productDetails)
-          const key = `${log.productName}-${ram}-${storage}-${color}`.toLowerCase()
-          exportedCounts[key] = (exportedCounts[key] || 0) + log.quantity
-        })
-
         const list = []
         detailed.forEach(p => {
-          const configMap = {}
-          p.variants.forEach(v => {
-            const configKey = `${v.ramGb || ''}-${v.storageGb || ''}-${v.color || ''}`.toLowerCase()
-            if (!configMap[configKey]) {
-              configMap[configKey] = {
-                id: v.id,
-                productId: p.id,
-                productName: p.name,
-                ramGb: v.ramGb,
-                storageGb: v.storageGb,
-                color: v.color,
-                price: v.price || 0,
-                totalUnits: 0,
-              }
-            }
-            configMap[configKey].totalUnits += 1
-          })
-
-          Object.values(configMap).forEach(cfg => {
-            const matchKey = `${p.name}-${cfg.ramGb || ''}-${cfg.storageGb || ''}-${cfg.color || ''}`.toLowerCase()
-            const exported = exportedCounts[matchKey] || 0
-            const stock = Math.max(0, cfg.totalUnits - exported)
-            list.push({ ...cfg, stock })
+          (p.variants || []).forEach(v => {
+            list.push({
+              id: v.id,
+              productId: p.id,
+              productName: p.name,
+              ramGb: v.ramGb,
+              storageGb: v.storageGb,
+              color: v.color,
+              price: v.price || 0,
+              stock: Number(v.stock) || 0,
+            })
           })
         })
 

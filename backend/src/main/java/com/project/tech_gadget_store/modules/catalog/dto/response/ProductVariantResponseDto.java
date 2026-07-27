@@ -22,4 +22,5 @@ public class ProductVariantResponseDto {
     private Integer storageGb;
     private String color;
     private BigDecimal price;
+    private Long stock;
 }
