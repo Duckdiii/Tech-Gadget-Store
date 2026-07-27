@@ -11,7 +11,7 @@ export const shopService = {
   },
 
   async updateCartItemBundles(itemId, bundleServiceIds) {
-    return axiosClient.post(`/api/customer/cart/items/${itemId}/bundle-services`, { bundleServiceIds })
+    return axiosClient.put(`/api/customer/cart/items/${itemId}/bundle-services`, { bundleServicesIds: bundleServiceIds })
   },
 
   async updateCartItemQuantity(itemId, quantity) {
