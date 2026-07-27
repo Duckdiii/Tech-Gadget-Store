@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { managerUsersService } from '../services/managerUsersService'
 
 const PAGE_SIZE = 10
@@ -23,36 +23,38 @@ export function useCustomerManagement() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Calculate parameters for query
-  let joinStartDate = null
-  let joinEndDate = null
-  let minSpend = null
-  let maxSpend = null
-
-  // Date range mapping
-  const now = new Date()
-  if (joinDateRange === 'week') {
-    const day = now.getDay()
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1) // adjust when day is sunday
-    const startOfWeek = new Date(now.setDate(diff))
-    startOfWeek.setHours(0, 0, 0, 0)
-    joinStartDate = toLocalISOString(startOfWeek)
-    joinEndDate = toLocalISOString(new Date())
-  } else if (joinDateRange === 'month') {
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    startOfMonth.setHours(0, 0, 0, 0)
-    joinStartDate = toLocalISOString(startOfMonth)
-    joinEndDate = toLocalISOString(new Date())
-  } else if (joinDateRange === 'custom') {
-    if (customStartDate) {
-      joinStartDate = customStartDate + 'T00:00:00'
+  // Ngày bắt đầu/kết thúc theo bộ lọc — PHẢI nhớ lại (useMemo) chứ không tính thẳng trong thân
+  // component: `new Date()` cho ra 1 mốc thời gian khác nhau ở mỗi lần render, nên nếu tính lại
+  // mỗi render thì joinEndDate đổi giá trị liên tục → fetchCustomers (useCallback) đổi identity
+  // liên tục → effect gọi lại liên tục → loading nhấp nháy vô hạn khi chọn lọc theo tuần/tháng.
+  const { joinStartDate, joinEndDate } = useMemo(() => {
+    if (joinDateRange === 'week') {
+      const now = new Date()
+      const day = now.getDay()
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1) // adjust when day is sunday
+      const startOfWeek = new Date(now)
+      startOfWeek.setDate(diff)
+      startOfWeek.setHours(0, 0, 0, 0)
+      return { joinStartDate: toLocalISOString(startOfWeek), joinEndDate: toLocalISOString(now) }
     }
-    if (customEndDate) {
-      joinEndDate = customEndDate + 'T23:59:59'
+    if (joinDateRange === 'month') {
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      startOfMonth.setHours(0, 0, 0, 0)
+      return { joinStartDate: toLocalISOString(startOfMonth), joinEndDate: toLocalISOString(now) }
     }
-  }
+    if (joinDateRange === 'custom') {
+      return {
+        joinStartDate: customStartDate ? customStartDate + 'T00:00:00' : null,
+        joinEndDate: customEndDate ? customEndDate + 'T23:59:59' : null,
+      }
+    }
+    return { joinStartDate: null, joinEndDate: null }
+  }, [joinDateRange, customStartDate, customEndDate])
 
   // Spending range mapping
+  let minSpend = null
+  let maxSpend = null
   if (spendFilter === 'zero') {
     minSpend = 0
     maxSpend = 0

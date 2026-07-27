@@ -191,10 +191,17 @@ export default function TechStoreAdminSidebar() {
   const { pathname } = useLocation()
   const [notifications, setNotifications] = useState([])
   const [openNotifications, setOpenNotifications] = useState(false)
+  const [storeName, setStoreName] = useState('')
 
   useEffect(() => {
     apiFetch('/api/notifications')
       .then(setNotifications)
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    apiFetch('/api/manager/store-settings')
+      .then((dto) => setStoreName(dto.storeName || ''))
       .catch(() => {})
   }, [])
 
@@ -214,7 +221,7 @@ export default function TechStoreAdminSidebar() {
         </div>
         <div>
           <p className="text-sm font-bold text-gray-900 leading-tight">TechStore Admin</p>
-          <p className="text-xs text-gray-500">Electronics Retail</p>
+          <p className="text-xs text-gray-500">{storeName || 'Electronics Retail'}</p>
         </div>
       </div>
 
