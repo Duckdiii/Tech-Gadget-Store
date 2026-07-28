@@ -17,6 +17,13 @@ test.describe('Luồng mua hàng cốt lõi (browse → giỏ hàng → checkout
     const cartPage = new CartPage(page)
     const checkoutPage = new CheckoutPage(page)
 
+    // Chẩn đoán tạm thời: handleAddToCart() dùng alert() gốc của trình duyệt khi lỗi — Playwright
+    // tự động dismiss dialog âm thầm theo mặc định, nên log lại nội dung để thấy lỗi thật nếu có.
+    page.on('dialog', async (dialog) => {
+      console.log(`[dialog] ${dialog.type()}: ${dialog.message()}`)
+      await dialog.dismiss()
+    })
+
     await page.goto('/')
     await navbar.searchFor(PRODUCT_NAME)
     await expect(productList.productCardByName(PRODUCT_NAME)).toBeVisible()

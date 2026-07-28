@@ -26,7 +26,9 @@ export default defineConfig({
   use: {
     baseURL,
     extraHTTPHeaders,
-    trace: 'on-first-retry',
+    // retries:0 nghĩa là 'on-first-retry' sẽ không bao giờ kích hoạt (không có lần retry nào) —
+    // dùng retain-on-failure để vẫn có trace (network request/response) khi test fail.
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
   projects: [
