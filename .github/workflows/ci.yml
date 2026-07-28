@@ -150,3 +150,47 @@ jobs:
           done
           echo "Backend health check thất bại sau khi deploy"
           exit 1
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Deploy backend to Railway (staging)
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
+        run: |
+          npm i -g @railway/cli
+          railway up --service "Tech-Gadget-Store" --environment staging
+
+      - name: Deploy frontend to Vercel (staging preview)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npm i -g vercel
+          DEPLOY_URL=$(vercel deploy --yes --token=$VERCEL_TOKEN)
+          vercel alias set "$DEPLOY_URL" tech-gadget-store-staging.vercel.app --token=$VERCEL_TOKEN
+
+      - name: Smoke test — chờ backend staging healthy sau deploy
+        run: |
+          for i in $(seq 1 10); do
+            if curl -sf "https://tech-gadget-store-staging.up.railway.app/actuator/health" | grep -q '"status":"UP"'; then
+              echo "Staging backend healthy"
+              exit 0
+            fi
+            echo "Chờ backend staging healthy... ($i/10)"
+            sleep 10
+          done
+          echo "Staging health check thất bại sau khi deploy"
+          exit 1
