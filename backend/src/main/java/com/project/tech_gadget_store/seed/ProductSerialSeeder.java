@@ -135,7 +135,14 @@ public class ProductSerialSeeder implements CommandLineRunner {
         return count;
     }
 
+    /**
+     * Truncating to 8 hex chars (~4.3B combinations) isn't safe at this seeder's volume —
+     * generating on the order of 10k+ serials per run puts the birthday-paradox collision
+     * probability in the low single-digit percent range, and it has been observed to actually
+     * collide (unique constraint violation on {@code serial_number}, rolling back the whole
+     * @Transactional run). The full UUID makes collisions negligible.
+     */
     private String nextSerialNumber() {
-        return "SR-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        return "SR-" + UUID.randomUUID().toString().toUpperCase();
     }
 }
