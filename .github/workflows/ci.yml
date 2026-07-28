@@ -123,7 +123,6 @@ jobs:
           node-version: "20"
 
       - name: Deploy backend to Railway
-        working-directory: backend
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
