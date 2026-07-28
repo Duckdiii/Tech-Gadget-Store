@@ -58,3 +58,5 @@ ml-service/models/
 .codgraph/
 .codegraph/
 .gemini/
+.vercel
+.env*
