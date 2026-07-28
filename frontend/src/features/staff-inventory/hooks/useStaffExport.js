@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { staffInventoryService } from '../services/staffInventoryService'
-import { USER_EMAIL_TO_ID, EXPORT_TYPES, today, parseDetails } from '../utils/inventoryHelpers'
+import { USER_EMAIL_TO_ID, EXPORT_TYPES, today } from '../utils/inventoryHelpers'
 
 const BLANK_ROW = () => ({ productId: '', productVariantId: '', qty: 1 })
 
@@ -17,7 +17,7 @@ export function useStaffExport(user) {
   const [loading,    setLoading]    = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
-  const userPerfId = user?.id || user?.email || USER_EMAIL_TO_ID[user?.email] || 'user-stf-01'
+  const userPerfId = user?.id || USER_EMAIL_TO_ID[user?.email] || user?.email || 'user-stf-01'
 
   useEffect(() => {
     async function loadData() {

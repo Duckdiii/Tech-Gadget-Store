@@ -36,7 +36,7 @@ export function useStaffImport(user) {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
-  const userPerfId = user?.id || user?.email || USER_EMAIL_TO_ID[user?.email] || 'user-stf-01'
+  const userPerfId = user?.id || USER_EMAIL_TO_ID[user?.email] || user?.email || 'user-stf-01'
 
   const loadInitialData = async () => {
     try {

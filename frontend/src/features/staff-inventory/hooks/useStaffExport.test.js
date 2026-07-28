@@ -7,7 +7,6 @@ vi.mock('../services/staffInventoryService', () => ({
   staffInventoryService: {
     getProducts: vi.fn(),
     getProductById: vi.fn(),
-    getWarehouseLogs: vi.fn(),
     createExportLog: vi.fn(),
   },
 }))
@@ -15,24 +14,20 @@ vi.mock('../services/staffInventoryService', () => ({
 const USER = { email: 'bich.tran@techstore.vn', name: 'Trần Thị Bích' } // → user-stf-01
 
 const RAW_PRODUCTS = { items: [{ id: 'p1', name: 'iPhone 15' }] }
-// 3 "đơn vị" biến thể: 2 cái cùng cấu hình Đen (đếm theo totalUnits), 1 cái Trắng.
+// stock giờ do backend tính sẵn và trả thẳng trên từng variant (xem ProductMapper/
+// ProductVariantResponseDto) — không còn suy ra từ warehouse logs ở client nữa.
 const DETAILED_PRODUCT = {
   id: 'p1', name: 'iPhone 15',
   variants: [
-    { id: 'v1', ramGb: 8, storageGb: 128, color: 'Đen', price: 20000000 },
-    { id: 'v2', ramGb: 8, storageGb: 128, color: 'Đen', price: 20000000 },
-    { id: 'v3', ramGb: 8, storageGb: 256, color: 'Trắng', price: 22000000 },
+    { id: 'v1', ramGb: 8, storageGb: 128, color: 'Đen', price: 20000000, stock: 1 },
+    { id: 'v2', ramGb: 8, storageGb: 128, color: 'Đen', price: 20000000, stock: 0 },
+    { id: 'v3', ramGb: 8, storageGb: 256, color: 'Trắng', price: 22000000, stock: 1 },
   ],
 }
-// 1 log xuất đã trừ đi 1 đơn vị màu Đen
-const LOGS = [
-  { type: 'EXPORT', productName: 'iPhone 15', productDetails: '8GB RAM / 128GB Storage / Đen', quantity: 1 },
-]
 
 function mockService() {
   staffInventoryService.getProducts.mockResolvedValue(RAW_PRODUCTS)
   staffInventoryService.getProductById.mockResolvedValue(DETAILED_PRODUCT)
-  staffInventoryService.getWarehouseLogs.mockResolvedValue(LOGS)
 }
 
 async function setupWithData() {
@@ -47,13 +42,15 @@ beforeEach(() => {
 })
 
 describe('useStaffExport', () => {
-  it('tính đúng stock khả dụng = tổng đơn vị theo cấu hình - số đã xuất trong log', async () => {
+  it('lấy đúng stock từ API cho từng variant (đã tính sẵn ở backend)', async () => {
     const result = await setupWithData()
 
-    const den = result.current.flatVariants.find((v) => v.color === 'Đen')
-    const trang = result.current.flatVariants.find((v) => v.color === 'Trắng')
-    expect(den.stock).toBe(1) // 2 đơn vị - 1 đã xuất
-    expect(trang.stock).toBe(1) // 1 đơn vị - 0 đã xuất
+    const v1 = result.current.flatVariants.find((v) => v.id === 'v1')
+    const v2 = result.current.flatVariants.find((v) => v.id === 'v2')
+    const v3 = result.current.flatVariants.find((v) => v.id === 'v3')
+    expect(v1.stock).toBe(1)
+    expect(v2.stock).toBe(0)
+    expect(v3.stock).toBe(1)
   })
 
   it('validate: báo lỗi khi thiếu tên người nhận (nhãn theo loại xuất)', async () => {

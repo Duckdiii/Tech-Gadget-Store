@@ -7,6 +7,9 @@ vi.mock('../services/staffInventoryService', () => ({
   staffInventoryService: {
     getProducts: vi.fn(),
     getProductById: vi.fn(),
+    getSuppliers: vi.fn(),
+    getBrands: vi.fn(),
+    getCategories: vi.fn(),
     createImportLog: vi.fn(),
   },
 }))
@@ -22,6 +25,9 @@ const DETAILED_PRODUCT = {
 async function setupWithData() {
   staffInventoryService.getProducts.mockResolvedValue(RAW_PRODUCTS)
   staffInventoryService.getProductById.mockResolvedValue(DETAILED_PRODUCT)
+  staffInventoryService.getSuppliers.mockResolvedValue([])
+  staffInventoryService.getBrands.mockResolvedValue([])
+  staffInventoryService.getCategories.mockResolvedValue([])
   const { result } = renderHook(() => useStaffImport(USER))
   await waitFor(() => expect(result.current.loading).toBe(false))
   return result
