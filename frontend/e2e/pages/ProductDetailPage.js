@@ -4,6 +4,10 @@ export class ProductDetailPage {
     // Nút đích thực dùng chung aria-label="Thao tác" với hàng chục nút khác trên trang (tab,
     // breadcrumb, thumbnail...) nên không unique — phải chọn theo text hiển thị thay vì role+name.
     this.addToCartButton = page.getByText('Thêm vào giỏ hàng', { exact: true })
+    // Toast "Đã thêm vào giỏ hàng" chỉ render SAU KHI shopService.addCartItem() (async) resolve —
+    // đợi nó thay vì chỉ đợi click() (click chỉ đợi sự kiện dispatch, không đợi API bên trong
+    // handler hoàn tất), tránh điều hướng sang giỏ hàng trước khi item kịp lưu server-side.
+    this.addedToCartToast = page.getByText('Đã thêm vào giỏ hàng', { exact: true })
   }
 
   ramOption(label) {
@@ -26,5 +30,6 @@ export class ProductDetailPage {
 
   async addToCart() {
     await this.addToCartButton.click()
+    await this.addedToCartToast.waitFor({ state: 'visible' })
   }
 }
