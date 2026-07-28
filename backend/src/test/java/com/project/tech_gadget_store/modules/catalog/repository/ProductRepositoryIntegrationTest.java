@@ -67,8 +67,15 @@ class ProductRepositoryIntegrationTest {
         MembershipBenefit benefit = em.persistFlushFind(new MembershipBenefit(0.0, false, "Hạng mặc định"));
         Membership membership = em.persistFlushFind(
                 new Membership(MembershipTier.STANDARD, benefit, BigDecimal.ZERO, BigDecimal.valueOf(10_000_000)));
-        customer = em.persistFlushFind(new Customer("Khách test", "0900000000", membership));
-        address = em.persistFlushFind(new Address("123 Test", "Phường 1", "Quận 1", "TP.HCM"));
+
+        // Address không có FK riêng — nó thuộc sở hữu của User.addresses (cascade ALL, user_id
+        // NOT NULL), nên phải gắn qua customer.changeAddress(...) rồi cascade-persist theo
+        // customer, chứ không thể persist Address đứng một mình.
+        address = new Address("123 Test", "Phường 1", "Quận 1", "TP.HCM");
+        customer = new Customer("Khách test", "0900000000", membership);
+        customer.changeAddress(address);
+        customer = em.persistFlushFind(customer);
+
         paymentMethod = em.persistFlushFind(new CODPaymentMethod("COD", "Thanh toán khi nhận hàng", null, BigDecimal.ZERO));
     }
 
