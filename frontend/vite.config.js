@@ -16,5 +16,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom', //Sử dụng môi trường jsdom để mô phỏng DOM trong quá trình test
     setupFiles: './src/test/setup.js',//Chỉ định file setup.js để thiết lập môi trường test trước khi chạy các test case
+    // e2e/ dùng @playwright/test (API test/expect khác hoàn toàn, chạy trình duyệt thật) —
+    // loại khỏi phạm vi Vitest để không bị quét nhầm.
+    exclude: ['**/node_modules/**', '**/e2e/**'],
   },
 })

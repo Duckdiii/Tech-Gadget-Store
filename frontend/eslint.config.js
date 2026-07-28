@@ -31,4 +31,13 @@ export default defineConfig([
       'react-hooks/purity': 'off',
     },
   },
+  {
+    // playwright.config.js + e2e/ chạy trong Node (Playwright test runner), không phải browser —
+    // cần globals.node thay vì globals.browser, và không áp rule React (không liên quan).
+    files: ['playwright.config.js', 'e2e/**/*.js'],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])
