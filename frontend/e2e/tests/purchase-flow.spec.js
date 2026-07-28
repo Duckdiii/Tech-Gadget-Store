@@ -38,7 +38,7 @@ test.describe('Luồng mua hàng cốt lõi (browse → giỏ hàng → checkout
     await cartPage.proceedToCheckout()
 
     await checkoutPage.selectFirstAddress()
-    await checkoutPage.selectFirstPaymentMethod()
+    await checkoutPage.selectCodPaymentMethod()
     await checkoutPage.submitOrder()
 
     await expect(page.getByRole('heading', { name: 'Đặt hàng thành công!' })).toBeVisible({ timeout: 15000 })
