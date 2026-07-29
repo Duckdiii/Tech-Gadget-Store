@@ -1,0 +1,33 @@
+name: Performance Test
+
+# Chỉ chạy thủ công (workflow_dispatch) — KHÔNG gắn vào push như e2e-staging, vì Staging
+# đang chạy trên Supabase free-tier + Railway, chạy load test lặp lại trên mỗi push có thể
+# chạm giới hạn tài nguyên hoặc phát sinh chi phí ngoài ý muốn.
+on:
+  workflow_dispatch:
+    inputs:
+      vus:
+        description: "Số virtual users tối đa (steady state)"
+        required: false
+        default: "10"
+      duration:
+        description: "Thời gian giữ tải ổn định ở mức vus tối đa"
+        required: false
+        default: "1m"
+
+jobs:
+  k6-staging:
+    name: k6 Load Test (Staging - luồng đọc)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run k6 load test against Staging
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: performance/product-browsing.js
+          flags: >-
+            -e PERF_BASE_URL=https://tech-gadget-store-staging.up.railway.app
+            -e K6_MAX_VUS=${{ github.event.inputs.vus }}
+            -e K6_STEADY_DURATION=${{ github.event.inputs.duration }}
