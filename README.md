@@ -16,8 +16,8 @@ Hệ thống bán lẻ thiết bị công nghệ full-stack (điện thoại, la
 | Thanh toán | COD, MoMo, VNPay (tích hợp redirect + IPN webhook) |
 | API Docs | springdoc-openapi (Swagger UI tại `/swagger-ui.html`) |
 | Giám sát & vận hành | Spring Actuator (`health`/`info`/`metrics`), Correlation ID logging (truy vết request qua các service/queue) |
-| Kiểm thử | Backend: JUnit 5, Mockito, AssertJ (unit test tầng service, mock repository). Frontend: Vitest, React Testing Library (test hook/component) |
-| CI/CD | GitHub Actions — chạy test backend + lint/test/build frontend trên mỗi push/PR vào `main`/`dev`; React Doctor quét sức khoẻ code React trên mỗi PR |
+| Kiểm thử | Backend: JUnit 5, Mockito, AssertJ, MockMvc, Testcontainers (262 test case). Frontend: Vitest, React Testing Library (288 test case). E2E: Playwright (Page Object Model). Performance: k6 |
+| CI/CD | GitHub Actions — CI (test backend + lint/test/build frontend) → deploy song song Production/Staging (Railway + Vercel, hạ tầng tách biệt hoàn toàn) → E2E test tự động trên Staging thật (Playwright) → performance test thủ công (k6); React Doctor quét sức khoẻ code React trên mỗi PR |
 
 ## Kiến trúc tổng quan
 
@@ -150,14 +150,14 @@ Management UI xem queue/exchange trực quan tại `http://localhost:15672` (m�
 
 ## Kiểm thử
 
-**Backend:** unit test tầng service với JUnit 5 + Mockito (`@ExtendWith(MockitoExtension.class)`, mock toàn bộ repository/client bên ngoài) + AssertJ cho assertion, đặt cạnh code ở `backend/src/test/java` (~30 file test). Có chủ đích không dùng `@SpringBootTest`/`@DataJpaTest` cho các test này — logic nghiệp vụ (tính giá, áp khuyến mãi, phân quyền xoá tài khoản...) không cần DB thật mới verify được, nên chạy nhanh và không phụ thuộc môi trường.
+**Backend:** 33 file test (262 test case), đặt cạnh code ở `backend/src/test/java`. Phần lớn (27 file) là unit test tầng service với JUnit 5 + Mockito (`@ExtendWith(MockitoExtension.class)`, mock toàn bộ repository/client bên ngoài) + AssertJ cho assertion — logic nghiệp vụ (tính giá, áp khuyến mãi, phân quyền xoá tài khoản...) không cần DB thật mới verify được, nên chạy nhanh và không phụ thuộc môi trường. Riêng với query native (full-text search) thì mock không đủ tin cậy — `ProductRepositoryIntegrationTest` dùng Testcontainers dựng một Postgres thật, chạy lại đúng migration Flyway rồi verify query trên schema thật.
 
 ```bash
 cd backend
 ./mvnw test
 ```
 
-**Frontend:** unit test hook/component với Vitest + React Testing Library, đặt cạnh code theo tên file (`*.test.jsx`/`*.test.js`, ~50 file test), mock tầng service (axios) để test logic hook độc lập với API thật.
+**Frontend:** 52 file test (288 test case), unit test hook/component với Vitest + React Testing Library, đặt cạnh code theo tên file (`*.test.jsx`/`*.test.js`), mock tầng service (axios) để test logic hook độc lập với API thật.
 
 ```bash
 cd frontend
@@ -165,7 +165,37 @@ npm run test    # chạy 1 lần
 npm run lint    # ESLint
 ```
 
-**CI:** GitHub Actions (`.github/workflows/ci.yml`) tự chạy test backend (kèm Postgres/Redis/RabbitMQ thật qua service container) và lint + test + build frontend trên mỗi push/PR vào `main`/`dev`.
+**E2E (Playwright):** test luồng mua hàng cốt lõi thật — đăng nhập → tìm sản phẩm → thêm giỏ hàng → checkout COD → xác nhận thành công — chạy trên trình duyệt thật, nhắm vào môi trường Staging đã deploy (không phải mock). Đặt ở `frontend/e2e/`, theo Page Object Model (`e2e/pages/`), đăng nhập 1 lần rồi tái sử dụng session qua `storageState` để tránh chạm rate limit của `/api/auth/login`.
+
+```bash
+cd frontend
+E2E_BASE_URL=https://tech-gadget-store-staging.vercel.app npx playwright test
+```
+
+**Performance (k6):** load test luồng đọc (danh sách/tìm kiếm/chi tiết sản phẩm) trên Staging, threshold p95 latency < 800ms và error rate < 1%. Đặt ở `performance/product-browsing.js`, chạy thủ công qua GitHub Actions hoặc trực tiếp:
+
+```bash
+k6 run -e PERF_BASE_URL=https://tech-gadget-store-staging.up.railway.app performance/product-browsing.js
+```
+
+Toàn bộ pipeline CI/CD (thứ tự chạy, hạ tầng Staging/Production tách biệt ra sao) — xem phần **CI/CD** bên dưới.
+
+## CI/CD
+
+3 workflow GitHub Actions, tách theo mục đích thay vì gộp chung một file:
+
+| Workflow | Trigger | Việc làm |
+|---|---|---|
+| `ci.yml` — `backend` + `frontend` | mọi push/PR vào `main`/`dev` | Test backend (kèm Postgres/Redis/RabbitMQ thật qua service container) + lint/test/build frontend |
+| `ci.yml` — `Deploy to Production` | push vào `main`, sau khi CI pass | Deploy Railway + Vercel (prod), smoke test `/actuator/health` trước khi coi là thành công |
+| `ci.yml` — `Deploy to Staging` | push vào `dev`, sau khi CI pass | Deploy vào hạ tầng **tách biệt hoàn toàn** khỏi Production: Railway environment riêng, Supabase DB riêng, Redis/RabbitMQ riêng. Frontend deploy dạng Vercel Preview rồi `alias` cố định vào `tech-gadget-store-staging.vercel.app` |
+| `ci.yml` — `E2E Test (Staging)` | ngay sau khi Deploy to Staging xong | Playwright chạy golden path thật trên Staging vừa deploy |
+| `performance.yml` | thủ công (`workflow_dispatch`) | k6 load test trên Staging |
+| `react-doctor.yml` | mọi PR + push vào `main` | Quét security/perf/a11y/architecture cho code React, advisory (không chặn merge) |
+
+**Vì sao Staging tách biệt hoàn toàn khỏi Production** (không dùng chung DB/Redis/RabbitMQ): E2E test và load test cần ghi dữ liệu thật (tạo đơn hàng, trừ tồn kho...) mà không được đụng tới dữ liệu Production; đồng thời một lỗi cấu hình/deploy ở Staging không được phép ảnh hưởng tới Production.
+
+**Vì sao Performance Test chỉ chạy thủ công**, không tự động theo mỗi push như E2E: Staging chạy trên hạ tầng free-tier (Supabase, Railway) — load test lặp lại tự động trên mỗi commit có thể chạm giới hạn tài nguyên hoặc phát sinh chi phí ngoài ý muốn.
 
 ## Dữ liệu giả (seed data)
 
@@ -174,6 +204,7 @@ Vì chưa có traffic thật, dữ liệu customer/order/catalog được sinh g
 - `CatalogSeeder` — sinh danh mục sản phẩm (150 sản phẩm, 9 thương hiệu, 5 danh mục)
 - `PersonaCatalog` — định nghĩa 6 persona hành vi mua hàng (Apple Ecosystem, Gamer, Budget Android...), mỗi persona có mức độ ưa thích riêng với từng cặp (danh mục, thương hiệu)
 - `CustomerOrderSeeder` — sinh 300 khách hàng, mỗi người được gán ngẫu nhiên 1 persona theo trọng số, rồi sinh đơn hàng/yêu thích thiên lệch theo persona đó — đảm bảo dữ liệu có **cấu trúc ẩn thật sự** để model học, thay vì nhiễu ngẫu nhiên vô nghĩa
+- `ProductSerialSeeder` — sinh `product_serials` (số serial thật theo từng đơn vị tồn kho) cho mọi variant: 1 serial trạng thái `SOLD` gắn với mỗi order item đã seed (phục vụ tra cứu bảo hành), cộng thêm một lượng serial `IN_STOCK` ngẫu nhiên mỗi variant — nếu thiếu seeder này, `availableCount` của mọi sản phẩm sẽ luôn bằng 0
 
 Chạy seed: `./mvnw spring-boot:run -Dspring-boot.run.profiles=seed` (chỉ chạy khi DB rỗng, tự bỏ qua nếu đã có dữ liệu).
 
